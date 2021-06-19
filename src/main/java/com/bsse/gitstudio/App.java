@@ -1,13 +1,10 @@
 package com.bsse.gitstudio;
 
-import com.bsse.views.MainLayout;
+import com.bsse.views.MainScene;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 
-/**
- * JavaFX App
- */
 public class App extends Application {
 
      /**
@@ -20,7 +17,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage){
         stage.setTitle("Hello World!");		
-        stage.setScene(new MainLayout());        
+        stage.setScene(new MainScene());        
         
         stage.show();
     }
