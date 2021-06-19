@@ -18,6 +18,12 @@ public class TopNav extends HBox{
 
     public TopNav() {
         super();
+        addStyles();
+        addChildNodes();
+    }
+    
+    private void addStyles(){
+        setWidth(300);
     }
     
     private void addChildNodes(){

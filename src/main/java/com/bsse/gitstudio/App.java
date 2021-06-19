@@ -19,7 +19,8 @@ public class App extends Application {
         stage.setTitle("Hello World!");		
         stage.setScene(new MainScene());        
         
-        stage.show();
+        stage.setMaximized(true);
+        stage.show();        
     }
     
 

@@ -20,8 +20,7 @@ public class RootNode extends VBox{
     private void addChildNodes(){
         var childs = new ArrayList<Node>();
         
-        var topNav = new TopNav();
-        
+        var topNav = new TopNav();        
         
         childs.add(topNav);
         this.getChildren().addAll(childs);

@@ -29,11 +29,11 @@ import javafx.scene.text.Text;
  */
 public class MainScene extends Scene{
     public MainScene() {
-		super(getScene(),300, 275);
+		super(getScene(),0,0);
     }
     
     private static Parent getScene() {
-                var rootNode = new RootNode();
+                var rootNode = new RootNode();                
                 return rootNode;
     }
 	
