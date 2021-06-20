@@ -26,7 +26,6 @@ public class TopNav extends HBox{
         super();
         addStyles();
         addChildNodes();
-        StaticData.topNav = this;
     }
     
     private void addStyles(){
@@ -47,10 +46,9 @@ public class TopNav extends HBox{
     
     private Node getRepositoryOption(){
         var option = new HBox();
-        option.getStyleClass().add("cur-point");
+        option.getStyleClass().add("cur-point border");
         var text = new Text("Repositories");
-        option.getChildren().add(text);
-        option.getStyleClass().add("border");
+        option.getChildren().add(text);       
         return option;
     }
     

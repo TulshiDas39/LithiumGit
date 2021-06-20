@@ -5,6 +5,7 @@
  */
 package com.bsse.views;
 
+import com.bsse.dataClasses.StaticData;
 import com.bsse.nodes.RootNode;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,7 +21,8 @@ public class MainScene extends Scene{
     }
     
     private static Parent getScene() {
-                var rootNode = new RootNode();                
+                var rootNode = new RootNode();
+                StaticData.rootNode = rootNode;                
                 return rootNode;
     }
 	
