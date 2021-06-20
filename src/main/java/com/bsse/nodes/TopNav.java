@@ -7,6 +7,8 @@ package com.bsse.nodes;
 
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
+import com.bsse.dataClasses.StaticData;
+import com.bsse.interfaces.AppNode;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import javafx.scene.Node;
@@ -24,6 +26,7 @@ public class TopNav extends HBox{
         super();
         addStyles();
         addChildNodes();
+        StaticData.topNav = this;
     }
     
     private void addStyles(){
