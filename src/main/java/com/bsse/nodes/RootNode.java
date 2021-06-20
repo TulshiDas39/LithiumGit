@@ -14,15 +14,13 @@ public class RootNode extends VBox{
     }
     
     private void addStyles(){
-        
+        getStyleClass().add("border");
     }
     
     private void addChildNodes(){
         var childs = new ArrayList<Node>();
-        
-        var topNav = new TopNav();        
-        
-        childs.add(topNav);
+                
+        childs.add(new TopNav());
         this.getChildren().addAll(childs);
     }        
     

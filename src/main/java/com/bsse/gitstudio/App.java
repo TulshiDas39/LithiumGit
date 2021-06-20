@@ -2,6 +2,7 @@ package com.bsse.gitstudio;
 
 import com.bsse.views.MainScene;
 import javafx.application.Application;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 
@@ -16,9 +17,8 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage){
-        stage.setTitle("Hello World!");		
-        stage.setScene(new MainScene());        
-        
+        stage.setTitle("Hello World!");
+        stage.setScene(new MainScene());
         stage.setMaximized(true);
         stage.show();        
     }

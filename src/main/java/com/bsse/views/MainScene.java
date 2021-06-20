@@ -6,30 +6,17 @@
 package com.bsse.views;
 
 import com.bsse.nodes.RootNode;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 
 /**
  *
  * @author ASUS
  */
 public class MainScene extends Scene{
-    public MainScene() {
-		super(getScene(),0,0);
+    public MainScene() {        
+		super(getScene(),900, 500);
+                getStylesheets().add(MainScene.class.getResource("/css/style.css").toExternalForm());
     }
     
     private static Parent getScene() {
