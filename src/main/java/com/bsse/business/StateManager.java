@@ -22,7 +22,8 @@ public class StateManager {
 
     public static void setSelectedRepoInfo(RepoInfo selectedRepoInfo) {
         StateManager.selectedRepoInfo = selectedRepoInfo;
-        StaticData.rootNode.handleRepoSelection();
+        StaticData.topNav.updateUi();
+        StaticData.body.updateUi();
     }
     
 }

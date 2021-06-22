@@ -1,5 +1,5 @@
 
-package com.bsse.nodes;
+package com.bsse.views.mainScene;
 
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
@@ -19,32 +19,23 @@ public class RootNode extends VBox{
         addChildNodes();
     }
     
-    public void handleRepoSelection(){
-        if(this.selectedRepo != StaticData.selectedRepo){
-            this.selectedRepo = StaticData.selectedRepo;
-            
-            if(selectedRepo != null) getChildren().removeAll(this.repoSelectionPanel);
-        }
-    }
-    
     private void addStyles(){
         getStyleClass().add("border");
     }
-    
-    
-    
+            
     private void addChildNodes(){
         var childs = new ArrayList<Node>();
                 
-        childs.add(new TopNav());
-        if(this.selectedRepo == null){
-            this.repoSelectionPanel = new RepoSelectionPanel();
-            childs.add(this.repoSelectionPanel);
-        }
-        else{
-            
-        }
+        var topNav = new TopNav();
+        StaticData.topNav = topNav;
+        childs.add(topNav);
+        
+        var body = new Body();
+        StaticData.body = body;
+        childs.add(body);
+        
         this.getChildren().addAll(childs);
-    }        
+    }
+        
     
 }

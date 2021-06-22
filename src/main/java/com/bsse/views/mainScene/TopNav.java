@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.bsse.nodes;
+
+package com.bsse.views.mainScene;
 
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
-import com.bsse.interfaces.AppNode;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import javafx.scene.Node;
@@ -20,7 +15,10 @@ import javafx.scene.text.Text;
  *
  * @author ASUS
  */
-public class TopNav extends HBox{    
+public class TopNav extends HBox{
+
+    private HBox toolBoxForRepo = new HBox();
+    private RepoInfo selectedRepo;
 
     public TopNav() {
         super();
@@ -36,13 +34,33 @@ public class TopNav extends HBox{
     private void addChildNodes(){
         var childNodes = new ArrayList<Node>();
                 
-        childNodes.add(getRepositoryOption());
-        childNodes.add(getRepoDropdown());
-        
-        
+        childNodes.add(getRepositoryOption());        
+        childNodes.add(this.toolBoxForRepo);
         getChildren().addAll(childNodes);
         
     }
+    
+    public void updateUi(){
+        if(StaticData.selectedRepo != this.selectedRepo){
+            this.selectedRepo = StaticData.selectedRepo;
+            handleRepoSelection();
+        }
+    }
+    
+    private void handleRepoSelection(){
+        if(this.selectedRepo == null){
+            this.toolBoxForRepo.getChildren().removeAll(this.toolBoxForRepo.getChildren());
+        }
+        else{
+            createToolboxForRepo();            
+        }
+    }
+    
+    private void createToolboxForRepo(){
+        this.toolBoxForRepo.getChildren().add(getRepoDropdown());                
+    }
+    
+    
     
     private Node getRepositoryOption(){
         var option = new HBox();

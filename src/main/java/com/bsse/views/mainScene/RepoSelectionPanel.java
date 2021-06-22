@@ -1,10 +1,9 @@
 
-package com.bsse.nodes;
+package com.bsse.views.mainScene;
 
 import com.bsse.dataClasses.Constants;
 import java.util.ArrayList;
 import javafx.scene.Node;
-import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
