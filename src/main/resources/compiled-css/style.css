@@ -1,0 +1,25 @@
+.test {
+  -fx-border-color: black;
+}
+
+.border {
+  -fx-border-color: blue;
+}
+
+.border-green {
+  -fx-border-color: green;
+}
+
+.border-red {
+  -fx-border-color: red;
+}
+
+.border-black {
+  -fx-border-color: black;
+}
+
+.cur-point:hover {
+  -fx-cursor: hand;
+}
+
+/*# sourceMappingURL=style.css.map */

@@ -14,7 +14,7 @@ and open the template in the editor.
      -fx-background-color:black;     
 }*/
 
-.border{
+/*.border{
     -fx-border-color: blue;
     
 }
@@ -32,4 +32,4 @@ and open the template in the editor.
 
 .cur-point:hover{
     -fx-cursor: hand;
-}
+}*/
