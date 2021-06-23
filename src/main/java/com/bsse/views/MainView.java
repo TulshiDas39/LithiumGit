@@ -15,15 +15,16 @@ import javafx.scene.Scene;
  * @author ASUS
  */
 public class MainView extends Scene{
+    private String style = MainView.class.getResource("/compiled-css/style.css").toExternalForm();
     public MainView() {        
-		super(getScene(),900, 500);
-                getStylesheets().add(MainView.class.getResource("/css/style.css").toExternalForm());
+        super(getScene(),900, 500);
+        getStylesheets().add(style);
     }
     
     private static Parent getScene() {
-                var rootNode = new RootNode();
-                StaticData.rootNode = rootNode;                
-                return rootNode;
+        var rootNode = new RootNode();
+        StaticData.rootNode = rootNode;                
+        return rootNode;
     }
 	
 }
