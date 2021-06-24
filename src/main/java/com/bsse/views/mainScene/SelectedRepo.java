@@ -31,6 +31,7 @@ public class SelectedRepo extends HBox{
                 
         
         childs.add(new SelectedRepoLeftPanel());
+        childs.add(new SelectedRepoRightPanel());
         
         getChildren().addAll(childs);
         

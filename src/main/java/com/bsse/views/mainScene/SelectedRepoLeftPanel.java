@@ -23,7 +23,7 @@ public class SelectedRepoLeftPanel extends VBox{
         addChildNodes();
     }
     private void addStyles(){
-        getStyleClass().addAll();
+        getStyleClass().addAll("border-green","cur-point");
     }
     private void addChildNodes(){
         var childs = new ArrayList<Node>();
