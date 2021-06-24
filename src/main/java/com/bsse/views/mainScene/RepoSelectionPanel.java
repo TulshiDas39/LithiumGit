@@ -7,6 +7,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import org.kordamp.bootstrapfx.BootstrapFX;
 
 /**
  *
@@ -22,6 +23,7 @@ public class RepoSelectionPanel extends HBox {
 
     private void addStyles() {
         getStyleClass().add("border-red");
+        getStyleClass().add(BootstrapFX.bootstrapFXStylesheet());
     }
 
     private void addChildNodes() {
@@ -34,6 +36,7 @@ public class RepoSelectionPanel extends HBox {
     private Node getRecentRepositoryListPanel() {
         var bBox = new VBox();
         var childNodes = bBox.getChildren();
+        bBox.getStyleClass().add("pt-2");
 
         var text = new Text("Select repository");
         text.getStyleClass().add("");
@@ -43,16 +46,19 @@ public class RepoSelectionPanel extends HBox {
         childNodes.addAll(repoNodes);
 
         ScrollPane scrollPane = new ScrollPane();
+        scrollPane.getStyleClass().add("mt-2");
         scrollPane.setContent(bBox);
 
         return scrollPane;
     }
 
-    private ArrayList<Node> getRepoNodes() {
-        var nodes = new ArrayList<Node>();
+    private VBox getRepoNodes() {
+        var bBox = new VBox();
+        bBox.getStyleClass().add("pt-2");
+        var childs = bBox.getChildren();
         for (var repo : Constants.repos) {
             var node = new VBox();
-
+            node.getStyleClass().addAll("py-1","cur-point");
             var firstRow = new HBox();
             var repoName = new Text(repo.name);
             firstRow.getChildren().add(repoName);
@@ -63,9 +69,9 @@ public class RepoSelectionPanel extends HBox {
             secondRow.getChildren().add(url);
             node.getChildren().add(secondRow);
 
-            nodes.add(node);
+            childs.add(node);
         }
-        return nodes;
+        return bBox;
     }
 
 }
