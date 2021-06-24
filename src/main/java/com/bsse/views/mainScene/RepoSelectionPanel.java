@@ -2,7 +2,6 @@ package com.bsse.views.mainScene;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
-import com.bsse.dataClasses.StaticData;
 import java.util.ArrayList;
 import javafx.event.EventHandler;
 import javafx.scene.Node;

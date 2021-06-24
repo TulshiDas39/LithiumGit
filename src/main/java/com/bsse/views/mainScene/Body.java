@@ -7,7 +7,6 @@ package com.bsse.views.mainScene;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.RepoInfo;
-import com.bsse.dataClasses.StaticData;
 import java.util.ArrayList;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
@@ -56,12 +55,16 @@ public class Body extends VBox{
     }
     
     private void handleRepoSelection(){
+        var childs = getChildren();
         if(selectedRepoInfo == null){
+            childs.remove(this.selectedRepo);
             this.repoSelection = new RepoSelection();
-            this.getChildren().add(this.repoSelection);
+            childs.add(this.repoSelection);
         }
         else{
             this.getChildren().remove(this.repoSelection);
+            this.selectedRepo = new SelectedRepo();
+            this.getChildren().add(this.selectedRepo);
         }
     }
     

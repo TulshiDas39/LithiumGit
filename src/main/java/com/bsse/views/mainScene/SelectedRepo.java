@@ -28,9 +28,9 @@ public class SelectedRepo extends HBox{
     
     private void addChildNode(){
         var childs = new ArrayList<Node>();
+                
         
-        var text = new Text("SelectedRepo");
-        childs.add(text);
+        childs.add(new SelectedRepoLeftPanel());
         
         getChildren().addAll(childs);
         
