@@ -1,9 +1,13 @@
 package com.bsse.views.mainScene;
 
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
+import com.bsse.dataClasses.StaticData;
 import java.util.ArrayList;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -67,6 +71,15 @@ public class RepoSelectionPanel extends HBox {
             var secondRow = new HBox();
             var url = new Text(repo.url);
             secondRow.getChildren().add(url);
+            
+            
+            node.setOnMouseClicked( new EventHandler<MouseEvent>() {
+                @Override
+                public void handle(MouseEvent arg0) {
+                    StateManager.setSelectedRepoInfo(repo);
+                }
+            });
+            
             node.getChildren().add(secondRow);
 
             childs.add(node);

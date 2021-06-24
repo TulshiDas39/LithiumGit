@@ -5,6 +5,7 @@
  */
 package com.bsse.views.mainScene;
 
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Body extends VBox{
 
     public Body() {
         super();
-        selectedRepoInfo = StaticData.selectedRepo;
+        selectedRepoInfo = StateManager.getSelectedRepoInfo();
         addStyle();
         addChildNodes();
     }
@@ -48,8 +49,8 @@ public class Body extends VBox{
     }
     
     public void updateUi(){
-        if(StaticData.selectedRepo != this.selectedRepoInfo){
-            this.selectedRepoInfo = StaticData.selectedRepo;
+        if(StateManager.getSelectedRepoInfo() != this.selectedRepoInfo){
+            this.selectedRepoInfo = StateManager.getSelectedRepoInfo();
             handleRepoSelection();
         }
     }

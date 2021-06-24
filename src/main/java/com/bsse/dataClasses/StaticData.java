@@ -8,7 +8,6 @@ import com.bsse.views.mainScene.TopNav;
 public class StaticData {
     public static RootNode rootNode;
 
-    public static RepoInfo selectedRepo;    
     public static TopNav topNav;
     public static Body body;
 

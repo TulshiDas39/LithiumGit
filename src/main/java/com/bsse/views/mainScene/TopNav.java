@@ -1,9 +1,9 @@
 
 package com.bsse.views.mainScene;
 
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
-import com.bsse.dataClasses.StaticData;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import javafx.scene.Node;
@@ -41,8 +41,8 @@ public class TopNav extends HBox{
     }
     
     public void updateUi(){
-        if(StaticData.selectedRepo != this.selectedRepo){
-            this.selectedRepo = StaticData.selectedRepo;
+        if(StateManager.getSelectedRepoInfo() != this.selectedRepo){
+            this.selectedRepo = StateManager.getSelectedRepoInfo();
             handleRepoSelection();
         }
     }
