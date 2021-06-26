@@ -4,6 +4,8 @@
  * and open the template in the editor.
  */
 package com.bsse.business;
+
+import com.bsse.dataClasses.RepoInfo;
 import java.io.File;
 import java.io.IOException;
 import org.eclipse.jgit.api.Git;
@@ -15,20 +17,20 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
  * @author ASUS
  */
 public class GitManager {
-    //private Git git =new Git();
+    private static Git git ;
     private String s= "";
     
-    public void init(String path){
+    public static void setRepo(RepoInfo repo){
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository;
         try {
-            repository = builder.setGitDir(new File("/my/git/directory")).readEnvironment().findGitDir().build(); // scan environment GIT_* variables.findGitDir()
+            repository = builder.setGitDir(new File(repo.url)).readEnvironment().findGitDir().build(); // scan environment GIT_* variables.findGitDir()
             
         } catch (IOException ex) {
             ex.printStackTrace();
             return;
         }  
-        Git git = new Git(repository);
+        git = new Git(repository);
 
     }
 }
