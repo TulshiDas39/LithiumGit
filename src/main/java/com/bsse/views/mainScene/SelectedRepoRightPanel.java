@@ -15,12 +15,8 @@ public class SelectedRepoRightPanel extends HBox{
         getTree();
     }
     
-    private void getTree(){
-        try {
-            GitManager.setLogs();
-        } catch (GitAPIException ex) {
-            ex.printStackTrace();
-        }
+    private void getTree(){        
+        GitManager.setLogs2();        
     }
     
     private void addStyles(){

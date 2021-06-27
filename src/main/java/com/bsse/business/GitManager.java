@@ -7,6 +7,7 @@ package com.bsse.business;
 
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
+import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +38,47 @@ public class GitManager {
         remotes = new ArrayList<>(remotesTemp);
     }
     
+    public static void setLogs2(){
+        
+        String output = "";
+        try{
+            Runtime rt = Runtime.getRuntime();
+            StringBuilder cmd = new StringBuilder("git log --all --max-count=500 --date=iso ");
+            cmd.append(Constants.logFormat);
+            Process proc = rt.exec(cmd.toString());
+
+            StreamGobler errorGobbler = new 
+                    StreamGobler(proc.getErrorStream(), "ERROR");
+            StreamGobler outputGobbler = new 
+                    StreamGobler(proc.getInputStream(), "OUTPUT");
+
+            errorGobbler.start();
+            outputGobbler.start();
+
+                // any error???
+            int exitVal = proc.waitFor();
+            System.out.println("ExitValue: " + exitVal);   
+
+            output = outputGobbler.getOutput();
+        }catch(Throwable t){
+            t.printStackTrace();
+        }
+        
+        System.out.println("Final output: " + output); 
+    }
+    
     public static void setLogs() throws GitAPIException{
         var logCommand = git.log();
         logCommand.setMaxCount(500);
-        var commits = logCommand.call();
+        var commits = logCommand.call();        
+        var test = git.branchList().call();
+        var lef = test.get(0).getLeaf();        
+        //var notes = git.notesList().call();
+        //var notname = notes.get(0).getName();
+        //var name = lef.getName();
+        //lef.
+        var test3 = 3;
+       
         
         commits.forEach(new Consumer<RevCommit>() {
             @Override
@@ -55,6 +93,10 @@ public class GitManager {
                 commit.author_email = x.getAuthorIdent().getEmailAddress();
                 commit.author_name = x.getAuthorIdent().getName();
                 var time = x.getCommitTime();
+                var tree = x.getTree();
+                var footerLines = x.getFooterLines();
+//                footerLines.get(0).
+                var shortMessage = x.getShortMessage();                
                 var ray = new String(x.getRawBuffer(),x.getEncoding());
                 System.out.println(".accept()");
             }
