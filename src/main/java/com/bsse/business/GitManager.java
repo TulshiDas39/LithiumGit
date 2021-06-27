@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RemoteConfig;
 
@@ -23,16 +24,17 @@ public class GitManager {
     private static Git git ;
     private String s= "";
     private static ArrayList<RemoteConfig> remotes;
+    private static Iterable<RevCommit> logs;
     
     public static void setRemotes() throws GitAPIException{
         var remotesTemp = git.remoteList().call();
         remotes = new ArrayList<>(remotesTemp);
     }
     
-    public static void setLogs(){
+    public static void setLogs() throws GitAPIException{
         var logCommand = git.log();
-        
-        //remotes = new ArrayList<>(remotesTemp);
+        logCommand.setMaxCount(500);
+        logs = logCommand.call();                        
     }
     
     public static void setRepo(RepoInfo repo){
