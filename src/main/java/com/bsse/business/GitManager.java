@@ -55,16 +55,17 @@ public class GitManager {
             errorGobbler.start();
             outputGobbler.start();
 
-                // any error???
             int exitVal = proc.waitFor();
             System.out.println("ExitValue: " + exitVal);   
 
             output = outputGobbler.getOutput();
+            System.out.println("Final output: " + output);
+            logs  = LogParser.Parse(output);
+
         }catch(Throwable t){
             t.printStackTrace();
         }
         
-        System.out.println("Final output: " + output); 
     }
     
     public static void setLogs() throws GitAPIException{
@@ -138,4 +139,5 @@ public class GitManager {
         git = new Git(repository);
 
     }
+
 }
