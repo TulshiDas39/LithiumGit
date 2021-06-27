@@ -12,8 +12,8 @@ import java.util.ArrayList;
  * @author ASUS
  */
 public class BranchDetails {
-  public String name;
-  public ArrayList<CommitInfo> commits;
+  public String name="";
+  public ArrayList<CommitInfo> commits = new ArrayList<>();
   //public LastCommitsByRemotes:ILastCommitByRemote[];
   public boolean noDerivedCommits;
   public CommitInfo parentCommit;

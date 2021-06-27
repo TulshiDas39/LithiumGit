@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 public class Constants {
     public static final ArrayList<RepoInfo> repos = new ArrayList<RepoInfo>(Arrays.asList(
-            new RepoInfo("C:\\Users\\ASUS\\Documents\\workspace\\joylist\\joylist-client", "joylist-client"),
+            new RepoInfo("C:\\Users\\ASUS\\Documents\\workspace\\joylist\\joylist-client\\.git", "joylist-client"),
             new RepoInfo("C:\\Users\\ASUS\\Documents\\workspace\\projects\\audio-academy","audio-academy"),
             new RepoInfo("C:\\Users\\ASUS\\Documents\\workspace\\piston\\P1stonUIRepo","P1stonUIRepo")));
 }
