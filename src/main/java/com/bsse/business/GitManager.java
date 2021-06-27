@@ -8,9 +8,12 @@ package com.bsse.business;
 import com.bsse.dataClasses.RepoInfo;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RemoteConfig;
 
 /**
  *
@@ -19,6 +22,18 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 public class GitManager {
     private static Git git ;
     private String s= "";
+    private static ArrayList<RemoteConfig> remotes;
+    
+    public static void setRemotes() throws GitAPIException{
+        var remotesTemp = git.remoteList().call();
+        remotes = new ArrayList<>(remotesTemp);
+    }
+    
+    public static void setLogs(){
+        var logCommand = git.log();
+        
+        //remotes = new ArrayList<>(remotesTemp);
+    }
     
     public static void setRepo(RepoInfo repo){
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
