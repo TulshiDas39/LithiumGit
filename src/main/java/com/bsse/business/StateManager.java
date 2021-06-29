@@ -24,6 +24,7 @@ public class StateManager {
         StateManager.selectedRepoInfo = selectedRepoInfo;
         StaticData.topNav.updateUi();
         StaticData.body.updateUi();
+        GitManager.setRepo(StateManager.getSelectedRepoInfo());
     }
     
 }

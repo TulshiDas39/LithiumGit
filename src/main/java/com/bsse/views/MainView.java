@@ -6,6 +6,7 @@
 package com.bsse.views;
 
 import com.bsse.business.GitManager;
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.views.mainScene.RootNode;
@@ -22,17 +23,17 @@ public class MainView extends Scene{
     private final String style = MainView.class.getResource("/compiled-css/style.css").toExternalForm();
     public MainView() {        
         super(getScene(),900, 500);
-        initGitManager();
+        //initGitManager();
         addStyleSheets();
     }
     
     private void initGitManager(){
-        GitManager.setRepo(Constants.repos.get(0));
-        try {
-            GitManager.setRemotes();
-        } catch (GitAPIException ex) {
-            ex.printStackTrace();
-        }
+//        GitManager.setRepo(StateManager.getSelectedRepoInfo());
+//        try {
+//            GitManager.setRemotes();
+//        } catch (GitAPIException ex) {
+//            ex.printStackTrace();
+//        }
     }
     
     private void addStyleSheets(){

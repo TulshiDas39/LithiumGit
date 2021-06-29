@@ -11,10 +11,15 @@ import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.function.Consumer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -99,6 +104,17 @@ public class GitManager {
 //                footerLines.get(0).
                 var shortMessage = x.getShortMessage();                
                 var ray = new String(x.getRawBuffer(),x.getEncoding());
+                Map<ObjectId, String> map = null;
+                try {
+                    map = git.nameRev()
+                            .add(ObjectId.fromString(commit.hash)).call();
+                } catch (Exception ex) {
+                    
+                }
+                if(map != null){
+                    var value = map.get(x.getId());
+                }
+                
                 System.out.println(".accept()");
             }
         });
@@ -130,13 +146,25 @@ public class GitManager {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository;
         try {
-            repository = builder.setGitDir(new File(repo.url)).readEnvironment().findGitDir().build(); // scan environment GIT_* variables.findGitDir()
+            repository = builder.setGitDir(new File(Paths.get(repo.url,".git").toString())).readEnvironment().findGitDir().build(); // scan environment GIT_* variables.findGitDir()
             
         } catch (IOException ex) {
             ex.printStackTrace();
             return;
         }  
         git = new Git(repository);
+        
+        try {
+            setRemotes();
+        } catch (GitAPIException ex) {
+            ex.printStackTrace();
+        }
+        
+        try {
+            setLogs();
+        } catch (GitAPIException ex) {
+            ex.printStackTrace();
+        }
 
     }
 
