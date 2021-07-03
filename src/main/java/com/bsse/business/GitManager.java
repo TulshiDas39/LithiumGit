@@ -262,7 +262,12 @@ public class GitManager {
                     }
                 }
             }                        
-        }        
+        }
+
+        currentCommit.ownerBranch.commits.add(currentCommit);
+        if(!StringUtil.isNullOrEmpty(currentCommit.ownerBranch.name) ) {        
+          currentCommit.previousCommit = previousCommit;
+        }
 
 
         }
