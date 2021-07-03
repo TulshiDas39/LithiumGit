@@ -6,8 +6,10 @@
 package com.bsse.business;
 
 import com.bsse.dataClasses.BranchDetails;
+import com.bsse.dataClasses.BranchRemote;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
+import com.bsse.dataClasses.LastReference;
 import com.bsse.dataClasses.RepoInfo;
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -31,11 +34,15 @@ import org.eclipse.jgit.transport.RemoteConfig;
 public class GitManager {
     private static Git git ;
     private String s= "";
-    private static ArrayList<RemoteConfig> remotes;
+    private static ArrayList<RemoteConfig> remotes;    
+    private static ArrayList<BranchDetails> branchDetails;
     //private static Iterable<RevCommit> logs;    
     private static CommitInfo[] logs;
+    private static ArrayList<BranchDetails> branchTree;
 
     private static ArrayList<BranchDetails> tree = new ArrayList<>();
+    private static ArrayList<LastReference> lastReferencesByBranch ;
+    
     
     public static void setRemotes() throws GitAPIException{
         var remotesTemp = git.remoteList().call();
@@ -134,7 +141,7 @@ public class GitManager {
         });
     }
     
-    private static void createNewBranch(CommitInfo parentCommit){
+//    private static void createNewBranch(CommitInfo parentCommit){
 //        ownerBranch = {
 //          commits:[],
 //          name:"",
@@ -145,17 +152,131 @@ public class GitManager {
 //        if(!parentCommit)this.repoInfo.branchTree.push(ownerBranch);
 //        this.repoInfo.branchDetails.push(ownerBranch);
 
-        var branch = new BranchDetails();
-        branch.parentCommit = parentCommit;
-        if(parentCommit == null){
-            tree.add(branch);
-        }
-    }
+//        var branch = new BranchDetails();
+//        branch.parentCommit = parentCommit;
+//        if(parentCommit == null){
+//            tree.add(branch);
+//        }
+//    }
+    
+//    private static BranchDetails createNewBranch(CommitInfo parentCommit){
+//        ownerBranch = {
+//          commits:[],
+//          name:"",
+//          parentCommit:parentCommit,
+//          lastCommitsByRemotes:[],
+//          noDerivedCommits:false,
+//        }
+//        if(!parentCommit)this.repoInfo.branchTree.push(ownerBranch);
+//        //set parent commit of new branch
+//        this.repoInfo.branchDetails.push(ownerBranch);     
+//    }
     
     private static void createTree(){
         //final Array commits = this.repoInfo.allCommits.slice();
-        String[] arr;
-        //arr = new String[5];
+        CommitInfo[] commits = new CommitInfo[logs.length];
+        System.arraycopy(logs, 0, commits, 0, logs.length);
+        branchTree = new ArrayList<>();
+        BranchDetails ownerBranch ;
+        
+        Function<CommitInfo,BranchDetails> createNewBranch =  (CommitInfo parentCommit) -> {
+          var newOwnerBranch = new BranchDetails();
+          newOwnerBranch.commits = new ArrayList<>();
+          newOwnerBranch.name = "";
+          newOwnerBranch.parentCommit = parentCommit;
+          newOwnerBranch.noDerivedCommits = false;
+          if(parentCommit != null) branchTree.add(newOwnerBranch);
+          branchDetails.add(newOwnerBranch);
+          return newOwnerBranch;
+        };
+        
+        for(var i = commits.length-1; i>=0; i--){
+            final var currentCommit = commits[i];
+            setReference(currentCommit);
+            currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);
+            if(currentCommit.referedBranches != null){
+                ArrayList<BranchRemote> branchRemoteList = new ArrayList<>();
+                for (String referedBranche : currentCommit.referedBranches) {                    
+                    branchRemoteList.add(getBranchRemote(referedBranche));                    
+                }
+                currentCommit.branchNameWithRemotes = branchRemoteList.toArray(new BranchRemote[0]);                
+            }
+            CommitInfo previousCommit = null;
+            for (CommitInfo commit : commits) {
+              if(commit.hash == currentCommit.parentHashes.get(0)){
+                  previousCommit = commit;
+                  break;
+              }
+            }
+            
+            if(previousCommit != null){
+                if(previousCommit.nextCommit != null){            
+                  ownerBranch = createNewBranch.apply(previousCommit);            
+                }else{              
+                    ownerBranch=previousCommit.ownerBranch;              
+                }                  
+            }
+            else{
+                ownerBranch = createNewBranch.apply(null);
+            }
+            
+            currentCommit.ownerBranch = ownerBranch;
+
+        if(currentCommit.branchNameWithRemotes != null && currentCommit.branchNameWithRemotes.length != 0){
+            //check parent branch is same
+            BranchDetails parentBranch=null;
+            if( currentCommit.ownerBranch!= null && currentCommit.ownerBranch.parentCommit != null){
+                 parentBranch = currentCommit.ownerBranch.parentCommit.ownerBranch;
+            }
+            if(parentBranch != null){
+                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;
+                if(branchNameWithRemotes != null){
+                    var inParent = false;
+                    for (BranchRemote branchNameWithRemote : branchNameWithRemotes) {
+                        if(branchNameWithRemote.branchName == parentBranch.name) {
+                            inParent = true;
+                            break;
+                        }
+                    }
+                    if(inParent){
+                        parentBranch.commits.addAll(ownerBranch.commits);
+                        for (CommitInfo commit : ownerBranch.commits) {
+                            commit.ownerBranch = parentBranch;
+                        }
+                        currentCommit.ownerBranch = parentBranch;
+                    }
+                    else{
+                        BranchRemote remoteBranch = null;
+                        if(currentCommit.branchNameWithRemotes != null){
+                            for (BranchRemote branchNameWithRemote : currentCommit.branchNameWithRemotes) {
+                                if(!StringUtil.isNullOrEmpty(branchNameWithRemote.remote)){
+                                    remoteBranch = branchNameWithRemote;
+                                }
+                            }
+                        }                        
+                        if(remoteBranch != null){
+                            currentCommit.ownerBranch.name = remoteBranch.branchName;
+                        }
+                        else {
+                            currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
+                        }
+                        
+                        for (CommitInfo commit : currentCommit.ownerBranch.commits) {
+                            commit.ownerBranch = ownerBranch;
+                        }
+                                                
+                        final var parentCommitOfOwnerBranch = ownerBranch.parentCommit;
+                        if(parentCommitOfOwnerBranch != null) {
+                          parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);
+                        }
+                    }
+                }
+            }                        
+        }        
+
+
+        }
+        
     }
     
     public static void setRepo(RepoInfo repo){
@@ -184,6 +305,45 @@ public class GitManager {
         
         createTree();
 
+    }
+
+    private static void setReference(CommitInfo commit) {
+        if(commit.message.contains("branch ") ){
+            var reference = new LastReference();
+            reference.dateTime = commit.date;
+            reference.message = commit.message;
+            lastReferencesByBranch.add(reference);
+        }
+    }
+
+    private static String[] getBranchFromReference(String commitRef) {
+        final var splits = commitRef.split(",");
+        if(splits.length == 0) return null;
+        final ArrayList<String> branches = new ArrayList<>();
+        for (String split : splits) {
+          split = split.trim();
+          if(split.startsWith("tag:")) break;
+          branches.add(split);  
+        }                
+        return branches.toArray(new String[0]);
+    }
+    
+    private static BranchRemote getBranchRemote(String branchNameStr){
+      var branchName = "";
+      var remote = "";
+      var splits = branchNameStr.split("/");
+      if (splits.length > 1) {
+        branchName = splits[1];
+        remote = splits[0];
+      }
+      else {
+        branchName = branchNameStr;
+      }
+      final BranchRemote branchRemote= new BranchRemote();
+      branchRemote.branchName = branchName;
+      branchRemote.remote = remote;
+      
+      return branchRemote;
     }
 
 }

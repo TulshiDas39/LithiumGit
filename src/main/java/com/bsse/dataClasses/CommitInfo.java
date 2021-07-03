@@ -17,8 +17,8 @@ public class CommitInfo{
   public ArrayList<BranchDetails> branchesFromThis ;
   public ArrayList<String> parentHashes= new ArrayList<>();  
   public BranchDetails ownerBranch;
-  public String referedBranches;
-  public BranchRemote branchNameWithRemotes;
+  public String[] referedBranches;
+  public BranchRemote[] branchNameWithRemotes;
   public CommitInfo nextCommit;
   public CommitInfo previousCommit ;
   public String date;
