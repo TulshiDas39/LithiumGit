@@ -77,7 +77,7 @@ public class GitManager {
             var error = errorGobbler.getOutput();
             
             System.out.println("Final output: " + output.size());
-            //logs  = LogParser.Parse(output.);
+            if(output.size()> 0) logs  = LogParser.Parse(output);
             System.out.println("com.bsse.business.GitManager.setLogs2()");
 
         }catch(Throwable t){
