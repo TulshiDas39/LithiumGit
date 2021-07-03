@@ -204,12 +204,8 @@ public class GitManager {
                 }
                 currentCommit.branchNameWithRemotes = branchRemoteList.toArray(new BranchRemote[0]);                
             }
-            CommitInfo previousCommit = ArrayUtil.find(commits, new Function<CommitInfo, Boolean>() {
-                @Override
-                public Boolean apply(CommitInfo commit) {
-                    return commit.hash.equals(currentCommit.parentHashes.get(0));
-                }
-            });
+            
+            CommitInfo previousCommit = ArrayUtil.find(commits, commit -> commit.hash.equals(currentCommit.parentHashes.get(0)));
             
             if(previousCommit != null){
                 if(previousCommit.nextCommit != null){            
@@ -230,11 +226,8 @@ public class GitManager {
             if(parentBranch != null){
                 var branchNameWithRemotes = currentCommit.branchNameWithRemotes;
                 if(branchNameWithRemotes != null){
-                    var inParent = ArrayUtil.any(branchNameWithRemotes,new Function<BranchRemote,Boolean>(){
-                        @Override
-                        public Boolean apply(BranchRemote branchNameWithRemote) {
-                            return branchNameWithRemote.branchName.equals(parentBranch.name);
-                        }
+                    var inParent = ArrayUtil.any(branchNameWithRemotes,(branchNameWithRemote) -> {                        
+                        return branchNameWithRemote.branchName.equals(parentBranch.name);                        
                     });                    
                     if(inParent){
                         parentBranch.commits.addAll(ownerBranch.commits);
@@ -245,16 +238,8 @@ public class GitManager {
                     }
                     else{
                     	
-//                    	BranchRemote remoteBranch1 = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> {
-//                             return !StringUtil.isNullOrEmpty(arg0.remote);
-//                        });
-                    	
-                        BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, new Function<BranchRemote, Boolean>() {
-                            @Override
-                                public Boolean apply(BranchRemote arg0) {
-                                    return !StringUtil.isNullOrEmpty(arg0.remote);
-                                }
-                            });                        
+                    	BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> !StringUtil.isNullOrEmpty(arg0.remote));
+                    	                                 	
                         if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
                         else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
                         
