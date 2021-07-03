@@ -11,11 +11,14 @@ import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.LastReference;
 import com.bsse.dataClasses.RepoInfo;
+import com.bsse.utils.ArrayUtil;
+import com.bsse.utils.NullUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -194,20 +197,19 @@ public class GitManager {
             final var currentCommit = commits[i];
             setReference(currentCommit);
             currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);
-            if(currentCommit.referedBranches != null){
+            if(!ArrayUtil.IsNullOrEmpty(currentCommit.referedBranches)){
                 ArrayList<BranchRemote> branchRemoteList = new ArrayList<>();
                 for (String referedBranche : currentCommit.referedBranches) {                    
                     branchRemoteList.add(getBranchRemote(referedBranche));                    
                 }
                 currentCommit.branchNameWithRemotes = branchRemoteList.toArray(new BranchRemote[0]);                
             }
-            CommitInfo previousCommit = null;
-            for (CommitInfo commit : commits) {
-              if(commit.hash == currentCommit.parentHashes.get(0)){
-                  previousCommit = commit;
-                  break;
-              }
-            }
+            CommitInfo previousCommit = ArrayUtil.find(commits, new Function<CommitInfo, Boolean>() {
+                @Override
+                public Boolean apply(CommitInfo commit) {
+                    return commit.hash.equals(currentCommit.parentHashes.get(0));
+                }
+            });
             
             if(previousCommit != null){
                 if(previousCommit.nextCommit != null){            
@@ -222,22 +224,18 @@ public class GitManager {
             
             currentCommit.ownerBranch = ownerBranch;
 
-        if(currentCommit.branchNameWithRemotes != null && currentCommit.branchNameWithRemotes.length != 0){
+        if(!ArrayUtil.IsNullOrEmpty(currentCommit.branchNameWithRemotes)){
             //check parent branch is same
-            BranchDetails parentBranch=null;
-            if( currentCommit.ownerBranch!= null && currentCommit.ownerBranch.parentCommit != null){
-                 parentBranch = currentCommit.ownerBranch.parentCommit.ownerBranch;
-            }
+            BranchDetails parentBranch = NullUtil.withSafe(()-> currentCommit.ownerBranch.parentCommit.ownerBranch);            
             if(parentBranch != null){
                 var branchNameWithRemotes = currentCommit.branchNameWithRemotes;
                 if(branchNameWithRemotes != null){
-                    var inParent = false;
-                    for (BranchRemote branchNameWithRemote : branchNameWithRemotes) {
-                        if(branchNameWithRemote.branchName == parentBranch.name) {
-                            inParent = true;
-                            break;
+                    var inParent = ArrayUtil.any(branchNameWithRemotes,new Function<BranchRemote,Boolean>(){
+                        @Override
+                        public Boolean apply(BranchRemote branchNameWithRemote) {
+                            return branchNameWithRemote.branchName.equals(parentBranch.name);
                         }
-                    }
+                    });                    
                     if(inParent){
                         parentBranch.commits.addAll(ownerBranch.commits);
                         for (CommitInfo commit : ownerBranch.commits) {
@@ -246,29 +244,21 @@ public class GitManager {
                         currentCommit.ownerBranch = parentBranch;
                     }
                     else{
-                        BranchRemote remoteBranch = null;
-                        if(currentCommit.branchNameWithRemotes != null){
-                            for (BranchRemote branchNameWithRemote : currentCommit.branchNameWithRemotes) {
-                                if(!StringUtil.isNullOrEmpty(branchNameWithRemote.remote)){
-                                    remoteBranch = branchNameWithRemote;
+                        BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, new Function<BranchRemote, Boolean>() {
+                            @Override
+                                public Boolean apply(BranchRemote arg0) {
+                                    return !StringUtil.isNullOrEmpty(arg0.remote);
                                 }
-                            }
-                        }                        
-                        if(remoteBranch != null){
-                            currentCommit.ownerBranch.name = remoteBranch.branchName;
-                        }
-                        else {
-                            currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
-                        }
+                            });                        
+                        if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
+                        else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
                         
                         for (CommitInfo commit : currentCommit.ownerBranch.commits) {
                             commit.ownerBranch = ownerBranch;
                         }
                                                 
                         final var parentCommitOfOwnerBranch = ownerBranch.parentCommit;
-                        if(parentCommitOfOwnerBranch != null) {
-                          parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);
-                        }
+                        if(parentCommitOfOwnerBranch != null) parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);                        
                     }
                 }
             }                        

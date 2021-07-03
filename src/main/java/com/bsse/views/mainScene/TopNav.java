@@ -82,11 +82,15 @@ public class TopNav extends HBox{
     private Node getRepoDropdown(){
         var repos = new ComboBox<String>();
         var options = new ArrayList<String>();
-        Constants.repos.forEach(new Consumer<RepoInfo>() {
-            @Override            
-            public void accept(RepoInfo repo) {
-                options.add(repo.name);
-            }
+//        Constants.repos.forEach(new Consumer<RepoInfo>() {
+//            @Override            
+//            public void accept(RepoInfo repo) {
+//                options.add(repo.name);
+//            }
+//        });
+
+        Constants.repos.forEach((RepoInfo repo) -> {            
+                options.add(repo.name);            
         });
         
         repos.getItems().addAll(options);
