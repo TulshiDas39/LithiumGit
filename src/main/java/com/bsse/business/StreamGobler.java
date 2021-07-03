@@ -46,9 +46,9 @@ public class StreamGobler{
             ioe.printStackTrace();  
         }
     }
-    public ArrayList<String> getOutput()
+    public String[] getOutput()
     {
-        return output;
+        return output.toArray(new String[0]);
     }
 
 }

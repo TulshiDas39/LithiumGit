@@ -33,7 +33,7 @@ public class GitManager {
     private String s= "";
     private static ArrayList<RemoteConfig> remotes;
     //private static Iterable<RevCommit> logs;    
-    private static ArrayList<CommitInfo> logs;
+    private static CommitInfo[] logs;
 
     private static ArrayList<BranchDetails> tree = new ArrayList<>();
     
@@ -44,7 +44,7 @@ public class GitManager {
     
     public static void setLogs2(){
         
-        ArrayList<String> output ;
+        String[] output ;
         try{
             Runtime rt = Runtime.getRuntime();
             StringBuilder cmd = new StringBuilder("git log --all --max-count=500 --date=iso ");
@@ -76,8 +76,9 @@ public class GitManager {
             output = outputGobbler.getOutput();
             var error = errorGobbler.getOutput();
             
-            System.out.println("Final output: " + output.size());
-            if(output.size()> 0) logs  = LogParser.Parse(output);
+            System.out.println("Final output: " + output.length);
+            if(output.length> 0) logs  = LogParser.Parse(output);
+            else System.out.println("error:"+error);
             System.out.println("com.bsse.business.GitManager.setLogs2()");
 
         }catch(Throwable t){
@@ -151,8 +152,10 @@ public class GitManager {
         }
     }
     
-    public static void createTree(){
-        
+    private static void createTree(){
+        //final Array commits = this.repoInfo.allCommits.slice();
+        String[] arr;
+        //arr = new String[5];
     }
     
     public static void setRepo(RepoInfo repo){
@@ -178,6 +181,8 @@ public class GitManager {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
+        createTree();
 
     }
 

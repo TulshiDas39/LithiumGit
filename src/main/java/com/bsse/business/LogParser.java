@@ -44,12 +44,12 @@ public class LogParser {
         }
     }
     
-    private static CommitInfo getCommit(ArrayList<String> lines, IndexObj indexObj){
+    private static CommitInfo getCommit(String[] lines, IndexObj indexObj){
         var commit = new CommitInfo();
         while(true){
-            if(indexObj.index >= lines.size()) return commit;
+            if(indexObj.index >= lines.length) return commit;
             //console.log(indexObj.index);            
-            var line = lines.get(indexObj.index);
+            var line = lines[indexObj.index];
             //console.log(line);
             if(line == null) {
                 indexObj.index++;
@@ -65,17 +65,17 @@ public class LogParser {
         }
     }
     
-    public static ArrayList<CommitInfo> Parse(ArrayList<String> lines){
+    public static CommitInfo[] Parse(String[] lines){
         //var lines =  str.split("\n");
         var commits = new ArrayList<CommitInfo>();
         var indexObj = new IndexObj();
 
-        while(indexObj.index < lines.size()){
+        while(indexObj.index < lines.length){
             var commit = getCommit(lines,indexObj);
             commits.add(commit);
             indexObj.index++;
         }
-        return commits;
+        return commits.toArray(new CommitInfo[0]);
     }
 }
 
