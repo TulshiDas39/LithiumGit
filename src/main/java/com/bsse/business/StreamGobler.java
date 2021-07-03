@@ -9,15 +9,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
  * @author ASUS
  */
-public class StreamGobler extends Thread {
+public class StreamGobler{
     InputStream is;
     String type;
-    StringBuffer output = new StringBuffer();
+    ArrayList<String> output = new ArrayList<String>();
 
     StreamGobler(InputStream is, String type)
     {
@@ -25,24 +28,27 @@ public class StreamGobler extends Thread {
         this.type = type;
     }
 
-    public void run()
+    public void read()
     {
         try
         {
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
             String line=null;
-            while ( (line = br.readLine()) != null)
+            while ( (line = br.readLine()) != null){
                 System.out.println(type + ">" + line);
-                output.append(line+"\r\n");
-            } catch (IOException ioe)
-              {
-                ioe.printStackTrace();  
-              }
+                output.add(line);
+                System.out.println("size:"+output.size());
+            }                
+        }
+        catch (IOException ioe)
+        {
+            ioe.printStackTrace();  
+        }
     }
-    public String getOutput()
+    public ArrayList<String> getOutput()
     {
-        return this.output.toString();
+        return output;
     }
 
 }

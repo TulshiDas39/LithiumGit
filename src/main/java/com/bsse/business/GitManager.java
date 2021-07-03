@@ -13,12 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -45,27 +44,41 @@ public class GitManager {
     
     public static void setLogs2(){
         
-        String output = "";
+        ArrayList<String> output ;
         try{
             Runtime rt = Runtime.getRuntime();
             StringBuilder cmd = new StringBuilder("git log --all --max-count=500 --date=iso ");
             cmd.append(Constants.logFormat);
-            Process proc = rt.exec(cmd.toString());
-
+//            var url = "C:/Users/ASUS/Documents/workspace/joylist/joylist-client";
+            var url = StateManager.getSelectedRepoInfo().url;
+            //cmd.append(" -o ").append(StateManager.getSelectedRepoInfo().url);
+            Process proc = rt.exec(cmd.toString(),null, new File(url));
+//            Process proc = new ProcessBuilder(cmd.toString())
+//                .directory(new File(StateManager.getSelectedRepoInfo().url))
+//                .start();
+            
             StreamGobler errorGobbler = new 
                     StreamGobler(proc.getErrorStream(), "ERROR");
+//           
             StreamGobler outputGobbler = new 
                     StreamGobler(proc.getInputStream(), "OUTPUT");
 
-            errorGobbler.start();
-            outputGobbler.start();
-
+            outputGobbler.read();
+            errorGobbler.read();
+            
+            //errorGobbler.start();
             int exitVal = proc.waitFor();
+            
+            //outputGobbler.join();
+            //errorGobbler.join();
             System.out.println("ExitValue: " + exitVal);   
 
             output = outputGobbler.getOutput();
-            System.out.println("Final output: " + output);
-            logs  = LogParser.Parse(output);
+            var error = errorGobbler.getOutput();
+            
+            System.out.println("Final output: " + output.size());
+            //logs  = LogParser.Parse(output.);
+            System.out.println("com.bsse.business.GitManager.setLogs2()");
 
         }catch(Throwable t){
             t.printStackTrace();
@@ -161,8 +174,8 @@ public class GitManager {
         }
         
         try {
-            setLogs();
-        } catch (GitAPIException ex) {
+            setLogs2();
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
