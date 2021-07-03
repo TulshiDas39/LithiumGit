@@ -244,6 +244,11 @@ public class GitManager {
                         currentCommit.ownerBranch = parentBranch;
                     }
                     else{
+                    	
+//                    	BranchRemote remoteBranch1 = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> {
+//                             return !StringUtil.isNullOrEmpty(arg0.remote);
+//                        });
+                    	
                         BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, new Function<BranchRemote, Boolean>() {
                             @Override
                                 public Boolean apply(BranchRemote arg0) {
