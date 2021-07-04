@@ -49,9 +49,19 @@ public class ArrayUtil {
         return false;
     }
     
-    public static <R,T> ArrayList<R> map(List<T> array,Function<T,R> lambda){
-    	if(array == null) return null;
+    public static <R,T> ArrayList<R> map(T[] array,Function<T,R> lambda){
+    	
     	ArrayList<R> newList = new ArrayList<>();
+    	if(array == null) return newList;    	
+    	for(var item:array) {
+    		newList.add(lambda.apply(item));
+    	}
+    	return newList;    	
+    }
+    
+    public static <R,T> ArrayList<R> map(List<T> array,Function<T,R> lambda){
+    	ArrayList<R> newList = new ArrayList<>();
+    	if(array == null) return newList;    	
     	for(var item:array) {
     		newList.add(lambda.apply(item));
     	}

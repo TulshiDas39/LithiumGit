@@ -14,11 +14,11 @@ import java.util.ArrayList;
 public class CommitInfo{
   public String hash;
   public String avrebHash;
-  public ArrayList<BranchDetails> branchesFromThis ;
+  public ArrayList<BranchDetails> branchesFromThis = new ArrayList<BranchDetails>() ;
   public ArrayList<String> parentHashes= new ArrayList<>();  
   public BranchDetails ownerBranch;
-  public String[] referedBranches;
-  public BranchRemote[] branchNameWithRemotes;
+  public String[] referedBranches = new String[0];
+  public BranchRemote[] branchNameWithRemotes= new BranchRemote[0];
   public CommitInfo nextCommit;
   public CommitInfo previousCommit ;
   public String date;
