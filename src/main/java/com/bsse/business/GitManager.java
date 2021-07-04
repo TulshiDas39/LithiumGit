@@ -165,7 +165,7 @@ public class GitManager {
             final var currentCommit = commits[i];
             setReference(currentCommit,lastReferencesByBranch);
             currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);
-            if(!ArrayUtil.IsNullOrEmpty(currentCommit.referedBranches)){
+            if(currentCommit.referedBranches.length != 0 ){
                 ArrayList<BranchRemote> branchRemoteList = new ArrayList<>();
                 for (String referedBranche : currentCommit.referedBranches) {                    
                     branchRemoteList.add(getBranchRemote(referedBranche));                    
@@ -272,15 +272,17 @@ public class GitManager {
     }
 
     private static String[] getBranchFromReference(String commitRef) {
+    	final ArrayList<String> branches = new ArrayList<>();
     	if(commitRef.startsWith(headPrefix)) commitRef = commitRef.substring(headPrefix.length());
-        final var splits = commitRef.split(",");
-        if(splits.length == 0) return null;
-        final ArrayList<String> branches = new ArrayList<>();
-        for (String split : splits) {
-          split = split.trim();
-          if(split.startsWith("tag:")) continue;
-          branches.add(split);  
-        }                
+    	if(!StringUtil.isNullOrEmpty(commitRef)) {
+    		final var splits = commitRef.split(",");        
+            for (String split : splits) {
+              split = split.trim();
+              if(split.startsWith("tag:")) continue;
+              branches.add(split);  
+            }
+    	}
+                        
         return branches.toArray(new String[0]);
     }
     
