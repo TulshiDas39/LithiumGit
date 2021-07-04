@@ -5,6 +5,21 @@
  */
 package com.bsse.business;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.BranchRemote;
 import com.bsse.dataClasses.CommitInfo;
@@ -15,22 +30,6 @@ import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.utils.ArrayUtil;
 import com.bsse.utils.NullUtil;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.RemoteConfig;
 
 /**
  *
@@ -38,8 +37,9 @@ import org.eclipse.jgit.transport.RemoteConfig;
  */
 public class GitManager {
     private static Git git ;
-    private static ArrayList<BranchDetails> branchDetails;        
-    private static ArrayList<LastReference> lastReferencesByBranch ;
+//    private static ArrayList<BranchDetails> branchDetails;        
+    //private static ArrayList<LastReference> lastReferencesByBranch ;
+    private static final String headPrefix = "HEAD -> ";
     
     private static RepositoryInfo repositoryInfo = new RepositoryInfo();
     
@@ -147,6 +147,8 @@ public class GitManager {
         System.arraycopy(repositoryInfo.allCommits, 0, commits, 0, repositoryInfo.allCommits.length);
         var branchTree = new ArrayList<BranchDetails>();
         BranchDetails ownerBranch ;
+        ArrayList<BranchDetails> branchDetails = new ArrayList<>();
+        ArrayList<LastReference> lastReferencesByBranch = new ArrayList<LastReference>();
         
         Function<CommitInfo,BranchDetails> createNewBranch =  (CommitInfo parentCommit) -> {
           var newOwnerBranch = new BranchDetails();
@@ -154,14 +156,14 @@ public class GitManager {
           newOwnerBranch.name = "";
           newOwnerBranch.parentCommit = parentCommit;
           newOwnerBranch.noDerivedCommits = false;
-          if(parentCommit != null) branchTree.add(newOwnerBranch);
+          if(parentCommit == null) branchTree.add(newOwnerBranch);
           branchDetails.add(newOwnerBranch);
           return newOwnerBranch;
         };
         
         for(var i = commits.length-1; i>=0; i--){
             final var currentCommit = commits[i];
-            setReference(currentCommit);
+            setReference(currentCommit,lastReferencesByBranch);
             currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);
             if(!ArrayUtil.IsNullOrEmpty(currentCommit.referedBranches)){
                 ArrayList<BranchRemote> branchRemoteList = new ArrayList<>();
@@ -171,7 +173,7 @@ public class GitManager {
                 currentCommit.branchNameWithRemotes = branchRemoteList.toArray(new BranchRemote[0]);                
             }
             
-            CommitInfo previousCommit = ArrayUtil.find(commits, commit -> commit.hash.equals(currentCommit.parentHashes.get(0)));
+            CommitInfo previousCommit = ArrayUtil.find(commits, commit -> commit.avrebHash.equals(currentCommit.parentHashes.get(0)));
             
             if(previousCommit != null){
                 if(previousCommit.nextCommit != null){            
@@ -229,7 +231,7 @@ public class GitManager {
         }
         
         repositoryInfo.branchTree = branchTree.toArray(new BranchDetails[0]);
-        
+        repositoryInfo.resolvedBranches = branchDetails.toArray(new BranchDetails[0]);        
     }
     
     public static void setRepo(RepoInfo repo){
@@ -260,7 +262,7 @@ public class GitManager {
 
     }
 
-    private static void setReference(CommitInfo commit) {
+    private static void setReference(CommitInfo commit,ArrayList<LastReference> lastReferencesByBranch ) {
         if(commit.message.contains("branch ") ){
             var reference = new LastReference();
             reference.dateTime = commit.date;
@@ -270,12 +272,13 @@ public class GitManager {
     }
 
     private static String[] getBranchFromReference(String commitRef) {
+    	if(commitRef.startsWith(headPrefix)) commitRef = commitRef.substring(headPrefix.length());
         final var splits = commitRef.split(",");
         if(splits.length == 0) return null;
         final ArrayList<String> branches = new ArrayList<>();
         for (String split : splits) {
           split = split.trim();
-          if(split.startsWith("tag:")) break;
+          if(split.startsWith("tag:")) continue;
           branches.add(split);  
         }                
         return branches.toArray(new String[0]);
