@@ -10,7 +10,9 @@ import com.bsse.dataClasses.BranchRemote;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.LastReference;
+import com.bsse.dataClasses.RemoteInfo;
 import com.bsse.dataClasses.RepoInfo;
+import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.utils.ArrayUtil;
 import com.bsse.utils.NullUtil;
 import java.io.File;
@@ -36,20 +38,22 @@ import org.eclipse.jgit.transport.RemoteConfig;
  */
 public class GitManager {
     private static Git git ;
-    private String s= "";
-    private static ArrayList<RemoteConfig> remotes;    
-    private static ArrayList<BranchDetails> branchDetails;
-    //private static Iterable<RevCommit> logs;    
-    private static CommitInfo[] logs;
-    private static ArrayList<BranchDetails> branchTree;
-
-    private static ArrayList<BranchDetails> tree = new ArrayList<>();
+    private static ArrayList<BranchDetails> branchDetails;        
     private static ArrayList<LastReference> lastReferencesByBranch ;
+    
+    private static RepositoryInfo repositoryInfo = new RepositoryInfo();
     
     
     public static void setRemotes() throws GitAPIException{
         var remotesTemp = git.remoteList().call();
-        remotes = new ArrayList<>(remotesTemp);
+        
+        repositoryInfo.remotes = ArrayUtil.map(remotesTemp, (x)-> {
+        	var remoteInfo = new RemoteInfo();
+        	remoteInfo.name = x.getName();
+        	remoteInfo.url = x.getURIs().get(0).getHost();
+        	return remoteInfo;
+        }).toArray(new RemoteInfo[0]);
+        
     }
     
     public static void setLogs2(){
@@ -59,17 +63,11 @@ public class GitManager {
             Runtime rt = Runtime.getRuntime();
             StringBuilder cmd = new StringBuilder("git log --all --max-count=500 --date=iso ");
             cmd.append(Constants.logFormat);
-//            var url = "C:/Users/ASUS/Documents/workspace/joylist/joylist-client";
             var url = StateManager.getSelectedRepoInfo().url;
-            //cmd.append(" -o ").append(StateManager.getSelectedRepoInfo().url);
             Process proc = rt.exec(cmd.toString(),null, new File(url));
-//            Process proc = new ProcessBuilder(cmd.toString())
-//                .directory(new File(StateManager.getSelectedRepoInfo().url))
-//                .start();
             
             StreamGobler errorGobbler = new 
                     StreamGobler(proc.getErrorStream(), "ERROR");
-//           
             StreamGobler outputGobbler = new 
                     StreamGobler(proc.getInputStream(), "OUTPUT");
 
@@ -79,15 +77,15 @@ public class GitManager {
             //errorGobbler.start();
             int exitVal = proc.waitFor();
             
-            //outputGobbler.join();
-            //errorGobbler.join();
             System.out.println("ExitValue: " + exitVal);   
 
             output = outputGobbler.getOutput();
             var error = errorGobbler.getOutput();
             
             System.out.println("Final output: " + output.length);
-            if(output.length> 0) logs  = LogParser.Parse(output);
+            if(output.length> 0) {            	
+            	repositoryInfo.allCommits = LogParser.Parse(output); 
+            }
             else System.out.println("error:"+error);
             System.out.println("com.bsse.business.GitManager.setLogs2()");
 
@@ -142,44 +140,12 @@ public class GitManager {
                 System.out.println(".accept()");
             }
         });
-    }
+    }    
     
-//    private static void createNewBranch(CommitInfo parentCommit){
-//        ownerBranch = {
-//          commits:[],
-//          name:"",
-//          parentCommit:parentCommit,
-//          lastCommitsByRemotes:[],
-//          noDerivedCommits:false,
-//        }
-//        if(!parentCommit)this.repoInfo.branchTree.push(ownerBranch);
-//        this.repoInfo.branchDetails.push(ownerBranch);
-
-//        var branch = new BranchDetails();
-//        branch.parentCommit = parentCommit;
-//        if(parentCommit == null){
-//            tree.add(branch);
-//        }
-//    }
-    
-//    private static BranchDetails createNewBranch(CommitInfo parentCommit){
-//        ownerBranch = {
-//          commits:[],
-//          name:"",
-//          parentCommit:parentCommit,
-//          lastCommitsByRemotes:[],
-//          noDerivedCommits:false,
-//        }
-//        if(!parentCommit)this.repoInfo.branchTree.push(ownerBranch);
-//        //set parent commit of new branch
-//        this.repoInfo.branchDetails.push(ownerBranch);     
-//    }
-    
-    private static void createTree(){
-        //final Array commits = this.repoInfo.allCommits.slice();
-        CommitInfo[] commits = new CommitInfo[logs.length];
-        System.arraycopy(logs, 0, commits, 0, logs.length);
-        branchTree = new ArrayList<>();
+    private static void createTree(){        
+        CommitInfo[] commits = new CommitInfo[repositoryInfo.allCommits.length];
+        System.arraycopy(repositoryInfo.allCommits, 0, commits, 0, repositoryInfo.allCommits.length);
+        var branchTree = new ArrayList<BranchDetails>();
         BranchDetails ownerBranch ;
         
         Function<CommitInfo,BranchDetails> createNewBranch =  (CommitInfo parentCommit) -> {
@@ -209,7 +175,7 @@ public class GitManager {
             
             if(previousCommit != null){
                 if(previousCommit.nextCommit != null){            
-                  ownerBranch = createNewBranch.apply(previousCommit);            
+                  ownerBranch = createNewBranch.apply(previousCommit);
                 }else{              
                     ownerBranch=previousCommit.ownerBranch;              
                 }                  
@@ -261,6 +227,8 @@ public class GitManager {
 
 
         }
+        
+        repositoryInfo.branchTree = branchTree.toArray(new BranchDetails[0]);
         
     }
     

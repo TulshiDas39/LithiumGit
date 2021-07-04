@@ -5,22 +5,20 @@
  */
 package com.bsse.dataClasses;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author ASUS
  */
 public class RepositoryInfo {
-    public ArrayList<CommitInfo> allCommits;
+    public CommitInfo[] allCommits;
     public BranchDetails branchDetails;
     //branchSummery:undefined!,
-    public ArrayList<CommitInfo> commits;
-    public ArrayList<LastReference> lastReferencesByBranch;
-    public ArrayList<String> uniqueBrancNames;
-    public ArrayList<String> remotes;
-    public ArrayList<BranchDetails> branchTree;
-    public ArrayList<BranchDetails> resolvedBranches;
+    public CommitInfo[] commits;
+    public LastReference[] lastReferencesByBranch;
+    public String[] uniqueBrancNames;
+    public RemoteInfo[] remotes;
+    public BranchDetails[] branchTree;
+    public BranchDetails[] resolvedBranches;
     public CommitInfo headCommit;
-    public ArrayList<String> mergeCommitMessages;
+    public String[] mergeCommitMessages;
 }

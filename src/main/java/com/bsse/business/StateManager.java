@@ -5,6 +5,9 @@
  */
 package com.bsse.business;
 
+import java.util.ArrayList;
+
+import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
 
@@ -15,6 +18,7 @@ import com.bsse.dataClasses.StaticData;
 public class StateManager {
 
     private static RepoInfo selectedRepoInfo;
+    private static ArrayList<BranchDetails> branchTree;
 
     public static RepoInfo getSelectedRepoInfo() {
         return selectedRepoInfo;
@@ -25,6 +29,14 @@ public class StateManager {
         StaticData.topNav.updateUi();
         StaticData.body.updateUi();
         GitManager.setRepo(StateManager.getSelectedRepoInfo());
+    }
+    
+    public static ArrayList<BranchDetails> getBranchTree(){
+    	return branchTree;
+    }
+    
+    public static void setBranchTree(ArrayList<BranchDetails> tree) {
+    	branchTree = tree;
     }
     
 }

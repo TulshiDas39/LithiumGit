@@ -5,6 +5,7 @@
  */
 package com.bsse.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -31,19 +32,29 @@ public class ArrayUtil {
             if(lamba.apply(t)) return t;
         }
         return null;
+    }    
+    
+    public static <T> T find(List<T> array,Function<T,Boolean> lamba){
+    	if(array == null) return null;
+        for (T t : array) {
+            if(lamba.apply(t)) return t;
+        }
+        return null;
     }
     
-     public static <T> boolean any(T[] array,Function<T,Boolean> lamba){
+    public static <T> boolean any(T[] array,Function<T,Boolean> lamba){
         for (T t : array) {
             if(lamba.apply(t)) return true;
         }
         return false;
     }
     
-    public static <T> T find(List<T> array,Function<T,Boolean> lamba){
-        for (T t : array) {
-            if(lamba.apply(t)) return t;
-        }
-        return null;
+    public static <R,T> ArrayList<R> map(List<T> array,Function<T,R> lambda){
+    	if(array == null) return null;
+    	ArrayList<R> newList = new ArrayList<>();
+    	for(var item:array) {
+    		newList.add(lambda.apply(item));
+    	}
+    	return newList;    	
     }
 }
