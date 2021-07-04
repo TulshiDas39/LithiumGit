@@ -179,7 +179,8 @@ public class GitManager {
                 if(previousCommit.nextCommit != null){            
                   ownerBranch = createNewBranch.apply(previousCommit);
                 }else{              
-                    ownerBranch=previousCommit.ownerBranch;              
+                    ownerBranch=previousCommit.ownerBranch;
+                    previousCommit.nextCommit = currentCommit;
                 }                  
             }
             else{
