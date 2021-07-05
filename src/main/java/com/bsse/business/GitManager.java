@@ -61,7 +61,7 @@ public class GitManager {
         String[] output ;
         try{
             Runtime rt = Runtime.getRuntime();
-            StringBuilder cmd = new StringBuilder("git log --all --max-count=500 --date=iso ");
+            StringBuilder cmd = new StringBuilder("git log --all --max-count=5 --date=iso ");
             cmd.append(Constants.logFormat);
             var url = StateManager.getSelectedRepoInfo().url;
             Process proc = rt.exec(cmd.toString(),null, new File(url));
@@ -191,35 +191,33 @@ public class GitManager {
         if(currentCommit.branchNameWithRemotes.length != 0 ){
             //check parent branch is same
             BranchDetails parentBranch = NullUtil.withSafe(()-> currentCommit.ownerBranch.parentCommit.ownerBranch);            
-            if(parentBranch != null){
-                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;
-                if(branchNameWithRemotes.length != 0){
-                    var isParentBranch = ArrayUtil.any(branchNameWithRemotes,(branchNameWithRemote) -> {                        
-                        return branchNameWithRemote.branchName.equals(parentBranch.name);                        
-                    });                    
-                    if(isParentBranch){
-                        parentBranch.commits.addAll(ownerBranch.commits);
-                        for (CommitInfo commit : ownerBranch.commits) {
-                            commit.ownerBranch = parentBranch;
-                        }
-                        currentCommit.ownerBranch = parentBranch;
+            if(parentBranch != null && currentCommit.branchNameWithRemotes.length != 0){
+                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;                
+                var isParentBranch = ArrayUtil.any(branchNameWithRemotes,(branchNameWithRemote) -> {                        
+                    return branchNameWithRemote.branchName.equals(parentBranch.name);                        
+                });                    
+                if(isParentBranch){
+                    parentBranch.commits.addAll(ownerBranch.commits);
+                    for (CommitInfo commit : ownerBranch.commits) {
+                        commit.ownerBranch = parentBranch;
                     }
-                    else{
-                    	
-                    	BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> !StringUtil.isNullOrEmpty(arg0.remote));
-                    	                                 	
-                        if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
-                        else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
-                        
-//                        for (CommitInfo commit : currentCommit.ownerBranch.commits) {
-//                            commit.ownerBranch = ownerBranch;
-//                        }
-                                                
-//                        final var parentCommitOfOwnerBranch = ownerBranch.parentCommit;
-//                        if(parentCommitOfOwnerBranch != null) parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);                        
-                    }
-                }
-            }                        
+                    currentCommit.ownerBranch = parentBranch;
+                }                
+            }
+            else{
+            	
+            	BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> !StringUtil.isNullOrEmpty(arg0.remote));
+            	                                 	
+                if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
+                else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
+                
+//                for (CommitInfo commit : currentCommit.ownerBranch.commits) {
+//                    commit.ownerBranch = ownerBranch;
+//                }
+                                        
+//                final var parentCommitOfOwnerBranch = ownerBranch.parentCommit;
+//                if(parentCommitOfOwnerBranch != null) parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);                        
+            }
         }
 
 //        currentCommit.ownerBranch.commits.add(currentCommit);
