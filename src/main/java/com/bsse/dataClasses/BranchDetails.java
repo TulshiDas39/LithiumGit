@@ -17,4 +17,5 @@ public class BranchDetails {
   public LastCommitByRemote[] LastCommitsByRemotes;
   public boolean noDerivedCommits;
   public CommitInfo parentCommit;
+  public double serial;
 }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -54,6 +55,10 @@ public class GitManager {
         	return remoteInfo;
         }).toArray(new RemoteInfo[0]);
         
+    }
+    
+    public static RepositoryInfo getRepositoryInfo() {
+    	return repositoryInfo;
     }
     
     public static void setLogs2(){
@@ -154,8 +159,15 @@ public class GitManager {
           var newOwnerBranch = new BranchDetails();
           newOwnerBranch.name = "";
           newOwnerBranch.parentCommit = parentCommit;
-          newOwnerBranch.noDerivedCommits = false;
-          if(parentCommit == null) branchTree.add(newOwnerBranch);
+          newOwnerBranch.noDerivedCommits = false;          
+          if(parentCommit == null) {
+        	  branchTree.add(newOwnerBranch);
+        	  newOwnerBranch.serial = branchDetails.size();
+          }
+          else {
+        	  var serialOfParentCommit = parentCommit.ownerBranch.commits.indexOf(parentCommit)+1;
+        	  newOwnerBranch.serial = parentCommit.ownerBranch.serial +  (1 / serialOfParentCommit);
+          }
           branchDetails.add(newOwnerBranch);
           return newOwnerBranch;
         };
@@ -229,6 +241,9 @@ public class GitManager {
         }
         
         repositoryInfo.branchTree = branchTree.toArray(new BranchDetails[0]);
+        branchDetails.sort((x,y)->{
+        	return x.serial > y.serial? 1:-1 ;
+        });
         repositoryInfo.resolvedBranches = branchDetails.toArray(new BranchDetails[0]);        
     }
     
