@@ -23,7 +23,7 @@ public class CommitInfo{
   public CommitInfo previousCommit ;
   public String date;
   public String message;
-  public String refs;
+  public String refs="";
   public String body;
   public String author_name;
   public String author_email;
