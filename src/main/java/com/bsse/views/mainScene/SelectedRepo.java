@@ -6,6 +6,9 @@
 package com.bsse.views.mainScene;
 
 import java.util.ArrayList;
+
+import com.bsse.dataClasses.StaticData;
+
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -31,7 +34,9 @@ public class SelectedRepo extends HBox{
                 
         
         childs.add(new SelectedRepoLeftPanel());
-        childs.add(new SelectedRepoRightPanel());
+        var selectedRepoRightPanel = new SelectedRepoRightPanel();
+        StaticData.selectedRepoRightPanel = selectedRepoRightPanel;
+        childs.add(selectedRepoRightPanel);
         
         getChildren().addAll(childs);
         

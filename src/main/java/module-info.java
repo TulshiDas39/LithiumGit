@@ -6,4 +6,5 @@ module com.bsse.gitstudio {
     exports com.bsse.gitstudio;
     requires org.kordamp.bootstrapfx.core;
     requires org.eclipse.jgit;
+	requires javafx.graphics;
 }

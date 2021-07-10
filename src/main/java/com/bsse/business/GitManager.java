@@ -272,6 +272,7 @@ public class GitManager {
         }
         
         createTree();
+        StateManager.setRepositoryInfo(repositoryInfo);
 
     }
 
