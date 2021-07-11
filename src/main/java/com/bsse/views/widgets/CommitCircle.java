@@ -18,7 +18,5 @@ public class CommitCircle extends Circle{
 		setRadius(this.props.radius);
 		setStrokeWidth(this.props.strokeWidth);
 		setFill(props.color);
-				
-		
 	}
 }
