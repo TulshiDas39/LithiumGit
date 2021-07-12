@@ -36,9 +36,9 @@ public class StreamGobler{
             BufferedReader br = new BufferedReader(isr);
             String line=null;
             while ( (line = br.readLine()) != null){
-                System.out.println(type + ">" + line);
+                //System.out.println(type + ">" + line);
                 output.add(line);
-                System.out.println("size:"+output.size());
+                //System.out.println("size:"+output.size());
             }                
         }
         catch (IOException ioe)

@@ -43,14 +43,14 @@ public class SelectedRepoRightPanel extends HBox{
     	    	
     	int lineNumber = 0;
     	
-    	var vBox = new VBox();
+    	//var vBox = new VBox();
     	
     	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {    		
     		//vBox.getChildren().add();
     		drawSingleBranch(branch, lineNumber);
     		lineNumber++;
 		}
-    	getChildren().add(vBox);
+    	//getChildren().add(vBox);
     	drawCommits();
     	
     }
@@ -58,7 +58,8 @@ public class SelectedRepoRightPanel extends HBox{
     private void drawCommits() {
     	int x = 10;
     	int increamenter = 100;
-    	for (CommitInfo commit : repositoryInfo.allCommits) {
+    	for (var i = repositoryInfo.allCommits.length-1;i>=0; i--) {
+    		var commit = repositoryInfo.allCommits[i];
 			var branch = ArrayUtil.find(this.branches, b -> b.props.branch.name == commit.ownerBranch.name);
 			branch.props.commitHorizontalPositions.add(x);
 			x += increamenter;

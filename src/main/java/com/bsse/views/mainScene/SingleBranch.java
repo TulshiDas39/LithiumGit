@@ -39,22 +39,25 @@ public class SingleBranch extends HBox{
 		this.line.setStartX(startX);		
 		this.line.setEndX(endX);
 		this.getChildren().add(line);
+		this.setMaxWidth(endX-startX);
+		setLayoutX(startX);
 		
 		ArrayList<VBox> commitBoxes = new ArrayList<>(); 
 		
 		for (var positionX : this.props.commitHorizontalPositions) {
-			var vBox = new VBox();
-			//var commit = this.props.branch.commits.get(this.addedCommits.size());
-			var circle = new Circle(positionX,this.props.y,30);
+			var vBox = new VBox();			
+			var circle = new Circle(positionX,this.props.y,15);
 			vBox.getChildren().add(circle);
+			//vBox.getStyleClass().addAll("border-red");
 			commitBoxes.add(vBox);			
 		}
 		
 		this.getChildren().addAll(commitBoxes);
+		this.setTranslateX(startX);
 	}
 	
 	
 	private void addStyle() {
-		getStyleClass().addAll("border-green");
+		getStyleClass().addAll("border-green");		
 	}
 }
