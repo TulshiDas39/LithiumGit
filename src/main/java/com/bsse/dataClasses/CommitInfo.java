@@ -27,4 +27,6 @@ public class CommitInfo{
   public String body;
   public String author_name;
   public String author_email;
+  public int x;
+  public int y;
 }

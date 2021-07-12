@@ -2,6 +2,8 @@ package com.bsse.views.mainScene;
 
 import java.util.ArrayList;
 
+import com.bsse.dataClasses.CommitInfo;
+import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.SingleBranchProps;
 
 import javafx.scene.layout.HBox;
@@ -11,7 +13,6 @@ import javafx.scene.shape.Line;
 
 public class SingleBranch extends HBox{
 	public SingleBranchProps props;
-	private ArrayList<VBox> addedCommits = new ArrayList<>();
 	private Line line = new Line();
 	
 	public SingleBranch(SingleBranchProps branch) {
@@ -32,28 +33,36 @@ public class SingleBranch extends HBox{
 	}
 	
 	public void draw() {
+		var translateXOfBranch = 0;
+		if(this.props.branch.parentCommit != null) translateXOfBranch = this.props.branch.parentCommit.x;
 		this.line.setStartY(props.y);
 		this.line.setEndY(props.y);
-		var startX = this.props.commitHorizontalPositions.get(0);
-		var endX = this.props.commitHorizontalPositions.get(this.props.commitHorizontalPositions.size()-1);
-		this.line.setStartX(startX);		
-		this.line.setEndX(endX);
-		this.getChildren().add(line);
-		this.setMaxWidth(endX-startX);
-		setLayoutX(startX);
+		//var startX = this.props.branch.commits.get(0).x;
+		var endX = this.props.branch.commits.get(this.props.branch.commits.size()-1).x;
+		//this.line.setStartX(startX);		
+		//this.line.setEndX(endX);
+		var branchWidth = endX - translateXOfBranch + Constants.CommitRadius*2;
+		this.setMaxWidth(branchWidth);
+		this.setMinWidth(branchWidth);
+		
+		this.setTranslateX(translateXOfBranch);
 		
 		ArrayList<VBox> commitBoxes = new ArrayList<>(); 
-		
-		for (var positionX : this.props.commitHorizontalPositions) {
+		var translateX = 0;
+		var previousCommitX = this.props.branch.commits.get(0).x;
+		for (var commit : this.props.branch.commits) {			
+			translateX = commit.x - previousCommitX;
 			var vBox = new VBox();			
-			var circle = new Circle(positionX,this.props.y,15);
-			vBox.getChildren().add(circle);
-			//vBox.getStyleClass().addAll("border-red");
-			commitBoxes.add(vBox);			
+			var circle = new Circle(0,0,Constants.CommitRadius);
+			vBox.getChildren().add(circle);				
+			vBox.getStyleClass().addAll("border-red");
+			vBox.setTranslateX(translateX);
+			commitBoxes.add(vBox);
+			previousCommitX = commit.x;
 		}
 		
 		this.getChildren().addAll(commitBoxes);
-		this.setTranslateX(startX);
+		
 	}
 	
 	

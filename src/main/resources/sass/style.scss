@@ -40,6 +40,9 @@ $increment:5;
     .pb-#{$i}{
         -fx-padding:0 0 #{$i*$increment}px 0;
     }
+    .pl-#{$i}{
+        -fx-padding:0 0 0 #{$i*$increment}px;
+    }
     .m-#{$i}{
         -fx-margin: #{$i*$increment}px;
     }
