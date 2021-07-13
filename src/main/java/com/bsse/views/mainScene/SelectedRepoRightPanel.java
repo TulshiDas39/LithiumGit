@@ -9,6 +9,7 @@ import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.utils.ArrayUtil;
 
+import javafx.scene.Group;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -49,10 +50,10 @@ public class SelectedRepoRightPanel extends HBox{
     
     private void drawCommits() {
     	int x = 0;
-    	int increamenter = Constants.CommitRadius;
+    	int increamenter = Constants.CommitRadius*3;
     	for (var commit :this.repositoryInfo.allCommits) {
     		commit.x = x; 
-			var branch = ArrayUtil.find(this.branches, b -> b.getBranch().name == commit.ownerBranch.name);
+			//var branch = ArrayUtil.find(this.branches, b -> b.getBranch().name == commit.ownerBranch.name);
 			//branch.commitHorizontalPositions.add(x);			
 			x += increamenter;
 		}
@@ -60,9 +61,9 @@ public class SelectedRepoRightPanel extends HBox{
     	for (SingleBranch singleBranch : branches) {
 			singleBranch.draw();
 		}
-    	var vBox = new VBox();
-    	vBox.getChildren().addAll(branches);
-    	this.getChildren().add(vBox);
+    	var branchGroups = new Group();
+    	branchGroups.getChildren().addAll(branches);
+    	this.getChildren().add(branchGroups);
     }
     
     private void addStyles(){

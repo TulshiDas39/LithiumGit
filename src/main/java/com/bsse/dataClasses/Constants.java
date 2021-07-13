@@ -20,5 +20,5 @@ public class Constants {
     public static final String HeadPrefix = "HEAD ->";
     public static final int CommitRadius = 15;
     public static final int CommitLimit = 5;
-    public static final int DistanceBetweenBranches = 20;
+    public static final int DistanceBetweenBranches = 40;
 }
