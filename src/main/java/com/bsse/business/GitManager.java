@@ -9,16 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import com.bsse.dataClasses.BranchDetails;
@@ -66,7 +61,7 @@ public class GitManager {
         String[] output ;
         try{
             Runtime rt = Runtime.getRuntime();
-            StringBuilder cmd = new StringBuilder("git log --all --max-count=5 --date=iso ");
+            StringBuilder cmd = new StringBuilder("git log --all --max-count="+Constants.CommitLimit+" --date=iso ");
             cmd.append(Constants.logFormat);
             var url = StateManager.getSelectedRepoInfo().url;
             Process proc = rt.exec(cmd.toString(),null, new File(url));
@@ -98,54 +93,7 @@ public class GitManager {
             t.printStackTrace();
         }
         
-    }
-    
-    public static void setLogs() throws GitAPIException{
-        var logCommand = git.log();
-        logCommand.setMaxCount(500);
-        var commits = logCommand.call();        
-        var test = git.branchList().call();
-        var lef = test.get(0).getLeaf();        
-        //var notes = git.notesList().call();
-        //var notname = notes.get(0).getName();
-        //var name = lef.getName();
-        //lef.
-        var test3 = 3;
-       
-        
-        commits.forEach(new Consumer<RevCommit>() {
-            @Override
-            public void accept(RevCommit x) {
-                var commit = new CommitInfo();
-                commit.hash = x.getId().name();
-                commit.avrebHash = x.getId().abbreviate(7).name();
-                for (RevCommit parent : x.getParents()) {
-                 commit.parentHashes.add(parent.getId().name());
-                }
-                commit.message = x.getFullMessage();
-                commit.author_email = x.getAuthorIdent().getEmailAddress();
-                commit.author_name = x.getAuthorIdent().getName();
-                var time = x.getCommitTime();
-                var tree = x.getTree();
-                var footerLines = x.getFooterLines();
-//                footerLines.get(0).
-                var shortMessage = x.getShortMessage();                
-                var ray = new String(x.getRawBuffer(),x.getEncoding());
-                Map<ObjectId, String> map = null;
-                try {
-                    map = git.nameRev()
-                            .add(ObjectId.fromString(commit.hash)).call();
-                } catch (Exception ex) {
-                    
-                }
-                if(map != null){
-                    var value = map.get(x.getId());
-                }
-                
-                System.out.println(".accept()");
-            }
-        });
-    }    
+    }        
     
     private static void createTree(){        
         CommitInfo[] commits = new CommitInfo[repositoryInfo.allCommits.length];
@@ -172,7 +120,7 @@ public class GitManager {
           return newOwnerBranch;
         };
         
-        for(var i = commits.length-1; i>=0; i--){
+        for(var i = 0; i < commits.length; i++){
             final var currentCommit = commits[i];
             setReference(currentCommit,lastReferencesByBranch);
             currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);

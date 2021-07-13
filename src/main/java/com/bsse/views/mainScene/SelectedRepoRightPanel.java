@@ -49,8 +49,7 @@ public class SelectedRepoRightPanel extends HBox{
     private void drawCommits() {
     	int x = 0;
     	int increamenter = Constants.CommitRadius;
-    	for (var i = repositoryInfo.allCommits.length-1;i>=0; i--) {
-    		var commit = repositoryInfo.allCommits[i];
+    	for (var commit :this.repositoryInfo.allCommits) {
     		commit.x = x; 
 			var branch = ArrayUtil.find(this.branches, b -> b.props.branch.name == commit.ownerBranch.name);
 			branch.props.commitHorizontalPositions.add(x);

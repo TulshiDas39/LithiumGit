@@ -73,7 +73,7 @@ public class LogParser {
         while(indexObj.index < lines.length){
             var commit = getCommit(lines,indexObj);
             
-            if(!commit.refs.equals("refs/stash")) commits.add(commit);
+            if(!commit.refs.equals("refs/stash")) commits.add(0,commit);
             indexObj.index++;
         }
         return commits.toArray(new CommitInfo[0]);
