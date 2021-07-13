@@ -61,7 +61,7 @@ public class GitManager {
         String[] output ;
         try{
             Runtime rt = Runtime.getRuntime();
-            StringBuilder cmd = new StringBuilder("git log --all --max-count="+Constants.CommitLimit+" --date=iso ");
+            StringBuilder cmd = new StringBuilder("git log --exclude=refs/stash --all --max-count="+Constants.CommitLimit+" --date=iso ");
             cmd.append(Constants.logFormat);
             var url = StateManager.getSelectedRepoInfo().url;
             Process proc = rt.exec(cmd.toString(),null, new File(url));
