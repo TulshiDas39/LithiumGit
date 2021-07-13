@@ -7,12 +7,11 @@ import com.bsse.business.StateManager;
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
-import com.bsse.utils.ArrayUtil;
-
 import javafx.scene.Group;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Line;
 
 public class SelectedRepoRightPanel extends HBox{
 	private RepositoryInfo repositoryInfo;
@@ -37,12 +36,16 @@ public class SelectedRepoRightPanel extends HBox{
     public void drawBranch() {
     	this.repositoryInfo = StateManager.getRepositoryInfo();
     	    	
-    	int lineNumber = 0;    	    	
+    	int y = 0;    	    	
     	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {
-    		int height = lineNumber * Constants.DistanceBetweenBranches;		
-    		var singleBranch = new SingleBranch(height,branch);
+    		branch.y = y;
+    		var singleBranch = new SingleBranch(branch);
     		this.branches.add(singleBranch);
-    		lineNumber++;
+    		if(branch.parentCommit != null) {
+    			var vLine = new Line(branch.parentCommit.x,branch.parentCommit.ownerBranch.y,branch.parentCommit.x,branch.y);
+    			this.getChildren().add(vLine);
+    		}
+    		y += Constants.DistanceBetweenBranches;
 		}
     	drawCommits();
     	

@@ -10,12 +10,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
 public class SingleBranch extends Group{
-	private final int y;
 	private final BranchDetails branch;
 	private Line line = new Line();
 	
-	public SingleBranch(int y,BranchDetails branch) {		
-		this.y = y;
+	public SingleBranch(BranchDetails branch) {
 		this.branch = branch;		
 		addStyle();
 		addChilds();
@@ -33,15 +31,18 @@ public class SingleBranch extends Group{
 	public void draw() {
 		var startXOfBranch = 0;
 		if(this.branch.parentCommit != null) startXOfBranch = this.branch.parentCommit.x;
-		this.line.setStartY(this.y);
-		this.line.setEndY(this.y);		
+		this.line.setStartY(0);
+		this.line.setEndY(0);
+		this.line.setStartX(0);		
 		var endX = this.branch.commits.get(this.branch.commits.size()-1).x;
+		this.line.setEndX(endX - startXOfBranch);
+		this.getChildren().add(line);
 		//var branchWidth = endX - translateXOfBranch + Constants.CommitRadius*2;
 //		this.setMaxWidth(branchWidth);
 //		this.setMinWidth(branchWidth);
 		
 		this.setLayoutX(startXOfBranch);
-		this.setLayoutY(y);
+		this.setLayoutY(branch.y);
 		
 		ArrayList<Group> commitBoxes = new ArrayList<>(); 
 		var translateX = 0;

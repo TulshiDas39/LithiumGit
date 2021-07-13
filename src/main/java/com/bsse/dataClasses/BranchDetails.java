@@ -18,4 +18,5 @@ public class BranchDetails {
   public boolean noDerivedCommits;
   public CommitInfo parentCommit;
   public double serial;
+  public int y;
 }
