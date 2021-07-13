@@ -2,24 +2,31 @@ package com.bsse.views.mainScene;
 
 import java.util.ArrayList;
 
-import com.bsse.dataClasses.CommitInfo;
+import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.Constants;
-import com.bsse.dataClasses.SingleBranchProps;
 
+import javafx.geometry.Insets;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
 public class SingleBranch extends HBox{
-	public SingleBranchProps props;
+	private final int y;
+	private final BranchDetails branch;
 	private Line line = new Line();
 	
-	public SingleBranch(SingleBranchProps branch) {
-		this.props = branch;
+	public SingleBranch(int y,BranchDetails branch) {		
+		this.y = y;
+		this.branch = branch;		
 		addStyle();
 		addChilds();
 	}
+	
+	public BranchDetails getBranch() {
+		return branch;
+	}
+	
 	
 	private void addChilds() {
 //		this.line.setStartY(props.y);
@@ -34,11 +41,11 @@ public class SingleBranch extends HBox{
 	
 	public void draw() {
 		var translateXOfBranch = 0;
-		if(this.props.branch.parentCommit != null) translateXOfBranch = this.props.branch.parentCommit.x;
-		this.line.setStartY(props.y);
-		this.line.setEndY(props.y);
+		if(this.branch.parentCommit != null) translateXOfBranch = this.branch.parentCommit.x;
+		this.line.setStartY(this.y);
+		this.line.setEndY(this.y);
 		//var startX = this.props.branch.commits.get(0).x;
-		var endX = this.props.branch.commits.get(this.props.branch.commits.size()-1).x;
+		var endX = this.branch.commits.get(this.branch.commits.size()-1).x;
 		//this.line.setStartX(startX);		
 		//this.line.setEndX(endX);
 		var branchWidth = endX - translateXOfBranch + Constants.CommitRadius*2;
@@ -49,8 +56,8 @@ public class SingleBranch extends HBox{
 		
 		ArrayList<VBox> commitBoxes = new ArrayList<>(); 
 		var translateX = 0;
-		var previousCommitX = this.props.branch.commits.get(0).x;
-		for (var commit : this.props.branch.commits) {			
+		var previousCommitX = this.branch.commits.get(0).x;
+		for (var commit : this.branch.commits) {			
 			translateX = commit.x - previousCommitX;
 			var vBox = new VBox();			
 			var circle = new Circle(0,0,Constants.CommitRadius);
@@ -67,6 +74,7 @@ public class SingleBranch extends HBox{
 	
 	
 	private void addStyle() {
-		getStyleClass().addAll("border-green");		
+		getStyleClass().addAll("border-green");
+		setPadding(new Insets(0,0,Constants.DistanceBetweenBranches,0));
 	}
 }

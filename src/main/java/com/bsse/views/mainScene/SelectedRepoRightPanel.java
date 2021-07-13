@@ -7,7 +7,6 @@ import com.bsse.business.StateManager;
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
-import com.bsse.dataClasses.SingleBranchProps;
 import com.bsse.utils.ArrayUtil;
 
 import javafx.scene.layout.HBox;
@@ -39,7 +38,9 @@ public class SelectedRepoRightPanel extends HBox{
     	    	
     	int lineNumber = 0;    	    	
     	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {
-    		drawSingleBranch(branch, lineNumber);
+    		int height = lineNumber * Constants.DistanceBetweenBranches;		
+    		var singleBranch = new SingleBranch(height,branch);
+    		this.branches.add(singleBranch);
     		lineNumber++;
 		}
     	drawCommits();
@@ -51,8 +52,8 @@ public class SelectedRepoRightPanel extends HBox{
     	int increamenter = Constants.CommitRadius;
     	for (var commit :this.repositoryInfo.allCommits) {
     		commit.x = x; 
-			var branch = ArrayUtil.find(this.branches, b -> b.props.branch.name == commit.ownerBranch.name);
-			branch.props.commitHorizontalPositions.add(x);
+			var branch = ArrayUtil.find(this.branches, b -> b.getBranch().name == commit.ownerBranch.name);
+			//branch.commitHorizontalPositions.add(x);			
 			x += increamenter;
 		}
     	
@@ -63,20 +64,6 @@ public class SelectedRepoRightPanel extends HBox{
     	vBox.getChildren().addAll(branches);
     	this.getChildren().add(vBox);
     }
-    
-    private void drawSingleBranch(BranchDetails branch,int lineNumber) {    	
-		int height = lineNumber*100;
-		//var vBox = new VBox();		
-		var singleBranchProps = new SingleBranchProps();
-		singleBranchProps.branch = branch;
-		singleBranchProps.y = height;
-		var singleBranch = new SingleBranch(singleBranchProps);
-		this.branches.add(singleBranch);
-		//vBox.getChildren().addAll(singleBranch);
-				
-		//return vBox;
-	}
-    
     
     private void addStyles(){
         getStyleClass().addAll("border-red","px-5");
