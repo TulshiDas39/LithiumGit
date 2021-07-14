@@ -3,11 +3,18 @@ package com.bsse.views.mainScene;
 import java.util.ArrayList;
 
 import com.bsse.dataClasses.BranchDetails;
+import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 
+import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 public class SingleBranch extends Group{
 	private final BranchDetails branch;
@@ -41,23 +48,53 @@ public class SingleBranch extends Group{
 //		this.setMaxWidth(branchWidth);
 //		this.setMinWidth(branchWidth);
 		
-		this.setLayoutX(startXOfBranch);
-		this.setLayoutY(branch.y);
+		this.setLayoutX(startXOfBranch);		
 		
 		ArrayList<Group> commitBoxes = new ArrayList<>(); 
 		var translateX = 0;
 		for (var commit : this.branch.commits) {			
 			translateX = commit.x - startXOfBranch;
-			var group = new Group();			
+			var group = new Group();
+			addRefs(group, commit);
 			var circle = new Circle(0,0,Constants.CommitRadius);
+			
 			group.getChildren().add(circle);				
 			//group.getStyleClass().addAll("border-red");
-			group.setLayoutX(translateX);
+			group.setLayoutX(translateX);			
 			commitBoxes.add(group);
 		}
 		
 		this.getChildren().addAll(commitBoxes);
+		this.setLayoutY(branch.y);
 		
+	}
+	
+	private void addRefs(Group group, CommitInfo commit) {
+		if(commit.refs.isBlank())return;
+		var vBox = new VBox();
+		var refs = commit.refs.split(",");
+		var maxRefLength = 0;
+		//var maxLengthTextNode;
+		ArrayList<Text> textList = new ArrayList<>();
+		var totalTextHeight = 0;
+		for (String ref : refs) {
+			if(ref.startsWith(Constants.HeadPrefix))ref = ref.substring(Constants.HeadPrefix.length());
+			var text = new Text(ref);
+		    text.setFont(Font.font("verdana", FontWeight.NORMAL, FontPosture.REGULAR, Constants.ParagraphTextFontSize));
+		    textList.add(text);
+			//vBox.getChildren().add(text);
+			this.branch.y += Constants.ParagraphTextFontSize;
+			if(maxRefLength < text.getLayoutBounds().getWidth())maxRefLength = (int) text.getLayoutBounds().getWidth();
+			totalTextHeight += text.getLayoutBounds().getHeight();
+		}
+		vBox.getChildren().addAll(textList);
+		var spacing = 2;
+		var layoutY = -2*Constants.CommitRadius - textList.get(0).getLayoutBounds().getHeight() * (refs.length -1) - spacing;
+		vBox.setLayoutY(layoutY);		
+		vBox.setLayoutX(-maxRefLength+Constants.CommitRadius);
+		
+		vBox.setAlignment(Pos.BASELINE_RIGHT);
+		group.getChildren().add(vBox);
 	}
 	
 	

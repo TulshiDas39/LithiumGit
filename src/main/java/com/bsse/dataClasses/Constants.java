@@ -18,7 +18,11 @@ public class Constants {
     
     public static final String logFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
     public static final String HeadPrefix = "HEAD ->";
-    public static final int CommitRadius = 15;
+    public static final int CommitRadius = 12;
     public static final int CommitLimit = 5;
-    public static final int DistanceBetweenBranches = 40;
+    public static final int DistanceBetweenBranches = CommitRadius*4;
+    public static final String ParagraphTextFont = "Times New Roman";
+    public static final double ParagraphTextFontSize = CommitRadius * 0.75;
+    
+    
 }

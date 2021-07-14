@@ -35,17 +35,14 @@ public class SelectedRepoRightPanel extends HBox{
     
     public void drawBranch() {
     	this.repositoryInfo = StateManager.getRepositoryInfo();
-    	    	
-    	int y = 0;    	    	
-    	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {
-    		branch.y = y;
+    	    	    	    	    
+    	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {    		
     		var singleBranch = new SingleBranch(branch);
     		this.branches.add(singleBranch);
     		if(branch.parentCommit != null) {
     			var vLine = new Line(branch.parentCommit.x,branch.parentCommit.ownerBranch.y,branch.parentCommit.x,branch.y);
     			this.getChildren().add(vLine);
     		}
-    		y += Constants.DistanceBetweenBranches;
 		}
     	drawCommits();
     	
@@ -53,6 +50,7 @@ public class SelectedRepoRightPanel extends HBox{
     
     private void drawCommits() {
     	int x = 0;
+    	
     	int increamenter = Constants.CommitRadius*3;
     	for (var commit :this.repositoryInfo.allCommits) {
     		commit.x = x; 
@@ -61,8 +59,12 @@ public class SelectedRepoRightPanel extends HBox{
 			x += increamenter;
 		}
     	
+    	int y = 0;
+    	
     	for (SingleBranch singleBranch : branches) {
-			singleBranch.draw();
+    		singleBranch.getBranch().y = y;
+			singleBranch.draw();			 
+			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
     	var branchGroups = new Group();
     	branchGroups.getChildren().addAll(branches);

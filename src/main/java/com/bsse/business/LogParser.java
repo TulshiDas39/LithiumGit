@@ -65,8 +65,7 @@ public class LogParser {
         }
     }
     
-    public static CommitInfo[] Parse(String[] lines){
-        //var lines =  str.split("\n");
+    public static CommitInfo[] Parse(String[] lines){       
         var commits = new ArrayList<CommitInfo>();
         var indexObj = new IndexObj();
 
