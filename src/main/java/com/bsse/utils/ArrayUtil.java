@@ -67,4 +67,24 @@ public class ArrayUtil {
     	}
     	return newList;    	
     }
+    
+    public static <T> ArrayList<T> filter(T[] array,Function<T,Boolean> lambda){    	
+    	ArrayList<T> newList = new ArrayList<>();
+    	if(array == null) return newList;    	
+    	for(var item:array) {
+    		if(lambda.apply(item)) newList.add(item);
+    	}
+    	return newList;    	
+    }
+    
+    public static <T> ArrayList<T> filter(List<T> array,Function<T,Boolean> lambda){    	
+    	ArrayList<T> newList = new ArrayList<>();
+    	if(array == null) return newList;    	
+    	for(var item:array) {
+    		if(lambda.apply(item)) newList.add(item);
+    	}
+    	return newList;    	
+    }
+    
+    
 }

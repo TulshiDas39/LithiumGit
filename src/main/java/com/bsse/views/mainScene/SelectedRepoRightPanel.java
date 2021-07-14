@@ -5,8 +5,11 @@ import java.util.ArrayList;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.BranchDetails;
+import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
+import com.bsse.utils.ArrayUtil;
+
 import javafx.scene.Group;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -40,8 +43,8 @@ public class SelectedRepoRightPanel extends HBox{
     		var singleBranch = new SingleBranch(branch);
     		this.branches.add(singleBranch);
     		if(branch.parentCommit != null) {
-    			var vLine = new Line(branch.parentCommit.x,branch.parentCommit.ownerBranch.y,branch.parentCommit.x,branch.y);
-    			this.getChildren().add(vLine);
+    			//var vLine = new Line(branch.parentCommit.x,branch.parentCommit.ownerBranch.y,branch.parentCommit.x,branch.y);
+    			//this.getChildren().add(vLine);
     		}
 		}
     	drawCommits();
@@ -50,12 +53,9 @@ public class SelectedRepoRightPanel extends HBox{
     
     private void drawCommits() {
     	int x = 0;
-    	
     	int increamenter = Constants.CommitRadius*3;
     	for (var commit :this.repositoryInfo.allCommits) {
-    		commit.x = x; 
-			//var branch = ArrayUtil.find(this.branches, b -> b.getBranch().name == commit.ownerBranch.name);
-			//branch.commitHorizontalPositions.add(x);			
+    		commit.x = x;    		
 			x += increamenter;
 		}
     	
@@ -66,9 +66,19 @@ public class SelectedRepoRightPanel extends HBox{
 			singleBranch.draw();			 
 			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
+    	
+    	var mergeCommits = ArrayUtil.filter(this.repositoryInfo.allCommits, c -> c.parentHashes.size() > 1);
+    	ArrayList<Line> mergeLines = new ArrayList<>();
+    	for (CommitInfo commit : mergeCommits) {
+    		var sourceCommitOfMerge = ArrayUtil.find(this.repositoryInfo.allCommits, c -> c.avrebHash.equals(commit.parentHashes.get(1)));
+    		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
+    		mergeLines.add(line);
+		}
     	var branchGroups = new Group();
     	branchGroups.getChildren().addAll(branches);
+    	branchGroups.getChildren().addAll(mergeLines);
     	this.getChildren().add(branchGroups);
+    	
     }
     
     private void addStyles(){
