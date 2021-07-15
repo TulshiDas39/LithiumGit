@@ -21,7 +21,7 @@ public class Constants {
     public static final int CommitRadius = 12;
     public static final int CommitLimit = 20;
     public static final int DistanceBetweenBranches = CommitRadius*4;
-    public static final String ParagraphTextFont = "Times New Roman";
+    public static final String ParagraphTextFont = "verdana";
     public static final double ParagraphTextFontSize = CommitRadius * 0.75;
     
     

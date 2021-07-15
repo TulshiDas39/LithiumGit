@@ -11,30 +11,62 @@ import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.utils.ArrayUtil;
 
 import javafx.scene.Group;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 
-public class SelectedRepoRightPanel extends HBox{
+public class SelectedRepoRightPanel extends VBox{
 	private RepositoryInfo repositoryInfo;
 	private ArrayList<SingleBranch> branches = new ArrayList<>();
+	private CommitInfo selectedCommit;
 	
-	
-	private Group BranchPanel;
+	private HBox row1 = new HBox();
+	private GridPane row2 = new GridPane();
+	private VBox col21 = new VBox();
+	private CommitProperty col22 = new CommitProperty(null);
+	private Group BranchPanel = new Group();
 	
     public SelectedRepoRightPanel() {
         super();
         this.addStyles();
-        this.repositoryInfo = StateManager.getRepositoryInfo();
+        this.addChildNodes();
+    }
+    
+    private void addChildNodes() {
+    	this.getChildren().add(row1);
+    	ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(80);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col1.setPercentWidth(20);
+        row2.getColumnConstraints().addAll(col1,col2);
+        this.col21.getChildren().add(BranchPanel);
+        
+        row2.add(this.col21, 0, 0);
+        row2.add(col22, 1, 0);
+    	this.getChildren().add(row2);
     }
     
     public void updateUi() {
     	if(this.repositoryInfo != StateManager.getRepositoryInfo()) {
     		this.repositoryInfo = StateManager.getRepositoryInfo();
     		createBranchPanel();
-    		addChildNodes();    		
+    		setSelectedCommit();
+    		this.col22.updateUi(this.selectedCommit);
     	}
+    }
+    
+    private void setSelectedCommit() {
+    	if(this.selectedCommit != null) return;    	
+    	for(int i = this.repositoryInfo.allCommits.length -1; i >= 0; i--) {
+    		var commit = this.repositoryInfo.allCommits[i];
+    		if(commit.refs.contains(Constants.HeadPrefix)) {
+    			this.selectedCommit = commit;
+    			break;
+    		}
+    	}    	
+    	
     }
         
     
@@ -64,26 +96,14 @@ public class SelectedRepoRightPanel extends HBox{
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
 		}
-    	this.BranchPanel = new Group();
     	this.BranchPanel.getChildren().addAll(branches);
-    	this.BranchPanel.getChildren().addAll(mergeLines);    	
+    	this.BranchPanel.getChildren().addAll(mergeLines);
     	
     }    
     
     private void addStyles(){
         getStyleClass().addAll("border-red","px-5");
-    }
-    
-    private void addChildNodes(){
-        var child = this.getChildren();
-        child.add(BranchPanel);
-    }
-    
-    private Pane getBranchNode() {
-    	var container = new VBox();
-    	
-    	return container;
-    }
+    }    
     
     
 }
