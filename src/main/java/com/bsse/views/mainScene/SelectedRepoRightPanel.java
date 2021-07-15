@@ -20,38 +20,25 @@ public class SelectedRepoRightPanel extends HBox{
 	private RepositoryInfo repositoryInfo;
 	private ArrayList<SingleBranch> branches = new ArrayList<>();
 	
+	
+	private Group BranchPanel;
+	
     public SelectedRepoRightPanel() {
         super();
         this.addStyles();
-        //this.addChildNodes();
         this.repositoryInfo = StateManager.getRepositoryInfo();
-       // drawBranch();
     }
     
     public void updateUi() {
     	if(this.repositoryInfo != StateManager.getRepositoryInfo()) {
     		this.repositoryInfo = StateManager.getRepositoryInfo();
-    		drawBranch();
+    		createBranchPanel();
+    		addChildNodes();    		
     	}
     }
         
     
-    public void drawBranch() {
-    	this.repositoryInfo = StateManager.getRepositoryInfo();
-    	    	    	    	    
-    	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {    		
-    		var singleBranch = new SingleBranch(branch);
-    		this.branches.add(singleBranch);
-    		if(branch.parentCommit != null) {
-    			//var vLine = new Line(branch.parentCommit.x,branch.parentCommit.ownerBranch.y,branch.parentCommit.x,branch.y);
-    			//this.getChildren().add(vLine);
-    		}
-		}
-    	drawCommits();
-    	
-    }
-    
-    private void drawCommits() {
+    public void createBranchPanel() {    	    	    	    	    
     	int x = 0;
     	int increamenter = Constants.CommitRadius*3;
     	for (var commit :this.repositoryInfo.allCommits) {
@@ -61,9 +48,11 @@ public class SelectedRepoRightPanel extends HBox{
     	
     	int y = 0;
     	
-    	for (SingleBranch singleBranch : branches) {
+    	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {
+    		var singleBranch = new SingleBranch(branch);    		 
     		singleBranch.getBranch().y = y;
-			singleBranch.draw();			 
+			singleBranch.draw();			 			
+			this.branches.add(singleBranch);
 			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
     	
@@ -75,19 +64,19 @@ public class SelectedRepoRightPanel extends HBox{
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
 		}
-    	var branchGroups = new Group();
-    	branchGroups.getChildren().addAll(branches);
-    	branchGroups.getChildren().addAll(mergeLines);
-    	this.getChildren().add(branchGroups);
+    	this.BranchPanel = new Group();
+    	this.BranchPanel.getChildren().addAll(branches);
+    	this.BranchPanel.getChildren().addAll(mergeLines);    	
     	
-    }
+    }    
     
     private void addStyles(){
         getStyleClass().addAll("border-red","px-5");
     }
     
     private void addChildNodes(){
-        
+        var child = this.getChildren();
+        child.add(BranchPanel);
     }
     
     private Pane getBranchNode() {
