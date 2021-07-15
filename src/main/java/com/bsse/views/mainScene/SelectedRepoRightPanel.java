@@ -71,6 +71,7 @@ public class SelectedRepoRightPanel extends HBox{
     	ArrayList<Line> mergeLines = new ArrayList<>();
     	for (CommitInfo commit : mergeCommits) {
     		var sourceCommitOfMerge = ArrayUtil.find(this.repositoryInfo.allCommits, c -> c.avrebHash.equals(commit.parentHashes.get(1)));
+    		if(sourceCommitOfMerge == null) continue;
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
 		}
