@@ -8,6 +8,7 @@ import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
+import com.bsse.dataClasses.StaticData;
 import com.bsse.utils.ArrayUtil;
 
 import javafx.geometry.Pos;
@@ -24,7 +25,7 @@ import javafx.scene.shape.Line;
 public class SelectedRepoRightPanel extends VBox{
 	private RepositoryInfo repositoryInfo;
 	private ArrayList<SingleBranch> branches = new ArrayList<>();
-	private CommitInfo selectedCommit;
+	private CommitInfo headCommit;
 	
 	private HBox row1 = new HBox();
 	private GridPane row2 = new GridPane();
@@ -34,18 +35,18 @@ public class SelectedRepoRightPanel extends VBox{
 	
     public SelectedRepoRightPanel() {
         super();
+        StaticData.commitProperty = col22;
         this.addStyles();
         this.addChildNodes();
     }
     
     private void addChildNodes() {
-    	//this.getChildren().add(row1);
         //row2.setGridLinesVisible(true); // FOR VISUAL CLARITY
 
     	ColumnConstraints col1 = new ColumnConstraints();
-        col1.setPercentWidth(80);
+        col1.setPercentWidth(75);
         ColumnConstraints col2 = new ColumnConstraints();
-        col2.setPercentWidth(20);
+        col2.setPercentWidth(25);
         row2.getColumnConstraints().addAll(col1,col2);
         this.col21.getChildren().add(BranchPanel);
         this.col21.getStyleClass().addAll("border-green");
@@ -61,17 +62,17 @@ public class SelectedRepoRightPanel extends VBox{
     	if(this.repositoryInfo != StateManager.getRepositoryInfo()) {
     		this.repositoryInfo = StateManager.getRepositoryInfo();
     		createBranchPanel();
-    		setSelectedCommit();
-    		this.col22.updateUi(this.selectedCommit);
+    		setHeadCommit();
+    		StateManager.setSelectedCommit(this.headCommit);    		
     	}
     }
     
-    private void setSelectedCommit() {
-    	if(this.selectedCommit != null) return;    	
+    private void setHeadCommit() {
+    	if(this.headCommit != null) return;    	
     	for(int i = this.repositoryInfo.allCommits.length -1; i >= 0; i--) {
     		var commit = this.repositoryInfo.allCommits[i];
     		if(commit.refs.contains(Constants.HeadPrefix)) {
-    			this.selectedCommit = commit;
+    			this.headCommit = commit;
     			break;
     		}
     	}    	

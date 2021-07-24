@@ -2,12 +2,15 @@ package com.bsse.views.mainScene;
 
 import java.util.ArrayList;
 
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
 
+import javafx.event.EventType;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -43,10 +46,7 @@ public class SingleBranch extends Group{
 		this.line.setStartX(0);		
 		var endX = this.branch.commits.get(this.branch.commits.size()-1).x;
 		this.line.setEndX(endX - startXOfBranch);
-		this.getChildren().add(line);
-		//var branchWidth = endX - translateXOfBranch + Constants.CommitRadius*2;
-//		this.setMaxWidth(branchWidth);
-//		this.setMinWidth(branchWidth);
+		this.getChildren().add(line);		
 		
 		this.setLayoutX(startXOfBranch);		
 		
@@ -57,10 +57,12 @@ public class SingleBranch extends Group{
 			var group = new Group();
 			addRefs(group, commit);
 			var circle = new Circle(0,0,Constants.CommitRadius);
+			circle.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
+				StateManager.setSelectedCommit(commit);
+			});
 			
 			group.getChildren().add(circle);				
-			//group.getStyleClass().addAll("border-red");
-			group.setLayoutX(translateX);			
+			group.setLayoutX(translateX);
 			commitBoxes.add(group);
 		}
 		

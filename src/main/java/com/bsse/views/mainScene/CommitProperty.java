@@ -61,7 +61,7 @@ public class CommitProperty extends VBox{
 	  hashAndDate.getChildren().add(hashLevel);
 	  hashAndDate.getChildren().add(this.abreviatedHash);
 	  
-	  var dateLevel = new Text("Date: ");
+	  var dateLevel = new Text(" | Date: ");	  
 	  hashAndDate.getChildren().add(dateLevel);
 	  hashAndDate.getChildren().add(this.date);
 	  

@@ -8,6 +8,7 @@ package com.bsse.business;
 import java.util.ArrayList;
 
 import com.bsse.dataClasses.BranchDetails;
+import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.dataClasses.StaticData;
@@ -21,6 +22,7 @@ public class StateManager {
     private static RepoInfo selectedRepoInfo;
     private static ArrayList<BranchDetails> branchTree;
     private static RepositoryInfo repositoryInfo;
+    private static CommitInfo selectedCommit;
 
     public static RepoInfo getSelectedRepoInfo() {
         return selectedRepoInfo;
@@ -48,6 +50,14 @@ public class StateManager {
     
     public static RepositoryInfo getRepositoryInfo() {
     	return repositoryInfo;
+    }
+    
+    public static void setSelectedCommit(CommitInfo commit) {
+    	selectedCommit = commit;
+    	StaticData.commitProperty.updateUi(commit);
+    }
+    public static CommitInfo getSelectedCommit() {
+    	return selectedCommit;    	
     }
     
 }
