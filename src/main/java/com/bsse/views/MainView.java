@@ -5,15 +5,11 @@
  */
 package com.bsse.views;
 
-import com.bsse.business.GitManager;
-import com.bsse.business.StateManager;
-import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.views.mainScene.RootNode;
+
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.kordamp.bootstrapfx.BootstrapFX;
 
 /**
  *

@@ -1,8 +1,8 @@
 package com.bsse.gitstudio;
 
 import com.bsse.views.MainView;
+
 import javafx.application.Application;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 
@@ -17,7 +17,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage){
-        stage.setTitle("Hello World!");
+        stage.setTitle("Git Studio");
         stage.setScene(new MainView());
         stage.setMaximized(true);
         stage.show();        

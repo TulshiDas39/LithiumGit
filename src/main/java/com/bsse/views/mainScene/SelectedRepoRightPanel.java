@@ -12,6 +12,7 @@ import com.bsse.dataClasses.StaticData;
 import com.bsse.utils.ArrayUtil;
 
 import javafx.scene.Group;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -25,7 +26,7 @@ public class SelectedRepoRightPanel extends VBox{
 	
 	private HBox row1 = new HBox();
 	private GridPane row2 = new GridPane();
-	private VBox col21 = new VBox();
+	private ScrollPane col21 = new ScrollPane();
 	private CommitProperty col22 = new CommitProperty(null);
 	private Group BranchPanel = new Group();
 	
@@ -44,7 +45,7 @@ public class SelectedRepoRightPanel extends VBox{
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setPercentWidth(25);
         row2.getColumnConstraints().addAll(col1,col2);
-        this.col21.getChildren().add(BranchPanel);
+        this.col21.setContent(BranchPanel);
         this.col21.getStyleClass().addAll("border-green");
         row2.add(this.col21, 0, 0);
         row2.add(this.col22, 1, 0);
