@@ -28,7 +28,7 @@ public class SelectedRepoRightPanel extends VBox{
 	private GridPane row2 = new GridPane();
 	private ScrollPane col21 = new ScrollPane();
 	private CommitProperty col22 = new CommitProperty(null);
-	private Group BranchPanel = new Group();
+	private Group branchPanel = new Group();
 	
     public SelectedRepoRightPanel() {
         super();
@@ -45,7 +45,12 @@ public class SelectedRepoRightPanel extends VBox{
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setPercentWidth(25);
         row2.getColumnConstraints().addAll(col1,col2);
-        this.col21.setContent(BranchPanel);
+//        var branchPanelContainer = new VBox();
+//        branchPanelContainer.getChildren().add(branchPanel);
+        this.col21.setContent(branchPanel);
+        this.col21.setMaxHeight(500);
+        this.col21.setMinHeight(200);
+        this.col21.setPrefHeight(500);
         this.col21.getStyleClass().addAll("border-green");
         row2.add(this.col21, 0, 0);
         row2.add(this.col22, 1, 0);
@@ -61,7 +66,11 @@ public class SelectedRepoRightPanel extends VBox{
     		createBranchPanel();
     		setHeadCommit();
     		StateManager.setSelectedCommit(this.headCommit);
-    		this.col21.setHvalue(this.headCommit.x);
+    		var xAdjustment = Constants.CommitRadius*2;
+    		System.out.println(this.headCommit.UiObj.getBoundsInLocal().getCenterX());
+    		if(this.headCommit.x < xAdjustment) xAdjustment *= -1;
+    		this.col21.setHvalue((this.headCommit.x+xAdjustment)/this.branchPanel.getLayoutBounds().getWidth());
+    		this.col21.setVvalue(this.headCommit.ownerBranch.y/this.branchPanel.getLayoutBounds().getHeight());    		    		
     	}
     }
     
@@ -104,8 +113,8 @@ public class SelectedRepoRightPanel extends VBox{
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
 		}
-    	this.BranchPanel.getChildren().addAll(branches);
-    	this.BranchPanel.getChildren().addAll(mergeLines);    	
+    	this.branchPanel.getChildren().addAll(branches);
+    	this.branchPanel.getChildren().addAll(mergeLines);    	
     	
     }    
     

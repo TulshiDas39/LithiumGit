@@ -28,7 +28,7 @@ public class SelectedRepo extends BorderPane{
     private void addChildNode(){
                 
         this.setLeft(new SelectedRepoLeftPanel());
-        var selectedRepoRightPanel = new SelectedRepoRightPanel();
+        var selectedRepoRightPanel = new SelectedRepoRightPanel();        
         StaticData.selectedRepoRightPanel = selectedRepoRightPanel;
         this.setCenter(selectedRepoRightPanel);
         

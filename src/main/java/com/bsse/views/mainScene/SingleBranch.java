@@ -13,7 +13,8 @@ public class SingleBranch extends Group{
 	private Line line = new Line();
 	
 	public SingleBranch(BranchDetails branch) {
-		this.branch = branch;		
+		this.branch = branch;
+		this.branch.uiObj = this;
 		addStyle();
 		addChilds();
 	}

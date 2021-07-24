@@ -7,6 +7,8 @@ package com.bsse.dataClasses;
 
 import java.util.ArrayList;
 
+import javafx.scene.Group;
+
 /**
  *
  * @author ASUS
@@ -19,4 +21,5 @@ public class BranchDetails {
   public CommitInfo parentCommit;
   public double serial;
   public int y;
+  public Group uiObj;
 }
