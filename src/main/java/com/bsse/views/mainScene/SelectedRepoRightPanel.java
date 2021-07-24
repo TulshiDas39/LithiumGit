@@ -10,10 +10,14 @@ import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.utils.ArrayUtil;
 
+import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 
@@ -35,17 +39,22 @@ public class SelectedRepoRightPanel extends VBox{
     }
     
     private void addChildNodes() {
-    	this.getChildren().add(row1);
+    	//this.getChildren().add(row1);
+        //row2.setGridLinesVisible(true); // FOR VISUAL CLARITY
+
     	ColumnConstraints col1 = new ColumnConstraints();
         col1.setPercentWidth(80);
         ColumnConstraints col2 = new ColumnConstraints();
-        col1.setPercentWidth(20);
+        col2.setPercentWidth(20);
         row2.getColumnConstraints().addAll(col1,col2);
         this.col21.getChildren().add(BranchPanel);
-        
+        this.col21.getStyleClass().addAll("border-green");
         row2.add(this.col21, 0, 0);
-        row2.add(col22, 1, 0);
-    	this.getChildren().add(row2);
+        row2.add(this.col22, 1, 0);
+        row2.add(new VBox(), 1, 0);
+        //this.col22.getStyleClass().addAll("border-green");
+        //row2.getStyleClass().addAll("border-red");
+    	this.getChildren().add(row2);    	
     }
     
     public void updateUi() {
@@ -102,7 +111,7 @@ public class SelectedRepoRightPanel extends VBox{
     }    
     
     private void addStyles(){
-        getStyleClass().addAll("border-red","px-5");
+        getStyleClass().addAll("border-red");
     }    
     
     
