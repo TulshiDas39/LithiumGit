@@ -60,7 +60,8 @@ public class SelectedRepoRightPanel extends VBox{
     		this.repositoryInfo = StateManager.getRepositoryInfo();
     		createBranchPanel();
     		setHeadCommit();
-    		StateManager.setSelectedCommit(this.headCommit);    		
+    		StateManager.setSelectedCommit(this.headCommit);
+    		this.col21.setHvalue(this.headCommit.x);
     	}
     }
     
@@ -104,7 +105,7 @@ public class SelectedRepoRightPanel extends VBox{
     		mergeLines.add(line);
 		}
     	this.BranchPanel.getChildren().addAll(branches);
-    	this.BranchPanel.getChildren().addAll(mergeLines);
+    	this.BranchPanel.getChildren().addAll(mergeLines);    	
     	
     }    
     
