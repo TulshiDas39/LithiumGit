@@ -52,7 +52,7 @@ public class StateManager {
     	return repositoryInfo;
     }
     
-    public static void setSelectedCommit(CommitInfo commit) {
+    public static void setSelectedCommit(CommitInfo commit) {    	
     	selectedCommit = commit;
     	StaticData.commitProperty.updateUi(commit);
     }

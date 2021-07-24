@@ -16,7 +16,7 @@ import javafx.scene.text.Text;
 
 public class CommitProperty extends VBox{
   
-  private CommitInfo commit = new CommitInfo();	
+  private CommitInfo commit = new CommitInfo();
 	
   private Text abreviatedHash = new Text();	
   private Text date = new Text();
@@ -40,10 +40,16 @@ public class CommitProperty extends VBox{
   public void updateUi(CommitInfo commit) {
 	  if(commit == null) return;	  
 	  
+	  if(this.commit != commit) {
+		  if(this.commit.UiObj != null) this.commit.UiObj.setSelection(false);
+		  if(commit.UiObj != null) commit.UiObj.setSelection(true);		  
+	  }
 	  if(!commit.avrebHash.equals(this.commit.avrebHash)) this.abreviatedHash.setText(commit.avrebHash);
 	  if(!commit.date.equals(this.commit.date)) this.date.setText(commit.date);
 	  if(!commit.author_email.equals(this.commit.author_email)) this.author.setText(commit.author_name+"<"+commit.author_email+">");
 	  if(!commit.message.equals(this.commit.message)) this.message.setText(commit.message);
+	  
+	  this.commit = commit;
 	  
 	  
   }

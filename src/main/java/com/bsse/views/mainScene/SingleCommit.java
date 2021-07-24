@@ -10,7 +10,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -21,14 +23,29 @@ public class SingleCommit extends Group{
 	  private final Circle circle = new Circle(0,0,Constants.CommitRadius);
 	  private final VBox refBox = new VBox();
 	  private final double translateX;
+	  private boolean isSelected;
 	  
 	  
 	  public SingleCommit(CommitInfo commitInfo,double translateX) {
 		this.commitInfo = commitInfo;
+		this.commitInfo.UiObj = this;
 		this.translateX = translateX;
+		configureChilds();
 		addChilds();
 		addClickListener();
 		addRefs();
+		addStyles();
+	  }
+	  
+	  private void configureChilds() {
+		  circle.setStrokeWidth(0);
+		  circle.setStrokeMiterLimit(10);
+		  circle.setStrokeType(StrokeType.CENTERED);
+		  circle.setStroke(Color.GREEN);
+	  }
+	  
+	  private void addStyles() {
+		  this.getStyleClass().addAll("border-green");
 	  }
 	  
 	  private void addChilds() {
@@ -63,6 +80,19 @@ public class SingleCommit extends Group{
 			refBox.setLayoutX(-maxRefLength+Constants.CommitRadius);
 			
 			refBox.setAlignment(Pos.BASELINE_RIGHT);
-		}
+	  }
+	  
+	  public void setSelection(boolean isSelected){
+		  if(this.isSelected == isSelected) return;
+		  this.isSelected = isSelected;
+		  handleSelection();
+	  }
+	  
+	  private void handleSelection() {
+		  if(this.isSelected) {
+			  	circle.setStrokeWidth(3);			    
+		  }
+		  else circle.setStrokeWidth(0);
+	  }
 	  
 }

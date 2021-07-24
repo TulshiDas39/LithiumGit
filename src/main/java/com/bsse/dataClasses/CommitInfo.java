@@ -7,6 +7,8 @@ package com.bsse.dataClasses;
 
 import java.util.ArrayList;
 
+import com.bsse.views.mainScene.SingleCommit;
+
 /**
  *
  * @author ASUS
@@ -29,4 +31,5 @@ public class CommitInfo{
   public String author_email="";
   public int x;
   public int y;
+  public SingleCommit UiObj;
 }
