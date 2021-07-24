@@ -1,0 +1,68 @@
+package com.bsse.views.mainScene;
+
+import java.util.ArrayList;
+
+import com.bsse.business.StateManager;
+import com.bsse.dataClasses.CommitInfo;
+import com.bsse.dataClasses.Constants;
+
+import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+
+public class SingleCommit extends Group{
+	  public final CommitInfo commitInfo;
+	  private final Circle circle = new Circle(0,0,Constants.CommitRadius);
+	  private final VBox refBox = new VBox();
+	  private final double translateX;
+	  
+	  
+	  public SingleCommit(CommitInfo commitInfo,double translateX) {
+		this.commitInfo = commitInfo;
+		this.translateX = translateX;
+		addChilds();
+		addClickListener();
+		addRefs();
+	  }
+	  
+	  private void addChilds() {
+		  this.getChildren().addAll(this.circle);
+		  this.getChildren().add(refBox);
+		  this.setLayoutX(translateX);
+	  }
+	  
+	  private void addClickListener() {
+		  this.circle.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
+				StateManager.setSelectedCommit(commitInfo);
+			});
+	  }
+	  
+	  private void addRefs() {
+			if(this.commitInfo.refs.isBlank())return;
+			
+			var refs = commitInfo.refs.split(",");
+			var maxRefLength = 0;
+			ArrayList<Text> textList = new ArrayList<>();
+			for (String ref : refs) {
+				if(ref.startsWith(Constants.HeadPrefix))ref = ref.substring(Constants.HeadPrefix.length());
+				var text = new Text(ref);
+			    text.setFont(Font.font("verdana", FontWeight.NORMAL, FontPosture.REGULAR, Constants.ParagraphTextFontSize));
+			    textList.add(text);				
+				if(maxRefLength < text.getLayoutBounds().getWidth())maxRefLength = (int) text.getLayoutBounds().getWidth();
+			}
+			refBox.getChildren().addAll(textList);
+			var spacing = 2;
+			var layoutY = -2*Constants.CommitRadius - textList.get(0).getLayoutBounds().getHeight() * (refs.length -1) - spacing;
+			refBox.setLayoutY(layoutY);		
+			refBox.setLayoutX(-maxRefLength+Constants.CommitRadius);
+			
+			refBox.setAlignment(Pos.BASELINE_RIGHT);
+		}
+	  
+}

@@ -11,14 +11,10 @@ import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.utils.ArrayUtil;
 
-import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 
