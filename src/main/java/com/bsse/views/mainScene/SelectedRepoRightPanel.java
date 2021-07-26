@@ -4,6 +4,7 @@ package com.bsse.views.mainScene;
 import java.util.ArrayList;
 
 import com.bsse.business.StateManager;
+import com.bsse.business.UiUtil;
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;
@@ -53,6 +54,7 @@ public class SelectedRepoRightPanel extends VBox{
         this.col21.setPrefHeight(500);
         this.col21.getStyleClass().addAll("border-green");
         row2.add(this.col21, 0, 0);
+        this.col22.setMinWidth(200);
         row2.add(this.col22, 1, 0);
         row2.add(new VBox(), 1, 0);
         //this.col22.getStyleClass().addAll("border-green");
@@ -67,10 +69,14 @@ public class SelectedRepoRightPanel extends VBox{
     		setHeadCommit();
     		StateManager.setSelectedCommit(this.headCommit);
     		var xAdjustment = Constants.CommitRadius*2;
-    		System.out.println(this.headCommit.UiObj.getBoundsInLocal().getCenterX());
-    		if(this.headCommit.x < xAdjustment) xAdjustment *= -1;
-    		this.col21.setHvalue((this.headCommit.x+xAdjustment)/this.branchPanel.getLayoutBounds().getWidth());
-    		this.col21.setVvalue(this.headCommit.ownerBranch.y/this.branchPanel.getLayoutBounds().getHeight());    		    		
+    		var height = this.col21.getContent().getBoundsInParent().getHeight();
+    		var width = this.col21.getContent().getBoundsInParent().getWidth();
+    		var x = this.headCommit.x;
+    		if(x < width/2) x -= xAdjustment;    		
+    		else x += xAdjustment;
+    		var y = this.headCommit.ownerBranch.y;
+    		this.col21.setHvalue(x/width);
+    		this.col21.setVvalue(y/height);    		    		
     	}
     }
     
@@ -112,7 +118,7 @@ public class SelectedRepoRightPanel extends VBox{
     		if(sourceCommitOfMerge == null) continue;
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
-		}
+		}    	
     	this.branchPanel.getChildren().addAll(branches);
     	this.branchPanel.getChildren().addAll(mergeLines);    	
     	

@@ -42,13 +42,15 @@ public class SingleBranch extends Group{
 		
 		ArrayList<SingleCommit> commitBoxes = new ArrayList<>(); 
 		var translateX = 0;
+		var extendedHeightForRef = 0.0;
 		for (var commit : this.branch.commits) {			
 			translateX = commit.x - startXOfBranch;
 			var singleCommit = new SingleCommit(commit,translateX);
-			this.branch.y += commit.refs.split(",").length * Constants.ParagraphTextFontSize;			
-			commitBoxes.add(singleCommit);
+			var refHeight = commit.refs.split(",").length * Constants.ParagraphTextFontSize;
+			if(refHeight > extendedHeightForRef) extendedHeightForRef = refHeight;
+			commitBoxes.add(singleCommit);			
 		}
-		
+		this.branch.y += extendedHeightForRef;
 		this.getChildren().addAll(commitBoxes);
 		this.setLayoutY(branch.y);
 		
