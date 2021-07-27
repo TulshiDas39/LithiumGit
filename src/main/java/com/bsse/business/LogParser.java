@@ -7,6 +7,8 @@ package com.bsse.business;
 
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.LogFields;
+import com.bsse.utils.StringUtil;
+
 import java.util.ArrayList;
 
 /**

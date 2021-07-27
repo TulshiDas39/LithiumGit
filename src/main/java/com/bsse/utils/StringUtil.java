@@ -5,14 +5,40 @@
  */
 package com.bsse.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
 /**
  *
  * @author ASUS
  */
 public class StringUtil {
+	public static final String MergedCommitMessagePrefix = "Merge branch \'";
     public static boolean IsNullWhiteSpace(String str){
         if(str == null) return true;
         if(str.isBlank()) return true;
         return false;
+    }
+    
+    public static String GetMergeMessageSubString(String branchName) {
+    	return MergedCommitMessagePrefix+"\'"+branchName+"\'";    	
+    }
+    
+    public static boolean isNullOrEmpty(String str){
+        if(str == null) return true;
+        if(str.trim().equals("")) return true;
+        return false;
+    }
+    
+    public static ArrayList<String> getWords(String ids){
+        Pattern p = Pattern.compile("\\s+");//. represents single
+        var splitedValues = ids.split("\\s+");
+        var words = new ArrayList<String>();
+        for (String splitedValue : splitedValues) {
+            if(!splitedValue.trim().equals("")) words.add(splitedValue);
+        }
+        return new ArrayList<String>(Arrays.asList(splitedValues));
+
     }
 }

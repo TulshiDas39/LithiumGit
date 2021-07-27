@@ -4,7 +4,6 @@ package com.bsse.views.mainScene;
 import java.util.ArrayList;
 
 import com.bsse.business.StateManager;
-import com.bsse.business.UiUtil;
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.Constants;

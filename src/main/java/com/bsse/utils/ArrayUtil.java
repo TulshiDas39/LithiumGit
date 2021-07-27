@@ -49,6 +49,13 @@ public class ArrayUtil {
         return false;
     }
     
+    public static <T> boolean any(ArrayList<T> array,Function<T,Boolean> lamba){
+        for (T t : array) {
+            if(lamba.apply(t)) return true;
+        }
+        return false;
+    }
+    
     public static <R,T> ArrayList<R> map(T[] array,Function<T,R> lambda){
     	
     	ArrayList<R> newList = new ArrayList<>();

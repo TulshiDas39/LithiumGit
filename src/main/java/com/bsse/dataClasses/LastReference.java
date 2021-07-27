@@ -10,6 +10,11 @@ package com.bsse.dataClasses;
  * @author ASUS
  */
 public class LastReference {
-  public String message;
-  public String dateTime;
+  public final String dateTime;
+  public final String branchName;
+  
+  public LastReference(String branchName,String dateTime) {
+	this.branchName = branchName;
+	this.dateTime = dateTime;
+}
 }
