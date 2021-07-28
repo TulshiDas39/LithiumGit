@@ -17,6 +17,8 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
 
 public class SelectedRepoRightPanel extends VBox{
@@ -128,14 +130,30 @@ public class SelectedRepoRightPanel extends VBox{
     private void createVerticalLinesOfBranch() {
     	var lineEndingGap = Constants.getGapOfBranchArch();
     	var vLines = new ArrayList<Line>();
+    	var arcs = new ArrayList<Arc>();
     	for(var commit: repositoryInfo.sourceCommits) {
     		for(var branch: commit.branchesFromThis) {
     			var vline = new Line(commit.x,commit.ownerBranch.y,commit.x,branch.y-lineEndingGap);
     			vLines.add(vline);
+    			
+    			double radiusX = Constants.getGapOfBranchArch(); 
+    			double radiusY = Constants.getGapOfBranchArch();
+    			double centerX = commit.x + radiusX; 
+    			double centerY = branch.y - Constants.getGapOfBranchArch(); 
+
+    			double startAngle = 180;
+    			double length = 90.0;
+    			Arc arc = new Arc(centerX,centerY,radiusX,radiusY,startAngle,length);  
+    			arc.setFill(Color.TRANSPARENT);
+    			arc.setStroke(Color.BLACK);
+    			arc.setStrokeWidth(1);
+    			
+    			arcs.add(arc);
     		}
     	}
     	
     	this.branchPanel.getChildren().addAll(vLines);
+    	this.branchPanel.getChildren().addAll(arcs);
     }
     
     private void addStyles(){
