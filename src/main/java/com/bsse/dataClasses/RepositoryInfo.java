@@ -10,15 +10,14 @@ package com.bsse.dataClasses;
  * @author ASUS
  */
 public class RepositoryInfo {
-    public CommitInfo[] allCommits;
+    public CommitInfo[] allCommits = new CommitInfo[0];;
     public BranchDetails branchDetails;
-    //branchSummery:undefined!,
-    public CommitInfo[] commits;
-    public LastReference[] lastReferencesByBranch;
-    public String[] uniqueBrancNames;
-    public RemoteInfo[] remotes;
-    public BranchDetails[] branchTree;
-    public BranchDetails[] resolvedBranches;
+    public LastReference[] lastReferencesByBranch = new LastReference[0];;
+    public String[] uniqueBrancNames=new String[0];;
+    public RemoteInfo[] remotes = new RemoteInfo[0];
+    public BranchDetails[] branchTree = new BranchDetails[0];;
+    public BranchDetails[] resolvedBranches = new BranchDetails[0];;
     public CommitInfo headCommit;
-    public String[] mergeCommitMessages;
+    public String[] mergeCommitMessages = new String[0];;
+    public CommitInfo[] sourceCommits= new CommitInfo[0];
 }

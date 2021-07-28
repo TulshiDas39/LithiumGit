@@ -117,11 +117,26 @@ public class SelectedRepoRightPanel extends VBox{
     		if(sourceCommitOfMerge == null) continue;
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		mergeLines.add(line);
-		}    	
-    	this.branchPanel.getChildren().addAll(branches);
-    	this.branchPanel.getChildren().addAll(mergeLines);    	
+		}
     	
-    }    
+    	this.branchPanel.getChildren().addAll(branches);
+    	this.branchPanel.getChildren().addAll(mergeLines);
+    	createVerticalLinesOfBranch();    	
+    	
+    }
+    
+    private void createVerticalLinesOfBranch() {
+    	var lineEndingGap = Constants.getGapOfBranchArch();
+    	var vLines = new ArrayList<Line>();
+    	for(var commit: repositoryInfo.sourceCommits) {
+    		for(var branch: commit.branchesFromThis) {
+    			var vline = new Line(commit.x,commit.ownerBranch.y,commit.x,branch.y-lineEndingGap);
+    			vLines.add(vline);
+    		}
+    	}
+    	
+    	this.branchPanel.getChildren().addAll(vLines);
+    }
     
     private void addStyles(){
         getStyleClass().addAll("border-red");

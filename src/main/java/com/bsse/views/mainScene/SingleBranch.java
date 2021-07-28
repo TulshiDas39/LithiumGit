@@ -29,8 +29,8 @@ public class SingleBranch extends Group{
 	}
 	
 	public void draw() {
-		var startXOfBranch = 0;
-		if(this.branch.parentCommit != null) startXOfBranch = this.branch.parentCommit.x;
+		var startXOfBranch = 0.0;
+		if(this.branch.parentCommit != null) startXOfBranch = this.branch.parentCommit.x+Constants.getGapOfBranchArch();
 		this.line.setStartY(0);
 		this.line.setEndY(0);
 		this.line.setStartX(0);		
@@ -41,7 +41,7 @@ public class SingleBranch extends Group{
 		this.setLayoutX(startXOfBranch);		
 		
 		ArrayList<SingleCommit> commitBoxes = new ArrayList<>(); 
-		var translateX = 0;
+		var translateX = 0.0;
 		var extendedHeightForRef = 0.0;
 		for (var commit : this.branch.commits) {			
 			translateX = commit.x - startXOfBranch;

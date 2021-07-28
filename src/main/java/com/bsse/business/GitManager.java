@@ -96,7 +96,6 @@ public class GitManager {
     
     private static void createTree(){        
         CommitInfo[] commits = repositoryInfo.allCommits;
-        //System.arraycopy(repositoryInfo.allCommits, 0, commits, 0, repositoryInfo.allCommits.length);
         var branchTree = new ArrayList<BranchDetails>();
         BranchDetails ownerBranch ;
         ArrayList<BranchDetails> branchDetails = new ArrayList<>();
@@ -121,7 +120,6 @@ public class GitManager {
         
         for(var i = 0; i < commits.length; i++){
             final var currentCommit = commits[i];
-            //setReference(currentCommit,lastReferencesByBranch);
             currentCommit.referedBranches = getBranchFromReference(currentCommit.refs);
             var lastRef = CheckBranchReferenceInCommitMessage(currentCommit);
             if(lastRef != null) lastReferencesByBranch.add(lastRef);
@@ -132,8 +130,7 @@ public class GitManager {
             CommitInfo previousCommit = ArrayUtil.find(commits, commit -> commit.avrebHash.equals(currentCommit.parentHashes.get(0)));
             
             if(previousCommit != null){
-            	currentCommit.previousCommit = previousCommit;
-            	
+            	currentCommit.previousCommit = previousCommit;            	
                 if(previousCommit.nextCommit != null){            
                   ownerBranch = createNewBranch.apply(previousCommit);
                   previousCommit.branchesFromThis.add(ownerBranch);
@@ -149,48 +146,31 @@ public class GitManager {
             currentCommit.ownerBranch = ownerBranch;
             currentCommit.ownerBranch.commits.add(currentCommit);
 
-        if(currentCommit.branchNameWithRemotes.length != 0 ){
-            //check parent branch is same
-        	BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> !StringUtil.isNullOrEmpty(arg0.remote));
-         	
-            if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
-            else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
-            
-            BranchDetails parentBranch = NullUtil.withSafe(()-> currentCommit.ownerBranch.parentCommit.ownerBranch);
-            
-            if(parentBranch != null){
-                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;                
-                var isParentBranch = ArrayUtil.any(branchNameWithRemotes,(branchNameWithRemote) -> {                        
-                    return branchNameWithRemote.branchName.equals(parentBranch.name);                        
-                });                    
-                if(isParentBranch){
-                	parentBranch.commits.get(parentBranch.commits.size()-1).nextCommit = ownerBranch.commits.get(0);
-                    parentBranch.commits.addAll(ownerBranch.commits);
-                    for (CommitInfo commit : ownerBranch.commits) {
-                        commit.ownerBranch = parentBranch;
-                    }
-                    currentCommit.ownerBranch = parentBranch;
-                    branchDetails.remove(ownerBranch);
-                }                
-            }
-            else{
-            	
-            	
-                
-//                for (CommitInfo commit : currentCommit.ownerBranch.commits) {
-//                    commit.ownerBranch = ownerBranch;
-//                }
-                                        
-//                final var parentCommitOfOwnerBranch = ownerBranch.parentCommit;
-//                if(parentCommitOfOwnerBranch != null) parentCommitOfOwnerBranch.branchesFromThis.add(ownerBranch);                        
-            }
-        }
-
-//        currentCommit.ownerBranch.commits.add(currentCommit);
-//        if(!StringUtil.isNullOrEmpty(currentCommit.ownerBranch.name) ) {        
-//          currentCommit.previousCommit = previousCommit;
-//        }
-
+	        if(currentCommit.branchNameWithRemotes.length != 0 ){
+	        	BranchRemote remoteBranch = ArrayUtil.find(currentCommit.branchNameWithRemotes, (arg0)-> !StringUtil.isNullOrEmpty(arg0.remote));
+	         	
+	            if(remoteBranch != null) currentCommit.ownerBranch.name = remoteBranch.branchName;                        
+	            else currentCommit.ownerBranch.name = currentCommit.branchNameWithRemotes[0].branchName;
+	            
+	            BranchDetails parentBranch = NullUtil.withSafe(()-> currentCommit.ownerBranch.parentCommit.ownerBranch);
+	            
+	            if(parentBranch != null){
+	                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;                
+	                var isParentBranch = ArrayUtil.any(branchNameWithRemotes,(branchNameWithRemote) -> {                        
+	                    return branchNameWithRemote.branchName.equals(parentBranch.name);                        
+	                });                    
+	                if(isParentBranch){
+	                	parentBranch.commits.get(parentBranch.commits.size()-1).nextCommit = ownerBranch.commits.get(0);
+	                    parentBranch.commits.addAll(ownerBranch.commits);
+	                    for (CommitInfo commit : ownerBranch.commits) {
+	                        commit.ownerBranch = parentBranch;
+	                    }
+	                    currentCommit.ownerBranch = parentBranch;
+	                    branchDetails.remove(ownerBranch);
+	                }                
+	            }
+	
+	        }
 
         }
         
@@ -199,8 +179,7 @@ public class GitManager {
         	return x.serial > y.serial? 1:-1 ;
         });
         repositoryInfo.resolvedBranches = branchDetails.toArray(new BranchDetails[0]);
-        repositoryInfo.lastReferencesByBranch = lastReferencesByBranch.toArray(new LastReference[0]);
-        fixSourceCommits();
+        repositoryInfo.lastReferencesByBranch = lastReferencesByBranch.toArray(new LastReference[0]);        
     }
     
     private static LastReference CheckBranchReferenceInCommitMessage(CommitInfo commit) {
@@ -212,15 +191,23 @@ public class GitManager {
     	return lastRef;
     }
     
+    private static void generateSourceCommits() {
+    	var sourceCommits = ArrayUtil.filter(repositoryInfo.allCommits, c -> c.branchesFromThis.size() > 0);
+    	repositoryInfo.sourceCommits = sourceCommits.toArray(new CommitInfo[0]);
+    }
+    
     private static void fixSourceCommits() {
-    	for (int i = repositoryInfo.allCommits.length-1; i>=0; i--) {
-    		var commit = repositoryInfo.allCommits[i];
-			if(commit.branchesFromThis.size() == 0) continue;
+    	for (int i = repositoryInfo.sourceCommits.length-1; i>=0; i--) {
+    		var commit = repositoryInfo.sourceCommits[i];			
 			if(commit.branchNameWithRemotes.length != 0) continue;
 			
 			for(var branch: commit.branchesFromThis) {
+				if(branch.name.isBlank())continue;
 				
-				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(commit.date) < 0 )) {					
+				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(commit.date) < 0 )) {
+					
+					commit.branchesFromThis.remove(branch);
+					commit.branchesFromThis.add(commit.ownerBranch);
 					commit.nextCommit = branch.commits.get(0);
 					branch.parentCommit = commit.ownerBranch.parentCommit;
 					commit.ownerBranch.parentCommit = commit;					
@@ -231,6 +218,7 @@ public class GitManager {
 						branch.commits.add(0, commitToMove);						
 						commitToMove = commitToMove.previousCommit;						
 					}					
+					
 					break;
 				}
 				
@@ -262,19 +250,14 @@ public class GitManager {
             ex.printStackTrace();
         }
         
-        createTree();
+        createTree();        
+        generateSourceCommits();
+        fixSourceCommits();
+        
         StateManager.setRepositoryInfo(repositoryInfo);
 
     }
 
-//    private static void setReference(CommitInfo commit,ArrayList<LastReference> lastReferencesByBranch ) {
-//        if(commit.message.contains("branch ") ){
-//            var reference = new LastReference();
-//            reference.dateTime = commit.date;
-//            reference.message = commit.message;
-//            lastReferencesByBranch.add(reference);
-//        }
-//    }
 
     private static String[] getBranchFromReference(String commitRef) {
     	final ArrayList<String> branches = new ArrayList<>();
