@@ -198,26 +198,27 @@ public class GitManager {
     
     private static void fixSourceCommits() {
     	for (int i = repositoryInfo.sourceCommits.length-1; i>=0; i--) {
-    		var commit = repositoryInfo.sourceCommits[i];			
-			if(commit.branchNameWithRemotes.length != 0) continue;
+    		var sourceCommit = repositoryInfo.sourceCommits[i];			
+			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
 			
-			for(var branch: commit.branchesFromThis) {
+			for(var branch: sourceCommit.branchesFromThis) {
 				if(branch.name.isBlank())continue;
 				
-				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(commit.date) < 0 )) {
-					
-					commit.branchesFromThis.remove(branch);
-					commit.branchesFromThis.add(commit.ownerBranch);
-					commit.nextCommit = branch.commits.get(0);
-					branch.parentCommit = commit.ownerBranch.parentCommit;
-					commit.ownerBranch.parentCommit = commit;					
-					var commitToMove = commit;
+				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(sourceCommit.date) < 0 )) {
+					var currentOwnerBranch = sourceCommit.ownerBranch;
+					sourceCommit.branchesFromThis.remove(branch);
+					sourceCommit.branchesFromThis.add(sourceCommit.ownerBranch);
+					sourceCommit.nextCommit = branch.commits.get(0);
+					branch.parentCommit = sourceCommit.ownerBranch.parentCommit;
+					sourceCommit.ownerBranch.parentCommit = sourceCommit;					
+					var commitToMove = sourceCommit;
 					while (commitToMove != null) {
+						if(!commitToMove.ownerBranch.name.equals(currentOwnerBranch.name)) break;
 						commitToMove.ownerBranch.commits.remove(commitToMove);
 						commitToMove.ownerBranch = branch;
-						branch.commits.add(0, commitToMove);						
+						branch.commits.add(0, commitToMove);
 						commitToMove = commitToMove.previousCommit;						
-					}					
+					}
 					
 					break;
 				}
