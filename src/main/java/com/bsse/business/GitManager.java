@@ -207,12 +207,12 @@ public class GitManager {
 				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(sourceCommit.date) < 0 )) {
 					var currentOwnerBranch = sourceCommit.ownerBranch;
 					sourceCommit.branchesFromThis.remove(branch);
-					sourceCommit.branchesFromThis.add(sourceCommit.ownerBranch);
+					sourceCommit.branchesFromThis.add(currentOwnerBranch);
 					sourceCommit.nextCommit = branch.commits.get(0);
-					branch.parentCommit = sourceCommit.ownerBranch.parentCommit;
-					sourceCommit.ownerBranch.parentCommit = sourceCommit;					
+					branch.parentCommit = currentOwnerBranch.parentCommit;
+					currentOwnerBranch.parentCommit = sourceCommit;					
 					var commitToMove = sourceCommit;
-					while (commitToMove != null) {
+					while (commitToMove != branch.parentCommit) {
 						if(!commitToMove.ownerBranch.name.equals(currentOwnerBranch.name)) break;
 						commitToMove.ownerBranch.commits.remove(commitToMove);
 						commitToMove.ownerBranch = branch;
