@@ -206,6 +206,11 @@ public class GitManager {
 				
 				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(sourceCommit.date) < 0 )) {
 					var currentOwnerBranch = sourceCommit.ownerBranch;
+					if(currentOwnerBranch.parentCommit != null) {
+						currentOwnerBranch.parentCommit.branchesFromThis.remove(currentOwnerBranch);
+						currentOwnerBranch.parentCommit.branchesFromThis.add(branch);	
+					}
+					
 					sourceCommit.branchesFromThis.remove(branch);
 					sourceCommit.branchesFromThis.add(currentOwnerBranch);
 					sourceCommit.nextCommit = branch.commits.get(0);
