@@ -22,4 +22,17 @@ public class BranchDetails {
   public double serial;
   public int y;
   public Group uiObj;
+  
+  public double getSerial() {
+	  if(serial != 0.0) return serial;	  
+	  var parentSerial = this.parentCommit.ownerBranch.getSerial();
+	  int commitInex;
+	  if(!name.isBlank())commitInex = this.parentCommit.ownerBranch.commits.indexOf(this.parentCommit)+1;
+	  else commitInex = this.parentCommit.ownerBranch.commits.size()+1;
+	  var measuredSerial = parentSerial+ parentSerial * (1.0/(10.0*commitInex));
+	  return measuredSerial;
+  }
+  
 }
+
+

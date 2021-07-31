@@ -109,11 +109,11 @@ public class GitManager {
           newOwnerBranch.noDerivedCommits = false;          
           if(parentCommit == null) {
         	  branchTree.add(newOwnerBranch);
-        	  newOwnerBranch.serial = branchDetails.size();
+        	  newOwnerBranch.serial = branchTree.size();
           }
           else {
-        	  var serialOfParentCommit = parentCommit.ownerBranch.commits.indexOf(parentCommit)+1;
-        	  newOwnerBranch.serial = parentCommit.ownerBranch.serial +  (1.0 / serialOfParentCommit);
+        	  //var serialOfParentCommit = parentCommit.ownerBranch.commits.indexOf(parentCommit)+1;
+        	  //newOwnerBranch.serial = parentCommit.ownerBranch.serial +  (0.1 / serialOfParentCommit);
           }
           branchDetails.add(newOwnerBranch);
           return newOwnerBranch;
@@ -176,9 +176,6 @@ public class GitManager {
         }
         
         repositoryInfo.branchTree = branchTree.toArray(new BranchDetails[0]);
-//        branchDetails.sort((x,y)->{
-//        	return x.serial > y.serial? 1:-1 ;
-//        });
         repositoryInfo.resolvedBranches = branchDetails.toArray(new BranchDetails[0]);
         repositoryInfo.lastReferencesByBranch = lastReferencesByBranch.toArray(new LastReference[0]);        
     }
@@ -229,10 +226,9 @@ public class GitManager {
 			sourceCommit.nextCommit = realOwnerBranch.commits.get(0);
 			realOwnerBranch.parentCommit = currentOwnerBranch.parentCommit;
 			currentOwnerBranch.parentCommit = sourceCommit;	
-			
-			var currentOwnerBranchSerial =  currentOwnerBranch.serial;
-			currentOwnerBranch.serial = realOwnerBranch.serial;
-			realOwnerBranch.serial = currentOwnerBranchSerial;
+						
+			if(currentOwnerBranch.serial != 0.0) realOwnerBranch.serial = currentOwnerBranch.serial; 
+			currentOwnerBranch.serial = 0.0;
 			
 			var commitToMove = sourceCommit;
 			while (commitToMove != realOwnerBranch.parentCommit) {
@@ -273,7 +269,7 @@ public class GitManager {
         enListSourceCommits();
         finaliseSourceCommits();
         
-        Arrays.sort(repositoryInfo.resolvedBranches,(x,y)->  x.serial > y.serial?1:-1);        
+        Arrays.sort(repositoryInfo.resolvedBranches,(x,y)->  x.getSerial() > y.getSerial()?1:-1);        
         
         StateManager.setRepositoryInfo(repositoryInfo);
 
