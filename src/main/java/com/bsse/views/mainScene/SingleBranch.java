@@ -36,6 +36,7 @@ public class SingleBranch extends Group{
 		this.line.setStartX(0);		
 		var endX = this.branch.commits.get(this.branch.commits.size()-1).x;
 		this.line.setEndX(endX - startXOfBranch);
+		this.line.setViewOrder(100);
 		this.getChildren().add(line);		
 		
 		this.setLayoutX(startXOfBranch);		
@@ -48,6 +49,7 @@ public class SingleBranch extends Group{
 			var singleCommit = new SingleCommit(commit,translateX);
 			var refHeight = commit.refs.split(",").length * Constants.ParagraphTextFontSize;
 			if(refHeight > extendedHeightForRef) extendedHeightForRef = refHeight;
+			singleCommit.setViewOrder(50);
 			commitBoxes.add(singleCommit);			
 		}
 		this.branch.y += extendedHeightForRef;

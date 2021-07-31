@@ -12,6 +12,7 @@ import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.dataClasses.StaticData;
+import com.bsse.views.mainScene.SingleCommit;
 
 /**
  *
@@ -23,6 +24,7 @@ public class StateManager {
     private static ArrayList<BranchDetails> branchTree;
     private static RepositoryInfo repositoryInfo;
     private static CommitInfo selectedCommit;
+    private static SingleCommit headCommit;
 
     public static RepoInfo getSelectedRepoInfo() {
         return selectedRepoInfo;
@@ -59,6 +61,16 @@ public class StateManager {
     }
     public static CommitInfo getSelectedCommit() {
     	return selectedCommit;    	
+    }
+    
+    public static void setHeadCommit(SingleCommit commit) {
+    	if(StateManager.headCommit == commit)return;
+    	if(headCommit != null) headCommit.setIsHead(false);
+    	headCommit = commit;
+    	headCommit.setIsHead(true);
+    }
+    public static SingleCommit getHeadCommit() {
+    	return headCommit;    	
     }
     
 }

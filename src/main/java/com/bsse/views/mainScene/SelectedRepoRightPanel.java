@@ -70,6 +70,7 @@ public class SelectedRepoRightPanel extends VBox{
     		this.col21.setContent(this.repositoryInfo.branchPanel);
     		setHeadCommit();
     		StateManager.setSelectedCommit(this.repositoryInfo.headCommit);
+    		StateManager.setHeadCommit(repositoryInfo.headCommit.UiObj);
     		var adjustment = 100.0;    		
     		var height = this.col21.getContent().getBoundsInParent().getHeight();
     		var width = this.col21.getContent().getBoundsInParent().getWidth();
@@ -123,7 +124,8 @@ public class SelectedRepoRightPanel extends VBox{
     	for (BranchDetails branch : this.repositoryInfo.resolvedBranches) {
     		var singleBranch = new SingleBranch(branch);    		 
     		singleBranch.getBranch().y = y;
-			singleBranch.draw();			 			
+			singleBranch.draw();
+			singleBranch.setViewOrder(Constants.ViewOrderOfBranchPanelBranches);
 			this.branches.add(singleBranch);
 			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
@@ -134,6 +136,7 @@ public class SelectedRepoRightPanel extends VBox{
     		var sourceCommitOfMerge = ArrayUtil.find(this.repositoryInfo.allCommits, c -> c.avrebHash.equals(commit.parentHashes.get(1)));
     		if(sourceCommitOfMerge == null) continue;
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
+    		line.setViewOrder(Constants.ViewOrderOfBranchPanelLines);
     		mergeLines.add(line);
 		}
     	
@@ -151,6 +154,7 @@ public class SelectedRepoRightPanel extends VBox{
     	for(var commit: repositoryInfo.sourceCommits) {
     		for(var branch: commit.branchesFromThis) {
     			var vline = new Line(commit.x,commit.ownerBranch.y,commit.x,branch.y-lineEndingGap);
+    			vline.setViewOrder(Constants.ViewOrderOfBranchPanelLines);
     			vLines.add(vline);
     			
     			double radiusX = Constants.getGapOfBranchArch(); 

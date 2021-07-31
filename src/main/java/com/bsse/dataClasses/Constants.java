@@ -24,6 +24,9 @@ public class Constants {
     public static final int DistanceBetweenBranches = CommitRadius*4;
     public static final String ParagraphTextFont = "verdana";
     public static final double ParagraphTextFontSize = CommitRadius * 0.75;
+    public static final double ViewOrderOfBranchPanelLines = 100;
+    public static final double ViewOrderOfBranchPanelCommits = 50;
+    public static final double ViewOrderOfBranchPanelBranches = 50;
     
     public static double getGapOfBranchArch() {
     	return CommitRadius/2.0;

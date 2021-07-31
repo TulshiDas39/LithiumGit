@@ -21,9 +21,12 @@ import javafx.scene.text.Text;
 public class SingleCommit extends Group{
 	  public final CommitInfo commitInfo;
 	  private final Circle circle = new Circle(0,0,Constants.CommitRadius);
+	  private final Color circlFillColor = Color.BLACK;
+	  private final Color circlHeadColor = Color.BLUEVIOLET;
 	  private final VBox refBox = new VBox();
 	  private final double translateX;
 	  private boolean isSelected;
+	  private boolean isHead;
 	  
 	  
 	  public SingleCommit(CommitInfo commitInfo,double translateX) {
@@ -42,10 +45,11 @@ public class SingleCommit extends Group{
 		  circle.setStrokeMiterLimit(10);
 		  circle.setStrokeType(StrokeType.CENTERED);
 		  circle.setStroke(Color.GREEN);
+		  circle.setFill(circlFillColor);
 	  }
 	  
 	  private void addStyles() {
-		  this.getStyleClass().addAll("border-green");
+		  this.getStyleClass().addAll("border-green");		  	  
 	  }
 	  
 	  private void addChilds() {
@@ -93,6 +97,19 @@ public class SingleCommit extends Group{
 			  	circle.setStrokeWidth(3);			    
 		  }
 		  else circle.setStrokeWidth(0);
+	  }
+	  
+	  public void setIsHead(boolean isHead) {
+		  if(this.isHead == isHead) return;
+		  this.isHead = isHead;
+		  handleHeadChange();
+	  }
+	  
+	  private void handleHeadChange() {
+		  if(this.isHead) {
+			  this.circle.setFill(circlHeadColor);
+		  }
+		  else this.circle.setFill(circlFillColor);
 	  }
 	  
 }
