@@ -137,6 +137,7 @@ public class SelectedRepoRightPanel extends VBox{
     		if(sourceCommitOfMerge == null) continue;
     		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
     		line.setViewOrder(Constants.ViewOrderOfBranchPanelLines);
+    		line.setStroke(Constants.LineColorOfBranchPanel);
     		mergeLines.add(line);
 		}
     	

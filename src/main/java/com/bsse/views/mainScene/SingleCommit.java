@@ -21,7 +21,7 @@ import javafx.scene.text.Text;
 public class SingleCommit extends Group{
 	  public final CommitInfo commitInfo;
 	  private final Circle circle = new Circle(0,0,Constants.CommitRadius);
-	  private final Color circlFillColor = Color.BLACK;
+	  private final Color circlFillColor = Color.CADETBLUE;
 	  private final Color circlHeadColor = Color.BLUEVIOLET;
 	  private final VBox refBox = new VBox();
 	  private final double translateX;
