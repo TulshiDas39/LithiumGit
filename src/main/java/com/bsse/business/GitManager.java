@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import org.eclipse.jgit.api.Git;
@@ -112,7 +113,7 @@ public class GitManager {
           }
           else {
         	  var serialOfParentCommit = parentCommit.ownerBranch.commits.indexOf(parentCommit)+1;
-        	  newOwnerBranch.serial = parentCommit.ownerBranch.serial +  (1 / serialOfParentCommit);
+        	  newOwnerBranch.serial = parentCommit.ownerBranch.serial +  (1.0 / serialOfParentCommit);
           }
           branchDetails.add(newOwnerBranch);
           return newOwnerBranch;
@@ -175,9 +176,9 @@ public class GitManager {
         }
         
         repositoryInfo.branchTree = branchTree.toArray(new BranchDetails[0]);
-        branchDetails.sort((x,y)->{
-        	return x.serial > y.serial? 1:-1 ;
-        });
+//        branchDetails.sort((x,y)->{
+//        	return x.serial > y.serial? 1:-1 ;
+//        });
         repositoryInfo.resolvedBranches = branchDetails.toArray(new BranchDetails[0]);
         repositoryInfo.lastReferencesByBranch = lastReferencesByBranch.toArray(new LastReference[0]);        
     }
@@ -215,7 +216,12 @@ public class GitManager {
 					sourceCommit.branchesFromThis.add(currentOwnerBranch);
 					sourceCommit.nextCommit = branch.commits.get(0);
 					branch.parentCommit = currentOwnerBranch.parentCommit;
-					currentOwnerBranch.parentCommit = sourceCommit;					
+					currentOwnerBranch.parentCommit = sourceCommit;	
+					
+					var currentOwnerBranchSerial =  currentOwnerBranch.serial;
+					currentOwnerBranch.serial = branch.serial;
+					branch.serial = currentOwnerBranchSerial;
+					
 					var commitToMove = sourceCommit;
 					while (commitToMove != branch.parentCommit) {
 						if(!commitToMove.ownerBranch.name.equals(currentOwnerBranch.name)) break;
@@ -259,6 +265,8 @@ public class GitManager {
         createTree();        
         generateSourceCommits();
         fixSourceCommits();
+        
+        Arrays.sort(repositoryInfo.resolvedBranches,(x,y)->  x.serial > y.serial?1:-1);        
         
         StateManager.setRepositoryInfo(repositoryInfo);
 
