@@ -192,49 +192,56 @@ public class GitManager {
     	return lastRef;
     }
     
-    private static void generateSourceCommits() {
+    private static void enListSourceCommits() {
     	var sourceCommits = ArrayUtil.filter(repositoryInfo.allCommits, c -> c.branchesFromThis.size() > 0);
     	repositoryInfo.sourceCommits = sourceCommits.toArray(new CommitInfo[0]);
     }
     
-    private static void fixSourceCommits() {
+    private static void finaliseSourceCommits() {
     	for (int i = repositoryInfo.sourceCommits.length-1; i>=0; i--) {
     		var sourceCommit = repositoryInfo.sourceCommits[i];			
 			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
 			
-			for(var branch: sourceCommit.branchesFromThis) {
-				if(branch.name.isBlank())continue;
-				
-				if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(branch.name) && ref.dateTime.compareTo(sourceCommit.date) < 0 )) {
-					var currentOwnerBranch = sourceCommit.ownerBranch;
-					if(currentOwnerBranch.parentCommit != null) {
-						currentOwnerBranch.parentCommit.branchesFromThis.remove(currentOwnerBranch);
-						currentOwnerBranch.parentCommit.branchesFromThis.add(branch);	
-					}
-					
-					sourceCommit.branchesFromThis.remove(branch);
-					sourceCommit.branchesFromThis.add(currentOwnerBranch);
-					sourceCommit.nextCommit = branch.commits.get(0);
-					branch.parentCommit = currentOwnerBranch.parentCommit;
-					currentOwnerBranch.parentCommit = sourceCommit;	
-					
-					var currentOwnerBranchSerial =  currentOwnerBranch.serial;
-					currentOwnerBranch.serial = branch.serial;
-					branch.serial = currentOwnerBranchSerial;
-					
-					var commitToMove = sourceCommit;
-					while (commitToMove != branch.parentCommit) {
-						if(!commitToMove.ownerBranch.name.equals(currentOwnerBranch.name)) break;
-						commitToMove.ownerBranch.commits.remove(commitToMove);
-						commitToMove.ownerBranch = branch;
-						branch.commits.add(0, commitToMove);
-						commitToMove = commitToMove.previousCommit;						
-					}
-					
-					break;
+			var currentOwnerBranch = sourceCommit.ownerBranch;
+			BranchDetails realOwnerBranch = null;
+			
+			if(currentOwnerBranch.name.isBlank() && sourceCommit.branchesFromThis.size() == 1)
+				realOwnerBranch = sourceCommit.branchesFromThis.get(0);
+			else {
+				for(var br: sourceCommit.branchesFromThis) {
+					if(br.name.isBlank())continue;
+					if(ArrayUtil.any(repositoryInfo.lastReferencesByBranch, ref -> ref.branchName.equals(br.name) && ref.dateTime.compareTo(sourceCommit.date) < 0 ))
+						realOwnerBranch = br;
+					break;					
 				}
-				
 			}					
+			
+			if(realOwnerBranch == null)continue;
+			
+			
+			if(currentOwnerBranch.parentCommit != null) {
+				currentOwnerBranch.parentCommit.branchesFromThis.remove(currentOwnerBranch);
+				currentOwnerBranch.parentCommit.branchesFromThis.add(realOwnerBranch);	
+			}
+			
+			sourceCommit.branchesFromThis.remove(realOwnerBranch);
+			sourceCommit.branchesFromThis.add(currentOwnerBranch);
+			sourceCommit.nextCommit = realOwnerBranch.commits.get(0);
+			realOwnerBranch.parentCommit = currentOwnerBranch.parentCommit;
+			currentOwnerBranch.parentCommit = sourceCommit;	
+			
+			var currentOwnerBranchSerial =  currentOwnerBranch.serial;
+			currentOwnerBranch.serial = realOwnerBranch.serial;
+			realOwnerBranch.serial = currentOwnerBranchSerial;
+			
+			var commitToMove = sourceCommit;
+			while (commitToMove != realOwnerBranch.parentCommit) {
+				if(!commitToMove.ownerBranch.name.equals(currentOwnerBranch.name)) break;
+				commitToMove.ownerBranch.commits.remove(commitToMove);
+				commitToMove.ownerBranch = realOwnerBranch;
+				realOwnerBranch.commits.add(0, commitToMove);
+				commitToMove = commitToMove.previousCommit;						
+			}
 		}
     }
     
@@ -263,8 +270,8 @@ public class GitManager {
         }
         
         createTree();        
-        generateSourceCommits();
-        fixSourceCommits();
+        enListSourceCommits();
+        finaliseSourceCommits();
         
         Arrays.sort(repositoryInfo.resolvedBranches,(x,y)->  x.serial > y.serial?1:-1);        
         
