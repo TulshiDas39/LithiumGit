@@ -69,15 +69,20 @@ public class SelectedRepoRightPanel extends VBox{
     		createBranchPanel();
     		setHeadCommit();
     		StateManager.setSelectedCommit(this.headCommit);
-    		var xAdjustment = Constants.CommitRadius*2;
+    		var adjustment = 100.0;    		
     		var height = this.col21.getContent().getBoundsInParent().getHeight();
     		var width = this.col21.getContent().getBoundsInParent().getWidth();
-    		var x = this.headCommit.x;
-    		if(x < width/2) x -= xAdjustment;    		
-    		else x += xAdjustment;
-    		var y = this.headCommit.ownerBranch.y;
+    		var minXOfBranch = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinX();
+    		var minYOfBranch = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinY();
+    		double x = this.headCommit.UiObj.getBoundsInParent().getCenterX();    		
+    		if(x < width/2) x = this.headCommit.UiObj.getBoundsInParent().getMinX()-adjustment;    		
+    		else x = this.headCommit.UiObj.getBoundsInParent().getMaxX()+adjustment;
+    		var y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getCenterY();
+    		if(y < height / 2) y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinY()-adjustment;
+    		else y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMaxY()+adjustment;
+    		x += minXOfBranch;
     		this.col21.setHvalue(x/width);
-    		this.col21.setVvalue(y/height);    		    		
+    		this.col21.setVvalue(y/height);	    		
     	}
     }
     
@@ -85,10 +90,18 @@ public class SelectedRepoRightPanel extends VBox{
     	if(this.headCommit != null) return;    	
     	for(int i = this.repositoryInfo.allCommits.length -1; i >= 0; i--) {
     		var commit = this.repositoryInfo.allCommits[i];
+    		if(commit.refs.isBlank())continue;
     		if(commit.refs.contains(Constants.HeadPrefix)) {
     			this.headCommit = commit;
     			break;
     		}
+    		var refSplits = commit.refs.split(",");
+    		
+    		if( ArrayUtil.any(refSplits, ref -> ref.equals(Constants.DetachedHeadPrefix ))){
+    			this.headCommit = commit;
+    			break;
+    		}
+    		
     	}    	
     	
     }
