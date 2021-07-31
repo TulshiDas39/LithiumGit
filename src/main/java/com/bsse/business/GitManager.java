@@ -42,7 +42,7 @@ public class GitManager {
     
     public static void setRemotes() throws GitAPIException{
         var remotesTemp = git.remoteList().call();
-        
+        remotesTemp = ArrayUtil.filter(remotesTemp, r->r.getURIs().size() > 0);
         repositoryInfo.remotes = ArrayUtil.map(remotesTemp, (x)-> {
         	var remoteInfo = new RemoteInfo();
         	remoteInfo.name = x.getName();
