@@ -20,4 +20,9 @@ public class RepositoryInfo {
     public CommitInfo headCommit;
     public String[] mergeCommitMessages = new String[0];;
     public CommitInfo[] sourceCommits= new CommitInfo[0];
+    public final RepoInfo repoInfo;
+    
+    public RepositoryInfo(RepoInfo repoInfo) {
+		this.repoInfo = repoInfo;
+	}
 }

@@ -18,8 +18,8 @@ import javafx.scene.layout.VBox;
 public class Body extends VBox{
 
     private RepoInfo selectedRepoInfo;
-    private RepoSelection repoSelection;
-    private SelectedRepo selectedRepo;
+    private RepoSelection repoSelection=new RepoSelection();
+    private SelectedRepo selectedRepo = new SelectedRepo();
 
     public Body() {
         super();
@@ -35,20 +35,18 @@ public class Body extends VBox{
     private void addChildNodes(){
         var childs = new ArrayList<Node>();
         
-        if(this.selectedRepoInfo == null){
-            this.repoSelection = new RepoSelection();
+        if(this.selectedRepoInfo == null){            
             childs.add(this.repoSelection);
         }
-        else{
-            this.selectedRepo = new SelectedRepo();
+        else{            
             childs.add(this.selectedRepo);
         }
         
         this.getChildren().addAll(childs);
     }
     
-    public void updateUi(){
-        if(StateManager.getSelectedRepoInfo() != this.selectedRepoInfo){
+    public void updateUi(){    	
+        if(this.selectedRepoInfo == null || StateManager.getSelectedRepoInfo() == null){
             this.selectedRepoInfo = StateManager.getSelectedRepoInfo();
             handleRepoSelection();
         }
@@ -58,12 +56,10 @@ public class Body extends VBox{
         var childs = getChildren();
         if(selectedRepoInfo == null){
             childs.remove(this.selectedRepo);
-            this.repoSelection = new RepoSelection();
             childs.add(this.repoSelection);
         }
         else{
             this.getChildren().remove(this.repoSelection);
-            this.selectedRepo = new SelectedRepo();
             this.getChildren().add(this.selectedRepo);
         }
     }

@@ -37,7 +37,7 @@ public class GitManager {
     private static Git git ;   
     private static final String headPrefix = "HEAD -> ";
     
-    private static RepositoryInfo repositoryInfo = new RepositoryInfo();
+    private static RepositoryInfo repositoryInfo;// = new RepositoryInfo();
     
     
     public static void setRemotes() throws GitAPIException{
@@ -51,10 +51,7 @@ public class GitManager {
         }).toArray(new RemoteInfo[0]);
         
     }
-    
-    public static RepositoryInfo getRepositoryInfo() {
-    	return repositoryInfo;
-    }
+
     
     public static void setLogs2(){
         
@@ -241,7 +238,8 @@ public class GitManager {
 		}
     }
     
-    public static void setRepo(RepoInfo repo){
+    public static RepositoryInfo getRepositoryInfo(RepoInfo repo){
+    	repositoryInfo = new RepositoryInfo(repo);
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository;
         try {
@@ -249,7 +247,7 @@ public class GitManager {
             
         } catch (IOException ex) {
             ex.printStackTrace();
-            return;
+            return null;
         }  
         git = new Git(repository);
         
@@ -271,7 +269,8 @@ public class GitManager {
         
         Arrays.sort(repositoryInfo.resolvedBranches,(x,y)->  x.getSerial() > y.getSerial()?1:-1);        
         
-        StateManager.setRepositoryInfo(repositoryInfo);
+        //StateManager.setRepositoryInfo(repositoryInfo);
+        return repositoryInfo;
 
     }
 

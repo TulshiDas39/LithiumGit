@@ -29,10 +29,11 @@ public class StateManager {
     }
 
     public static void setSelectedRepoInfo(RepoInfo selectedRepoInfo) {
+    	if(StateManager.selectedRepoInfo != null &&  StateManager.selectedRepoInfo.name.equals(selectedRepoInfo.name))return;
         StateManager.selectedRepoInfo = selectedRepoInfo;
         StaticData.topNav.updateUi();
         StaticData.body.updateUi();
-        GitManager.setRepo(StateManager.getSelectedRepoInfo());
+        StaticData.selectedRepoRightPanel.updateUi();       
     }
     
     public static ArrayList<BranchDetails> getBranchTree(){
@@ -43,10 +44,10 @@ public class StateManager {
     	branchTree = tree;
     }
     
-    public static void setRepositoryInfo(RepositoryInfo repositoryInfo) {
-    	StateManager.repositoryInfo = repositoryInfo;
-    	StaticData.selectedRepoRightPanel.updateUi();
-    }
+//    public static void setRepositoryInfo(RepositoryInfo repositoryInfo) {    	
+//    	StateManager.repositoryInfo = repositoryInfo;
+//    	StaticData.selectedRepoRightPanel.updateUi();
+//    }
     
     public static RepositoryInfo getRepositoryInfo() {
     	return repositoryInfo;

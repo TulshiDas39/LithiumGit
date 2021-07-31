@@ -1,11 +1,13 @@
 
 package com.bsse.views.mainScene;
 
+import java.util.ArrayList;
+
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepoInfo;
-import java.util.ArrayList;
-import java.util.function.Consumer;
+import com.bsse.utils.ArrayUtil;
+
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
@@ -18,6 +20,7 @@ import javafx.scene.text.Text;
 public class TopNav extends HBox{
 
     private HBox toolBoxForRepo = new HBox();
+    private ComboBox<String> repoSelectionDropdown = new ComboBox<String>();
     private RepoInfo selectedRepo;
 
     public TopNav() {
@@ -33,7 +36,7 @@ public class TopNav extends HBox{
     
     private void addChildNodes(){
         var childNodes = new ArrayList<Node>();
-                
+        createToolboxForRepo();        
         childNodes.add(getRepositoryOption());        
         childNodes.add(this.toolBoxForRepo);
         getChildren().addAll(childNodes);
@@ -48,16 +51,12 @@ public class TopNav extends HBox{
     }
     
     private void handleRepoSelection(){
-        if(this.selectedRepo == null){
-            this.toolBoxForRepo.getChildren().removeAll(this.toolBoxForRepo.getChildren());
-        }
-        else{
-            createToolboxForRepo();            
-        }
+    	this.repoSelectionDropdown.setValue(this.selectedRepo.name);        
     }
     
     private void createToolboxForRepo(){
-        this.toolBoxForRepo.getChildren().add(getRepoDropdown());                
+    	createRepoDropdown();
+        this.toolBoxForRepo.getChildren().add(this.repoSelectionDropdown);                
     }
     
     
@@ -70,32 +69,21 @@ public class TopNav extends HBox{
         return option;
     }
     
-    private Node getActionTools(){
-        var hBox = new HBox();
-                                      
-        hBox.getChildren().add(getRepoDropdown());
-        
-        
-        return hBox;
-    }
-    
-    private Node getRepoDropdown(){
-        var repos = new ComboBox<String>();
+    private void createRepoDropdown(){
+        this.repoSelectionDropdown = new ComboBox<String>();
         var options = new ArrayList<String>();
-//        Constants.repos.forEach(new Consumer<RepoInfo>() {
-//            @Override            
-//            public void accept(RepoInfo repo) {
-//                options.add(repo.name);
-//            }
-//        });
 
         Constants.repos.forEach((RepoInfo repo) -> {            
                 options.add(repo.name);            
         });
         
-        repos.getItems().addAll(options);
-        repos.setValue(options.get(0));
-        return repos;
+        repoSelectionDropdown.getItems().addAll(options);
+        repoSelectionDropdown.setValue(options.get(0));
+        repoSelectionDropdown.setOnAction(e->{
+        	 var repoName = repoSelectionDropdown.getValue();
+        	 var selectedRepo = ArrayUtil.find(Constants.repos, r->r.name.equals(repoName));
+        	 StateManager.setSelectedRepoInfo(selectedRepo);
+        });        
     }
     
 }
