@@ -27,14 +27,12 @@ import javafx.scene.text.Text;
 public class SelectedRepoRightPanel extends VBox{
 	private RepositoryInfo repositoryInfo;
 	private ArrayList<SingleBranch> branches;
-	private CommitInfo headCommit;
 	
 	private HBox row1 = new HBox();
 	private GridPane row2 = new GridPane();
 	private ScrollPane col21 = new ScrollPane();
 	private CommitProperty col22 = new CommitProperty(null);
-	private Group displayedBranchPanel;
-	private HashMap<String,Group>branchPanels = new HashMap<>();
+	private HashMap<String,RepositoryInfo>repositoryInfos = new HashMap<>();
 	
     public SelectedRepoRightPanel() {
         super();
@@ -63,42 +61,43 @@ public class SelectedRepoRightPanel extends VBox{
     
     public void updateUi() {
     		var repoInfo = StateManager.getSelectedRepoInfo();
-    		this.displayedBranchPanel = this.branchPanels.get(repoInfo.name);
-    		if(this.displayedBranchPanel == null) {
+    		this.repositoryInfo = this.repositoryInfos.get(repoInfo.name);
+    		if(this.repositoryInfo == null) {
     			this.repositoryInfo = GitManager.getRepositoryInfo(repoInfo);
+    			this.repositoryInfos.put(this.repositoryInfo.repoInfo.name, repositoryInfo);
     			createBranchPanel();
     		}
-    		this.col21.setContent(this.displayedBranchPanel);
+    		this.col21.setContent(this.repositoryInfo.branchPanel);
     		setHeadCommit();
-    		StateManager.setSelectedCommit(this.headCommit);
+    		StateManager.setSelectedCommit(this.repositoryInfo.headCommit);
     		var adjustment = 100.0;    		
     		var height = this.col21.getContent().getBoundsInParent().getHeight();
     		var width = this.col21.getContent().getBoundsInParent().getWidth();
-    		var minXOfBranch = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinX();
-    		double x = this.headCommit.UiObj.getBoundsInParent().getCenterX();    		
-    		if(x < width/2) x = this.headCommit.UiObj.getBoundsInParent().getMinX()-adjustment;    		
-    		else x = this.headCommit.UiObj.getBoundsInParent().getMaxX()+adjustment;
-    		var y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getCenterY();
-    		if(y < height / 2) y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinY()-adjustment;
-    		else y = this.headCommit.ownerBranch.uiObj.getBoundsInParent().getMaxY()+adjustment;
+    		var minXOfBranch = this.repositoryInfo.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinX();
+    		double x = this.repositoryInfo.headCommit.UiObj.getBoundsInParent().getCenterX();    		
+    		if(x < width/2) x = this.repositoryInfo.headCommit.UiObj.getBoundsInParent().getMinX()-adjustment;    		
+    		else x = this.repositoryInfo.headCommit.UiObj.getBoundsInParent().getMaxX()+adjustment;
+    		var y = this.repositoryInfo.headCommit.ownerBranch.uiObj.getBoundsInParent().getCenterY();
+    		if(y < height / 2) y = this.repositoryInfo.headCommit.ownerBranch.uiObj.getBoundsInParent().getMinY()-adjustment;
+    		else y = this.repositoryInfo.headCommit.ownerBranch.uiObj.getBoundsInParent().getMaxY()+adjustment;
     		x += minXOfBranch;
     		this.col21.setHvalue(x/width);
     		this.col21.setVvalue(y/height);    	
     }
     
     private void setHeadCommit() {
-    	if(this.headCommit != null) return;    	
+    	if(this.repositoryInfo.headCommit != null) return;    	
     	for(int i = this.repositoryInfo.allCommits.length -1; i >= 0; i--) {
     		var commit = this.repositoryInfo.allCommits[i];
     		if(commit.refs.isBlank())continue;
     		if(commit.refs.contains(Constants.HeadPrefix)) {
-    			this.headCommit = commit;
+    			this.repositoryInfo.headCommit = commit;
     			break;
     		}
     		var refSplits = commit.refs.split(",");
     		
     		if( ArrayUtil.any(refSplits, ref -> ref.equals(Constants.DetachedHeadPrefix ))){
-    			this.headCommit = commit;
+    			this.repositoryInfo.headCommit = commit;
     			break;
     		}
     		
@@ -108,8 +107,8 @@ public class SelectedRepoRightPanel extends VBox{
         
     
     public void createBranchPanel() {    
-    	this.displayedBranchPanel =  new Group();
-    	this.branchPanels.put(this.repositoryInfo.repoInfo.name, displayedBranchPanel);
+    	var branchPanel =  new Group();
+    	this.repositoryInfo.branchPanel =  branchPanel;    	
     	
     	int x = 0;
     	int increamenter = Constants.CommitRadius*3;
@@ -138,9 +137,10 @@ public class SelectedRepoRightPanel extends VBox{
     		mergeLines.add(line);
 		}
     	
-    	this.displayedBranchPanel.getChildren().addAll(branches);
-    	this.displayedBranchPanel.getChildren().addAll(mergeLines);
-    	createVerticalLinesOfBranch();    	
+    	branchPanel.getChildren().addAll(branches);
+    	branchPanel.getChildren().addAll(mergeLines);
+    	createVerticalLinesOfBranch();
+    	
     	
     }
     
@@ -169,8 +169,8 @@ public class SelectedRepoRightPanel extends VBox{
     		}
     	}
     	
-    	this.displayedBranchPanel.getChildren().addAll(vLines);
-    	this.displayedBranchPanel.getChildren().addAll(arcs);
+    	this.repositoryInfo.branchPanel.getChildren().addAll(vLines);
+    	this.repositoryInfo.branchPanel.getChildren().addAll(arcs);
     }
     
     private void addStyles(){
