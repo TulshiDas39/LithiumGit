@@ -43,13 +43,13 @@ public class AppTooltip extends HBox{
 	public void show() {
 		borderWidth = 1;
 		setBorder();
-		setViewOrder(Integer.MAX_VALUE);
+		setViewOrder(-100);
 	}
 	
 	public void hide() {
 		borderWidth = 0.0;
 		setText("");
 		setBorder();
-		setViewOrder(-100);
+		setViewOrder(Integer.MAX_VALUE);
 	}
 }
