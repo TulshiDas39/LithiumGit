@@ -1,5 +1,9 @@
 package com.bsse.views.mainScene;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
+
 import com.bsse.dataClasses.CommitInfo;
 
 import javafx.geometry.Insets;
@@ -45,7 +49,11 @@ public class CommitProperty extends VBox{
 		  if(commit.UiObj != null) commit.UiObj.setSelection(true);		  
 	  }
 	  if(!commit.avrebHash.equals(this.commit.avrebHash)) this.abreviatedHash.setText(commit.avrebHash);
-	  if(!commit.date.equals(this.commit.date)) this.date.setText(commit.date);
+	  if(!commit.date.equals(this.commit.date)) {
+		  var dateObj = Date.from( Instant.parse( commit.date ));
+		  SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a");
+		  this.date.setText(dateFormat.format(dateObj));
+	  }
 	  if(!commit.author_email.equals(this.commit.author_email)) this.author.setText(commit.author_name+"<"+commit.author_email+">");
 	  if(!commit.message.equals(this.commit.message)) this.message.setText(commit.message);
 	  
@@ -67,8 +75,8 @@ public class CommitProperty extends VBox{
 	  hashAndDate.getChildren().add(hashLevel);
 	  hashAndDate.getChildren().add(this.abreviatedHash);
 	  
-	  var dateLevel = new Text(" | Date: ");	  
-	  hashAndDate.getChildren().add(dateLevel);
+	  var dateLevel = new Text(" | Date: ");		  
+	  hashAndDate.getChildren().add(dateLevel);	  
 	  hashAndDate.getChildren().add(this.date);
 	  
 	  this.getChildren().add(hashAndDate);
