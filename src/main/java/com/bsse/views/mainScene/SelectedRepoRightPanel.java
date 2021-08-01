@@ -3,7 +3,6 @@ package com.bsse.views.mainScene;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import com.bsse.business.GitManager;
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.BranchDetails;
@@ -12,6 +11,7 @@ import com.bsse.dataClasses.Constants;
 import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.utils.ArrayUtil;
+import com.bsse.views.widgets.AppTooltip;
 
 import javafx.scene.Group;
 import javafx.scene.control.ScrollPane;
@@ -22,7 +22,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
-import javafx.scene.text.Text;
 
 public class SelectedRepoRightPanel extends VBox{
 	private RepositoryInfo repositoryInfo;
@@ -32,6 +31,7 @@ public class SelectedRepoRightPanel extends VBox{
 	private GridPane row2 = new GridPane();
 	private ScrollPane col21 = new ScrollPane();
 	private CommitProperty col22 = new CommitProperty(null);
+	private final AppTooltip appTooltip = new AppTooltip();
 	private HashMap<String,RepositoryInfo>repositoryInfos = new HashMap<>();
 	
     public SelectedRepoRightPanel() {
@@ -82,7 +82,7 @@ public class SelectedRepoRightPanel extends VBox{
     		else y = this.repositoryInfo.headCommit.ownerBranch.uiObj.getBoundsInParent().getMaxY()+adjustment;
     		x += minXOfBranch;
     		this.col21.setHvalue(x/width);
-    		this.col21.setVvalue(y/height);    	
+    		this.col21.setVvalue(y/height);
     }
     
     private void setHeadCommit() {
@@ -110,6 +110,7 @@ public class SelectedRepoRightPanel extends VBox{
     	var branchPanel =  new Group();
     	this.repositoryInfo.branchPanel =  branchPanel;    	
     	
+    	branchPanel.getChildren().add(appTooltip);
     	int x = 0;
     	int increamenter = Constants.CommitRadius*3;
     	for (var commit :this.repositoryInfo.allCommits) {
@@ -125,6 +126,18 @@ public class SelectedRepoRightPanel extends VBox{
     		singleBranch.getBranch().y = y;
 			singleBranch.draw();
 			singleBranch.setViewOrder(Constants.ViewOrderOfBranchPanelBranches);
+			singleBranch.setHoverHandler((point)->{
+				System.out.println("Showing tooltip");
+				this.appTooltip.setViewOrder(0.0);
+				this.appTooltip.setLayoutX(point.getX());
+				this.appTooltip.setLayoutY(point.getY());
+				this.appTooltip.setText(branch.name);
+				
+			},()->{
+				System.out.println("Hiding tooltip");
+				this.appTooltip.setViewOrder(10000);
+				this.appTooltip.setText("");
+			});
 			this.branches.add(singleBranch);
 			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
@@ -179,6 +192,7 @@ public class SelectedRepoRightPanel extends VBox{
     
     private void addStyles(){
         getStyleClass().addAll("border-red");
+        this.appTooltip.setViewOrder(1000);
     }    
     
     

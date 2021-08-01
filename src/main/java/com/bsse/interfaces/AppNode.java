@@ -7,6 +7,5 @@ package com.bsse.interfaces;
 
 
 public interface AppNode {
-    
-    
+
 }
