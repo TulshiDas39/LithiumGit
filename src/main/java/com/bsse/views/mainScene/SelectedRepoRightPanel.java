@@ -186,7 +186,7 @@ public class SelectedRepoRightPanel extends VBox{
     			Arc arc = new Arc(centerX,centerY,radiusX,radiusY,startAngle,length);  
     			arc.setFill(Color.TRANSPARENT);
     			arc.setStroke(Color.BLACK);
-    			arc.setStrokeWidth(1);
+    			arc.setStrokeWidth(2);
     			
     			arcs.add(arc);
     		}
