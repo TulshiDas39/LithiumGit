@@ -81,7 +81,7 @@ public class SingleBranch extends Group{
 		this.line.setOnMouseEntered(e->{
 			var x = e.getX()+15;
 			if(branch.parentCommit != null) x += branch.parentCommit.x;
-			var point = new Point2D(x,this.branch.y);			
+			var point = new Point2D(x,this.branch.y+15);			
 			onHover.accept(point);
 		});
 		this.line.setOnMouseExited(e->{
