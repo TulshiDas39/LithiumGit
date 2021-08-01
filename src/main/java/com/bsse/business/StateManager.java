@@ -6,13 +6,16 @@
 package com.bsse.business;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.RepoInfo;
-import com.bsse.dataClasses.RepositoryInfo;
 import com.bsse.dataClasses.StaticData;
+import com.bsse.interfaces.GlobalClickListenable;
 import com.bsse.views.mainScene.SingleCommit;
+
+import javafx.scene.input.MouseEvent;
 
 /**
  *
@@ -22,9 +25,10 @@ public class StateManager {
 
     private static RepoInfo selectedRepoInfo;
     private static ArrayList<BranchDetails> branchTree;
-    private static RepositoryInfo repositoryInfo;
     private static CommitInfo selectedCommit;
     private static SingleCommit headCommit;
+    private static ArrayList<GlobalClickListenable> globalClickListeners = new ArrayList<>();
+    private static Iterator<GlobalClickListenable> globalClickListerIterator;
 
     public static RepoInfo getSelectedRepoInfo() {
         return selectedRepoInfo;
@@ -46,15 +50,6 @@ public class StateManager {
     	branchTree = tree;
     }
     
-//    public static void setRepositoryInfo(RepositoryInfo repositoryInfo) {    	
-//    	StateManager.repositoryInfo = repositoryInfo;
-//    	StaticData.selectedRepoRightPanel.updateUi();
-//    }
-    
-    public static RepositoryInfo getRepositoryInfo() {
-    	return repositoryInfo;
-    }
-    
     public static void setSelectedCommit(CommitInfo commit) {    	
     	selectedCommit = commit;
     	StaticData.commitProperty.updateUi(commit);
@@ -72,5 +67,21 @@ public class StateManager {
     public static SingleCommit getHeadCommit() {
     	return headCommit;    	
     }
+
+	public static void handleClickGlobally(MouseEvent e) {
+		globalClickListerIterator = globalClickListeners.iterator();		
+		while(globalClickListerIterator.hasNext()) {
+			globalClickListerIterator.next().handleGlobalClick(e);
+		}		
+		
+	}
+	
+	public static void addGlobalListener(GlobalClickListenable listener) {
+		globalClickListeners.add(listener);
+	}
+	
+	public static void removeGlobalClickListener(GlobalClickListenable listener) {
+		if(globalClickListerIterator != null) globalClickListerIterator.remove();
+	}
     
 }

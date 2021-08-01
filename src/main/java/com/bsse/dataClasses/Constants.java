@@ -8,8 +8,6 @@ package com.bsse.dataClasses;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javafx.scene.paint.Color;
-
 public class Constants {
     public static final ArrayList<RepoInfo> repos = new ArrayList<RepoInfo>(Arrays.asList(
             new RepoInfo("C:\\Users\\ASUS\\Documents\\workspace\\projects\\eclipse\\GitStudio","Git Studio"),
@@ -29,7 +27,6 @@ public class Constants {
     public static final double ViewOrderOfBranchPanelLines = 100;
     public static final double ViewOrderOfBranchPanelCommits = 50;
     public static final double ViewOrderOfBranchPanelBranches = 50;
-    public static final Color LineColorOfBranchPanel = Color.CORNFLOWERBLUE;
     
     public static double getGapOfBranchArch() {
     	return CommitRadius/2.0;

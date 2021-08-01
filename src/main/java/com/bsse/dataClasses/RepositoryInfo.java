@@ -6,6 +6,7 @@
 package com.bsse.dataClasses;
 
 import javafx.scene.Group;
+import javafx.scene.shape.Line;
 
 /**
  *
@@ -24,6 +25,7 @@ public class RepositoryInfo {
     public CommitInfo[] sourceCommits= new CommitInfo[0];
     public final RepoInfo repoInfo;
     public Group branchPanel;
+    public Line selectedMergeLine;
     
     public RepositoryInfo(RepoInfo repoInfo) {
 		this.repoInfo = repoInfo;

@@ -5,11 +5,13 @@
  */
 package com.bsse.views;
 
+import com.bsse.business.StateManager;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.views.mainScene.RootNode;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 
 /**
  *
@@ -18,23 +20,19 @@ import javafx.scene.Scene;
 public class MainView extends Scene{
     private final String style = MainView.class.getResource("/compiled-css/style.css").toExternalForm();
     public MainView() {        
-        super(getScene(),900, 500);
-        //initGitManager();
+        super(getScene(),900, 500);     
         addStyleSheets();
-    }
+        addClickListener();
+    }    
     
-    private void initGitManager(){
-//        GitManager.setRepo(StateManager.getSelectedRepoInfo());
-//        try {
-//            GitManager.setRemotes();
-//        } catch (GitAPIException ex) {
-//            ex.printStackTrace();
-//        }
+    private void addClickListener() {
+    	this.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
+            StateManager.handleClickGlobally(e);
+        });
     }
     
     private void addStyleSheets(){
         getStylesheets().add(style);
-        //getStylesheets().add(BootstrapFX.bootstrapFXStylesheet());
     }
     
     private static Parent getScene() {

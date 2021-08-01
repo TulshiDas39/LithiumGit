@@ -15,6 +15,7 @@ import com.bsse.views.widgets.AppTooltip;
 
 import javafx.scene.Group;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -141,15 +142,7 @@ public class SelectedRepoRightPanel extends VBox{
 		}
     	
     	var mergeCommits = ArrayUtil.filter(this.repositoryInfo.allCommits, c -> c.parentHashes.size() > 1);
-    	ArrayList<Line> mergeLines = new ArrayList<>();
-    	for (CommitInfo commit : mergeCommits) {
-    		var sourceCommitOfMerge = ArrayUtil.find(this.repositoryInfo.allCommits, c -> c.avrebHash.equals(commit.parentHashes.get(1)));
-    		if(sourceCommitOfMerge == null) continue;
-    		var line = new Line(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
-    		line.setViewOrder(Constants.ViewOrderOfBranchPanelLines);
-    		line.setStroke(Constants.LineColorOfBranchPanel);
-    		mergeLines.add(line);
-		}
+    	ArrayList<Line> mergeLines = createMergeLines(mergeCommits);
     	
     	branchPanel.getChildren().addAll(branches);
     	branchPanel.getChildren().addAll(mergeLines);
@@ -157,6 +150,21 @@ public class SelectedRepoRightPanel extends VBox{
     	
     	
     }
+
+	private ArrayList<Line> createMergeLines(ArrayList<CommitInfo> mergeCommits) {
+		ArrayList<Line> mergeLines = new ArrayList<>(); 
+		for (CommitInfo commit : mergeCommits) {
+    		var sourceCommitOfMerge = ArrayUtil.find(this.repositoryInfo.allCommits, c -> c.avrebHash.equals(commit.parentHashes.get(1)));
+    		if(sourceCommitOfMerge == null) continue;
+    		var line = new MergeLine(sourceCommitOfMerge.x,sourceCommitOfMerge.ownerBranch.y,commit.x,commit.ownerBranch.y);
+    		line.setViewOrder(Constants.ViewOrderOfBranchPanelLines);    		
+    		line.addEventFilter(MouseEvent.MOUSE_CLICKED, e->{    				
+    				line.setIsSelected(true);
+    		});
+    		mergeLines.add(line);
+		}
+		return mergeLines;
+	}
     
     private void createVerticalLinesOfBranch() {
     	var lineEndingGap = Constants.getGapOfBranchArch();
