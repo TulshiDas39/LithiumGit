@@ -41,10 +41,10 @@ public class SingleBranch extends Group{
 		this.line.setViewOrder(100);
 		this.line.setStrokeWidth(10);
 		var gradient = new LinearGradient(0d, -5d, 0d, 5d, false,CycleMethod.NO_CYCLE,
-                 					  new Stop(0.399,Color.TRANSPARENT),                                       
-                                      new Stop(0.40,Color.BLACK),
-                                      new Stop(0.50,Color.BLACK),
-                                      new Stop(0.501,Color.TRANSPARENT));
+                 					  new Stop(0.37,Color.TRANSPARENT),                                       
+                                      new Stop(0.37,Color.BLACK),
+                                      new Stop(0.57,Color.BLACK),
+                                      new Stop(0.57,Color.TRANSPARENT));
 		this.line.setStroke(gradient);
 	}
 	
