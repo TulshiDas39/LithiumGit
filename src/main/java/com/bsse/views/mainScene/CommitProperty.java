@@ -3,10 +3,11 @@ package com.bsse.views.mainScene;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
-
 import com.bsse.dataClasses.CommitInfo;
-
 import javafx.geometry.Insets;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -22,10 +23,11 @@ public class CommitProperty extends VBox{
   
   private CommitInfo commit = new CommitInfo();
 	
-  private Text abreviatedHash = new Text();	
+  private final Text abreviatedHash = new Text();	
   private Text date = new Text();
   private Text author = new Text();
-  private Text message = new Text();
+  private final TextArea textAreaForMessage = new TextArea();
+
   
   public CommitProperty(CommitInfo commit) {
 	super();
@@ -51,11 +53,13 @@ public class CommitProperty extends VBox{
 	  if(!commit.avrebHash.equals(this.commit.avrebHash)) this.abreviatedHash.setText(commit.avrebHash);
 	  if(!commit.date.equals(this.commit.date)) {
 		  var dateObj = Date.from( Instant.parse( commit.date ));
-		  SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a");
+		  SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM, yyyy hh:mm:ss a");
 		  this.date.setText(dateFormat.format(dateObj));
 	  }
 	  if(!commit.author_email.equals(this.commit.author_email)) this.author.setText(commit.author_name+"<"+commit.author_email+">");
-	  if(!commit.message.equals(this.commit.message)) this.message.setText(commit.message);
+	  if(!commit.message.equals(this.commit.message)) {		  
+		  this.textAreaForMessage.setText(commit.message);		  
+	  }
 	  
 	  this.commit = commit;
 	  
@@ -73,9 +77,10 @@ public class CommitProperty extends VBox{
 	  
 	  var hashLevel = new Text("Sha: ");
 	  hashAndDate.getChildren().add(hashLevel);
+	  this.abreviatedHash.setDisable(false);
 	  hashAndDate.getChildren().add(this.abreviatedHash);
 	  
-	  var dateLevel = new Text(" | Date: ");		  
+	  var dateLevel = new Text(" | Date: ");
 	  hashAndDate.getChildren().add(dateLevel);	  
 	  hashAndDate.getChildren().add(this.date);
 	  
@@ -88,7 +93,14 @@ public class CommitProperty extends VBox{
 	  this.getChildren().add(author);
 	  
 	  var message = new HBox();
-	  message.getChildren().add(this.message);
+	  this.textAreaForMessage.setMaxWidth(250);
+	  this.textAreaForMessage.setWrapText(true);
+	  this.textAreaForMessage.setEditable(false);
+	  var backfill = new BackgroundFill(Color.TRANSPARENT, new CornerRadii(0), new Insets(0));
+	  var background = new Background(backfill);
+	  this.textAreaForMessage.setBackground(background);	  	  
+	  this.textAreaForMessage.setPadding(new Insets(5,0,0,0));	  	  
+	  message.getChildren().add(this.textAreaForMessage);
 	  this.getChildren().add(message);
 	  
   }

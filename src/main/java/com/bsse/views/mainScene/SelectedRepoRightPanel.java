@@ -55,7 +55,6 @@ public class SelectedRepoRightPanel extends VBox{
         row2.add(this.col21, 0, 0);
         this.col22.setMinWidth(200);
         row2.add(this.col22, 1, 0);
-        row2.add(new VBox(), 1, 0);
     	this.getChildren().add(row2);    	
     }
     
