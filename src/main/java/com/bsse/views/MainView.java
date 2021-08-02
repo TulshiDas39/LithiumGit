@@ -7,7 +7,7 @@ package com.bsse.views;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.StaticData;
-import com.bsse.views.mainScene.RootNode;
+import com.bsse.views.main.RootNode;
 
 import javafx.scene.Parent;
 import javafx.scene.Scene;

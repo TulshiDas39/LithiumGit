@@ -7,7 +7,7 @@ package com.bsse.dataClasses;
 
 import java.util.ArrayList;
 
-import com.bsse.views.mainScene.SingleCommit;
+import com.bsse.views.main.SingleCommit;
 
 /**
  *

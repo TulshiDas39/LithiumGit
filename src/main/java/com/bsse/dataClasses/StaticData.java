@@ -1,11 +1,11 @@
 
 package com.bsse.dataClasses;
 
-import com.bsse.views.mainScene.Body;
-import com.bsse.views.mainScene.CommitProperty;
-import com.bsse.views.mainScene.RootNode;
-import com.bsse.views.mainScene.SelectedRepoRightPanel;
-import com.bsse.views.mainScene.TopNav;
+import com.bsse.views.main.Body;
+import com.bsse.views.main.CommitProperty;
+import com.bsse.views.main.RootNode;
+import com.bsse.views.main.SelectedRepoRightPanel;
+import com.bsse.views.main.TopNav;
 
 public class StaticData {
     public static RootNode rootNode;

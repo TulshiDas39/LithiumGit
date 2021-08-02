@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.bsse.views.mainScene;
+package com.bsse.views.main;
 
 import com.bsse.dataClasses.StaticData;
 

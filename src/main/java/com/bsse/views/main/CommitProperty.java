@@ -1,4 +1,4 @@
-package com.bsse.views.mainScene;
+package com.bsse.views.main;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;

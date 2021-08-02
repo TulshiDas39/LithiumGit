@@ -1,5 +1,5 @@
 
-package com.bsse.views.mainScene;
+package com.bsse.views.main;
 
 import java.util.ArrayList;
 

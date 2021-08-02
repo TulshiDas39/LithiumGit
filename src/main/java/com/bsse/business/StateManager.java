@@ -13,7 +13,7 @@ import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
 import com.bsse.interfaces.GlobalClickListenable;
-import com.bsse.views.mainScene.SingleCommit;
+import com.bsse.views.main.SingleCommit;
 
 import javafx.scene.input.MouseEvent;
 

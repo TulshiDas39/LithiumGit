@@ -1,4 +1,4 @@
-package com.bsse.views.mainScene;
+package com.bsse.views.main;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.Constants;
