@@ -127,16 +127,19 @@ public class SelectedRepoRightPanel extends VBox{
     		singleBranch.getBranch().y = y;
 			singleBranch.draw();
 			singleBranch.setViewOrder(Constants.ViewOrderOfBranchPanelBranches);
-			singleBranch.setHoverHandler((point)->{								
-				this.appTooltip.setLayoutX(point.getX());
-				this.appTooltip.setLayoutY(point.getY());
-				this.appTooltip.setText(branch.name);
-				this.appTooltip.show();
-				
-			},()->{								
-				this.appTooltip.setText("");
-				this.appTooltip.hide();				
-			});
+			if(!branch.name.isBlank()) {
+				singleBranch.setHoverHandler((point)->{								
+					this.appTooltip.setLayoutX(point.getX());
+					this.appTooltip.setLayoutY(point.getY());
+					this.appTooltip.setText(branch.name);
+					this.appTooltip.show();
+					
+				},()->{								
+					this.appTooltip.setText("");
+					this.appTooltip.hide();				
+				});
+			}
+			
 			this.branches.add(singleBranch);
 			y = singleBranch.getBranch().y + Constants.DistanceBetweenBranches;
 		}
