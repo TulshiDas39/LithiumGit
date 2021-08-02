@@ -24,7 +24,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.Line;
 
-public class SelectedRepoRightPanel extends VBox{
+public class BranchExplorer extends VBox{
 	private RepositoryInfo repositoryInfo;
 	private ArrayList<SingleBranch> branches;
 	
@@ -35,7 +35,7 @@ public class SelectedRepoRightPanel extends VBox{
 	private final AppTooltip appTooltip = new AppTooltip();
 	private HashMap<String,RepositoryInfo>repositoryInfos = new HashMap<>();
 	
-    public SelectedRepoRightPanel() {
+    public BranchExplorer() {
         super();
         StaticData.commitProperty = col22;
         this.addStyles();

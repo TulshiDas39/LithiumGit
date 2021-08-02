@@ -12,6 +12,7 @@ import com.bsse.dataClasses.BranchDetails;
 import com.bsse.dataClasses.CommitInfo;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.StaticData;
+import com.bsse.enums.SelectedTab;
 import com.bsse.interfaces.GlobalClickListenable;
 import com.bsse.views.main.SingleCommit;
 
@@ -29,6 +30,7 @@ public class StateManager {
     private static SingleCommit headCommit;
     private static ArrayList<GlobalClickListenable> globalClickListeners = new ArrayList<>();
     private static Iterator<GlobalClickListenable> globalClickListerIterator;
+    private static SelectedTab selectedTab = SelectedTab.Changes;
 
     public static RepoInfo getSelectedRepoInfo() {
         return selectedRepoInfo;
@@ -82,6 +84,15 @@ public class StateManager {
 	
 	public static void removeGlobalClickListener(GlobalClickListenable listener) {
 		if(globalClickListerIterator != null) globalClickListerIterator.remove();
+	}
+	
+	public static void setSelectedTab(SelectedTab tab) {
+		if(selectedTab == tab)return;
+		selectedTab = tab;
+		StaticData.selectedRepo.updateUi();
+	}
+	public static SelectedTab getSelectedTab() {		
+		return selectedTab;
 	}
     
 }

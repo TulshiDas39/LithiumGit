@@ -7,6 +7,8 @@ package com.bsse.views.main;
 
 import com.bsse.business.StateManager;
 import com.bsse.dataClasses.RepoInfo;
+import com.bsse.dataClasses.StaticData;
+
 import java.util.ArrayList;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
@@ -23,6 +25,7 @@ public class Body extends VBox{
 
     public Body() {
         super();
+        StaticData.selectedRepo = selectedRepo;
         selectedRepoInfo = StateManager.getSelectedRepoInfo();
         addStyle();
         addChildNodes();
