@@ -7,7 +7,8 @@ import javafx.scene.text.Text;
 
 public class StagedFiles extends VBox{
 	private final HBox header = new HBox();
-	private final Text iconText = new Text();
+	private final VBox filesPanel = new VBox();
+	private final Text iconText = new Text("V");
 	
 	private boolean expanded = true;
 	
@@ -22,15 +23,38 @@ public class StagedFiles extends VBox{
 	 }
 	 private void addChilds() {
 		 createHeader();
-		 updateUi();
-		 this.getChildren().addAll(header);
+		 createFilePanel();
+		 this.getChildren().addAll(header,this.filesPanel);
 	 }
 	 
 	 private void updateUi() {
 		 if(this.expanded) {
 			 iconText.setText("V");
+			 this.getChildren().add(this.filesPanel);
 		 }
-		 else iconText.setText(">");
+		 else {
+			 iconText.setText(">");
+			 this.getChildren().remove(this.filesPanel);
+		 }
+	 }
+	 
+	 private void createFilePanel() {
+		 var file1 = new ChangedFile("File1", "C:/users/te.txt", true, path->{
+			System.out.println(path); 
+		 });
+		 var file2 = new ChangedFile("File1", "C:/users/te.txt", true, path->{
+				System.out.println(path); 
+			 });
+		 var file3 = new ChangedFile("File1", "C:/users/te.txt", true, path->{
+				System.out.println(path); 
+			 });
+		 var file4 = new ChangedFile("File1", "C:/users/te.txt", true, path->{
+				System.out.println(path); 
+			 });
+		 
+		 filesPanel.getChildren().addAll(file1,file2,file3,file4);
+		 
+		 
 	 }
 	 
 	 private void createHeader() {

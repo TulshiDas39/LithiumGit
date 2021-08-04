@@ -43,6 +43,9 @@ $increment:5;
     .pl-#{$i}{
         -fx-padding:0 0 0 #{$i*$increment}px;
     }
+    .pr-#{$i}{
+        -fx-padding:0 #{$i*$increment}px 0 0;
+    }
     .m-#{$i}{
         -fx-margin: #{$i*$increment}px;
     }
