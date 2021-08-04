@@ -2,7 +2,6 @@ package com.bsse.views.main.changes;
 
 import java.util.function.Consumer;
 
-import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;

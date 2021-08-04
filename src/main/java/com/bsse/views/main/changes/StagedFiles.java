@@ -1,5 +1,9 @@
 package com.bsse.views.main.changes;
 
+import java.util.Set;
+
+import com.bsse.dataClasses.StatusResult;
+
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -8,12 +12,14 @@ import javafx.scene.text.Text;
 public class StagedFiles extends VBox{
 	private final HBox header = new HBox();
 	private final VBox filesPanel = new VBox();
-	private final Text iconText = new Text("V");
+	private final Text iconText = new Text("V");	
 	
 	private boolean expanded = true;
+	private final Set<String> status;
 	
-	 public StagedFiles() {
+	 public StagedFiles(Set<String> status) {
 		super();
+		this.status = status;
 		addChilds();
 		addStyles();		
 	 }

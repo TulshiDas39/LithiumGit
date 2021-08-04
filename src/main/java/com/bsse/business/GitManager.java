@@ -25,6 +25,7 @@ import com.bsse.dataClasses.LastReference;
 import com.bsse.dataClasses.RemoteInfo;
 import com.bsse.dataClasses.RepoInfo;
 import com.bsse.dataClasses.RepositoryInfo;
+import com.bsse.dataClasses.StatusResult;
 import com.bsse.utils.ArrayUtil;
 import com.bsse.utils.NullUtil;
 import com.bsse.utils.StringUtil;
@@ -36,7 +37,7 @@ import com.bsse.utils.StringUtil;
 public class GitManager {
     private static Git git ;   
     private static final String headPrefix = "HEAD -> ";
-    
+    private static RepoInfo repoInfo = new RepoInfo();
     private static RepositoryInfo repositoryInfo;// = new RepositoryInfo();
     
     
@@ -238,18 +239,35 @@ public class GitManager {
 		}
     }
     
-    public static RepositoryInfo getRepositoryInfo(RepoInfo repo){
-    	repositoryInfo = new RepositoryInfo(repo);
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository;
+    public static StatusResult getStatus() {
+    	StatusResult statusResult = null;
+    	try {
+    		var status = git.status().call();
+    		var unStagedChanges = status.getModified();
+    		var stagedChanges = status.getChanged();
+    		var stagedConflictingChanges = status.getConflictingStageState();
+    		var unStagedConflictingChanges = status.getConflicting();
+    		statusResult = new StatusResult(unStagedChanges, stagedChanges, unStagedConflictingChanges, stagedConflictingChanges);
+    	}catch(Exception e) {    		
+    	}
+    	return statusResult;
+    	
+    }
+    
+    public static void setRepo(RepoInfo repo) {
+    	GitManager.repoInfo = repo;
+    	FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository=null;
         try {
-            repository = builder.setGitDir(new File(Paths.get(repo.url,".git").toString())).readEnvironment().findGitDir().build(); // scan environment GIT_* variables.findGitDir()
-            
+            repository = builder.setGitDir(new File(Paths.get(GitManager.repoInfo.url,".git").toString())).readEnvironment().findGitDir().build();          
         } catch (IOException ex) {
             ex.printStackTrace();
-            return null;
         }  
         git = new Git(repository);
+    }
+    
+    public static RepositoryInfo getRepositoryInfo(){
+    	repositoryInfo = new RepositoryInfo(GitManager.repoInfo);        
         
         try {
             setRemotes();

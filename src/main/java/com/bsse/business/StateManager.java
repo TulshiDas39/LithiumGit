@@ -39,6 +39,7 @@ public class StateManager {
     public static void setSelectedRepoInfo(RepoInfo selectedRepoInfo) {
     	if(StateManager.selectedRepoInfo != null &&  StateManager.selectedRepoInfo.name.equals(selectedRepoInfo.name))return;
         StateManager.selectedRepoInfo = selectedRepoInfo;
+        GitManager.setRepo(StateManager.selectedRepoInfo);
         StaticData.topNav.updateUi();
         StaticData.body.updateUi();
         StaticData.selectedRepoRightPanel.updateUi();       

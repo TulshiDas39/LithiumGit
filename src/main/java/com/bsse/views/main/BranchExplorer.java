@@ -63,7 +63,7 @@ public class BranchExplorer extends VBox{
     		var repoInfo = StateManager.getSelectedRepoInfo();
     		this.repositoryInfo = this.repositoryInfos.get(repoInfo.name);
     		if(this.repositoryInfo == null) {
-    			this.repositoryInfo = GitManager.getRepositoryInfo(repoInfo);
+    			this.repositoryInfo = GitManager.getRepositoryInfo();
     			this.repositoryInfos.put(this.repositoryInfo.repoInfo.name, repositoryInfo);
     			createBranchPanel();
     		}

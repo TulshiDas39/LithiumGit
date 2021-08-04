@@ -36,7 +36,7 @@ public class TabSelection extends VBox{
         getChildren().addAll(this.changesTab,this.branchExplorer);
     }
     
-    private void createChangeTab(){        
+    private void createChangeTab(){
         
         var text = new Text("Changes");
         changesTab.getStyleClass().addAll("py-2");
