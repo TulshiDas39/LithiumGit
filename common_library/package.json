@@ -1,0 +1,16 @@
+{
+    "name": "common_library",
+    "version": "1.0.0",
+    "description": "Can log \"hello world\" and \"goodbye world\" to the console!",
+    "main": "./dist/index.js",
+    "scripts": {
+        "build": "tsc && cd .. && runner.cmd"
+    },
+    "files": [
+        "/dist"
+    ],
+    "types": "./dist/index.d.ts",
+    "dependencies": {
+                
+    }
+}
