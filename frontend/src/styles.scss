@@ -1,0 +1,60 @@
+@font-face {
+  font-family: 'Roboto';
+  src: url('./assets/fonts/Roboto-Regular.ttf') format('truetype'),    
+}
+@font-face {
+    font-family: 'Consolas';
+    src: url('./assets/fonts/consolas/CONSOLA.TTF') format('truetype'),    
+  }
+
+html {
+    --font-color: #282828;   
+    --hover: #e4e6e896;
+    --bg-color:white;
+    --active-color: #ffff;
+    --white: #ffff;
+    --body-color: white;
+    --search-bg: #ffff;
+    --svg-dark: #606060;
+    --scrollbar-color: #b7b7b7;
+    --svg-lite: #E5E6EB;
+    --red-color: #cc401f;
+    --switch-bg: #e0e0e0;
+    --switch-round: #606060;
+    --shadow-2: rgba(0, 0, 0, 0.2);
+    --shadow-1: rgba(0, 0, 0, 0.1);
+    --dropdown-background: #ffff;
+    --colorBlue: #1CD0A8;
+  }  
+  
+  html[data-theme='dark'] {
+    --font-color: #e4e6eb;
+    --bg-color: #1E1E1E;
+    --body-color: #1E1E1E;
+    --active-color: #333333;
+    --white: #181818;
+    --svg-lite: #E5E6EB;
+    --hover: #333333;        
+    --search-bg: #181818;
+    --svg-dark: #909090;
+    --scrollbar-color: #636363;
+    --switch-round: #1CD0A8;
+    --red-color: #cc401f;
+    --switch-bg: #4c4b4b;    
+    --wt-dropdown-background: #232323;
+    --colorBlue: #1CD0A8;
+  }
+
+  p,span,div,i,h1,h2,h3,h4,h5,h6{
+    color: var(--font-color);
+    font-family: 'Consolas';
+  }
+  
+  body {
+    font-size: 16px;
+    background-color: var(--body-color);
+  }
+  
+  .cur-point{
+      cursor: pointer;
+  }
