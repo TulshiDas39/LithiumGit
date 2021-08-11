@@ -1,8 +1,9 @@
 import React from "react";
+import { RepositorySelection } from "../repositorySelection";
 
 function MainComponent(){
     return <div>
-        main
+        <RepositorySelection />
     </div>
 }
 
