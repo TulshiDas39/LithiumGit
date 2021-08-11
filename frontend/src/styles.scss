@@ -1,19 +1,21 @@
-@font-face {
-  font-family: 'Roboto';
-  src: url('./assets/fonts/roboto/Roboto-Regular.ttf') format('truetype'),    
-}
+
 @font-face {
     font-family: 'Consolas';
     src: url('./assets/fonts/consolas/CONSOLA.TTF') format('truetype'),    
 }
 
 html {
+  font-size: 12.8px;
+}
+
+html {
     --font-color: #282828;   
     --hover: #e4e6e896;
     --bg-color:white;
+    --bg-second-color: rgb(220, 220, 221);
+    --bg-third-color: rgb(192, 196, 192);
     --active-color: #ffff;
     --white: #ffff;
-    --body-color: white;
     --search-bg: #ffff;
     --svg-dark: #606060;
     --scrollbar-color: #b7b7b7;
@@ -30,7 +32,8 @@ html {
   html[data-theme='dark'] {
     --font-color: #e4e6eb;
     --bg-color: #1E1E1E;
-    --body-color: #1E1E1E;
+    --bg-second-color: #323233;
+    --bg-third-color: #a7a8a7;
     --active-color: #333333;
     --white: #181818;
     --svg-lite: #E5E6EB;
@@ -49,12 +52,34 @@ html {
     color: var(--font-color);
     font-family: 'Consolas';
   }
-  
-  body {
-    font-size: 16px;
-    background-color: var(--body-color);
+
+  .bg-color{
+    background-color: var(--bg-color);
+  }
+
+  .bg-second-color{
+    background-color: var(--bg-second-color);
+  }
+
+  .bg-third-color{
+    background-color: var(--bg-third-color);
   }
   
+  body {
+    background-color: var(--bg-color);
+    height: 100vh;
+  }
+
+  * {
+    margin: 0;
+    box-sizing: border-box;
+  }
+
   .cur-point{
-      cursor: pointer;
+    cursor: pointer;
+  }
+
+  .hover:hover{
+    cursor: pointer;
+    opacity: 0.6;
   }
