@@ -14,8 +14,8 @@ function synchUpdates(){
 }
 
 
-//synchUpdates();
-synchAll();
+synchUpdates();
+// synchAll();
 
 function synchAll(){
     cleanAndCopyFiles();
@@ -31,7 +31,7 @@ function cleanAndCopyFiles(){
     const folders = [backendDestinationFolder,frontendDestinationFolder];
     folders.forEach(folder=>{
         iteration++;
-        if(! fs.existsSync(folder)) return;
+        if(!fs.existsSync(folder)) return;
         fs.rmdir(folder, { recursive: true }, (err) => {
             if (err) {
                 console.error(err);

@@ -2,14 +2,14 @@
     "name": "common_library",
     "version": "1.0.0",
     "description": "Can log \"hello world\" and \"goodbye world\" to the console!",
-    "main": "./dist/index.js",
+    "main": "./lib/index.js",
     "scripts": {
         "build": "tsc && cd .. && runner.cmd"
     },
     "files": [
-        "/dist"
+        "/lib"
     ],
-    "types": "./dist/index.d.ts",
+    "types": "./lib/index.d.ts",
     "dependencies": {
                 
     }
