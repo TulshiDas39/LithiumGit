@@ -3,7 +3,7 @@ import { RepositoryDB } from './RepositoryDB';
 export class DBPath{
     static rootFolderName = "db";
     static root = path.join(__dirname,DBPath.rootFolderName);
-    static repository = path.join(__dirname,DBPath.rootFolderName,"repository");
+    static repository = path.join(__dirname,DBPath.rootFolderName,"repository.db");
 }
 
 export class DB{
