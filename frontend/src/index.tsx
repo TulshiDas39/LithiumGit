@@ -4,12 +4,8 @@ import './styles.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import localforage from 'localforage';
-import { initDB } from './db_service/idb_service';
 
 
-// initDB();
-//localforage.setItem("persist","123");
 ReactDOM.render(
   <React.StrictMode>
     <App />
