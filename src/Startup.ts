@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import * as path from "path";
+import { DataManager } from "./businessClasses";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
@@ -8,6 +9,7 @@ export class Startup{
     start(){
         this.initAppData();
         this.loadSavedData();
+        this.startIpcManagers();
         // this.createWindow();          
           // This method will be called when Electron has finished
           // initialization and is ready to create browser windows.
@@ -65,6 +67,10 @@ export class Startup{
               app.quit();
             }
         });
+    }
+
+    private startIpcManagers(){
+      new DataManager().start();
     }
 
 }

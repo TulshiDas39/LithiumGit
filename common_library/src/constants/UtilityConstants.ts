@@ -1,6 +1,6 @@
-import { RepositoryInfo } from "./schemas/RepositoryInfo";
+import { RepositoryInfo } from "common_library/src/schemas/RepositoryInfo";
 
-export class Constants{
+export class UtilityConstants{
     static recentRepositories:RepositoryInfo[]=[
             new RepositoryInfo("C:\\Users\\ASUS\\Documents\\workspace\\projects\\eclipse\\GitStudio","Git Studio"),
             new RepositoryInfo("C:\\Users\\ASUS\\Documents\\workspace\\jti\\CM360WebApi", "CM360WebApi"),

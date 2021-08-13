@@ -10,7 +10,6 @@
         "/lib"
     ],
     "types": "./lib/index.d.ts",
-    "dependencies": {
-                
-    }
+    "dependencies": {},
+    "devDependencies": {}
 }

@@ -1,3 +1,3 @@
 export { sayHello, sayGoodbye } from './hello-world';
 export * from './schemas';
-export * from './Constants';
+export * from './constants';
