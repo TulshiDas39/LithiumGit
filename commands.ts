@@ -2,10 +2,18 @@
 import { exec } from "child_process";
 import * as fs from 'fs';
 import * as path from "path";
+import * as fse from 'fs-extra';
 
-const libraryName = "common_library"
-const frontendDestinationFolder = path.join("frontend","node_modules",libraryName);
+const libraryName = "common_library";
+const frontendProjectName = "frontend";
+const frontendDestinationFolder = path.join(frontendProjectName,"node_modules",libraryName);
 const backendDestinationFolder = path.join("node_modules",libraryName) ;
+
+
+
+
+// synchUpdates();
+copyAll();
 
 function synchUpdates(){
     copyUntrackedFiles();
@@ -13,38 +21,15 @@ function synchUpdates(){
     removeDeletedFiles();
 }
 
-
-synchUpdates();
-// synchAll();
-
-function synchAll(){
-    cleanAndCopyFiles();
-}
-
 function copyUntrackedFiles(){
     const command = "git ls-files --others --exclude-standard common_library";
     runCommand(command,copyCommonFiles);
 }
 
-function cleanAndCopyFiles(){
-    let iteration = 0;
-    const folders = [backendDestinationFolder,frontendDestinationFolder];
-    folders.forEach(folder=>{
-        iteration++;
-        if(!fs.existsSync(folder)) return;
-        fs.rmdir(folder, { recursive: true }, (err) => {
-            if (err) {
-                console.error(err);
-            } 
-            
-            if(iteration === folders.length){
-                const command = "git ls-files common_library";
-                runCommand(command,copyCommonFiles);
-            }
-        });
-    });    
-
-    
+function copyAll(){
+    [path.join(frontendProjectName,"node_modules") ,"node_modules"].forEach(folder=>{
+        fse.copySync(libraryName,folder);
+    })
 }
 
 
@@ -86,7 +71,7 @@ function copyCommonFiles(files:string){
     console.log('file exist');
 
     fileList.forEach(file=>{  
-        let frontendPath = path.join('frontend','node_modules',file);      
+        let frontendPath = path.join(frontendProjectName,'node_modules',file);      
         let backendPath = path.join('node_modules',file);      
         copy(file,frontendPath);
         copy(file,backendPath);
@@ -96,7 +81,7 @@ function copyCommonFiles(files:string){
         let dir = path.dirname(dest);
         if(!fs.existsSync(src)) return;
         if(!fs.existsSync(dir) ){
-            console.log('creating dir');
+            console.log('creating dir',dir);
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.copyFile(src, dest, (err) => {

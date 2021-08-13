@@ -20,6 +20,8 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
+    "@types/fs-extra": "^9.0.12",
+    "@types/nedb": "^1.8.12",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.28.4",
     "electron": "^13.1.7",
@@ -27,7 +29,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
-    "simple-git": "^2.42.0",
-    "common_library": "file:./common_library"
+    "common_library": "file:./common_library",
+    "jsstore": "^4.3.7",
+    "nedb": "^1.8.0",
+    "simple-git": "^2.42.0"
   }
 }

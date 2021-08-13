@@ -1,4 +1,4 @@
-import { RepoInfo } from "./models";
+import { RepositoryInfo } from "./schemas/RepositoryInfo";
 export declare class Constants {
-    static recentRepositories: RepoInfo[];
+    static recentRepositories: RepositoryInfo[];
 }

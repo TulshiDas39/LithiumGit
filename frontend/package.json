@@ -12,6 +12,7 @@
     "@types/react-dom": "^16.9.8",
     "bootstrap": "5.0.2",
     "common_library": "file:./../common_library",
+    "localforage": "^1.9.0",
     "moment": "^2.29.1",
     "node-sass": "4.14.1",
     "react": "^17.0.1",
