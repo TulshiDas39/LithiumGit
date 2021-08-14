@@ -23,7 +23,7 @@ const SavedDataSlice = createSlice({
                 existingSelected.isSelected = false;
                 updatedList.push(existingSelected);
             }
-            const newSelected = state.recentRepositories.find(x=>x.path == action.payload.path);
+            const newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
             if(newSelected) {
                 newSelected.isSelected = true;
                 updatedList.push(newSelected);
