@@ -17,16 +17,11 @@ const backendDestinationFolder = path.join("node_modules",libraryName) ;
 syncAll();
 
 function syncAll(){
-    let deleteCount=0;
     const destinations = [frontendDestinationFolder,backendDestinationFolder];
-    destinations.forEach(dest=>{
-        if(fs.existsSync(dest)) fs.rmdir(dest,{maxRetries:3},(err)=>{
-            
-            if(err) console.error(err);
-            deleteCount++;
-            if(deleteCount == 2)copyAll();
-        });
-    })
+    // destinations.forEach(dest=>{
+    //     if(fs.existsSync(dest)) fs.rmdirSync(dest,{maxRetries:3});        
+    // });
+    copyAll();
 }
 
 function synchUpdates(){
@@ -41,9 +36,9 @@ function copyUntrackedFiles(){
 }
 
 function copyAll(){
-    [path.join(frontendProjectName,"node_modules") ,"node_modules"].forEach(folder=>{
-        fse.copySync(libraryName,folder);
-    })
+    [path.join(frontendProjectName,node_modulesFolder,libraryName) , path.join(node_modulesFolder,libraryName)].forEach(folder=>{
+        fse.copySync(libraryName,folder,{recursive:true});
+    });
 }
 
 

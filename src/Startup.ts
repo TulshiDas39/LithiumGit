@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcRenderer } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
+import { GitManager } from "./businessClasses/GitManager";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
@@ -73,6 +74,7 @@ export class Startup{
 
     private startIpcManagers(){
       new DataManager().start();
+      new GitManager().start();
     }
 
 }

@@ -6,3 +6,4 @@ class RendererEvents {
 exports.RendererEvents = RendererEvents;
 RendererEvents.getRecentRepositoires = "getRecentRepositoires";
 RendererEvents.updateRepositories = "updateRepositories";
+RendererEvents.isValidRepoPath = "isValidRepoPath";
