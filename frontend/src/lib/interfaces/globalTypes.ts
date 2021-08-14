@@ -1,4 +1,5 @@
-import { IpcRenderer } from ".";
+// import { IpcRenderer } from ".";
+import {IpcRenderer} from 'electron';
 
 export interface T{
 
