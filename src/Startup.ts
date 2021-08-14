@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcRenderer } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { AppData } from "./dataClasses/AppData";

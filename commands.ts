@@ -6,6 +6,7 @@ import * as fse from 'fs-extra';
 
 const libraryName = "common_library";
 const frontendProjectName = "frontend";
+const node_modulesFolder = "node_modules";
 const frontendDestinationFolder = path.join(frontendProjectName,"node_modules",libraryName);
 const backendDestinationFolder = path.join("node_modules",libraryName) ;
 
@@ -13,7 +14,20 @@ const backendDestinationFolder = path.join("node_modules",libraryName) ;
 
 
 // synchUpdates();
-copyAll();
+syncAll();
+
+function syncAll(){
+    let deleteCount=0;
+    const destinations = [frontendDestinationFolder,backendDestinationFolder];
+    destinations.forEach(dest=>{
+        if(fs.existsSync(dest)) fs.rmdir(dest,{maxRetries:3},(err)=>{
+            
+            if(err) console.error(err);
+            deleteCount++;
+            if(deleteCount == 2)copyAll();
+        });
+    })
+}
 
 function synchUpdates(){
     copyUntrackedFiles();
