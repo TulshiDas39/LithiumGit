@@ -1,5 +1,20 @@
+interface IChannelModel{
+    channel:string;
+    replyChannel:string;
+}
+
 export class RendererEvents{
-    static getRecentRepositoires="getRecentRepositoires"
-    static updateRepositories="updateRepositories"
-    static isValidRepoPath="isValidRepoPath"
+    private static replyChanelPrefix = "reply";
+    static getRecentRepositoires= "getRecentRepositoires";
+    static updateRepositories="updateRepositories";
+    static isValidRepoPath="isValidRepoPath";
+    
+    static getDirectoryPath(){
+        const channel = "getDirectoryPath";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
 }

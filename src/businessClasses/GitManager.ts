@@ -1,5 +1,5 @@
 import { RendererEvents } from "common_library";
-import { ipcMain } from "electron";
+import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 
 export class GitManager{
@@ -22,6 +22,6 @@ export class GitManager{
             
             if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
-        })
+        })        
     }
 }
