@@ -1,10 +1,10 @@
 import React from "react";
-import { Recents } from "./recents/Recents";
-import { RepoSelectionPanel } from "./RepoSelectionPanel";
+import { RepoSelectionLeft } from "./repoSelectionLeft";
+import { RepoSelectionPanel } from "./repoSelectionPanels";
 
 function RepositorySelectionComponent(){
-    return <div className="d-flex">
-        <Recents />
+    return <div className="d-flex h-100">
+        <RepoSelectionLeft />
         <RepoSelectionPanel />
     </div>
 }

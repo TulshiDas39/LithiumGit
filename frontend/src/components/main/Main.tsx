@@ -29,7 +29,7 @@ function MainComponent(){
         setState({isLoading:false});
     },[]);
     if(state.isLoading) return null;
-    return <div>
+    return <div className="h-100">
         {store.selectedRepo ? <SelectedRepository />:<RepositorySelection />}
     </div>
 }

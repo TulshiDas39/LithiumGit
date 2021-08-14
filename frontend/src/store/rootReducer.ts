@@ -1,8 +1,10 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import {createSelectorHook} from 'react-redux';
 import { ReducerSavedData } from './slices';
+import { ReducerUI } from './slices/UiSlice';
 const AppReducer = combineReducers({
-    savedData:ReducerSavedData
+    savedData:ReducerSavedData,
+    ui:ReducerUI,
 });
 
 const AppResetActionType = 'app/Reset';
