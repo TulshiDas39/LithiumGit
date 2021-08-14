@@ -27,7 +27,7 @@ export class Startup{
     }
 
     private initAppData(){
-        AppData.appPath = app.getAppPath();
+        // AppData.appPath = app.getAppPath();
     }
 
     private loadSavedData(){
@@ -41,6 +41,8 @@ export class Startup{
           height: 600,
           webPreferences: {
             preload: path.join(__dirname, "preload.js"),
+            // nodeIntegration:true,
+            contextIsolation:false,
           },
           width: 800,
         });
