@@ -1,10 +1,11 @@
 import { RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
-import {useDispatch,shallowEqual} from "react-redux";
+import {useDispatch,shallowEqual, batch} from "react-redux";
 import { useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionSavedData } from "../../store/slices";
+import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
 
@@ -25,7 +26,10 @@ function MainComponent(){
     
     useEffect(()=>{
         const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires);        
-        dispatch(ActionSavedData.setRecentRepositories(repos));
+        batch(()=>{
+            dispatch(ActionSavedData.setRecentRepositories(repos));
+            if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
+        });
         setState({isLoading:false});
     },[]);
     if(state.isLoading) return null;
