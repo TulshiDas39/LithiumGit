@@ -1,4 +1,4 @@
-import { BaseSchema } from "common_library";
+import { BaseSchema ,StringUtils} from "common_library";
 
 import * as DataStore from 'nedb';
 
@@ -27,16 +27,39 @@ export class BaseDB<T extends BaseSchema>{
         this.dataStore.insert(record,cb);
     }
     
-    insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){ 
-
+    insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){
+        if(records.length === 0) return;
+        records.forEach(rec=>{
+            rec._id = StringUtils.uuidv4();
+            rec.createdAt = new Date().toISOString();
+            rec.updateAt = new Date().toISOString();
+        })
         this.dataStore.insert(records,cb);
     }
-    updateOne(record:T,cb?: (err: Error, document: T) => void){        
-        this.dataStore.update(record,cb);
+    updateOne(record:T,cb?: (err: Error, documentsCount: number) => void){
+        this.getById(record._id,(err,doc)=>{
+            if(doc) this.dataStore.update({_id:record._id}, record,{},cb);
+            if(err) console.error(err);
+        })
     }
     updateOrCreateMany(records:T[],cb?: (err: Error, documentsCount: number) => void){
+        if(records.length === 0) return ;
+        let iteration=0;
+        let newRecords:T[]=[];
         records.forEach(record=>{
-            this.dataStore.update<T>({_id:record._id},record,{upsert:true},cb);
+            this.getById(record._id,(err,doc)=>{
+                iteration++;
+                if(doc){
+                    doc.updateAt = new Date().toISOString();
+                    this.dataStore.update<T>({_id:record._id},record,{},cb);                    
+                }
+                else{
+                    newRecords.push(record);
+                    if(iteration == records.length) this.insertMany(newRecords);
+                }
+                if(err) console.error(err);
+            });
+            
         })
     }
 

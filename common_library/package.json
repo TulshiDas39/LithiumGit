@@ -10,6 +10,10 @@
         "/lib"
     ],
     "types": "./lib/index.d.ts",
-    "dependencies": {},
-    "devDependencies": {}
+    "dependencies": {
+        "uuid": "^8.3.2"
+    },
+    "devDependencies": {
+        "@types/uuid": "^8.3.1"
+    }
 }

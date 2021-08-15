@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
-import { StringUtils, UiUtils, useMultiState } from "../../../lib";
-import {createRepositoryInfo, RendererEvents, RepositoryInfo} from "common_library";
+import {  UiUtils, useMultiState } from "../../../lib";
+import {createRepositoryInfo, RendererEvents, StringUtils} from "common_library";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { ActionSavedData } from "../../../store/slices";
