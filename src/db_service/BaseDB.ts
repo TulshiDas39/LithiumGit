@@ -34,8 +34,10 @@ export class BaseDB<T extends BaseSchema>{
     updateOne(record:T,cb?: (err: Error, document: T) => void){        
         this.dataStore.update(record,cb);
     }
-    updateMany(records:T[],cb?: (err: Error, documents: T[]) => void){
-        this.dataStore.update(records,cb);
+    updateOrCreateMany(records:T[],cb?: (err: Error, documentsCount: number) => void){
+        records.forEach(record=>{
+            this.dataStore.update<T>({_id:record._id},record,{upsert:true},cb);
+        })
     }
 
     delete(query:Partial<T>,cb?: (err: Error, n: number) => void){        

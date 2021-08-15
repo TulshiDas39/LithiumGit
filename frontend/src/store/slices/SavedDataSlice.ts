@@ -28,6 +28,10 @@ const SavedDataSlice = createSlice({
                 newSelected.isSelected = true;
                 updatedList.push(newSelected);
             }
+            else {
+                action.payload.isSelected = true;
+                updatedList.push(action.payload);
+            }
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);
         }
     }

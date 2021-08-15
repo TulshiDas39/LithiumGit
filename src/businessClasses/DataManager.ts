@@ -21,7 +21,7 @@ export class DataManager{
 
     private handleUpdateRepositories(){
         ipcMain.on(RendererEvents.updateRepositories,(_,data:RepositoryInfo[])=>{
-            DB.repository.updateMany(data);
+            DB.repository.updateOrCreateMany(data);
         });
     }
 }

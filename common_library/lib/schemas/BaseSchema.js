@@ -1,11 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BaseSchema = void 0;
-class BaseSchema {
-    constructor() {
-        this._id = "";
-        this.createdAt = new Date().toISOString();
-        this.updateAt = new Date().toISOString();
-    }
+exports.createBaseSchema = void 0;
+function createBaseSchema(props) {
+    let obj = {
+        _id: "",
+        createdAt: new Date().toDateString(),
+        updateAt: new Date().toDateString(),
+    };
+    if (props)
+        obj = Object.assign(Object.assign({}, obj), props);
+    return obj;
 }
-exports.BaseSchema = BaseSchema;
+exports.createBaseSchema = createBaseSchema;

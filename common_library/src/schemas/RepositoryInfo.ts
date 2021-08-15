@@ -1,13 +1,18 @@
-import { BaseSchema } from "./BaseSchema";
+import { BaseSchema, createBaseSchema } from "./BaseSchema";
 
-export class RepositoryInfo extends BaseSchema{
-    name="";
-    path="";
-    isSelected=false;
-    constructor(path:string,name:string,isSelected:boolean=false){
-        super();
-        this.path = path;
-        this.name =  name;
-        this.isSelected = isSelected;
+export interface RepositoryInfo extends BaseSchema{
+    name:string ;
+    path:string;
+    isSelected:boolean;    
+}
+
+export const createRepositoryInfo=(props?:Partial<RepositoryInfo>)=>{
+    let obj:RepositoryInfo={
+        ...createBaseSchema(),
+        isSelected:false,
+        name:"",
+        path:"",
     }
+    if(props) obj = {...obj,...props};
+    return obj;
 }

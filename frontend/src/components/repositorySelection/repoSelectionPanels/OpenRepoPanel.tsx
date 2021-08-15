@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { StringUtils, UiUtils, useMultiState } from "../../../lib";
-import {RendererEvents, RepositoryInfo} from "common_library";
+import {createRepositoryInfo, RendererEvents, RepositoryInfo} from "common_library";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { ActionSavedData } from "../../../store/slices";
@@ -22,7 +22,13 @@ function OpenRepoPanelComponent(){
         const isValidPath = window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath,state.path);
         console.log("isValidPath",isValidPath);
         if(!isValidPath) setState({error:"The path is not a git repository"});
-        else dispatch(ActionSavedData.setSelectedRepository(new RepositoryInfo(state.path,StringUtils.getFolderName(state.path),true)));
+        else {
+            const newRepoInfo = createRepositoryInfo({
+                name:StringUtils.getFolderName(state.path),
+                path:state.path
+            });
+            dispatch(ActionSavedData.setSelectedRepository(newRepoInfo));
+        }
     }
     const handleBrowse=()=>{
         window.ipcRenderer.send(RendererEvents.getDirectoryPath().channel);        

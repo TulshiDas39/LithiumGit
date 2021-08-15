@@ -1,7 +1,7 @@
 import { BaseSchema } from "./BaseSchema";
-export declare class RepositoryInfo extends BaseSchema {
+export interface RepositoryInfo extends BaseSchema {
     name: string;
     path: string;
     isSelected: boolean;
-    constructor(path: string, name: string, isSelected?: boolean);
 }
+export declare const createRepositoryInfo: (props?: Partial<RepositoryInfo>) => RepositoryInfo;
