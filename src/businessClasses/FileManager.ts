@@ -1,5 +1,5 @@
 import { RendererEvents } from "common_library";
-import { dialog, ipcMain } from "electron";
+import { dialog, ipcMain, shell } from "electron";
 
 export class FileManager{
     start(){
@@ -8,6 +8,7 @@ export class FileManager{
 
     addIpcHandlers(){
         this.handleGetDirectoryPath();
+        this.handleOpenFileExplorer();
     }
 
     handleGetDirectoryPath(){
@@ -21,5 +22,11 @@ export class FileManager{
 
         });
         
+    }
+
+    private handleOpenFileExplorer(){
+        ipcMain.on(RendererEvents.openFileExplorer,(e,path:string)=>{
+            shell.showItemInFolder(path);
+        })
     }
 }

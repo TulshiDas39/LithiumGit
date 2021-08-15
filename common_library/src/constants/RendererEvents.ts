@@ -8,6 +8,7 @@ export class RendererEvents{
     static getRecentRepositoires= "getRecentRepositoires";
     static updateRepositories="updateRepositories";
     static isValidRepoPath="isValidRepoPath";
+    static openFileExplorer="openFileExplorer";
     
     static getDirectoryPath(){
         const channel = "getDirectoryPath";

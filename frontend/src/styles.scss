@@ -21,6 +21,7 @@ html {
     --bg-second-color: rgb(220, 220, 221);
     --bg-third-color: rgb(192, 196, 192);
     --bg-fourth-color: rgb(141, 160, 141);
+    --bg-select-color: rgb(192, 193, 201);
     --active-color: #ffff;
     --white: #ffff;
     --search-bg: #ffff;
@@ -48,6 +49,7 @@ html {
     --bg-second-color: #323233;
     --bg-third-color: #a7a8a7;
     --bg-fourth-color: rgb(126, 117, 156);
+    --bg-select-color: rgb(130, 124, 212);
     --active-color: #333333;
     --white: #181818;
     --svg-lite: #E5E6EB;
@@ -81,6 +83,9 @@ html {
 
   .bg-fourth-color{
     background-color: var(--bg-fourth-color);
+  }
+  .bg-select-color{
+    background-color: var(--bg-select-color);
   }
   
   body {

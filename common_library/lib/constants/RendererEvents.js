@@ -17,3 +17,4 @@ RendererEvents.replyChanelPrefix = "reply";
 RendererEvents.getRecentRepositoires = "getRecentRepositoires";
 RendererEvents.updateRepositories = "updateRepositories";
 RendererEvents.isValidRepoPath = "isValidRepoPath";
+RendererEvents.openFileExplorer = "openFileExplorer";

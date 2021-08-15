@@ -7,6 +7,7 @@ export declare class RendererEvents {
     static getRecentRepositoires: string;
     static updateRepositories: string;
     static isValidRepoPath: string;
+    static openFileExplorer: string;
     static getDirectoryPath(): IChannelModel;
 }
 export {};

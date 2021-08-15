@@ -22,7 +22,7 @@ function RepoSelectionLeftComponent(){
     const handleClick = (tab:EnumHomePageTab)=>{
         dispatch(ActionUI.setHomePageTab(tab));
     }
-    const activeClass = "bg-fourth-color"
+    const activeClass = "bg-select-color"
     return <div id="repoSelectionLeft" className="d-flex flex-column border-end bg-second-color">
         {
             tabs.map(tab=>(
