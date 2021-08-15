@@ -10,10 +10,18 @@ class RendererEvents {
         };
         return result;
     }
+    static getRepositoryDetails() {
+        const channel = "getRepositoryDetails";
+        const result = {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix + channel
+        };
+        return result;
+    }
     ;
 }
 exports.RendererEvents = RendererEvents;
-RendererEvents.replyChanelPrefix = "reply";
+RendererEvents.replyChanelPrefix = "reply_";
 RendererEvents.getRecentRepositoires = "getRecentRepositoires";
 RendererEvents.updateRepositories = "updateRepositories";
 RendererEvents.isValidRepoPath = "isValidRepoPath";

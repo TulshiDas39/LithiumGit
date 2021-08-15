@@ -9,5 +9,6 @@ export declare class RendererEvents {
     static isValidRepoPath: string;
     static openFileExplorer: string;
     static getDirectoryPath(): IChannelModel;
+    static getRepositoryDetails(): IChannelModel;
 }
 export {};

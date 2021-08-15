@@ -1,4 +1,4 @@
-import { RendererEvents } from "common_library";
+import { RendererEvents, RepositoryInfo } from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 
@@ -9,6 +9,7 @@ export class GitManager{
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addRepoDetailsHandler();
     }
 
     private addValidGitPathHandler(){
@@ -23,5 +24,11 @@ export class GitManager{
             if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
         })        
+    }
+
+    private addRepoDetailsHandler(){
+        ipcMain.on(RendererEvents.getRepositoryDetails().channel,(e,repoInfo:RepositoryInfo)=>{
+            
+        })
     }
 }
