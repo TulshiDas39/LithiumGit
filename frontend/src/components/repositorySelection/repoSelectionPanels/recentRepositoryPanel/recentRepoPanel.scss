@@ -1,0 +1,11 @@
+#recentRepoPanel{
+    #recentRepoList{
+        border-right: 1px solid var(--bg-second-color);
+        .repoItem{
+            width: 95%;
+            border-width: 0 0 1px 0;
+            border-style: solid;
+            border-color: var(--bg-thrid-color);
+        }
+    }
+}
