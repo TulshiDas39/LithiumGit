@@ -16,7 +16,7 @@ function RecentRepositoryPanelComponent(){
     }
     return <div id="recentRepoPanel" className="d-flex h-100">
         <RecentRepositoryList onSelectItem={handleSelect} selectedItem={state.selectedItem} />
-        <SelectedRecentRepoProperties />
+        <SelectedRecentRepoProperties selectedItem={state.selectedItem} />
     </div>
 }
 
