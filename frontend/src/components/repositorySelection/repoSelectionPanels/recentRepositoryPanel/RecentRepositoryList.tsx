@@ -1,7 +1,8 @@
 import { RepositoryInfo } from "common_library";
 import React from "react";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionSavedData } from "../../../../store/slices";
 
 export interface IRecentRepositoryListProps{
     onSelectItem:(item:RepositoryInfo)=>void;
@@ -13,8 +14,14 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
         recentRepos:state.savedData.recentRepositories,
     }),shallowEqual);
 
+    const dispatch = useDispatch();
+
     const handleSelect=(item:RepositoryInfo)=>{
         props.onSelectItem(item);
+    }
+    const handleDoubleClick = (item:RepositoryInfo)=>{
+        props.onSelectItem(item);
+        dispatch(ActionSavedData.setSelectedRepository(item));
     }
     return <div id="recentRepoList" className="w-75 h-100 d-flex flex-column">
         <h4 className="px-1 py-2 m-0">Recent Repositories</h4>
@@ -22,10 +29,12 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
         <div className="d-flex flex-column align-items-center pt-2">
             {
                 store.recentRepos.map(repo=>(
-                    <div key={repo._id} className={`repoItem d-flex flex-column px-1 ${props.selectedItem?._id === repo._id?"selected":""}`}
+                    <div key={repo._id} className={`repoItem  ${props.selectedItem?._id === repo._id?"selected":""}`}                        
                         onClick={()=>handleSelect(repo)}>
-                        <h6>{repo.name}</h6>
-                        <span>{repo.path}</span>
+                        <div className="d-flex flex-column px-1 w-100" onDoubleClick={()=>handleDoubleClick(repo)}>
+                            <h6>{repo.name}</h6>
+                            <span>{repo.path}</span>
+                        </div>                        
                     </div>
                 ))
             }

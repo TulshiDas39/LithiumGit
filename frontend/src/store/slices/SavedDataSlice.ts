@@ -21,7 +21,7 @@ const SavedDataSlice = createSlice({
             const existingSelected = state.recentRepositories.find(x=>x.isSelected);
             if(existingSelected) {
                 existingSelected.isSelected = false;
-                updatedList.push(existingSelected);
+                updatedList.push({...existingSelected});
             }
             let newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
             if(!newSelected) {
@@ -35,8 +35,13 @@ const SavedDataSlice = createSlice({
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);
         },
         deSelectRepo(state){
-            const selectedRepo = state.recentRepositories.find(x=>x.isSelected);
-            if(selectedRepo) selectedRepo.isSelected = false;
+            const selectedRepos = state.recentRepositories.filter(x=>x.isSelected);
+            if(selectedRepos.length) {
+                selectedRepos.forEach(rep=>{
+                    rep.isSelected = false;                    
+                });                 
+                window.ipcRenderer.send(RendererEvents.updateRepositories,selectedRepos.map(rep=>({...rep})));
+            }
         }
 
     }
