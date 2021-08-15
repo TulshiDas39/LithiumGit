@@ -31,6 +31,10 @@ const SavedDataSlice = createSlice({
             newSelected.lastOpenedAt = new Date().toISOString();
             updatedList.push({...newSelected});
 
+            state.recentRepositories.sort((x1,x2) => {                
+                if((x1.lastOpenedAt ?? "") > (x2.lastOpenedAt ?? "")) return -1;
+                return 1;
+            });
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);
         },
         deSelectRepo(state){
