@@ -17,7 +17,7 @@ const SavedDataSlice = createSlice({
             state.recentRepositories = action.payload;
         },
         setSelectedRepository(state,action:PayloadAction<RepositoryInfo>){
-            const updatedList:RepositoryInfo[]=[];
+            const updatedList:RepositoryInfo[]=[];            
             const existingSelected = state.recentRepositories.find(x=>x.isSelected);
             if(existingSelected) {
                 existingSelected.isSelected = false;
@@ -30,6 +30,7 @@ const SavedDataSlice = createSlice({
             }
             else {
                 action.payload.isSelected = true;
+                state.recentRepositories.push(action.payload);
                 updatedList.push(action.payload);
             }
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);

@@ -15,7 +15,7 @@ export class DataManager{
 
     private handleRecentRepositoriesRequest(){
         ipcMain.on(RendererEvents.getRecentRepositoires, (event, arg) => {            
-            event.returnValue = SavedData.recentRepositories;
+            event.returnValue = DB.repository.getAll();            
         });
     }
 

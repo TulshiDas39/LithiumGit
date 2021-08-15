@@ -22,7 +22,7 @@ function RepoSelectionDropdownComponent(){
             </Dropdown.Toggle>
             <Dropdown.Menu>
                 {store.recentRepos.map(rp=>(
-                    <Dropdown.Item onClick={()=> handleSelect(rp)}>{rp.name}</Dropdown.Item>
+                    <Dropdown.Item key={rp._id} onClick={()=> handleSelect(rp)}>{rp.name}</Dropdown.Item>
                 ))}
             </Dropdown.Menu>
         </Dropdown>

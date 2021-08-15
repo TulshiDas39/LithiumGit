@@ -25,7 +25,8 @@ function MainComponent(){
     const [state,setState] = useMultiState(initialState);
     
     useEffect(()=>{
-        const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires);        
+        const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires); 
+        console.log('repos',repos);
         batch(()=>{
             dispatch(ActionSavedData.setRecentRepositories(repos));
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
