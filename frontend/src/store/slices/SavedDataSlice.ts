@@ -23,18 +23,22 @@ const SavedDataSlice = createSlice({
                 existingSelected.isSelected = false;
                 updatedList.push(existingSelected);
             }
-            const newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
-            if(newSelected) {
-                newSelected.isSelected = true;
-                updatedList.push(newSelected);
-            }
-            else {
-                action.payload.isSelected = true;
+            let newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
+            if(!newSelected) {
+                newSelected = action.payload;
                 state.recentRepositories.push(action.payload);
-                updatedList.push(action.payload);
             }
+            newSelected.isSelected = true;
+            newSelected.lastOpenedAt = new Date().toISOString();
+            updatedList.push(action.payload);
+
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);
+        },
+        deSelectRepo(state){
+            const selectedRepo = state.recentRepositories.find(x=>x.isSelected);
+            if(selectedRepo) selectedRepo.isSelected = false;
         }
+
     }
 });
 

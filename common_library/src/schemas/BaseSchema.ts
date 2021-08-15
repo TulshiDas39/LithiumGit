@@ -1,3 +1,4 @@
+import { v4 as uuid } from "uuid";
 export interface BaseSchema{
     _id:string;
     createdAt:string;
@@ -6,7 +7,7 @@ export interface BaseSchema{
 
 export function createBaseSchema(props?:Partial<BaseSchema>){
     let obj:BaseSchema={
-        _id:"",
+        _id: uuid(),
         createdAt:new Date().toDateString(),
         updateAt:new Date().toDateString(),
     }

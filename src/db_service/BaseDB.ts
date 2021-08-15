@@ -30,9 +30,9 @@ export class BaseDB<T extends BaseSchema>{
     insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){
         if(records.length === 0) return;
         records.forEach(rec=>{
-            rec._id = StringUtils.uuidv4();
-            rec.createdAt = new Date().toISOString();
-            rec.updateAt = new Date().toISOString();
+            if(!rec._id) rec._id = StringUtils.uuidv4();
+            if(!rec.createdAt) rec.createdAt = new Date().toISOString();
+            if(!rec.updateAt) rec.updateAt = new Date().toISOString();
         })
         this.dataStore.insert(records,cb);
     }
