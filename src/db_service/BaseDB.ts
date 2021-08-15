@@ -14,7 +14,7 @@ export class BaseDB<T extends BaseSchema>{
     }
 
     getById(id:string,callback: (err: Error, document: T) => void){
-        this.dataStore.findOne({_id:id},null,callback)
+        this.dataStore.findOne({_id:id},callback)
     }
     getByQuery(query:Partial<T>,callback: (err: Error, document: T) => void){
         this.dataStore.findOne(query,null,callback)

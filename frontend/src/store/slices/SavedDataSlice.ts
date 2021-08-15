@@ -26,11 +26,10 @@ const SavedDataSlice = createSlice({
             let newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
             if(!newSelected) {
                 newSelected = action.payload;
-                state.recentRepositories.push(action.payload);
             }
             newSelected.isSelected = true;
             newSelected.lastOpenedAt = new Date().toISOString();
-            updatedList.push(action.payload);
+            updatedList.push({...newSelected});
 
             window.ipcRenderer.send(RendererEvents.updateRepositories,updatedList);
         },
