@@ -26,6 +26,7 @@ const SavedDataSlice = createSlice({
             let newSelected = state.recentRepositories.find(x=>x.path === action.payload.path);
             if(!newSelected) {
                 newSelected = action.payload;
+                state.recentRepositories.push(newSelected);
             }
             newSelected.isSelected = true;
             newSelected.lastOpenedAt = new Date().toISOString();
