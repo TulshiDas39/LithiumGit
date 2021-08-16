@@ -16,7 +16,7 @@ export class BranchUtils{
 
     private static finaliseSourceCommits(repoDetails:IRepositoryDetails) {
     	for (let i = repoDetails.sourceCommits.length-1; i>=0; i--) {
-    		var sourceCommit = repoDetails.sourceCommits[i];			
+    		let sourceCommit = repoDetails.sourceCommits[i];			
 			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
 			
 			let currentOwnerBranch = sourceCommit.ownerBranch;
@@ -33,9 +33,9 @@ export class BranchUtils{
 				}
 			}					
 			
-			if(realOwnerBranch == null)continue;			
+			if(!realOwnerBranch)continue;			
 			
-			if(currentOwnerBranch.parentCommit != null) {
+			if(!!currentOwnerBranch.parentCommit) {
 				currentOwnerBranch.parentCommit.branchesFromThis = 
                     currentOwnerBranch.parentCommit.branchesFromThis.filter(x=>x._id !== currentOwnerBranch._id);
 				currentOwnerBranch.parentCommit.branchesFromThis.push(realOwnerBranch);	
@@ -50,7 +50,7 @@ export class BranchUtils{
 			if(currentOwnerBranch.serial != 0.0) realOwnerBranch.serial = currentOwnerBranch.serial; 
 			currentOwnerBranch.serial = 0.0;
 			
-			var commitToMove = sourceCommit;
+			let commitToMove = sourceCommit;
 			while (commitToMove != realOwnerBranch.parentCommit) {
 				if(commitToMove.ownerBranch.name !== currentOwnerBranch.name) break;
 				commitToMove.ownerBranch.commits = commitToMove.ownerBranch.commits.filter(x=>x.hash !== commitToMove.hash);
@@ -79,7 +79,7 @@ export class BranchUtils{
           return newOwnerBranch;
         };
         
-        for(var i = 0; i < repoDetails.allCommits.length; i++){
+        for(let i = 0; i < repoDetails.allCommits.length; i++){
             const currentCommit = repoDetails.allCommits[i];
             currentCommit.referedBranches = BranchUtils.getBranchFromReference(currentCommit.refs);
             let lastRef = BranchUtils.CheckBranchReferenceInCommitMessage(currentCommit);
@@ -116,8 +116,8 @@ export class BranchUtils{
 	            let parentBranch = currentCommit.ownerBranch?.parentCommit?.ownerBranch;
 	            
 	            if(!!parentBranch){
-	                var branchNameWithRemotes = currentCommit.branchNameWithRemotes;                
-	                var isParentBranch = branchNameWithRemotes.some(branchNameWithRemote => branchNameWithRemote.branchName === parentBranch?.name);                    
+	                let branchNameWithRemotes = currentCommit.branchNameWithRemotes;                
+	                let isParentBranch = branchNameWithRemotes.some(branchNameWithRemote => branchNameWithRemote.branchName === parentBranch?.name);                    
 	                if(isParentBranch){
 	                	parentBranch.commits[parentBranch.commits.length-1].nextCommit = ownerBranch.commits[0];
 	                    parentBranch.commits = [...parentBranch.commits,...ownerBranch.commits];
@@ -155,9 +155,9 @@ export class BranchUtils{
     }
 
     private static CheckBranchReferenceInCommitMessage(commit:ICommitInfo) {
-    	var indexOfPrefix = commit.message.indexOf(BranchUtils.MergedCommitMessagePrefix);
+    	let indexOfPrefix = commit.message.indexOf(BranchUtils.MergedCommitMessagePrefix);
     	if(indexOfPrefix == -1) return null;
-    	var branchName = commit.message.substring(indexOfPrefix+BranchUtils.MergedCommitMessagePrefix.length);
+    	let branchName = commit.message.substring(indexOfPrefix+BranchUtils.MergedCommitMessagePrefix.length);
     	branchName = branchName.substring(0, branchName.indexOf("\'"));
     	let lastRef:ILastReference = {
             branchName,
@@ -167,9 +167,9 @@ export class BranchUtils{
     }
 
     private static getBranchRemote(branchNameStr:string){
-        var branchName = "";
-        var remote = "";
-        var splits = branchNameStr.split("/");
+        let branchName = "";
+        let remote = "";
+        let splits = branchNameStr.split("/");
         if (splits.length > 1) {
           branchName = splits[1];
           remote = splits[0];
