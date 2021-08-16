@@ -10,4 +10,7 @@ export class StringUtils{
     static uuidv4() {
         return uuidv4();
     }
+    static getWords(str:string){
+        return str.split(/(\s+)/).filter( e => e.trim().length > 0);
+    }
 }

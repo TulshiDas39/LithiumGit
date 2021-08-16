@@ -12,5 +12,8 @@ class StringUtils {
     static uuidv4() {
         return uuid_1.v4();
     }
+    static getWords(str) {
+        return str.split(/(\s+)/).filter(e => e.trim().length > 0);
+    }
 }
 exports.StringUtils = StringUtils;
