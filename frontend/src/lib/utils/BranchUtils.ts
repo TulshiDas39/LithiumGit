@@ -8,6 +8,29 @@ export class BranchUtils{
         BranchUtils.getBranchDetails(repoDetails);
         BranchUtils.enListSourceCommits(repoDetails);
         BranchUtils.finaliseSourceCommits(repoDetails);
+        BranchUtils.specifySerialsOfBranch(repoDetails);
+        BranchUtils.sortBranches(repoDetails);
+
+    }
+
+    private static sortBranches(repoDetails:IRepositoryDetails){        
+        repoDetails.resolvedBranches.sort((x,y)=> x.serial > y.serial ?1:-1);
+    }
+
+    private static specifySerialsOfBranch(repoDetails:IRepositoryDetails){
+        const getSerial=(branch:IBranchDetails):number=>{
+            if(branch.serial != 0) return branch.serial;	  
+            let parentSerial = getSerial(branch.parentCommit?.ownerBranch!);
+            let commitInex=0;
+            if(!!branch.name)commitInex = branch.parentCommit!.ownerBranch.commits.indexOf(branch.parentCommit!)+1;
+            else commitInex = branch.parentCommit!.ownerBranch.commits.length+1;
+            let measuredSerial = parentSerial+ parentSerial * (1.0/(10.0*commitInex));
+            return measuredSerial;
+        }
+
+        repoDetails.resolvedBranches.forEach(br=>{
+            br.serial = getSerial(br);
+        });
     }
 
     private static enListSourceCommits(repoDetails:IRepositoryDetails) {    	
