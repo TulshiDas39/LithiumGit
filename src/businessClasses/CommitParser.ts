@@ -1,4 +1,4 @@
-import {ICommitInfo,StringUtils} from "common_library"
+import {ICommitInfo,StringUtils,CreateCommitInfoObj} from "common_library"
 import { LogFields } from "../dataClasses";
 export class CommitParser{
     private static addCommitField(line:string,commit:ICommitInfo){
@@ -30,7 +30,7 @@ export class CommitParser{
         }
     }
     private static getCommit(lines:string[], indexObj:{index:number}){
-        var commit = {} as ICommitInfo;
+        var commit = CreateCommitInfoObj();
         while(true){
             if(indexObj.index >= lines.length) return commit;
             var line = lines[indexObj.index];

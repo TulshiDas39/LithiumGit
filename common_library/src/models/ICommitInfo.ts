@@ -20,3 +20,26 @@ export interface ICommitInfo{
     y:number;
     // SingleCommit UiObj;
 }
+
+export function CreateCommitInfoObj(){
+    const obj:ICommitInfo = {
+        branchesFromThis:[],
+        branchNameWithRemotes:[],
+        parentHashes:[],
+        referedBranches:[],
+        author_email:"",
+        author_name:"",
+        avrebHash:"",
+        body:"",
+        date:"",
+        hash:"",
+        message:"",
+        refs:"",
+        x:0,
+        y:0,
+        nextCommit:null!,
+        ownerBranch:null!,
+        previousCommit:null!,
+    }
+    return obj;
+}
