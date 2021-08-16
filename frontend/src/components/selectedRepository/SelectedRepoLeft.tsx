@@ -2,8 +2,8 @@ import React from "react";
 import { useMemo } from "react";
 
 export interface ISelectedRepoTabItem{
-    type:"Changes"|"Branch_Explorer"|"Commits"|"Remotes";
-    text:"Changes"|"Branch Explorer"|"Commits"|"Remotes";
+    type:"Changes"|"Branches"|"Commits"|"Remotes";
+    text:"Changes"|"Branches"|"Commits"|"Remotes";
 }
 
 interface ISelectedRepoLeftProps{
@@ -15,7 +15,7 @@ function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){
     const tabs = useMemo(()=>{
         const items:ISelectedRepoTabItem[]=[
             {text:"Changes",type:"Changes"},
-            {text:"Branch Explorer",type:"Branch_Explorer"},
+            {text:"Branches",type:"Branches"},
             {text:"Commits",type:"Commits"},
             {text:"Remotes",type:"Remotes"}
         ];
