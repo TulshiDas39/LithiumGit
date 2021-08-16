@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
@@ -31,16 +31,28 @@ export class GitManager{
 
     private addRepoDetailsHandler(){
         ipcMain.on(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const repoDetails = await this.getBranchDetails(repoInfo);
+            const repoDetails = await this.repoDetails(repoInfo);
             e.reply(RendererEvents.getRepositoryDetails().replyChannel,repoDetails);
         });
     }
 
-    private async getBranchDetails(repoInfo:RepositoryInfo){
+    private async repoDetails(repoInfo:RepositoryInfo){
         const repoDetails = CreateRepositoryDetails();
         const git = this.getGitRunner(repoInfo);
         const commits = await this.getCommits(git);
         repoDetails.allCommits = commits;
+        
+        const remotes = await git.getRemotes(true);
+        remotes.forEach(r=>{
+            const remote:IRemoteInfo = {
+                name:r.name,
+                url:r.refs.fetch || r.refs.push,
+                actionTyps:[]
+            };
+            if(!!r.refs.fetch) remote.actionTyps.push("fetch");
+            if(!!r.refs.push) remote.actionTyps.push("push");
+            repoDetails.remotes.push(remote);
+        });
         
         return repoDetails;
     }
