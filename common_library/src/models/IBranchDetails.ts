@@ -1,6 +1,8 @@
 import { ICommitInfo, ILastCommitByRemote } from ".";
+import { StringUtils } from "../utils";
 
 export interface IBranchDetails{
+    _id:string;
     name:string;
     commits:ICommitInfo[];
     LastCommitsByRemotes:ILastCommitByRemote[];
@@ -13,6 +15,7 @@ export interface IBranchDetails{
 
 export function createBranchDetailsObj(){
     const branchDetails:IBranchDetails={
+        _id:StringUtils.uuidv4(),
         name:"",
         LastCommitsByRemotes:[],
         commits:[],

@@ -4,7 +4,65 @@ export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
 
-    static getBranchDetails(repoDetails:IRepositoryDetails){
+    static getRepoDetails(repoDetails:IRepositoryDetails){
+        BranchUtils.getBranchDetails(repoDetails);
+        BranchUtils.enListSourceCommits(repoDetails);
+        BranchUtils.finaliseSourceCommits(repoDetails);
+    }
+
+    private static enListSourceCommits(repoDetails:IRepositoryDetails) {    	
+    	repoDetails.sourceCommits = repoDetails.allCommits.filter(c => c.branchesFromThis.length > 0);
+    }
+
+    private static finaliseSourceCommits(repoDetails:IRepositoryDetails) {
+    	for (let i = repoDetails.sourceCommits.length-1; i>=0; i--) {
+    		var sourceCommit = repoDetails.sourceCommits[i];			
+			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
+			
+			let currentOwnerBranch = sourceCommit.ownerBranch;
+			let realOwnerBranch:IBranchDetails = null!;
+			
+			if(!currentOwnerBranch.name && sourceCommit.branchesFromThis.length == 1)
+				realOwnerBranch = sourceCommit.branchesFromThis[0];
+			else {
+				for(let br of sourceCommit.branchesFromThis) {
+					if(!br.name)continue;
+					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date))
+						realOwnerBranch = br;
+					break;					
+				}
+			}					
+			
+			if(realOwnerBranch == null)continue;			
+			
+			if(currentOwnerBranch.parentCommit != null) {
+				currentOwnerBranch.parentCommit.branchesFromThis = 
+                    currentOwnerBranch.parentCommit.branchesFromThis.filter(x=>x._id !== currentOwnerBranch._id);
+				currentOwnerBranch.parentCommit.branchesFromThis.push(realOwnerBranch);	
+			}
+			
+			sourceCommit.branchesFromThis = sourceCommit.branchesFromThis.filter(x=>x._id !== realOwnerBranch._id);
+			sourceCommit.branchesFromThis.push(currentOwnerBranch);
+			sourceCommit.nextCommit = realOwnerBranch.commits[0];
+			realOwnerBranch.parentCommit = currentOwnerBranch.parentCommit;
+			currentOwnerBranch.parentCommit = sourceCommit;	
+						
+			if(currentOwnerBranch.serial != 0.0) realOwnerBranch.serial = currentOwnerBranch.serial; 
+			currentOwnerBranch.serial = 0.0;
+			
+			var commitToMove = sourceCommit;
+			while (commitToMove != realOwnerBranch.parentCommit) {
+				if(commitToMove.ownerBranch.name !== currentOwnerBranch.name) break;
+				commitToMove.ownerBranch.commits = commitToMove.ownerBranch.commits.filter(x=>x.hash !== commitToMove.hash);
+				commitToMove.ownerBranch = realOwnerBranch;
+				realOwnerBranch.commits= [commitToMove,...realOwnerBranch.commits];
+				commitToMove = commitToMove.previousCommit;
+			}
+        }
+	}
+    
+
+    private static getBranchDetails(repoDetails:IRepositoryDetails){
         let branchTree:IBranchDetails[] = [];
         let ownerBranch:IBranchDetails = null!;
         const branchDetails:IBranchDetails[] = [];
@@ -32,9 +90,9 @@ export class BranchUtils{
             
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
             
-            if(previousCommit != null){
+            if(!!previousCommit){
             	currentCommit.previousCommit = previousCommit;            	
-                if(previousCommit.nextCommit != null){            
+                if(!!previousCommit.nextCommit){            
                   ownerBranch = createNewBranch(previousCommit);
                   previousCommit.branchesFromThis.push(ownerBranch);
                 }else{              
@@ -123,5 +181,5 @@ export class BranchUtils{
         branchRemote.branchName = branchName;
         branchRemote.remote = remote;        
         return branchRemote;
-      }
+    }
 }

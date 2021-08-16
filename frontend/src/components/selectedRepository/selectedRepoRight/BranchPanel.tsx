@@ -2,7 +2,7 @@ import { IRepositoryDetails, RendererEvents } from "common_library";
 import React from "react"
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { UiUtils, useMultiState } from "../../../lib";
+import { BranchUtils, UiUtils, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 interface IState{
     repoDetails:IRepositoryDetails;
@@ -18,6 +18,7 @@ function BranchPanelComponent(){
     useEffect(()=>{
         window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+            BranchUtils.getRepoDetails(res);
             setState({repoDetails:res});
         });
         return ()=>{
