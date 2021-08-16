@@ -16,3 +16,20 @@ export interface IRepositoryDetails{
     // Group branchPanel;
     // Line selectedMergeLine;
 }
+
+export function CreateRepositoryDetails(){
+    const obj:IRepositoryDetails={
+        allCommits:[],
+        branchDetails:null!,
+        branchTree:[],
+        headCommit:null!,
+        lastReferencesByBranch:[],
+        uniqueBrancNames:[],
+        mergeCommitMessages:[],
+        remotes:[],
+        repoInfo:null!,
+        resolvedBranches:[],
+        sourceCommits:[],
+    }
+    return obj;
+}

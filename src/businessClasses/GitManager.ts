@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo } from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
@@ -31,14 +31,18 @@ export class GitManager{
 
     private addRepoDetailsHandler(){
         ipcMain.on(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const branchDetails = await this.getBranchDetails(repoInfo);
-            e.reply(RendererEvents.getRepositoryDetails().replyChannel,branchDetails);
+            const repoDetails = await this.getBranchDetails(repoInfo);
+            e.reply(RendererEvents.getRepositoryDetails().replyChannel,repoDetails);
         });
     }
 
     private async getBranchDetails(repoInfo:RepositoryInfo){
+        const repoDetails = CreateRepositoryDetails();
         const git = this.getGitRunner(repoInfo);
         const commits = await this.getCommits(git);
+        repoDetails.allCommits = commits;
+        
+        return repoDetails;
     }
 
     private async getCommits(git: SimpleGit){
