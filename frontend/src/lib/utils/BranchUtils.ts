@@ -3,8 +3,10 @@ import { createBranchDetailsObj, IBranchDetails, IBranchRemote, ICommitInfo, ILa
 export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
-    static readonly distanceBetweenBranchLine = 30;
-    static readonly branchPanelFontSize = 12;
+    static readonly distanceBetweenBranchLine = 30;    
+    static readonly branchPanelFontSize = 12;    
+    static readonly commitRadius = BranchUtils.branchPanelFontSize * 2;
+    static readonly distanceBetweenCommits = BranchUtils.commitRadius;
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
         BranchUtils.getBranchDetails(repoDetails);
@@ -20,6 +22,7 @@ export class BranchUtils{
         let y = 20;
         repoDetails.resolvedBranches.forEach(branch=>{
             branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
+            console.log(y);
             y = branch.y + BranchUtils.distanceBetweenBranchLine;
         });
     }
@@ -112,6 +115,8 @@ export class BranchUtils{
           branchDetails.push(newOwnerBranch);
           return newOwnerBranch;
         };
+
+        let x = 20;
         
         for(let i = 0; i < repoDetails.allCommits.length; i++){
             const currentCommit = repoDetails.allCommits[i];            
@@ -138,6 +143,8 @@ export class BranchUtils{
             currentCommit.ownerBranch.commits.push(currentCommit);
 
             BranchUtils.setReferences(currentCommit);
+            BranchUtils.setX(currentCommit,x);
+            x = currentCommit.x + BranchUtils.distanceBetweenCommits;
 
 	        if(currentCommit.branchNameWithRemotes.length != 0 ){
 	        	let remoteBranch = currentCommit.branchNameWithRemotes.find((arg0) => !!arg0.remote);
@@ -169,6 +176,16 @@ export class BranchUtils{
         repoDetails.branchTree = branchTree;
         repoDetails.resolvedBranches = branchDetails;
         repoDetails.lastReferencesByBranch = lastReferencesByBranch;
+    }
+
+    private static setX(commit:ICommitInfo,x:number){
+        
+        if(!!commit.previousCommit?.refs && !!commit.refs){
+            const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
+            commit.x = x + BranchUtils.branchPanelFontSize * maxRefSize;
+        }
+        else commit.x = x;
+        
     }
 
     private static setReferences(commit:ICommitInfo) {

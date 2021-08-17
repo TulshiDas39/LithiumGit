@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
+import { SingleBranch } from "./SingleBranch";
 interface IState{
     repoDetails:IRepositoryDetails;
 }
@@ -31,11 +32,16 @@ function BranchPanelComponent(){
     return <div>
             <svg width="440" height="440">
                 <g>
-                    <path d="M100,100 h200" fill="none" stroke="black" stroke-width="2"/>
+                    {
+                        state.repoDetails.resolvedBranches.map(branch=>(
+                            <SingleBranch key={branch._id} branchDetails ={branch} />
+                        ))
+                    }
+                    {/* <path d="M100,100 h200" fill="none" stroke="black" stroke-width="2"/>
                     <path d="M100,100 v100 a20,20 0 0 0 20,20 h200" fill="none" stroke="black" stroke-width="2"/>
                     <path d="M100,100 v130 a20,20 0 0 0 20,20 h200" fill="none" stroke="black" stroke-width="2"/>
                     <circle cx="130" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
-                    <circle cx="180" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
+                    <circle cx="180" cy="250" r="13" stroke="black" stroke-width="3" fill="red" /> */}
 
                     {/* <path d="M100,100 h200 a20,20 0 0 1 20,20 v200 a20,20 0 0 1 -20,20 h-200 a20,20 0 0 1 -20,-20 v-200 a20,20 0 0 1 20,-20 z" fill="none" stroke="black" stroke-width="3" /> */}
                     {/* <path d="M100,120 h200 a20,20 0 0 1 20,20 v200 a20,20 0 0 1 -20,20 h-200 a20,20 0 0 1 -20,-20 v-200 a20,20 0 0 1 20,-20 z" fill="none" stroke="black" stroke-width="3" /> */}
