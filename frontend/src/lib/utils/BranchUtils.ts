@@ -3,6 +3,8 @@ import { createBranchDetailsObj, IBranchDetails, IBranchRemote, ICommitInfo, ILa
 export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
+    static readonly distanceBetweenBranchLine = 30;
+    static readonly branchPanelFontSize = 12;
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
         BranchUtils.getBranchDetails(repoDetails);
@@ -10,7 +12,16 @@ export class BranchUtils{
         BranchUtils.finaliseSourceCommits(repoDetails);
         BranchUtils.specifySerialsOfBranch(repoDetails);
         BranchUtils.sortBranches(repoDetails);
+        BranchUtils.setBranchHeights(repoDetails);
 
+    }
+    
+    private static setBranchHeights(repoDetails:IRepositoryDetails){
+        let y = 20;
+        repoDetails.resolvedBranches.forEach(branch=>{
+            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
+            y = branch.y + BranchUtils.distanceBetweenBranchLine;
+        });
     }
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
@@ -103,13 +114,9 @@ export class BranchUtils{
         };
         
         for(let i = 0; i < repoDetails.allCommits.length; i++){
-            const currentCommit = repoDetails.allCommits[i];
-            currentCommit.referedBranches = BranchUtils.getBranchFromReference(currentCommit.refs);
+            const currentCommit = repoDetails.allCommits[i];            
             let lastRef = BranchUtils.CheckBranchReferenceInCommitMessage(currentCommit);
-            if(!!lastRef) lastReferencesByBranch.push(lastRef);
-        
-            const branchRemoteList = currentCommit.referedBranches.map(x=> BranchUtils.getBranchRemote(x));
-            currentCommit.branchNameWithRemotes = branchRemoteList;
+            if(!!lastRef) lastReferencesByBranch.push(lastRef);                    
             
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
             
@@ -129,6 +136,8 @@ export class BranchUtils{
             
             currentCommit.ownerBranch = ownerBranch;
             currentCommit.ownerBranch.commits.push(currentCommit);
+
+            BranchUtils.setReferences(currentCommit);
 
 	        if(currentCommit.branchNameWithRemotes.length != 0 ){
 	        	let remoteBranch = currentCommit.branchNameWithRemotes.find((arg0) => !!arg0.remote);
@@ -162,19 +171,24 @@ export class BranchUtils{
         repoDetails.lastReferencesByBranch = lastReferencesByBranch;
     }
 
-    private static getBranchFromReference(commitRef:string) {
+    private static setReferences(commit:ICommitInfo) {
+        let commitRef = commit.refs;
     	const branches:string[] = [];
-    	if(commitRef.startsWith(BranchUtils.headPrefix)) commitRef = commitRef.substring(BranchUtils.headPrefix.length);
-    	if(!!commitRef) {
-    		const splits = commitRef.split(",");        
-            for (let split of splits) {
-              split = split.trim();
-              if(split.startsWith("tag:")) continue;
-              branches.push(split);  
-            }
-    	}
-                        
-        return branches;
+    	if(!!commitRef) return;
+        if(commitRef.startsWith(BranchUtils.headPrefix)) commitRef = commitRef.substring(BranchUtils.headPrefix.length);
+        const splits = commitRef.split(",");
+        const refLenght = splits.length;
+        if(refLenght > commit.ownerBranch.maxRefCount) commit.ownerBranch.maxRefCount = refLenght;
+        for (let split of splits) {
+            split = split.trim();
+            if(split.startsWith("tag:")) continue;
+            branches.push(split);  
+        }        
+        
+        commit.referedBranches = branches;
+
+        const branchRemoteList = commit.referedBranches.map(x=> BranchUtils.getBranchRemote(x));
+        commit.branchNameWithRemotes = branchRemoteList;
     }
 
     private static CheckBranchReferenceInCommitMessage(commit:ICommitInfo) {
