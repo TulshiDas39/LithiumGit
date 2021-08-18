@@ -23,7 +23,7 @@ function CommitPropertyComponent(props:ICommitProperty){
         {/* <span className="w-100 overflow-hidden d-flex">Author: <InputText text={props.selectedCommit.author_name}/> &lt;<InputText text={props.selectedCommit.author_email} />&gt;</span> */}
         <div className="">
             <textarea name="message" rows={8} className="no-resize w-75" 
-                value={props.selectedCommit.message} />            
+                value={props.selectedCommit.message} onChange={_=>{}} />            
         </div>
     </div>
 }

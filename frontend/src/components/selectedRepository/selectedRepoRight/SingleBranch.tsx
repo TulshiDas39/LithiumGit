@@ -23,11 +23,11 @@ function SingleBranchComponent(props:ISingleBranchProps){
 
     },[props.branchDetails]);
     return <> 
-    <path d={`M${data.startX},${props.branchDetails.y} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" stroke-width="2"/>
+    <path d={`M${data.startX},${props.branchDetails.y} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="2"/>
         {
             props.branchDetails.commits.map(c=>(
-                <circle cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
-                    stroke-width="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
+                <circle key={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
+                    strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
             ))
         }
                     {/* <circle cx="130" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
