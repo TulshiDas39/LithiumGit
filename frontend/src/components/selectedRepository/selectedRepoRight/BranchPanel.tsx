@@ -1,15 +1,21 @@
-import { IRepositoryDetails, RendererEvents } from "common_library";
+import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library";
 import React from "react"
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { SingleBranch } from "./SingleBranch";
+
+interface IBranchPanelProps{
+    onCommitSelect:(commit:ICommitInfo)=>void;
+    selectedCommit?:ICommitInfo;
+}
+
 interface IState{
     repoDetails:IRepositoryDetails;
 }
 
-function BranchPanelComponent(){
+function BranchPanelComponent(props:IBranchPanelProps){
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
@@ -34,7 +40,7 @@ function BranchPanelComponent(){
                 <g>
                     {
                         state.repoDetails.resolvedBranches.map(branch=>(
-                            <SingleBranch key={branch._id} branchDetails ={branch} />
+                            <SingleBranch key={branch._id} branchDetails ={branch} onCommitSelect={props.onCommitSelect} selectedCommit={props.selectedCommit} />
                         ))
                     }
                     {/* <path d="M100,100 h200" fill="none" stroke="black" stroke-width="2"/>

@@ -12,8 +12,12 @@
         width: 100%;
         overflow: auto;
         #branchPanel{
-            max-width: 100%;
+            width: 80%;
             overflow: auto;
+        }
+        #commit_property{
+            width: 20%;
+            overflow: hidden;
         }
     }
     

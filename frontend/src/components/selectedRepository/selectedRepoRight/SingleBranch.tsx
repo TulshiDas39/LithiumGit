@@ -1,9 +1,11 @@
-import { IBranchDetails } from "common_library";
+import { IBranchDetails, ICommitInfo } from "common_library";
 import React, { useMemo } from "react";
 import { BranchUtils } from "../../../lib";
 
 interface ISingleBranchProps{
     branchDetails:IBranchDetails;
+    onCommitSelect:(commit:ICommitInfo)=>void;
+    selectedCommit?:ICommitInfo;
 }
 
 function SingleBranchComponent(props:ISingleBranchProps){
@@ -24,7 +26,8 @@ function SingleBranchComponent(props:ISingleBranchProps){
     <path d={`M${data.startX},${props.branchDetails.y} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" stroke-width="2"/>
         {
             props.branchDetails.commits.map(c=>(
-                <circle cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" stroke-width="3" fill="red" />
+                <circle cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
+                    stroke-width="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
             ))
         }
                     {/* <circle cx="130" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
