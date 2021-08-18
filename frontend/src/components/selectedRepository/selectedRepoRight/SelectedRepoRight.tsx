@@ -33,8 +33,12 @@ function SelectedRepoRightComponent(){
     return <div id="selectedRepoRight" className="d-flex flex-column flex-grow-1">
         <BranchActions />
         <div className="d-flex w-100 overflow-hidden">
-            <BranchPanel repoDetails={state.repoDetails} selectedCommit={state.selectedCommit} onCommitSelect={(c)=>setState({selectedCommit:c})} />
-            <CommitProperty selectedCommit={state.selectedCommit} />
+            <div className="w-75">
+                <BranchPanel repoDetails={state.repoDetails} selectedCommit={state.selectedCommit} onCommitSelect={(c)=>setState({selectedCommit:c})} />
+            </div>
+            <div className="w-25 ps-2">
+                <CommitProperty selectedCommit={state.selectedCommit} />
+            </div>
         </div>
     </div>   
 }

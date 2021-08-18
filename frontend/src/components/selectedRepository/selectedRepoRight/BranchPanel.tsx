@@ -12,7 +12,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
 
     if(!props.repoDetails) return <span>Loading...</span>;
     console.log(props.repoDetails);
-    return <div id="branchPanel" className="">
+    return <div id="branchPanel" className="w-100 overflow-scroll">
             <svg width={props.repoDetails.branchPanelWidth} height={props.repoDetails.branchPanelHeight}>
                 <g>
                     {
