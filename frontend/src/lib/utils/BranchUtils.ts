@@ -5,8 +5,8 @@ export class BranchUtils{
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
-    static readonly commitRadius = BranchUtils.branchPanelFontSize * 2;
-    static readonly distanceBetweenCommits = BranchUtils.commitRadius;
+    static readonly commitRadius = BranchUtils.branchPanelFontSize;
+    static readonly distanceBetweenCommits = BranchUtils.commitRadius*3;
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
         BranchUtils.getBranchDetails(repoDetails);
