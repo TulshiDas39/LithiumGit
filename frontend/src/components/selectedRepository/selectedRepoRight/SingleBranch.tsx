@@ -22,12 +22,34 @@ function SingleBranchComponent(props:ISingleBranchProps){
         return {startX,endX,hLineLength,vLinePath}
 
     },[props.branchDetails]);
+    const getRefs = (commit:ICommitInfo)=>{
+        if(!commit.refs) return;
+        let refs = commit.refs;
+        if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substr(BranchUtils.headPrefix.length);
+        const splits = refs.split(",");
+
+        const refElements:JSX.Element[] = [];
+        let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
+        for(let sp of splits){
+            const x = commit.x + BranchUtils.commitRadius ;//- sp.length * BranchUtils.branchPanelFontSize;
+            const elem = <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            refElements.push(elem);
+            y = y - BranchUtils.branchPanelFontSize - 1;
+        }
+
+        // return <text x="0" y="50" font-family="Verdana" font-size="35" fill="blue">Hello</text>
+        return refElements;
+    }
+
     return <> 
     <path d={`M${data.startX},${props.branchDetails.y} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="2"/>
         {
             props.branchDetails.commits.map(c=>(
-                <circle key={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
-                    strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
+                <>
+                {!!c.refs && getRefs(c)}
+                    <circle key={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
+                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
+                </>
             ))
         }
                     {/* <circle cx="130" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
