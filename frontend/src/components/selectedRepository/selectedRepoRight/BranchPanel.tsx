@@ -29,7 +29,7 @@ function BranchPanelComponent(){
 
     if(!state.repoDetails) return <span>Loading...</span>;
     console.log(state.repoDetails);
-    return <div className="d-flex w-100 overflow-auto">
+    return <div id="branchPanel" className="">
             <svg width={state.repoDetails.branchPanelWidth} height={state.repoDetails.branchPanelHeight}>
                 <g>
                     {

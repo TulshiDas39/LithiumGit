@@ -8,4 +8,13 @@
         //     }
         // }
     }
+    #selectedRepoRight{
+        width: 100%;
+        overflow: auto;
+        #branchPanel{
+            max-width: 100%;
+            overflow: auto;
+        }
+    }
+    
 }
