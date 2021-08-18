@@ -6,7 +6,10 @@ interface ICommitProperty{
 }
 
 function CommitPropertyComponent(props:ICommitProperty){
-    return <div id="commit_property" className="">
+    if(!props.selectedCommit) return null;
+    return <div id="commit_property" className="d-flex flex-column">
+        <h6>Commit properties</h6>
+        <span>Sha: {props.selectedCommit.avrebHash}</span>
         
     </div>
 }

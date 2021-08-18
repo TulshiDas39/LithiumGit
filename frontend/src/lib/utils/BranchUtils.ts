@@ -194,9 +194,9 @@ export class BranchUtils{
     private static setReferences(commit:ICommitInfo,repoDetails:IRepositoryDetails) {
         let commitRef = commit.refs;
     	const branches:string[] = [];
-    	if(!!commitRef) return;
+    	if(!commitRef) return;
         const splits = commitRef.split(",");
-        if(commitRef.startsWith(BranchUtils.headPrefix)) {
+        if(commitRef.includes(BranchUtils.headPrefix)) {
             repoDetails.headCommit = commit;
             commitRef = commitRef.substring(BranchUtils.headPrefix.length);
         }
