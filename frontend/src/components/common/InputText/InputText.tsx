@@ -1,0 +1,12 @@
+import React from "react"
+
+interface InputTextProps{
+    text:string;
+}
+
+function InputTextComponent(props:InputTextProps){
+    return <input type="text" style={{width:props.text.length+"ch"}} value={props.text} spellCheck={false} className="h-100 outline-none" />
+    
+}
+
+export const InputText = React.memo(InputTextComponent);
