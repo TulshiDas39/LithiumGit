@@ -11,10 +11,9 @@
     #selectedRepoRight{
         width: 100%;
         overflow: auto;
-        // #branchPanel{
-        //     width: 75%;
-        //     overflow: auto;
-        // }
+        #branchPanel{
+            height: 400px;            
+        }
         // #commit_property{
         //     width: 25%;
         //     overflow: hidden;
