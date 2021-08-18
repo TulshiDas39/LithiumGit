@@ -1,4 +1,5 @@
 import { ICommitInfo } from "common_library";
+import moment from "moment";
 import React from "react"
 
 interface ICommitProperty{
@@ -10,7 +11,12 @@ function CommitPropertyComponent(props:ICommitProperty){
     return <div id="commit_property" className="d-flex flex-column">
         <h6>Commit properties</h6>
         <span>Sha: {props.selectedCommit.avrebHash}</span>
-        
+        <span>Date: {moment(props.selectedCommit.date).format("D MMM,YYYY") }</span>
+        <span>Author: {props.selectedCommit.author_name}&lt;{props.selectedCommit.author_email}&gt;</span>
+        <div>
+            <textarea name="message" rows={8} className="no-resize w-75" 
+                value={props.selectedCommit.message} />            
+        </div>
     </div>
 }
 

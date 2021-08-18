@@ -115,6 +115,10 @@ html {
     filter: brightness(150%);
   }
 
+  .no-resize{
+    resize: none;
+  }
+
   // $insets: top, right, left, right;
   // $gs-colors: var(--gs-normal),var(--gs-primary), var(--gs-primary),var(--gs-secondary),var(--gs-info),var(--gs-warning),var(--gs-danger);
   // $gs_variants: gs-normal, gs-primary, gs-primary,gs-secondary,gs-info,gs-warning,gs-danger;
