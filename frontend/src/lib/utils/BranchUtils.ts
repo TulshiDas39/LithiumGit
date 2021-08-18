@@ -2,6 +2,7 @@ import { createBranchDetailsObj, IBranchDetails, IBranchRemote, ICommitInfo, ILa
 
 export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
+    static readonly detachedHeadPrefix = "HEAD";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
@@ -143,7 +144,7 @@ export class BranchUtils{
             currentCommit.ownerBranch = ownerBranch;
             currentCommit.ownerBranch.commits.push(currentCommit);
 
-            BranchUtils.setReferences(currentCommit);
+            BranchUtils.setReferences(currentCommit,repoDetails);
             BranchUtils.setX(currentCommit,x);
             x = currentCommit.x + BranchUtils.distanceBetweenCommits;
 
@@ -190,12 +191,16 @@ export class BranchUtils{
         
     }
 
-    private static setReferences(commit:ICommitInfo) {
+    private static setReferences(commit:ICommitInfo,repoDetails:IRepositoryDetails) {
         let commitRef = commit.refs;
     	const branches:string[] = [];
     	if(!!commitRef) return;
-        if(commitRef.startsWith(BranchUtils.headPrefix)) commitRef = commitRef.substring(BranchUtils.headPrefix.length);
         const splits = commitRef.split(",");
+        if(commitRef.startsWith(BranchUtils.headPrefix)) {
+            repoDetails.headCommit = commit;
+            commitRef = commitRef.substring(BranchUtils.headPrefix.length);
+        }
+        else if(splits.some(sp=>sp === BranchUtils.detachedHeadPrefix)) repoDetails.headCommit = commit;        
         const refLenght = splits.length;
         if(refLenght > commit.ownerBranch.maxRefCount) commit.ownerBranch.maxRefCount = refLenght;
         for (let split of splits) {
