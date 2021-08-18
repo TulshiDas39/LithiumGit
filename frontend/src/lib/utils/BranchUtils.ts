@@ -25,6 +25,7 @@ export class BranchUtils{
             console.log(y);
             y = branch.y + BranchUtils.distanceBetweenBranchLine;
         });
+        repoDetails.branchPanelHeight = y;
     }
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
@@ -176,6 +177,7 @@ export class BranchUtils{
         repoDetails.branchTree = branchTree;
         repoDetails.resolvedBranches = branchDetails;
         repoDetails.lastReferencesByBranch = lastReferencesByBranch;
+        repoDetails.branchPanelWidth = x;
     }
 
     private static setX(commit:ICommitInfo,x:number){

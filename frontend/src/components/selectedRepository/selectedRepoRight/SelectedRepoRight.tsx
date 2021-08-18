@@ -3,7 +3,7 @@ import { BranchActions } from "./BranchActions"
 import { BranchPanel } from "./BranchPanel"
 
 function SelectedRepoRightComponent(){
-    return <div className="d-flex flex-column">
+    return <div className="d-flex flex-column flex-nowrap">
         <BranchActions />
         <BranchPanel />
     </div>   

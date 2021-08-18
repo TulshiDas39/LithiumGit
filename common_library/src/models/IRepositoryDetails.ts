@@ -13,6 +13,8 @@ export interface IRepositoryDetails{
     mergeCommitMessages:string[];
     sourceCommits:ICommitInfo[];
     repoInfo:RepositoryInfo;
+    branchPanelHeight:number;
+    branchPanelWidth:number;
     // Group branchPanel;
     // Line selectedMergeLine;
 }
@@ -30,6 +32,8 @@ export function CreateRepositoryDetails(){
         repoInfo:null!,
         resolvedBranches:[],
         sourceCommits:[],
+        branchPanelHeight:0,
+        branchPanelWidth:0,
     }
     return obj;
 }
