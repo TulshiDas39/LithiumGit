@@ -5,3 +5,4 @@ export * from './ILastReference';
 export * from './IRemoteInfo';
 export * from './ILastCommitByRemote';
 export * from './IBranchRemote';
+export * from './IMergeLine';

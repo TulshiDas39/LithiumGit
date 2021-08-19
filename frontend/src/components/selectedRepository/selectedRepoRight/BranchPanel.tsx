@@ -16,10 +16,16 @@ function BranchPanelComponent(props:IBranchPanelProps){
             <svg width={props.repoDetails.branchPanelWidth} height={props.repoDetails.branchPanelHeight}>
                 <g>
                     {
+                        props.repoDetails.mergedLines.map(line=>(
+                            <line key={`${line.srcX}-${line.srcY}-${line.endX}-${line.endY}`} x1={line.srcX} y1={line.srcY} x2={line.endX} y2={line.endY} stroke="green" strokeWidth={1} />
+                        ))
+                    }
+                    {
                         props.repoDetails.resolvedBranches.map(branch=>(
                             <SingleBranch key={branch._id} branchDetails ={branch} onCommitSelect={props.onCommitSelect} selectedCommit={props.selectedCommit} />
                         ))
                     }
+                    
                     {/* <path d="M100,100 h200" fill="none" stroke="black" stroke-width="2"/>
                     <path d="M100,100 v100 a20,20 0 0 0 20,20 h200" fill="none" stroke="black" stroke-width="2"/>
                     <path d="M100,100 v130 a20,20 0 0 0 20,20 h200" fill="none" stroke="black" stroke-width="2"/>

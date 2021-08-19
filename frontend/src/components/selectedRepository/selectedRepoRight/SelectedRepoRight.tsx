@@ -22,10 +22,7 @@ function SelectedRepoRightComponent(){
     useEffect(()=>{
         window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            BranchUtils.getRepoDetails(res);
-            // const resolvedBranches:IBranchDetails[] = [];
-            // while(res.resolvedBranches.length) resolvedBranches.push(res.resolvedBranches.pop()!);
-            // res.resolvedBranches = resolvedBranches;
+            BranchUtils.getRepoDetails(res);            
             setState({repoDetails:res,selectedCommit:res.headCommit});
         });
         return ()=>{

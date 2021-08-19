@@ -1,5 +1,6 @@
 import { IBranchDetails, ICommitInfo, ILastReference, IRemoteInfo } from ".";
 import { RepositoryInfo } from "../schemas";
+import { IMergeLine } from "./IMergeLine";
 
 export interface IRepositoryDetails{
     allCommits:ICommitInfo[];
@@ -15,6 +16,7 @@ export interface IRepositoryDetails{
     repoInfo:RepositoryInfo;
     branchPanelHeight:number;
     branchPanelWidth:number;
+    mergedLines:IMergeLine[],
     // Group branchPanel;
     // Line selectedMergeLine;
 }
@@ -34,6 +36,7 @@ export function CreateRepositoryDetails(){
         sourceCommits:[],
         branchPanelHeight:0,
         branchPanelWidth:0,
+        mergedLines:[],
     }
     return obj;
 }

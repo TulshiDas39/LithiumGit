@@ -1,4 +1,4 @@
-import { createBranchDetailsObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, StringUtils } from "common_library";
+import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, StringUtils } from "common_library";
 
 export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
@@ -16,7 +16,27 @@ export class BranchUtils{
         BranchUtils.specifySerialsOfBranch(repoDetails);
         BranchUtils.sortBranches(repoDetails);
         BranchUtils.setBranchHeights(repoDetails);
-        BranchUtils.reversBranches(repoDetails);        
+        BranchUtils.reversBranches(repoDetails);
+        BranchUtils.createMergeLines(repoDetails);
+
+    }
+
+    private static createMergeLines(repoDetails:IRepositoryDetails){
+        let mergeCommits = repoDetails.allCommits.filter(c=>c.parentHashes.length > 1);
+        const mergedLines = repoDetails.mergedLines;
+        for (let commit of mergeCommits) {
+    		var sourceCommitOfMerge = repoDetails.allCommits.find(c => c.avrebHash === commit.parentHashes[1]);
+    		if(!sourceCommitOfMerge) continue;
+    		var line =  createMergeLineObj();
+            line.srcX = sourceCommitOfMerge.x;
+            line.srcY = sourceCommitOfMerge.ownerBranch.y;
+            line.endX = commit.x;
+            line.endY = commit.ownerBranch.y;
+    		// line.addEventFilter(MouseEvent.MOUSE_CLICKED, e->{    				
+    		// 		line.setIsSelected(true);
+    		// });
+    		mergedLines.push(line);
+		}
     }
 
     private static reversBranches(repoDetails:IRepositoryDetails){
