@@ -16,7 +16,11 @@ export class BranchUtils{
         BranchUtils.specifySerialsOfBranch(repoDetails);
         BranchUtils.sortBranches(repoDetails);
         BranchUtils.setBranchHeights(repoDetails);
+        BranchUtils.reversBranches(repoDetails);        
+    }
 
+    private static reversBranches(repoDetails:IRepositoryDetails){
+        repoDetails.resolvedBranches.reverse();
     }
     
     private static setBranchHeights(repoDetails:IRepositoryDetails){

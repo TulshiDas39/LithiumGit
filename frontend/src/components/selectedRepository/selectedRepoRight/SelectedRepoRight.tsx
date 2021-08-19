@@ -1,4 +1,4 @@
-import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
+import { IBranchDetails, ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
 import { BranchUtils, UiUtils, useMultiState } from "../../../lib"
@@ -23,6 +23,9 @@ function SelectedRepoRightComponent(){
         window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
             BranchUtils.getRepoDetails(res);
+            // const resolvedBranches:IBranchDetails[] = [];
+            // while(res.resolvedBranches.length) resolvedBranches.push(res.resolvedBranches.pop()!);
+            // res.resolvedBranches = resolvedBranches;
             setState({repoDetails:res,selectedCommit:res.headCommit});
         });
         return ()=>{
