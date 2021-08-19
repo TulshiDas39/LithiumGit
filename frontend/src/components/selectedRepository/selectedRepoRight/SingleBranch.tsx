@@ -12,6 +12,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
     const data = useMemo(()=>{
         const parentCommit = props.branchDetails.parentCommit;
         const startX = parentCommit?.x || 20;
+        const startY = parentCommit?.ownerBranch.y || props.branchDetails.y;
         const endX = props.branchDetails.commits[props.branchDetails.commits.length - 1].x;
         const hLineLength = endX - startX;
         let vLineHeight =  0;
@@ -19,7 +20,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
         if(parentCommit?.ownerBranch.y) vLineHeight = props.branchDetails.y - parentCommit.ownerBranch.y - archRadius;
         let vLinePath = "";
         if(!!vLineHeight) vLinePath = `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`
-        return {startX,endX,hLineLength,vLinePath}
+        return {startX,startY,endX,hLineLength,vLinePath}
 
     },[props.branchDetails]);
     const getRefs = (commit:ICommitInfo)=>{
@@ -32,7 +33,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
         let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
         for(let sp of splits){
             const x = commit.x + BranchUtils.commitRadius ;//- sp.length * BranchUtils.branchPanelFontSize;
-            const elem = <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            const elem = <text key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
             refElements.push(elem);
             y = y - BranchUtils.branchPanelFontSize - 1;
         }
@@ -42,7 +43,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
     }
 
     return <> 
-    <path d={`M${data.startX},${props.branchDetails.y} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="2"/>
+    <path d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="2"/>
         {
             props.branchDetails.commits.map(c=>(
                 <>
