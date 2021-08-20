@@ -1,0 +1,19 @@
+{
+    "name": "common_library",
+    "version": "1.0.0",
+    "description": "Can log \"hello world\" and \"goodbye world\" to the console!",
+    "main": "./lib/index.js",
+    "scripts": {
+        "build": "tsc && cd .. && runner.cmd"
+    },
+    "files": [
+        "/lib"
+    ],
+    "types": "./lib/index.d.ts",
+    "dependencies": {
+        "uuid": "^8.3.2"
+    },
+    "devDependencies": {
+        "@types/uuid": "^8.3.1"
+    }
+}

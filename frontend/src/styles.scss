@@ -1,0 +1,143 @@
+
+@font-face {
+    font-family: 'Consolas';
+    src: url('./assets/fonts/consolas/CONSOLA.TTF') format('truetype'),    
+}
+
+html {
+  font-size: 12.8px;
+}
+
+html {
+    --font-color: #282828;   
+    --hover: #e4e6e896;
+    --bg-color:white;
+    --gs-normal: white;
+    --gs-primary: blue;
+    --gs-secondary: rgb(82, 82, 124);
+    --gs-info: rgb(8, 33, 66);
+    --gs-warning: rgb(167, 167, 67);
+    --gs-danger: red;
+    --bg-second-color: rgb(220, 220, 221);
+    --bg-third-color: rgb(192, 196, 192);
+    --bg-fourth-color: rgb(141, 160, 141);
+    --bg-select-color: rgb(192, 193, 201);
+    --active-color: #ffff;
+    --white: #ffff;
+    --search-bg: #ffff;
+    --svg-dark: #606060;
+    --scrollbar-color: #b7b7b7;
+    --svg-lite: #E5E6EB;
+    --red-color: #cc401f;
+    --switch-bg: #e0e0e0;
+    --switch-round: #606060;
+    --shadow-2: rgba(0, 0, 0, 0.2);
+    --shadow-1: rgba(0, 0, 0, 0.1);
+    --dropdown-background: #ffff;
+    --colorBlue: #1CD0A8;
+  }  
+  
+  html[data-theme='dark'] {
+    --font-color: #e4e6eb;
+    --bg-color: #1E1E1E;
+    --gs-normal: black;
+    --gs-primary: rgb(81, 165, 144);
+    --gs-secondary: rgb(86, 86, 230);
+    --gs-info: rgb(28, 116, 138);
+    --gs-warning: rgb(165, 165, 109);
+    --gs-danger: rgb(170, 63, 63);
+    --bg-second-color: #323233;
+    --bg-third-color: #a7a8a7;
+    --bg-fourth-color: rgb(126, 117, 156);
+    --bg-select-color: rgb(130, 124, 212);
+    --active-color: #333333;
+    --white: #181818;
+    --svg-lite: #E5E6EB;
+    --hover: #333333;        
+    --search-bg: #181818;
+    --svg-dark: #909090;
+    --scrollbar-color: #636363;
+    --switch-round: #1CD0A8;
+    --red-color: #cc401f;
+    --switch-bg: #4c4b4b;    
+    --wt-dropdown-background: #232323;
+    --colorBlue: #1CD0A8;
+  }
+
+  p,span,div,i,h1,h2,h3,h4,h5,h6{
+    color: var(--font-color);
+    font-family: 'Consolas';
+  }
+
+  .bg-color{
+    background-color: var(--bg-color);
+  }
+
+  .bg-second-color{
+    background-color: var(--bg-second-color);
+  }
+
+  .bg-third-color{
+    background-color: var(--bg-third-color);
+  }
+
+  .bg-fourth-color{
+    background-color: var(--bg-fourth-color);
+  }
+  .bg-select-color{
+    background-color: var(--bg-select-color);
+  }
+  
+  body {
+    background-color: var(--bg-color);
+    height: 100vh;
+  }
+
+  #root{
+    height: 100%;
+  }
+
+  * {
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  .cur-point{
+    cursor: pointer;
+  }
+
+  .hover:hover{
+    cursor: pointer;
+    opacity: 0.6;
+  }
+
+  .hover-brighter:hover{
+    filter: brightness(150%);
+  }
+
+  .no-resize{
+    resize: none;
+  }
+
+  .outline-none{
+    outline: none;
+    border: 0;
+  }
+
+  // $insets: top, right, left, right;
+  // $gs-colors: var(--gs-normal),var(--gs-primary), var(--gs-primary),var(--gs-secondary),var(--gs-info),var(--gs-warning),var(--gs-danger);
+  // $gs_variants: gs-normal, gs-primary, gs-primary,gs-secondary,gs-info,gs-warning,gs-danger;
+
+  // $variantLenght : list.length($gs_variants);
+  // @for $variantIndex from 0 through $variantLenght  {
+    
+  //   .border-#{list.nth($gs_variants, $variantIndex)}{
+  //     border: list.nth($gs-colors, $variantIndex);
+  //   }
+
+  //   @for $inIndex from 0 through list.length($insets){
+  //     .border-#{list.nth($insets, $inIndex)}-#{list.nth($gs_variants, $variantIndex)}{
+  //       border-#{list.nth($insets, $inIndex)}: 1px solid list.nth($gs-colors,$variantIndex);
+  //     }
+  //   }    
+  // }
