@@ -1,7 +1,7 @@
 import { IBranchDetails, ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
-import { BranchUtils, UiUtils, useMultiState } from "../../../lib"
+import { BranchUtils, CacheUtils, UiUtils, useMultiState } from "../../../lib"
 import { useSelectorTyped } from "../../../store/rootReducer"
 import { BranchActions } from "./BranchActions"
 import { BranchPanel } from "./BranchPanel"
@@ -20,15 +20,29 @@ function SelectedRepoRightComponent(){
     }),shallowEqual);
 
     useEffect(()=>{
-        window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
-        window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            BranchUtils.getRepoDetails(res);            
-            setState({repoDetails:res,selectedCommit:res.headCommit});
-        });
-        return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
+        function setRepo(repoDetails:IRepositoryDetails){
+            
         }
-    },[]);
+        function getRepoDetails(){
+            window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
+            window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+                BranchUtils.getRepoDetails(res);
+                setRepo(res);
+                CacheUtils.setRepoDetails(res);
+                setState({repoDetails:res,selectedCommit:res.headCommit});
+                UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
+            });
+        }
+
+        if(store.selectedRepo) {
+            CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
+                if(res) setState({repoDetails:res,selectedCommit:res.headCommit});
+                else getRepoDetails();
+            });
+        }
+        else getRepoDetails();
+
+    },[store.selectedRepo]);
     
     return <div id="selectedRepoRight" className="d-flex flex-column flex-grow-1">
         <BranchActions />

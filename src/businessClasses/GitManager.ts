@@ -38,6 +38,7 @@ export class GitManager{
 
     private async repoDetails(repoInfo:RepositoryInfo){
         const repoDetails = CreateRepositoryDetails();
+        repoDetails.repoInfo = repoInfo;
         const git = this.getGitRunner(repoInfo);
         const commits = await this.getCommits(git);
         repoDetails.allCommits = commits;
