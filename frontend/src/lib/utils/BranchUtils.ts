@@ -153,7 +153,7 @@ export class BranchUtils{
             
             if(!!previousCommit){
             	currentCommit.previousCommit = previousCommit;            	
-                if(!!previousCommit.nextCommit){            
+                if(previousCommit.nextCommit || previousCommit.ownerBranch.name){            
                   ownerBranch = createNewBranch(previousCommit);
                   previousCommit.branchesFromThis.push(ownerBranch);
                 }else{              
@@ -172,7 +172,7 @@ export class BranchUtils{
             BranchUtils.setX(currentCommit,x);
             x = currentCommit.x + BranchUtils.distanceBetweenCommits;
 
-	        if(currentCommit.branchNameWithRemotes.length != 0 ){
+	        if(currentCommit.branchNameWithRemotes.length){
 	        	let remoteBranch = currentCommit.branchNameWithRemotes.find((arg0) => !!arg0.remote);
 	         	
 	            if(!!remoteBranch) currentCommit.ownerBranch.name = remoteBranch.branchName;
