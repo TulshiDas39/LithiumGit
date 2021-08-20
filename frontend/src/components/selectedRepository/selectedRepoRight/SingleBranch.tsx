@@ -49,7 +49,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
                 <Fragment key={c.hash}>
                 {!!c.refs && getRefs(c)}
                     <circle cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
-                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"green":"red"}`} onClick={()=>props.onCommitSelect(c)} />
+                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"blueviolet":"cadetblue"}`} onClick={()=>props.onCommitSelect(c)} />
                 </Fragment>
             ))
         }
