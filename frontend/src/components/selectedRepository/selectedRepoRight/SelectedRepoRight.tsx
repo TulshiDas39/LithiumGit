@@ -17,23 +17,20 @@ function SelectedRepoRightComponent(){
 
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
+        refreshVersion:state.ui.versions.branchPanelRefresh,
     }),shallowEqual);
 
-    useEffect(()=>{
-        function setRepo(repoDetails:IRepositoryDetails){
-            
-        }
-        function getRepoDetails(){
-            window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
-            window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-                BranchUtils.getRepoDetails(res);
-                setRepo(res);
-                CacheUtils.setRepoDetails(res);
-                setState({repoDetails:res,selectedCommit:res.headCommit});
-                UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
-            });
-        }
+    const getRepoDetails=()=>{            
+        window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
+        window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+            BranchUtils.getRepoDetails(res);        
+            CacheUtils.setRepoDetails(res);
+            setState({repoDetails:res,selectedCommit:res.headCommit});
+            UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
+        });
+    }
 
+    useEffect(()=>{               
         if(store.selectedRepo) {
             CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
                 if(res) setState({repoDetails:res,selectedCommit:res.headCommit});
@@ -43,6 +40,11 @@ function SelectedRepoRightComponent(){
         else getRepoDetails();
 
     },[store.selectedRepo]);
+
+    useEffect(()=>{
+        setState({repoDetails:undefined});
+        getRepoDetails();
+    },[store.refreshVersion]);
     
     return <div id="selectedRepoRight" className="d-flex flex-column flex-grow-1">
         <BranchActions />

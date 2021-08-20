@@ -17,7 +17,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }
     },[props.repoDetails?.headCommit])
 
-    if(!props.repoDetails) return <span>Loading...</span>;
+    if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     console.log(props.repoDetails);
     return <div id="branchPanel" className="w-100 overflow-scroll">
             <svg width={props.repoDetails.branchPanelWidth} height={props.repoDetails.branchPanelHeight}>

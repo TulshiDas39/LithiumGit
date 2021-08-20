@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RendererEvents, RepositoryInfo } from "common_library";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -10,12 +9,20 @@ export enum EnumHomePageTab{
 
 // export type EnumHomePageTab="Recents"|"Open"|"Create"|"Clone";
 
+interface EventVersions{
+    branchPanelRefresh:number;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
+    versions:EventVersions;    
 }
 
 const initialState:IUIState={
     homePageTab:EnumHomePageTab.Recent,
+    versions:{
+        branchPanelRefresh:0,
+    },    
 }
 
 const UISlice = createSlice({
@@ -24,7 +31,10 @@ const UISlice = createSlice({
     reducers:{
         setHomePageTab(state,action:PayloadAction<EnumHomePageTab>){
             state.homePageTab = action.payload;
-        }        
+        },
+        increamentVersion(state,action:PayloadAction<keyof EventVersions>){
+            state.versions[action.payload] +=1;
+        }
     }
 });
 
