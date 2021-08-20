@@ -90,9 +90,14 @@ export class BranchUtils{
 			else {
 				for(let br of sourceCommit.branchesFromThis) {
 					if(!br.name)continue;
-					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date))
-						realOwnerBranch = br;
-					break;					
+                    if(br.name === "master"){
+                        realOwnerBranch = br;
+                        break;
+                    }
+					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date)){
+                        realOwnerBranch = br;
+					    break;
+                    }
 				}
 			}					
 			
