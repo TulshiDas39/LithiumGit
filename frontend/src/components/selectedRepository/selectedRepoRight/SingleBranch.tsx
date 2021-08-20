@@ -50,11 +50,11 @@ function SingleBranchComponent(props:ISingleBranchProps){
                 {!!c.refs && getRefs(c)}
                     <circle id={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
                         strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"blueviolet":"cadetblue"}`} onClick={()=>props.onCommitSelect(c)} />
+                    {c.isHead && 
+                    <text x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>}
                 </Fragment>
             ))
-        }
-                    {/* <circle cx="130" cy="250" r="13" stroke="black" stroke-width="3" fill="red" />
-                    <circle cx="180" cy="250" r="13" stroke="black" stroke-width="3" fill="red" /> */}
+        }                    
     </>
 }
 

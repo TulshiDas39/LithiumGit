@@ -69,6 +69,10 @@ html {
     font-family: 'Consolas';
   }
 
+  .font-color{
+    color: var(--font-color);
+  }
+  
   .bg-color{
     background-color: var(--bg-color);
   }

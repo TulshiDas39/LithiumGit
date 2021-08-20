@@ -27,6 +27,11 @@ function MainComponent(){
     useEffect(()=>{
         const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires); 
         console.log('repos',repos);
+        if(!repos?.length){
+            setState({isLoading:false});
+            dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
+            return;
+        }
         const sortedRepos = repos.sort((x1,x2)=> (x1.lastOpenedAt ?? "") > (x2.lastOpenedAt ?? "") ?-1:1);
         batch(()=>{
             

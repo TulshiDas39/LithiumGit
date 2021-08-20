@@ -227,6 +227,7 @@ export class BranchUtils{
         const splits = commitRef.split(",");
         if(commitRef.includes(BranchUtils.headPrefix)) {
             repoDetails.headCommit = commit;
+            commit.isHead = true;
             commitRef = commitRef.substring(BranchUtils.headPrefix.length);
         }
         else if(splits.some(sp=>sp === BranchUtils.detachedHeadPrefix)) repoDetails.headCommit = commit;        

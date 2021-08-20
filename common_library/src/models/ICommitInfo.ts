@@ -17,6 +17,7 @@ export interface ICommitInfo{
     author_name:string;
     author_email:string;
     x:number;
+    isHead:boolean;
     // SingleCommit UiObj;
 }
 
@@ -38,6 +39,7 @@ export function CreateCommitInfoObj(){
         nextCommit:null!,
         ownerBranch:null!,
         previousCommit:null!,
+        isHead:false,
     }
     return obj;
 }
