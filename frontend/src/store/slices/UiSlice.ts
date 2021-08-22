@@ -11,6 +11,7 @@ export enum EnumHomePageTab{
 
 interface EventVersions{
     branchPanelRefresh:number;
+    branchPanelZoom:number;
 }
 
 interface IUIState{
@@ -22,6 +23,7 @@ const initialState:IUIState={
     homePageTab:EnumHomePageTab.Recent,
     versions:{
         branchPanelRefresh:0,
+        branchPanelZoom:0,
     },    
 }
 
@@ -34,6 +36,21 @@ const UISlice = createSlice({
         },
         increamentVersion(state,action:PayloadAction<keyof EventVersions>){
             state.versions[action.payload] +=1;
+        },
+        decreamentVersion(state,action:PayloadAction<keyof EventVersions>){
+            state.versions[action.payload] -=1;
+        },
+        setVersion(state,action:PayloadAction<{key:keyof EventVersions,value:number}>){
+            state.versions[action.payload.key] = action.payload.value;
+        },
+        increamentBranchPanelZoom(state){
+            if(state.versions.branchPanelZoom < 20) state.versions.branchPanelZoom += 1;
+        },
+        decreamentBranchPanelZoom(state){
+            if(state.versions.branchPanelZoom > -9) state.versions.branchPanelZoom -= 1;
+        },
+        resetBranchPanelZoom(state){
+            state.versions.branchPanelZoom = 0;
         }
     }
 });
