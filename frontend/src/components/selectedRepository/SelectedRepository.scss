@@ -12,7 +12,10 @@
         width: 100%;
         overflow: auto;
         #branchPanel{
-            height: 400px;            
+            height: 400px;
+            svg{
+                transform: scale(0.1);
+            }
         }
         // #commit_property{
         //     width: 25%;
