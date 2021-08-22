@@ -1,7 +1,9 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
 import React from "react"
 import { useEffect } from "react";
+import { shallowEqual } from "react-redux";
 import { useMultiState } from "../../../lib";
+import { useSelectorTyped } from "../../../store/rootReducer";
 import { SingleBranch } from "./SingleBranch";
 
 interface IBranchPanelProps{
@@ -15,12 +17,19 @@ interface IState{
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
+    const store = useSelectorTyped(state=>({
+        zoom:state.ui.versions.branchPanelZoom,
+    }),shallowEqual);
     useEffect(()=>{
         if(props.repoDetails?.headCommit) {
             let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
         }
     },[props.repoDetails?.headCommit])
+
+    useEffect(()=>{
+        setState({scale:1+ (store.zoom/10)});
+    },[store.zoom])
 
     const [state,setState]=useMultiState<IState>({scale:1});
 
