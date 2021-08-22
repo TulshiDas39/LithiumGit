@@ -42,6 +42,7 @@ function SelectedRepoRightComponent(){
     },[store.selectedRepo]);
 
     useEffect(()=>{
+        if(!store.refreshVersion) return;
         setState({repoDetails:undefined});
         getRepoDetails();
     },[store.refreshVersion]);
