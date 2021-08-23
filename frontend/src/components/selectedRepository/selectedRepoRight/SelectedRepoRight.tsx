@@ -51,10 +51,10 @@ function SelectedRepoRightComponent(){
         <BranchActions />
         <div className="d-flex w-100 overflow-hidden">
             <div className="w-75">
-                <BranchPanel repoDetails={state.repoDetails} selectedCommit={state.selectedCommit} onCommitSelect={(c)=>setState({selectedCommit:c})} />
+                {!!state.repoDetails && <BranchPanel repoDetails={state.repoDetails} selectedCommit={state.selectedCommit} onCommitSelect={(c)=>setState({selectedCommit:c})} />}
             </div>
             <div className="w-25 ps-2">
-                <CommitProperty selectedCommit={state.selectedCommit} />
+                {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit} />}
             </div>
         </div>
     </div>   

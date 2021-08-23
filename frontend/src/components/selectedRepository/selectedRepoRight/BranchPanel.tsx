@@ -9,7 +9,7 @@ import { SingleBranch } from "./SingleBranch";
 interface IBranchPanelProps{
     onCommitSelect:(commit:ICommitInfo)=>void;
     selectedCommit?:ICommitInfo;
-    repoDetails?:IRepositoryDetails;
+    repoDetails:IRepositoryDetails;
 }
 
 interface IState{
@@ -33,10 +33,15 @@ function BranchPanelComponent(props:IBranchPanelProps){
 
     const [state,setState]=useMultiState<IState>({scale:1});
 
+    const getPanelHeight = ()=>{
+        if(props.repoDetails.branchPanelHeight < 400) return 400;
+        return props.repoDetails.branchPanelHeight;
+    }
+
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     console.log(props.repoDetails);
     return <div id="branchPanel" className="w-100 overflow-scroll">
-            <svg width={props.repoDetails.branchPanelWidth} height={props.repoDetails.branchPanelHeight} style={{transform:`scale(${state.scale})`}}>
+            <svg width={props.repoDetails.branchPanelWidth} height={getPanelHeight()} style={{transform:`scale(${state.scale})`}}>
                 <g>
                     {
                         props.repoDetails.mergedLines.map(line=>(
