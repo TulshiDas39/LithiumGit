@@ -1,10 +1,12 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React from "react"
+import React, { useRef } from "react"
+import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { SingleBranch } from "./SingleBranch";
+import debounce from "lodash.debounce";
 
 interface IBranchPanelProps{
     onCommitSelect:(commit:ICommitInfo)=>void;
@@ -36,12 +38,22 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const getPanelHeight = ()=>{
         if(props.repoDetails.branchPanelHeight < 400) return 400;
         return props.repoDetails.branchPanelHeight;
-    }
+    }    
+
+    const handleScroll =  useRef(debounce((e: React.UIEvent<HTMLDivElement, UIEvent>)=>{
+        const { scrollHeight, scrollTop,scrollLeft, clientHeight,offsetHeight,offsetWidth } =  e.target as HTMLDivElement;
+        
+        console.log("offsetHeight",offsetHeight);
+        console.log("offsetWidth",offsetWidth);
+        console.log("scrollTop",scrollTop);
+        console.log("scrollLeft",scrollLeft);
+    },100), )
+    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     console.log(props.repoDetails);
-    return <div id="branchPanel" className="w-100 overflow-scroll">
-            <svg width={props.repoDetails.branchPanelWidth} height={getPanelHeight()} style={{transform:`scale(${state.scale})`}}>
+    return <div id="branchPanel" className="w-100 overflow-scroll" onScroll={handleScroll.current}>
+            <svg width={props.repoDetails.branchPanelWidth} height={getPanelHeight()} style={{transform:`scale(${state.scale})`, paddingLeft:``} }>
                 <g>
                     {
                         props.repoDetails.mergedLines.map(line=>(
