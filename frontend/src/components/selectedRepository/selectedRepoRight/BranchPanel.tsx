@@ -43,7 +43,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
 
     const scrollPosition = useRef({scrollTop:0,scrollLeft:Number.MAX_SAFE_INTEGER});
     const adjustPadding = ()=>{
-        if( state.scale <= 1) return;
+        if( state.scale < 1) return;
         const svgHeight = getSVGHeight();
         const hiddenHeightSpace = svgHeight * state.scale - panelHeight;
         let paddingTop = 0;
@@ -70,14 +70,14 @@ function BranchPanelComponent(props:IBranchPanelProps){
     }
 
     useEffect(()=>{
-        if(!timer.current) setPaddingAdjustTimeout();
+        if(!timer.current) setPaddingAdjustTimeout();        
     },[state.scale])
 
     const handleScroll =  (e: React.UIEvent<HTMLDivElement, UIEvent>)=>{
         const { scrollTop,scrollLeft } =  e.target as HTMLDivElement;
         scrollPosition.current.scrollLeft = scrollLeft;
         scrollPosition.current.scrollTop = scrollTop;        
-        if(!timer.current) setPaddingAdjustTimeout();                
+        if(!timer.current && state.scale > 1) setPaddingAdjustTimeout();
     }
     
 
