@@ -10,8 +10,9 @@ function BranchActionsComponent(){
         <FaSyncAlt className="hover" onClick={()=> dispatch(ActionUI.increamentVersion("branchPanelRefresh"))} />
     </div>
     <div className="d-flex align-items-center justify-content-center border px-2">
-        <FaMinus className="px-1 hover" onClick={()=>dispatch(ActionUI.decreamentBranchPanelZoom())} />
-        <FaPlus className="px-1 hover" onClick={()=>dispatch(ActionUI.increamentBranchPanelZoom())} />
+        <FaMinus className="px-1 hover border rounded-circle" onClick={()=>dispatch(ActionUI.decreamentBranchPanelZoom())} />
+        <span className="px-1" />
+        <FaPlus className="px-1 hover border rounded-circle" onClick={()=>dispatch(ActionUI.increamentBranchPanelZoom())} />
         <span className="hover px-1" onClick={()=>dispatch(ActionUI.resetBranchPanelZoom())}  >Reset</span>
     </div>
 </div>
