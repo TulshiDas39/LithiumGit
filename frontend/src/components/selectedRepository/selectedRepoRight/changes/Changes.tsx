@@ -5,10 +5,14 @@ import { useMultiState } from "../../../../lib";
 interface IState{
     adjustedX:number;
     isStagedChangesExpanded:boolean;
+    isChangesExpanded:boolean;
 }
 
 function ChangesComponent(){
-    const [state,setState] = useMultiState<IState>({adjustedX:0,isStagedChangesExpanded:true});
+    const [state,setState] = useMultiState<IState>({adjustedX:0,
+        isStagedChangesExpanded:true,
+        isChangesExpanded:true,
+    });
     const dragData = useRef({initialX:0,currentX:0});
     // useEffect(()=>{
     //     initialDragData.current.clientX
@@ -30,6 +34,11 @@ function ChangesComponent(){
     const handleStageCollapse = ()=>{
         setState({isStagedChangesExpanded:!state.isStagedChangesExpanded});
     }
+
+    const handleChangesCollapse = ()=>{
+        setState({isChangesExpanded:!state.isChangesExpanded});
+    }
+
     console.log(dragData.current);
 
     return <div className="d-flex w-100">
@@ -56,8 +65,31 @@ function ChangesComponent(){
                     <span className="small text-secondary">test/test/test</span>
                 </div>
             </div>
-            }            
-            <div></div>
+            }          
+
+            <div className="d-flex hover" onClick={handleChangesCollapse}>
+                <span>{state.isChangesExpanded ? <FaAngleDown />:<FaAngleRight />} </span>
+                <span>Changes</span>
+            </div>
+            {state.isChangesExpanded && <div className="d-flex flex-column ps-2">
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+            </div>
+            }
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{width:'3px'}}>
 
