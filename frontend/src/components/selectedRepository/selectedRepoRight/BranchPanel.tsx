@@ -16,6 +16,9 @@ interface IState{
     scale:number;
     paddingTop:number;
     paddingLeft:number;
+    scrollTop:number;
+    scrollLeft:number;
+    panelWidth:number;
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
@@ -34,14 +37,21 @@ function BranchPanelComponent(props:IBranchPanelProps){
         setState({scale:1+ (store.zoom/10)});        
     },[store.zoom])
 
-    const [state,setState]=useMultiState<IState>({scale:1,paddingLeft:0,paddingTop:0});
+    const [state,setState]=useMultiState<IState>({
+        scale:1,
+        paddingLeft:0,
+        paddingTop:0,
+        scrollLeft:props.repoDetails.branchPanelWidth,
+        scrollTop:0,
+        panelWidth:0,
+    });
     
     const getSVGHeight = ()=>{
         if(props.repoDetails.branchPanelHeight < panelHeight) return panelHeight;
         return props.repoDetails.branchPanelHeight;
     }    
 
-    const scrollPosition = useRef({scrollTop:0,scrollLeft:Number.MAX_SAFE_INTEGER});
+    const scrollPosition = useRef({scrollTop:0,scrollLeft:Number.MAX_SAFE_INTEGER,width:0,});
     const adjustPadding = ()=>{
         if( state.scale < 1) return;
         const svgHeight = getSVGHeight();
@@ -60,29 +70,48 @@ function BranchPanelComponent(props:IBranchPanelProps){
 
         setState({paddingLeft,paddingTop});
     }
-    const timer = useRef<NodeJS.Timeout|null>();
+    const paddingTimer = useRef<NodeJS.Timeout>();
+
+    const scrollStateTimer = useRef<NodeJS.Timeout>();
 
     const setPaddingAdjustTimeout = ()=>{
-        timer.current = setTimeout(()=>{
+        paddingTimer.current = setTimeout(()=>{
             adjustPadding();
-            timer.current = null!;
+            paddingTimer.current = null!;
+        },100);
+    }
+
+    const setScrollPositionSetterTimeout = ()=>{
+        scrollStateTimer.current = setTimeout(()=>{            
+            setState({
+                scrollLeft:scrollPosition.current.scrollLeft,
+                scrollTop:scrollPosition.current.scrollTop,
+                panelWidth:scrollPosition.current.width,
+            });
+            scrollStateTimer.current = null!;
         },100);
     }
 
     useEffect(()=>{
-        if(!timer.current) setPaddingAdjustTimeout();        
+        if(!paddingTimer.current) setPaddingAdjustTimeout();        
     },[state.scale])
 
     const handleScroll =  (e: React.UIEvent<HTMLDivElement, UIEvent>)=>{
-        const { scrollTop,scrollLeft } =  e.target as HTMLDivElement;
+        const { scrollTop,scrollLeft,clientWidth } =  e.target as HTMLDivElement;
         scrollPosition.current.scrollLeft = scrollLeft;
-        scrollPosition.current.scrollTop = scrollTop;        
-        if(!timer.current && state.scale > 1) setPaddingAdjustTimeout();
+        scrollPosition.current.scrollTop = scrollTop;   
+        scrollPosition.current.width = clientWidth;
+        console.log(scrollPosition.current);
+        if(!paddingTimer.current && state.scale > 1) setPaddingAdjustTimeout();
+        if(scrollStateTimer.current) {
+           clearTimeout(scrollStateTimer.current);
+        }
+        setScrollPositionSetterTimeout();
     }
     
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
-    console.log(props.repoDetails);
+    
     return <div id="branchPanel" className="w-100 overflow-scroll" onScroll={handleScroll}>
             <svg width={props.repoDetails.branchPanelWidth} height={getSVGHeight()} style={{transform:`scale(${state.scale})`, paddingTop:`${state.paddingTop}px`,paddingLeft:`${state.paddingLeft}px`} }>
                 <g>
@@ -93,7 +122,15 @@ function BranchPanelComponent(props:IBranchPanelProps){
                     }
                     {
                         props.repoDetails.resolvedBranches.map(branch=>(
-                            <SingleBranch key={branch._id} branchDetails ={branch} onCommitSelect={props.onCommitSelect} selectedCommit={props.selectedCommit} />
+                            <SingleBranch key={branch._id} 
+                                branchDetails ={branch} 
+                                onCommitSelect={props.onCommitSelect} 
+                                selectedCommit={props.selectedCommit} 
+                                scrollLeft={(state.scrollLeft - state.paddingLeft)/state.scale}
+                                scrollTop={state.scrollTop} 
+                                panelWidth={state.panelWidth}
+                                
+                            />
                         ))
                     }                                        
                 </g>

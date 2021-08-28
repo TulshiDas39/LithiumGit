@@ -6,6 +6,9 @@ interface ISingleBranchProps{
     branchDetails:IBranchDetails;
     onCommitSelect:(commit:ICommitInfo)=>void;
     selectedCommit?:ICommitInfo;
+    scrollTop:number;
+    scrollLeft:number;
+    panelWidth:number;
 }
 
 function SingleBranchComponent(props:ISingleBranchProps){
@@ -23,6 +26,13 @@ function SingleBranchComponent(props:ISingleBranchProps){
         return {startX,startY,endX,hLineLength,vLinePath}
 
     },[props.branchDetails]);
+    const canShowBranchName=()=>{
+        const endX = props.branchDetails.commits[props.branchDetails.commits.length-1].x;
+        const startX = props.branchDetails.commits[0].x;
+        if(props.scrollLeft < startX || props.scrollLeft > endX || ( props.scrollLeft < endX && endX < props.scrollLeft+props.panelWidth))
+            return false;
+        return true;
+    }
     const getRefs = (commit:ICommitInfo)=>{
         if(!commit.refs) return;
         let refs = commit.refs;
@@ -32,13 +42,12 @@ function SingleBranchComponent(props:ISingleBranchProps){
         const refElements:JSX.Element[] = [];
         let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
         for(let sp of splits){
-            const x = commit.x + BranchUtils.commitRadius ;//- sp.length * BranchUtils.branchPanelFontSize;
+            const x = commit.x + BranchUtils.commitRadius ;
             const elem = <text key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
             refElements.push(elem);
             y = y - BranchUtils.branchPanelFontSize - 1;
         }
 
-        // return <text x="0" y="50" font-family="Verdana" font-size="35" fill="blue">Hello</text>
         return refElements;
     }
 
@@ -54,6 +63,9 @@ function SingleBranchComponent(props:ISingleBranchProps){
                     <text x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>}
                 </Fragment>
             ))
+        }
+        {canShowBranchName() && 
+            <text x={props.scrollLeft+10} y = {props.branchDetails.y - BranchUtils.commitRadius - 10} alignmentBaseline="middle">{props.branchDetails.name}</text>
         }                    
     </>
 }
