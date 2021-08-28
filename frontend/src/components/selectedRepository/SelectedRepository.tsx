@@ -15,7 +15,7 @@ function SelectedRepositoryComponent(){
     }
     return <div id="SelectedRepository" className="d-flex h-100">
         <SelectedRepoLeft  onSelectTab={handleSelect} selectedTab={state.selectedTab} />
-        <SelectedRepoRight />
+        <SelectedRepoRight selectedTab={state.selectedTab.type} />
     </div>
 }
 

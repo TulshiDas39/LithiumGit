@@ -3,14 +3,20 @@ import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
 import { BranchUtils, CacheUtils, UiUtils, useMultiState } from "../../../lib"
 import { useSelectorTyped } from "../../../store/rootReducer"
+import { ISelectedRepoTabItem } from "../SelectedRepoLeft"
 import { BranchesView } from "./branches"
+import { Changes } from "./changes"
+
+interface ISelectedRepoRightProps{
+    selectedTab:ISelectedRepoTabItem["type"];
+}
 
 interface IState{
     selectedCommit?:ICommitInfo;
     repoDetails?:IRepositoryDetails;
 }
 
-function SelectedRepoRightComponent(){
+function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     const [state,setState] = useMultiState<IState>({});
 
     const store = useSelectorTyped(state=>({
@@ -45,6 +51,7 @@ function SelectedRepoRightComponent(){
         getRepoDetails();
     },[store.refreshVersion]);
     
+    if(props.selectedTab === "Changes") return <Changes />
     return <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
         selectedCommit={state.selectedCommit}   />
 }
