@@ -52,7 +52,10 @@ function SingleBranchComponent(props:ISingleBranchProps){
     }
 
     return <> 
-    <path d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="2"/>
+    <path d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="3"
+         >
+         <title>{props.branchDetails.name}</title>
+    </path>
         {
             props.branchDetails.commits.map(c=>(
                 <Fragment key={c.hash}>
