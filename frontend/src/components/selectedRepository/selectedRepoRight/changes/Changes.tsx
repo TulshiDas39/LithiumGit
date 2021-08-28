@@ -28,7 +28,22 @@ function ChangesComponent(){
 
     return <div className="d-flex w-100">
         <div className="pe-2" style={{width:`calc(20% ${getAdjustedSize(state.adjustedX)})`}}>
-            Files
+            <div className="d-flex align-items-center flex-nowrap">
+                <span className="pe-1 flex-shrink-0">File Name 1</span>
+                <span className="small text-secondary">test/test/test</span>
+            </div>
+            <div className="d-flex align-items-center flex-nowrap">
+                <span className="pe-1 flex-shrink-0">File Name 1</span>
+                <span className="small text-secondary">test/test/test</span>
+            </div>
+            <div className="d-flex align-items-center flex-nowrap">
+                <span className="pe-1 flex-shrink-0">File Name 1</span>
+                <span className="small text-secondary">test/test/test</span>
+            </div>
+            <div className="d-flex align-items-center flex-nowrap">
+                <span className="pe-1 flex-shrink-0">File Name 1</span>
+                <span className="small text-secondary">test/test/test</span>
+            </div>
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{width:'3px'}}>
 
