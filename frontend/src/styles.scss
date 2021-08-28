@@ -110,6 +110,10 @@ html {
     cursor: pointer;
   }
 
+  .cur-resize{
+    cursor: col-resize;
+  }
+
   .hover:hover{
     cursor: pointer;
     opacity: 0.6;
