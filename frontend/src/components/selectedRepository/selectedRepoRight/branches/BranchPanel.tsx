@@ -2,8 +2,8 @@ import { ICommitInfo, IRepositoryDetails } from "common_library";
 import React, { useRef } from "react"
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { useMultiState } from "../../../lib";
-import { useSelectorTyped } from "../../../store/rootReducer";
+import { useMultiState } from "../../../../lib";
+import { useSelectorTyped } from "../../../../store/rootReducer";
 import { SingleBranch } from "./SingleBranch";
 
 interface IBranchPanelProps{

@@ -1,11 +1,9 @@
-import { IBranchDetails, ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
+import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
 import { BranchUtils, CacheUtils, UiUtils, useMultiState } from "../../../lib"
 import { useSelectorTyped } from "../../../store/rootReducer"
-import { BranchActions } from "./BranchActions"
-import { BranchPanel } from "./BranchPanel"
-import { CommitProperty } from "./CommitProperty"
+import { BranchesView } from "./branches"
 
 interface IState{
     selectedCommit?:ICommitInfo;
@@ -47,17 +45,8 @@ function SelectedRepoRightComponent(){
         getRepoDetails();
     },[store.refreshVersion]);
     
-    return <div id="selectedRepoRight" className="d-flex flex-column flex-grow-1">
-        <BranchActions />
-        <div className="d-flex w-100 overflow-hidden">
-            <div className="w-75">
-                {!!state.repoDetails && <BranchPanel repoDetails={state.repoDetails} selectedCommit={state.selectedCommit} onCommitSelect={(c)=>setState({selectedCommit:c})} />}
-            </div>
-            <div className="w-25 ps-2">
-                {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit} />}
-            </div>
-        </div>
-    </div>   
+    return <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
+        selectedCommit={state.selectedCommit}   />
 }
 
 export const SelectedRepoRight = React.memo(SelectedRepoRightComponent);

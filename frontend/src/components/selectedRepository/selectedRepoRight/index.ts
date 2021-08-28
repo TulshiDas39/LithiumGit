@@ -1,2 +1,2 @@
 export * from './SelectedRepoRight';
-export * from './CommitProperty';
+export * from './branches/CommitProperty';

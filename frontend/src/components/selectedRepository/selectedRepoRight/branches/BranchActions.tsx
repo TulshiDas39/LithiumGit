@@ -1,7 +1,7 @@
 import React from "react"
 import { FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { ActionUI } from "../../../store/slices/UiSlice";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 function BranchActionsComponent(){
     const dispatch = useDispatch();

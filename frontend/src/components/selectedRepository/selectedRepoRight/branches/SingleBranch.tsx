@@ -1,6 +1,6 @@
 import { IBranchDetails, ICommitInfo } from "common_library";
 import React, { Fragment, useMemo } from "react";
-import { BranchUtils } from "../../../lib";
+import { BranchUtils } from "../../../../lib";
 
 interface ISingleBranchProps{
     branchDetails:IBranchDetails;

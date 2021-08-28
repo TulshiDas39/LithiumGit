@@ -1,7 +1,7 @@
 import { ICommitInfo } from "common_library";
 import moment from "moment";
 import React from "react"
-import { InputText } from "../../common";
+import { InputText } from "../../../common";
 
 interface ICommitProperty{
     selectedCommit?:ICommitInfo;
