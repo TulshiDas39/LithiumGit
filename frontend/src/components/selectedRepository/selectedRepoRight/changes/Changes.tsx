@@ -1,12 +1,14 @@
 import React, { useRef } from "react"
+import { FaAngleDown, FaAngleRight, FaAngleUp, FaArrowDown } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
 interface IState{
     adjustedX:number;
+    isStagedChangesExpanded:boolean;
 }
 
 function ChangesComponent(){
-    const [state,setState] = useMultiState<IState>({adjustedX:0})
+    const [state,setState] = useMultiState<IState>({adjustedX:0,isStagedChangesExpanded:true});
     const dragData = useRef({initialX:0,currentX:0});
     // useEffect(()=>{
     //     initialDragData.current.clientX
@@ -24,26 +26,38 @@ function ChangesComponent(){
         if(adjustedX > 0) return `+ ${adjustedX}px`;
         return `- ${-adjustedX}px`;
     }
+
+    const handleStageCollapse = ()=>{
+        setState({isStagedChangesExpanded:!state.isStagedChangesExpanded});
+    }
     console.log(dragData.current);
 
     return <div className="d-flex w-100">
         <div className="pe-2" style={{width:`calc(20% ${getAdjustedSize(state.adjustedX)})`}}>
-            <div className="d-flex align-items-center flex-nowrap">
-                <span className="pe-1 flex-shrink-0">File Name 1</span>
-                <span className="small text-secondary">test/test/test</span>
+            <div className="d-flex hover" onClick={handleStageCollapse}>
+                <span>{state.isStagedChangesExpanded ? <FaAngleDown />:<FaAngleRight />} </span>
+                <span>Staged Changes</span>
             </div>
-            <div className="d-flex align-items-center flex-nowrap">
-                <span className="pe-1 flex-shrink-0">File Name 1</span>
-                <span className="small text-secondary">test/test/test</span>
+            {state.isStagedChangesExpanded && <div className="d-flex flex-column ps-2">
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
+                <div className="d-flex align-items-center flex-nowrap">
+                    <span className="pe-1 flex-shrink-0">File Name 1</span>
+                    <span className="small text-secondary">test/test/test</span>
+                </div>
             </div>
-            <div className="d-flex align-items-center flex-nowrap">
-                <span className="pe-1 flex-shrink-0">File Name 1</span>
-                <span className="small text-secondary">test/test/test</span>
-            </div>
-            <div className="d-flex align-items-center flex-nowrap">
-                <span className="pe-1 flex-shrink-0">File Name 1</span>
-                <span className="small text-secondary">test/test/test</span>
-            </div>
+            }            
+            <div></div>
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{width:'3px'}}>
 
