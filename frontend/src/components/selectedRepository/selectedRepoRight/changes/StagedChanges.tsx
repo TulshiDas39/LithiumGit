@@ -19,6 +19,7 @@ interface IStagedChangesProps{
 
 interface IState{
     isStagedChangesExpanded:boolean;
+    hoveredFile?:IStagedFile;
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
@@ -27,20 +28,25 @@ function StagedChangesComponent(props:IStagedChangesProps){
         setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
     }
 
+    const handleHover = (file:IStagedFile)=>{
+        setState({hoveredFile:file});
+    }
+
     return <Fragment>
     <div className="d-flex hover" onClick={handleStageCollapse}>
         <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
         <span>Staged Changes</span>
     </div>
     {state.isStagedChangesExpanded && 
-    <div className="d-flex flex-column ps-2">
+    <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges.stagedFiles.map(f=>(
-            <div className="d-flex align-items-center flex-nowrap position-relative">
+            <div className="d-flex align-items-center flex-nowrap position-relative hover" 
+                title={f.path} onMouseEnter={()=> setState({hoveredFile:f})}>
                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                 <span className="small text-secondary">{f.path}</span>
-                <div className="position-absolute d-flex bg-white ps-3" style={{ right: 0 }}>
+                {state.hoveredFile?.path === f.path && <div className="position-absolute d-flex bg-white ps-3" style={{ right: 0 }}>
                     <span className="hover" title="Unstage"><FaMinus /></span>                                    
-                </div>
+                </div>}
             </div>
         ))}                        
     </div>
