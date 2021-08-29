@@ -21,9 +21,16 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
     
     return <Fragment>
-    <div className="d-flex hover" onClick={handleChangesCollapse}>
-        <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-        <span>Changes</span>
+    <div className="d-flex " onClick={handleChangesCollapse}>
+        <div className="d-flex flex-grow-1 hover">
+            <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>Changes</span>
+        </div>
+        <div className="d-flex">
+            <span className="hover" title="Discard all"><FaUndo /></span>
+            <span className="px-1" />
+            <span className="hover" title="Stage all"><FaPlus /></span>
+        </div>
     </div>
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
