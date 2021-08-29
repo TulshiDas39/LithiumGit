@@ -121,7 +121,7 @@ function ChangesComponent() {
                             <div className="d-flex align-items-center flex-nowrap position-relative">
                                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                                 <span className="small text-secondary">{f.path}</span>
-                                <div className="position-absolute d-flex" style={{ right: 0 }}>
+                                <div className="position-absolute d-flex bg-white" style={{ right: 0 }}>
                                     <span className="hover" title="Unstage"><FaMinus /></span>                                    
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ function ChangesComponent() {
                             <div className="d-flex align-items-center flex-nowrap position-relative">
                                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                                 <span className="small text-secondary">{f.path}</span>
-                                <div className="position-absolute d-flex" style={{ right: 0 }}>
+                                <div className="position-absolute d-flex bg-white" style={{ right: 0 }}>
                                     <span className="hover" title="discard"><FaUndo /></span>
                                     <span className="px-1" />
                                     <span className="hover"><FaPlus /></span>
