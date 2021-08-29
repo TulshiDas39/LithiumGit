@@ -61,10 +61,8 @@ function ChangesComponent(props:IChangesProps) {
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} />
-            }
-
-            {!!state.status?.modified?.length &&
-                <ModifiedChanges modifiedChanges={state.status?.modified} />}
+            }            
+            <ModifiedChanges modifiedChanges={state.status?.modified} />
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 
