@@ -1,21 +1,11 @@
 import React, { Fragment, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
+import { IChanges, ModifiedChanges } from "./ModifiedChanges";
 import { IStagedChanges, StagedChanges } from "./StagedChanges";
 
-interface IModifiedFile {
-    fileName: string;
-    path: string;
-}
-
-interface IChanges {
-    modifiedFiles: IModifiedFile[];
-}
-
 interface IState {
-    adjustedX: number;
-    isStagedChangesExpanded: boolean;
-    isChangesExpanded: boolean;
+    adjustedX: number;    
     stagedChanges?: IStagedChanges;
     modifiedChanges?: IChanges;
 }
@@ -64,16 +54,12 @@ const demoChanges: IChanges = {
 
 function ChangesComponent() {
     const [state, setState] = useMultiState<IState>({
-        adjustedX: 0,
-        isStagedChangesExpanded: true,
-        isChangesExpanded: true,
+        adjustedX: 0,        
         modifiedChanges: demoChanges,
         stagedChanges:demoStagedChanges,
     });
     const dragData = useRef({ initialX: 0, currentX: 0 });
-    // useEffect(()=>{
-    //     initialDragData.current.clientX
-    // },[])
+
     const setAdjustedX = () => {
         setState({ adjustedX: dragData.current.currentX - dragData.current.initialX });
     }
@@ -88,9 +74,6 @@ function ChangesComponent() {
         return `- ${-adjustedX}px`;
     }
 
-    const handleChangesCollapse = () => {
-        setState({ isChangesExpanded: !state.isChangesExpanded });
-    }
 
     console.log(dragData.current);
 
@@ -102,27 +85,7 @@ function ChangesComponent() {
             }
 
             {!!state.modifiedChanges &&
-                <Fragment>
-                <div className="d-flex hover" onClick={handleChangesCollapse}>
-                    <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-                    <span>Changes</span>
-                </div>
-                {state.isChangesExpanded && 
-                    <div className="d-flex flex-column ps-2">
-                        {state.modifiedChanges.modifiedFiles.map(f=>(
-                            <div className="d-flex align-items-center flex-nowrap position-relative">
-                                <span className="pe-1 flex-shrink-0">{f.fileName}</span>
-                                <span className="small text-secondary">{f.path}</span>
-                                <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
-                                    <span className="hover" title="discard"><FaUndo /></span>
-                                    <span className="px-1" />
-                                    <span className="hover"><FaPlus /></span>
-                                </div>
-                            </div>
-                        ))}                                                
-                    </div>
-                }
-            </Fragment>}
+                <ModifiedChanges modifiedChanges={state.modifiedChanges} />}
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px' }}>
 
