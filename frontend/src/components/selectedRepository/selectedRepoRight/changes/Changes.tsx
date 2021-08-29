@@ -87,10 +87,9 @@ function ChangesComponent() {
             {!!state.modifiedChanges &&
                 <ModifiedChanges modifiedChanges={state.modifiedChanges} />}
         </div>
-        <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px' }}>
+        <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 
-        </div>
-        <div className="ps-2" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>
+        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
             Changes
         </div>
     </div>

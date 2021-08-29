@@ -36,7 +36,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     {state.isStagedChangesExpanded && 
     <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges.stagedFiles.map(f=>(
-            <div className="d-flex align-items-center flex-nowrap position-relative hover" 
+            <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover" 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})}>
                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                 <span className="small text-secondary">{f.path}</span>
