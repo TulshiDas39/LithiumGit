@@ -1,19 +1,11 @@
 import React, { Fragment, useRef } from "react"
-import { FaAngleDown, FaAngleRight, FaMinus, FaPlus, FaUndo } from "react-icons/fa";
+import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
+import { IStagedChanges, StagedChanges } from "./StagedChanges";
 
 interface IModifiedFile {
     fileName: string;
     path: string;
-}
-
-interface IStagedFile {
-    fileName: string;
-    path: string;
-}
-
-interface IStagedChanges {
-    stagedFiles: IStagedFile[];
 }
 
 interface IChanges {
@@ -96,10 +88,6 @@ function ChangesComponent() {
         return `- ${-adjustedX}px`;
     }
 
-    const handleStageCollapse = () => {
-        setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
-    }
-
     const handleChangesCollapse = () => {
         setState({ isChangesExpanded: !state.isChangesExpanded });
     }
@@ -110,25 +98,7 @@ function ChangesComponent() {
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             {
                 !!state.stagedChanges &&
-                <Fragment>
-                    <div className="d-flex hover" onClick={handleStageCollapse}>
-                        <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-                        <span>Staged Changes</span>
-                    </div>
-                    {state.isStagedChangesExpanded && 
-                    <div className="d-flex flex-column ps-2">
-                        {state.stagedChanges.stagedFiles.map(f=>(
-                            <div className="d-flex align-items-center flex-nowrap position-relative">
-                                <span className="pe-1 flex-shrink-0">{f.fileName}</span>
-                                <span className="small text-secondary">{f.path}</span>
-                                <div className="position-absolute d-flex bg-white" style={{ right: 0 }}>
-                                    <span className="hover" title="Unstage"><FaMinus /></span>                                    
-                                </div>
-                            </div>
-                        ))}                        
-                    </div>
-                    }
-                </Fragment>
+                <StagedChanges stagedChanges={demoStagedChanges} />
             }
 
             {!!state.modifiedChanges &&
@@ -143,7 +113,7 @@ function ChangesComponent() {
                             <div className="d-flex align-items-center flex-nowrap position-relative">
                                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                                 <span className="small text-secondary">{f.path}</span>
-                                <div className="position-absolute d-flex bg-white" style={{ right: 0 }}>
+                                <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
                                     <span className="hover" title="discard"><FaUndo /></span>
                                     <span className="px-1" />
                                     <span className="hover"><FaPlus /></span>
