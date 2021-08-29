@@ -18,6 +18,7 @@ interface IModifiedChangesProps{
 
 interface IState{
     isChangesExpanded:boolean;
+    hoveredFile?:IModifiedFile;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
@@ -33,16 +34,18 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         <span>Changes</span>
     </div>
     {state.isChangesExpanded && 
-        <div className="d-flex flex-column ps-2">
+        <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges.modifiedFiles.map(f=>(
-                <div className="d-flex align-items-center flex-nowrap position-relative">
+                <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
+                    title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}>
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                     <span className="small text-secondary">{f.path}</span>
-                    <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
+                    {state.hoveredFile?.path === f.path &&
+                     <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
                         <span className="hover" title="discard"><FaUndo /></span>
                         <span className="px-1" />
-                        <span className="hover"><FaPlus /></span>
-                    </div>
+                        <span className="hover" title="Stage"><FaPlus /></span>
+                    </div>}
                 </div>
             ))}                                                
         </div>

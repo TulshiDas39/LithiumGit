@@ -28,10 +28,6 @@ function StagedChangesComponent(props:IStagedChangesProps){
         setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
     }
 
-    const handleHover = (file:IStagedFile)=>{
-        setState({hoveredFile:file});
-    }
-
     return <Fragment>
     <div className="d-flex hover" onClick={handleStageCollapse}>
         <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
