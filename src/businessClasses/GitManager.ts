@@ -2,7 +2,7 @@ import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IS
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
-import { LogFields } from "../dataClasses";
+import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 
@@ -15,6 +15,20 @@ export class GitManager{
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
         this.addStatusHandler();
+        this.addStageItemHandler();
+    }
+    private addStageItemHandler() {
+        ipcMain.on(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            const res = await this.stageItem(paths,repoInfo);
+            e.reply(RendererEvents.stageItem().replyChannel, res);
+        })
+    }
+
+    private async stageItem(path:string[],repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.add(path);
+        const updatedStatus = await this.getStatus(repoInfo);
+        return updatedStatus;
     }
 
     private addValidGitPathHandler(){
@@ -74,11 +88,12 @@ export class GitManager{
         
         result.ahead = status.ahead;
         result.behind = status.behind;
-        result.modified = status.modified.map(x=> ({fileName:path.basename(x),path:x}));
-        result.staged = status.staged.map(x=> ({fileName:path.basename(x),path:x}));
-        result.isClean = status.isClean();
-        result.not_added = status.not_added.map(x=> ({fileName:path.basename(x),path:x}));
-        result.deleted = status.deleted.map(x=> ({fileName:path.basename(x),path:x}));
+        result.modified = status.modified?.map(x=> ({fileName:path.basename(x),path:x}));
+        result.staged = status.staged?.map(x=> ({fileName:path.basename(x),path:x}));
+        result.isClean = status?.isClean();
+        result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
+        result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));        
+        // AppData.mainWindow.webContents.send(RendererEvents.logger,status);
         
         return result;
     }

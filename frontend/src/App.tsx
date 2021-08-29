@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import { RendererEvents } from 'common_library';
 import { useEffect } from 'react';
-//import './App.css';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layouts/layout';
 
 function App() {
-  const [start,setState] = useState(false);
+  
+  useEffect(()=>{
+    if(!window.ipcRenderer) return;
+    window.ipcRenderer.on(RendererEvents.logger,(e,data:any)=>{
+      console.log("logger", data);
+    })
+  },[window.ipcRenderer])
 
   if(!window.ipcRenderer){
     return <div></div>;

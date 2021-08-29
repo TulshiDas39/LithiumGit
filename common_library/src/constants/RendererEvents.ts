@@ -9,6 +9,7 @@ export class RendererEvents{
     static updateRepositories="updateRepositories";
     static isValidRepoPath="isValidRepoPath";
     static openFileExplorer="openFileExplorer";
+    static logger="logger";
     
     static getDirectoryPath(){
         const channel = "getDirectoryPath";
@@ -30,6 +31,60 @@ export class RendererEvents{
 
     static getStatus(){
         const channel = "getStatus";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
+    static stageItem(){
+        const channel = "stageItem";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
+    static unStageItem(){
+        const channel = "unStageItem";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
+    static stageAll(){
+        const channel = "stageAll";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
+    static unStageAll(){
+        const channel = "unStageAll";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+    
+    static discardItem(){
+        const channel = "discardItem";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
+    static discardAll(){
+        const channel = "discardAll";
         const result:IChannelModel={
             channel,
             replyChannel: RendererEvents.replyChanelPrefix+channel

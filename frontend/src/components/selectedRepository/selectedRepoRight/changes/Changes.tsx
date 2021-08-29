@@ -1,5 +1,6 @@
 import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { useRef } from "react"
+import { useCallback } from "react";
 import { useEffect } from "react";
 import { UiUtils, useMultiState } from "../../../../lib";
 import { ModifiedChanges } from "./ModifiedChanges";
@@ -52,6 +53,10 @@ function ChangesComponent(props:IChangesProps) {
         return `- ${-adjustedX}px`;
     }
 
+    const onStatusChange = useCallback((status:IStatus)=>{
+        setState({status})
+    },[])
+
     console.log(dragData.current);
 
     // if(!props.repoInfo) return null;
@@ -62,7 +67,8 @@ function ChangesComponent(props:IChangesProps) {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} />
             }            
-            <ModifiedChanges modifiedChanges={state.status?.modified} />
+            <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={props.repoInfo} 
+                onStatusChange={onStatusChange} />
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 

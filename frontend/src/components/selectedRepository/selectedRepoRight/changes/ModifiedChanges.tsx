@@ -1,11 +1,14 @@
-import { IFile } from "common_library";
+import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment } from "react"
+import { useEffect } from "react";
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { useMultiState } from "../../../../lib";
+import { UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IModifiedChangesProps{
     modifiedChanges?:IFile[];
+    repoInfoInfo?:RepositoryInfo;
+    onStatusChange:(status:IStatus)=>void;
 }
 
 interface IState{
@@ -19,6 +22,20 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     const handleChangesCollapse = () => {
         setState({ isChangesExpanded: !state.isChangesExpanded });
     }
+
+    const handleStage=(file:IFile)=>{
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,file.path,props.repoInfoInfo);
+    }
+    
+    useEffect(()=>{
+        window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
+            console.log(res);
+            props.onStatusChange(res);
+        });
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.stageItem().replyChannel]);
+        }
+    },[]);
     
     return <Fragment>
     <div className="d-flex " onClick={handleChangesCollapse}>
@@ -43,7 +60,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                      <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
                         <span className="hover" title="discard"><FaUndo /></span>
                         <span className="px-1" />
-                        <span className="hover" title="Stage"><FaPlus /></span>
+                        <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>
                     </div>}
                 </div>
             ))}                                                
