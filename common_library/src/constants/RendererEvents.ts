@@ -27,4 +27,13 @@ export class RendererEvents{
         }
         return result;
     };
+
+    static getStatus(){
+        const channel = "getStatus";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
 }

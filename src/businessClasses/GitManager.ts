@@ -1,9 +1,10 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
 import { LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
+import * as path from 'path';
 
 export class GitManager{
     start(){
@@ -13,6 +14,7 @@ export class GitManager{
     private addEventHandlers(){
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
+        this.addStatusHandler();
     }
 
     private addValidGitPathHandler(){
@@ -36,6 +38,13 @@ export class GitManager{
         });
     }
 
+    private addStatusHandler(){
+        ipcMain.on(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
+            const repoDetails = await this.getStatus(repoInfo);
+            e.reply(RendererEvents.getStatus().replyChannel,repoDetails);
+        });
+    }
+
     private async repoDetails(repoInfo:RepositoryInfo){
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
@@ -56,6 +65,22 @@ export class GitManager{
         });
         
         return repoDetails;
+    }
+
+    private async getStatus(repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        const status = await git.status();
+        const result = {} as IStatus;
+        
+        result.ahead = status.ahead;
+        result.behind = status.behind;
+        result.modified = status.modified.map(x=> ({fileName:path.basename(x),path:x}));
+        result.staged = status.staged.map(x=> ({fileName:path.basename(x),path:x}));
+        result.isClean = status.isClean();
+        result.not_added = status.not_added.map(x=> ({fileName:path.basename(x),path:x}));
+        result.deleted = status.deleted.map(x=> ({fileName:path.basename(x),path:x}));
+        
+        return result;
     }
 
     private async getCommits(git: SimpleGit){

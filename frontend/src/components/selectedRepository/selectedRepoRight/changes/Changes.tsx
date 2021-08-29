@@ -1,64 +1,42 @@
-import React, { Fragment, useRef } from "react"
-import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { useMultiState } from "../../../../lib";
-import { IChanges, ModifiedChanges } from "./ModifiedChanges";
-import { IStagedChanges, StagedChanges } from "./StagedChanges";
+import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import React, { useRef } from "react"
+import { useEffect } from "react";
+import { UiUtils, useMultiState } from "../../../../lib";
+import { ModifiedChanges } from "./ModifiedChanges";
+import { StagedChanges } from "./StagedChanges";
+
+interface IChangesProps{
+    repoInfo?:RepositoryInfo;
+}
 
 interface IState {
-    adjustedX: number;    
-    stagedChanges?: IStagedChanges;
-    modifiedChanges?: IChanges;
+    adjustedX: number;
+    status?:IStatus;
 }
 
-const demoStagedChanges: IStagedChanges = {
-    stagedFiles: [
-        {
-            fileName: "file 1",
-            path: "folder1/folder11/folder12"
-        },
-        {
-            fileName: "file 2",
-            path: "folder2/folder21/folder23"
-        },
-        {
-            fileName: "file 3",
-            path: "folder3/folder31/folder32"
-        },
-        {
-            fileName: "file 4",
-            path: "folder4/folder41/folder42"
-        }
-    ]
-}
-
-const demoChanges: IChanges = {
-    modifiedFiles: [
-        {
-            fileName: "file 1",
-            path: "folder1/folder11/folder12"
-        },
-        {
-            fileName: "file 2",
-            path: "folder2/folder21/folder23"
-        },
-        {
-            fileName: "file 3",
-            path: "folder3/folder31/folder32"
-        },
-        {
-            fileName: "file 4",
-            path: "folder4/folder41/folder42"
-        }
-    ]
-}
-
-function ChangesComponent() {
+function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,        
-        modifiedChanges: demoChanges,
-        stagedChanges:demoStagedChanges,
     });
     const dragData = useRef({ initialX: 0, currentX: 0 });
+
+    const getStatus=()=>{
+        window.ipcRenderer.send(RendererEvents.getStatus().channel,props.repoInfo);
+    }
+
+    useEffect(()=>{
+        if(props.repoInfo) getStatus();
+    },[props.repoInfo]);
+
+    useEffect(()=>{
+        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
+            setState({status:result});
+            console.log(result);
+        });
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.getStatus().replyChannel]);
+        }
+    },[])
 
     const setAdjustedX = () => {
         setState({ adjustedX: dragData.current.currentX - dragData.current.initialX });
@@ -74,18 +52,19 @@ function ChangesComponent() {
         return `- ${-adjustedX}px`;
     }
 
-
     console.log(dragData.current);
+
+    // if(!props.repoInfo) return null;
 
     return <div className="d-flex w-100">
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             {
-                !!state.stagedChanges &&
-                <StagedChanges stagedChanges={demoStagedChanges} />
+                !!state.status?.staged?.length &&
+                <StagedChanges stagedChanges={state.status.staged} />
             }
 
-            {!!state.modifiedChanges &&
-                <ModifiedChanges modifiedChanges={state.modifiedChanges} />}
+            {!!state.status?.modified?.length &&
+                <ModifiedChanges modifiedChanges={state.status?.modified} />}
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 

@@ -1,24 +1,16 @@
+import { IFile } from "common_library";
 import React, { Fragment } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
 
-export interface IModifiedFile {
-    fileName: string;
-    path: string;
-}
-
-export interface IChanges {
-    modifiedFiles: IModifiedFile[];
-}
-
 interface IModifiedChangesProps{
-    modifiedChanges:IChanges;
+    modifiedChanges:IFile[];
 }
 
 interface IState{
     isChangesExpanded:boolean;
-    hoveredFile?:IModifiedFile;
+    hoveredFile?:IFile;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
@@ -35,7 +27,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     </div>
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-            {props.modifiedChanges.modifiedFiles.map(f=>(
+            {props.modifiedChanges.map(f=>(
                 <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
                     title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}>
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>

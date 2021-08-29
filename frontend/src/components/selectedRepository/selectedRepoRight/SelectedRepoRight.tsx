@@ -51,7 +51,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
         getRepoDetails();
     },[store.refreshVersion]);
     
-    if(props.selectedTab === "Changes") return <Changes />
+    if(props.selectedTab === "Changes") return <Changes repoInfo={state.repoDetails?.repoInfo} />
     return <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
         selectedCommit={state.selectedCommit}   />
 }
