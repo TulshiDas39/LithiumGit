@@ -14,10 +14,13 @@ interface IModifiedChangesProps{
 interface IState{
     isChangesExpanded:boolean;
     hoveredFile?:IFile;
+    isHeadHover:boolean;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
-    const [state,setState] = useMultiState<IState>({isChangesExpanded:true});
+    const [state,setState] = useMultiState<IState>({
+        isChangesExpanded:true,
+        isHeadHover:false});
 
     const handleChangesCollapse = () => {
         setState({ isChangesExpanded: !state.isChangesExpanded });
@@ -38,16 +41,18 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[]);
     
     return <Fragment>
-    <div className="d-flex " onClick={handleChangesCollapse}>
-        <div className="d-flex flex-grow-1 hover">
+    <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
+        onMouseLeave={_=> setState({isHeadHover:false})}>
+        <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
+            >
             <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Changes</span>
         </div>
-        <div className="d-flex">
+        {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all"><FaUndo /></span>
             <span className="px-1" />
             <span className="hover" title="Stage all"><FaPlus /></span>
-        </div>
+        </div>}
     </div>
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
