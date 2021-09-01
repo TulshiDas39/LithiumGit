@@ -64,6 +64,7 @@ function ChangesComponent(props:IChangesProps) {
     return <div className="d-flex w-100">
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
+            
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />

@@ -15,10 +15,11 @@ interface IStagedChangesProps{
 interface IState{
     isStagedChangesExpanded:boolean;
     hoveredFile?:IFile;
+    isHeadHover:boolean;
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({isStagedChangesExpanded:true});
+    const [state,setState] = useMultiState<IState>({isStagedChangesExpanded:true,isHeadHover:false});
     const handleStageCollapse = () => {
         setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
     }
@@ -37,14 +38,21 @@ function StagedChangesComponent(props:IStagedChangesProps){
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
     }
 
-    const unstageAll=()=>{
+    const unStageAll=()=>{
+        if(!props.stagedChanges?.length) return;
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,props.stagedChanges.map(x=>x.path),props.repoInfoInfo)
     }
 
     return <Fragment>
-    <div className="d-flex hover" onClick={handleStageCollapse}>
-        <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-        <span>Staged Changes</span>
+    <div className="d-flex hover" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}>
+        <div className="d-flex flex-grow-1" onClick={handleStageCollapse}>
+            <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>Staged Changes</span>            
+        </div>        
+        {state.isHeadHover && <div className="d-flex">            
+            <span className="hover" title="UnStage all" onClick={_=> unStageAll()}><FaMinus /></span>
+        </div>}
+        
     </div>
     {state.isStagedChangesExpanded && 
     <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
