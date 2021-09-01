@@ -17,8 +17,16 @@ export class GitManager{
         this.addStatusHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
+        this.addDiscardUnStagedItemHandler();
     }
-    addUnStageItemHandler() {
+
+    private addDiscardUnStagedItemHandler() {
+        ipcMain.on(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            const res = await this.discardUnStageItem(paths,repoInfo);
+            e.reply(RendererEvents.discardItem().replyChannel, res);
+        })
+    }
+    private addUnStageItemHandler() {
         ipcMain.on(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.unStageItem(paths,repoInfo);
             e.reply(RendererEvents.unStageItem().replyChannel, res);
@@ -31,9 +39,16 @@ export class GitManager{
         })
     }
 
-    private async unStageItem(path:string[],repoInfo:RepositoryInfo){
+    private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
-        await git.reset(path);
+        await git.checkout(['--',...paths]);
+        const updatedStatus = await this.getStatus(repoInfo);
+        return updatedStatus;
+    }
+
+    private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.reset(paths);
         const updatedStatus = await this.getStatus(repoInfo);
         return updatedStatus;
     }

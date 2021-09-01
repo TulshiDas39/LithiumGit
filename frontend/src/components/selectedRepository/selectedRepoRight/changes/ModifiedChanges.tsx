@@ -27,7 +27,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,file.path,props.repoInfoInfo);
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,[file.path],props.repoInfoInfo);
     }
 
     const stageAll=()=>{
@@ -40,10 +40,26 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             console.log(res);
             props.onStatusChange(res);
         });
+        window.ipcRenderer.on(RendererEvents.discardItem().replyChannel,(_,res:IStatus)=>{
+            console.log(res);
+            props.onStatusChange(res);
+        });
         return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.stageItem().replyChannel]);
+            UiUtils.removeIpcListeners([
+                RendererEvents.stageItem().replyChannel,
+                RendererEvents.discardItem().replyChannel
+            ]);
         }
     },[]);
+
+    const discardUnstagedChangesOfItem=(item:IFile)=>{
+        window.ipcRenderer.send(RendererEvents.discardItem().channel,[item.path],props.repoInfoInfo);
+    }
+
+    const discardAll=()=>{
+        if(!props.modifiedChanges?.length) return;
+        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.modifiedChanges.map(x=>x.path),props.repoInfoInfo);
+    }
     
     return <Fragment>
     <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
@@ -54,7 +70,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             <span>Changes</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
-            <span className="hover" title="Discard all"><FaUndo /></span>
+            <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
             <span className="px-1" />
             <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
@@ -68,7 +84,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     <span className="small text-secondary">{f.path}</span>
                     {state.hoveredFile?.path === f.path &&
                      <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
-                        <span className="hover" title="discard"><FaUndo /></span>
+                        <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
                         <span className="px-1" />
                         <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>
                     </div>}
