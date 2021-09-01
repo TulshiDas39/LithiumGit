@@ -16,12 +16,26 @@ export class GitManager{
         this.addRepoDetailsHandler();
         this.addStatusHandler();
         this.addStageItemHandler();
+        this.addUnStageItemHandler();
+    }
+    addUnStageItemHandler() {
+        ipcMain.on(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            const res = await this.unStageItem(paths,repoInfo);
+            e.reply(RendererEvents.unStageItem().replyChannel, res);
+        })
     }
     private addStageItemHandler() {
         ipcMain.on(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.stageItem(paths,repoInfo);
             e.reply(RendererEvents.stageItem().replyChannel, res);
         })
+    }
+
+    private async unStageItem(path:string[],repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.reset(path);
+        const updatedStatus = await this.getStatus(repoInfo);
+        return updatedStatus;
     }
 
     private async stageItem(path:string[],repoInfo:RepositoryInfo){

@@ -1,12 +1,15 @@
-import { IFile } from "common_library";
-import React from "react";
+import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import React, { useEffect } from "react";
 import { Fragment } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { useMultiState } from "../../../../lib";
+import { UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IStagedChangesProps{
     stagedChanges:IFile[];
+    repoInfoInfo?:RepositoryInfo;
+    onStatusChange:(status:IStatus)=>void;
+
 }
 
 interface IState{
@@ -18,6 +21,20 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({isStagedChangesExpanded:true});
     const handleStageCollapse = () => {
         setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
+    }
+
+    useEffect(()=>{
+        window.ipcRenderer.on(RendererEvents.unStageItem().replyChannel,(_,res:IStatus)=>{
+            console.log('unstaged',res);
+            props.onStatusChange(res);
+        });
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.unStageItem().replyChannel]);
+        }
+    },[]);
+
+    const handleUnstageItem = (item:IFile)=>{
+        window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
     }
 
     return <Fragment>
@@ -33,7 +50,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                 <span className="small text-secondary">{f.path}</span>
                 {state.hoveredFile?.path === f.path && <div className="position-absolute d-flex bg-white ps-3" style={{ right: 0 }}>
-                    <span className="hover" title="Unstage"><FaMinus /></span>                                    
+                    <span className="hover" title="Unstage" onClick={_=> handleUnstageItem(f)}><FaMinus /></span>                                    
                 </div>}
             </div>
         ))}                        
