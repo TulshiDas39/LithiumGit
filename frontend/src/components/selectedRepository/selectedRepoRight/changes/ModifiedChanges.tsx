@@ -29,6 +29,11 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     const handleStage=(file:IFile)=>{
         window.ipcRenderer.send(RendererEvents.stageItem().channel,file.path,props.repoInfoInfo);
     }
+
+    const stageAll=()=>{
+        if(!props.modifiedChanges?.length) return;
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.modifiedChanges?.map(x=>x.path),props.repoInfoInfo);        
+    }
     
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
@@ -51,7 +56,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all"><FaUndo /></span>
             <span className="px-1" />
-            <span className="hover" title="Stage all"><FaPlus /></span>
+            <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
     </div>
     {state.isChangesExpanded && 

@@ -37,6 +37,10 @@ function StagedChangesComponent(props:IStagedChangesProps){
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
     }
 
+    const unstageAll=()=>{
+        window.ipcRenderer.send(RendererEvents.unStageItem().channel,props.stagedChanges.map(x=>x.path),props.repoInfoInfo)
+    }
+
     return <Fragment>
     <div className="d-flex hover" onClick={handleStageCollapse}>
         <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
