@@ -1,3 +1,4 @@
+import { MainEvents } from "common_library";
 import { app, BrowserWindow, ipcRenderer } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
@@ -17,6 +18,7 @@ export class Startup{
           // initialization and is ready to create browser windows.
           // Some APIs can only be used after this event occurs.
         this.handleReadyState();
+        this.handleAppFocus();
           
           // Quit when all windows are closed, except on macOS. There, it's common
           // for applications and their menu bar to stay active until the user quits
@@ -64,6 +66,16 @@ export class Startup{
             });
         });
     }
+
+    private handleAppFocus(){
+      app.on("browser-window-focus", () => {
+          console.log('app focussed');
+          if(AppData.mainWindow?.webContents){
+            console.log("sending focuss");
+            AppData.mainWindow.webContents.send(MainEvents.AppFocused);
+          }
+      });
+  }
 
     private handleWindowClosed(){
         app.on("window-all-closed", () => {

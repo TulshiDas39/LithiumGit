@@ -2,7 +2,9 @@ import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
+import { shallowEqual } from "react-redux";
 import { UiUtils, useMultiState } from "../../../../lib";
+import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
 
@@ -19,6 +21,11 @@ function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,        
     });
+
+    const store = useSelectorTyped(state=>({
+        focusVersion:state.ui.versions.appFocused,
+    }),shallowEqual);
+
     const dragData = useRef({ initialX: 0, currentX: 0 });
 
     const getStatus=()=>{
@@ -28,6 +35,11 @@ function ChangesComponent(props:IChangesProps) {
     useEffect(()=>{
         if(props.repoInfo) getStatus();
     },[props.repoInfo]);
+
+    useEffect(()=>{
+        console.log('getting changes');
+        getStatus();
+    },[store.focusVersion])
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{

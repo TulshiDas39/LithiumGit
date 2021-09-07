@@ -12,6 +12,7 @@ export enum EnumHomePageTab{
 interface EventVersions{
     branchPanelRefresh:number;
     branchPanelZoom:number;
+    appFocused:number;
 }
 
 interface IUIState{
@@ -24,6 +25,7 @@ const initialState:IUIState={
     versions:{
         branchPanelRefresh:0,
         branchPanelZoom:0,
+        appFocused:0,
     },    
 }
 
