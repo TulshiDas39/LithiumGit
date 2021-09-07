@@ -29,15 +29,14 @@ function ChangesComponent(props:IChangesProps) {
     const dragData = useRef({ initialX: 0, currentX: 0 });
 
     const getStatus=()=>{
-        window.ipcRenderer.send(RendererEvents.getStatus().channel,props.repoInfo);
+        if(props.repoInfo) window.ipcRenderer.send(RendererEvents.getStatus().channel,props.repoInfo);
     }
 
     useEffect(()=>{
-        if(props.repoInfo) getStatus();
+         getStatus();
     },[props.repoInfo]);
 
     useEffect(()=>{
-        console.log('getting changes');
         getStatus();
     },[store.focusVersion])
 
@@ -55,7 +54,6 @@ function ChangesComponent(props:IChangesProps) {
         setState({ adjustedX: dragData.current.currentX - dragData.current.initialX });
     }
     const handleResize = (e: React.DragEvent<HTMLDivElement>) => {
-        console.log(e);
         if (dragData.current.initialX === 0) dragData.current.initialX = e.screenX;
         if (e.screenX !== 0) dragData.current.currentX = e.screenX;
         setAdjustedX();
