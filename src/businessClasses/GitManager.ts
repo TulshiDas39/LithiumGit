@@ -121,8 +121,9 @@ export class GitManager{
         result.staged = status.staged?.map(x=> ({fileName:path.basename(x),path:x}));
         result.isClean = status?.isClean();
         result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
-        result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));        
-        // AppData.mainWindow.webContents.send(RendererEvents.logger,status);
+        result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
+        result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
+        AppData.mainWindow.webContents.send(RendererEvents.logger,status);
         
         return result;
     }

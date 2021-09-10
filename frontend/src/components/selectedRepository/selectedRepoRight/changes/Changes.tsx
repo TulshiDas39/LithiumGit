@@ -8,6 +8,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { SelectedFile } from "./SelectedFile";
 import { StagedChanges } from "./StagedChanges";
+import { UntrackedFiles } from "./UntrackedFiles";
 
 interface IChangesProps{
     repoInfo?:RepositoryInfo;
@@ -46,8 +47,14 @@ function ChangesComponent(props:IChangesProps) {
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});
         });
+        window.ipcRenderer.on(RendererEvents.discardItem().replyChannel,(_,res:IStatus)=>{
+            setState({status:res});
+        });
         return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.getStatus().replyChannel]);
+            UiUtils.removeIpcListeners([
+                RendererEvents.getStatus().replyChannel,
+                RendererEvents.getStatus().replyChannel
+            ]);
         }
     },[])
 
@@ -84,6 +91,12 @@ function ChangesComponent(props:IChangesProps) {
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={props.repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={handleSelect} />
+            
+            {
+                !!state.status?.created?.length &&
+                <UntrackedFiles onFileSelect={handleSelect} files={state.status.created} 
+                onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
+            }
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 

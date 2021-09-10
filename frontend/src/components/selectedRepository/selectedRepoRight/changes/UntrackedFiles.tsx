@@ -1,13 +1,11 @@
-import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { Fragment } from "react"
-import { useCallback } from "react";
-import { useEffect } from "react";
-import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
+import { IFile, RepositoryInfo, IStatus, RendererEvents } from "common_library";
+import React, { Fragment, useEffect } from "react";
+import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { UiUtils, useMultiState } from "../../../../lib";
 
 
-interface IModifiedChangesProps{
-    modifiedChanges?:IFile[];
+interface IUntrackedFilesProps{
+    files?:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
@@ -19,7 +17,7 @@ interface IState{
     isHeadHover:boolean;
 }
 
-function ModifiedChangesComponent(props:IModifiedChangesProps){
+function UntrackedFilesComponent(props:IUntrackedFilesProps){
     const [state,setState] = useMultiState<IState>({
         isChangesExpanded:true,
         isHeadHover:false});
@@ -33,31 +31,17 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const stageAll=()=>{
-        if(!props.modifiedChanges?.length) return;
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.modifiedChanges?.map(x=>x.path),props.repoInfoInfo);        
+        if(!props.files?.length) return;
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.files?.map(x=>x.path),props.repoInfoInfo);
     }
-    
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
-            console.log(res);
-            props.onStatusChange(res);
-        });
-       
-        return ()=>{
-            UiUtils.removeIpcListeners([
-                RendererEvents.stageItem().replyChannel,
-                RendererEvents.discardItem().replyChannel
-            ]);
-        }
-    },[]);
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
         window.ipcRenderer.send(RendererEvents.discardItem().channel,[item.path],props.repoInfoInfo);
     }
 
     const discardAll=()=>{
-        if(!props.modifiedChanges?.length) return;
-        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.modifiedChanges.map(x=>x.path),props.repoInfoInfo);
+        if(!props.files?.length) return;
+        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.files.map(x=>x.path),props.repoInfoInfo);
     }
     
     return <Fragment>
@@ -66,7 +50,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
             <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-            <span>Changes</span>
+            <span>New files</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
@@ -76,7 +60,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     </div>
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-            {props.modifiedChanges?.map(f=>(
+            {props.files?.map(f=>(
                 <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
                     title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})} onClick={(_)=> props.onFileSelect(f.path)}>
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>
@@ -92,6 +76,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         </div>
     }
 </Fragment>
+    
 }
 
-export const ModifiedChanges = React.memo(ModifiedChangesComponent);
+export const UntrackedFiles = React.memo(UntrackedFilesComponent);
