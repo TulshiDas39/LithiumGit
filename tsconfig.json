@@ -3,6 +3,7 @@
     "module": "commonjs",
     "noImplicitAny": true,
     "sourceMap": true,
+    "incremental": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

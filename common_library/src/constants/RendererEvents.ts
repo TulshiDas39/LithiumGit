@@ -91,4 +91,13 @@ export class RendererEvents{
         }
         return result;
     };
+
+    static getFileContent(){
+        const channel = "getFileContent";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
 }

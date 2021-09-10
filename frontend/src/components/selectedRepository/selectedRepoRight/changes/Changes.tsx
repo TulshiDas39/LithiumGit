@@ -6,6 +6,7 @@ import { shallowEqual } from "react-redux";
 import { UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ModifiedChanges } from "./ModifiedChanges";
+import { SelectedFile } from "./SelectedFile";
 import { StagedChanges } from "./StagedChanges";
 
 interface IChangesProps{
@@ -15,6 +16,7 @@ interface IChangesProps{
 interface IState {
     adjustedX: number;
     status?:IStatus;
+    selectedFilePath?:string;
 }
 
 function ChangesComponent(props:IChangesProps) {
@@ -43,7 +45,6 @@ function ChangesComponent(props:IChangesProps) {
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});
-            console.log(result);
         });
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getStatus().replyChannel]);
@@ -67,7 +68,9 @@ function ChangesComponent(props:IChangesProps) {
         setState({status})
     },[])
 
-    console.log(dragData.current);
+    const handleSelect = useCallback((path:string)=>{
+        setState({selectedFilePath:path});
+    },[])
 
     // if(!props.repoInfo) return null;
 
@@ -80,12 +83,12 @@ function ChangesComponent(props:IChangesProps) {
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={props.repoInfo} 
-                onStatusChange={onStatusChange} />
+                onStatusChange={onStatusChange} onFileSelect={handleSelect} />
         </div>
         <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            Changes
+            <SelectedFile selectedFilePath={state.selectedFilePath} />
         </div>
     </div>
 }
