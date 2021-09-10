@@ -47,13 +47,17 @@ function ChangesComponent(props:IChangesProps) {
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});
         });
+        window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
+            setState({status:res});
+        });
         window.ipcRenderer.on(RendererEvents.discardItem().replyChannel,(_,res:IStatus)=>{
             setState({status:res});
         });
         return ()=>{
             UiUtils.removeIpcListeners([
                 RendererEvents.getStatus().replyChannel,
-                RendererEvents.getStatus().replyChannel
+                RendererEvents.discardItem().replyChannel,
+                RendererEvents.stageItem().replyChannel,
             ]);
         }
     },[])

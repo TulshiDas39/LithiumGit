@@ -36,20 +36,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!props.modifiedChanges?.length) return;
         window.ipcRenderer.send(RendererEvents.stageItem().channel,props.modifiedChanges?.map(x=>x.path),props.repoInfoInfo);        
     }
-    
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
-            console.log(res);
-            props.onStatusChange(res);
-        });
-       
-        return ()=>{
-            UiUtils.removeIpcListeners([
-                RendererEvents.stageItem().replyChannel,
-                RendererEvents.discardItem().replyChannel
-            ]);
-        }
-    },[]);
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
         window.ipcRenderer.send(RendererEvents.discardItem().channel,[item.path],props.repoInfoInfo);
@@ -77,12 +63,17 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
-                <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
-                    title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})} onClick={(_)=> props.onFileSelect(f.path)}>
-                    <span className="pe-1 flex-shrink-0">{f.fileName}</span>
-                    <span className="small text-secondary">{f.path}</span>
+                <div key={f.path} className="d-flex align-items-center flex-nowrap hover w-100"
+                    title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}>
+                    <div className="d-flex overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
+                        <span className="pe-1 flex-shrink-0">{f.fileName}</span>
+                        <span className="small text-secondary">
+                            <span>{f.path}</span>
+                        </span>
+                    </div>
+                    
                     {state.hoveredFile?.path === f.path &&
-                     <div className="position-absolute d-flex bg-white ps-2" style={{ right: 0 }}>
+                     <div className="d-flex bg-white ps-2 align-items-center flex-grow-1">
                         <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
                         <span className="px-1" />
                         <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>
