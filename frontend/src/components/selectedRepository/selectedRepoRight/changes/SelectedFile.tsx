@@ -2,6 +2,7 @@ import { RendererEvents } from "common_library";
 import React from "react"
 import { useEffect } from "react";
 import { useMultiState } from "../../../../lib";
+import { FileLine } from "../../../common";
 interface ISelectedFileProps{    
     selectedFilePath?:string;
 }
@@ -24,13 +25,13 @@ function SelectedFileComponent(props:ISelectedFileProps){
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
-            setState({lines});
+            setState({lines:lines});
         })
     },[])
 
 
-    return <div onInput={(e)=> handleInput(e)} className="" contentEditable suppressContentEditableWarning={true}>              
-        {state.lines.map((line,index)=> (<div key={index}>{line}</div>))}
+    return <div onInput={(e)=> handleInput(e)} className="" style={{whiteSpace: "pre-wrap"}} contentEditable suppressContentEditableWarning={true}>              
+        {state.lines.map((line,index)=> (<FileLine key={index} text={line} />))}
     </div>
 }
 

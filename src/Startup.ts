@@ -68,8 +68,7 @@ export class Startup{
     }
 
     private handleAppFocus(){
-      app.on("browser-window-focus", () => {
-          console.log('app focussed');
+      app.on("browser-window-focus", () => {          
           if(AppData.mainWindow?.webContents){            
             AppData.mainWindow.webContents.send(MainEvents.AppFocused);
           }
