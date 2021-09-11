@@ -11,7 +11,7 @@ interface IBranchesViewProps{
 }
 
 function BranchesViewComponent(props:IBranchesViewProps){
-    return <div id="selectedRepoRight" className="d-flex flex-column flex-grow-1">
+    return <div id="selectedRepoRight" className="d-flex w-100 flex-column">
     <BranchActions />
     <div className="d-flex w-100 overflow-hidden">
         <div className="w-75">

@@ -22,7 +22,7 @@ function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){
         return items;
     },[]);
 
-    return <div id="SelectedRepoLeft" className="d-flex flex-column bg-second-color">  
+    return <div id="SelectedRepoLeft" className="d-flex w-100 flex-column bg-second-color h-100">  
             {
                 tabs.map(t=>(
                     <span key={t.type} 

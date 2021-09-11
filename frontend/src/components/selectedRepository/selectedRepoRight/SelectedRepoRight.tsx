@@ -51,9 +51,11 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
         getRepoDetails();
     },[store.refreshVersion]);
     
-    if(props.selectedTab === "Changes") return <Changes repoInfo={state.repoDetails?.repoInfo} />
-    return <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
-        selectedCommit={state.selectedCommit}   />
+    return <div className="d-flex w-100 h-100">
+        {props.selectedTab === "Changes" && <Changes repoInfo={state.repoDetails?.repoInfo} />}
+        {props.selectedTab === "Branches" && <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
+        selectedCommit={state.selectedCommit}   />}
+    </div>    
 }
 
 export const SelectedRepoRight = React.memo(SelectedRepoRightComponent);

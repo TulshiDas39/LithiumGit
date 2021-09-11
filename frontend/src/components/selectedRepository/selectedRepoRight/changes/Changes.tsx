@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { SelectedFile } from "./SelectedFile";
 import { StagedChanges } from "./StagedChanges";
@@ -78,7 +79,6 @@ function ChangesComponent(props:IChangesProps) {
         e.preventDefault();
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
         function resize(e: MouseEvent) {
-            console.log(e.pageX);
             dragData.current.currentX = e.pageX;
             setState({adjustedX:dragData.current.currentX-dragData.current.initialX});        
         }
@@ -116,7 +116,7 @@ function ChangesComponent(props:IChangesProps) {
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            <SelectedFile selectedFilePath={state.selectedFilePath} />
+            {!!state.selectedFilePath && <Difference path={state.selectedFilePath} />}
         </div>
     </div>
 }
