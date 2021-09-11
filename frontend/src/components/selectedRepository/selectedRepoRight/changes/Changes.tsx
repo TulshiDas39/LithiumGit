@@ -96,7 +96,7 @@ function ChangesComponent(props:IChangesProps) {
 
     // if(!props.repoInfo) return null;
 
-    return <div className="d-flex w-100">
+    return <div className="d-flex w-100 h-100">
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
             

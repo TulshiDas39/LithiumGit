@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import './layout.scss'
 import { Main } from '../main/Main';
@@ -6,10 +6,13 @@ import { UiRoutes } from '../../lib/UiRoutes';
 import { TopNav } from '../topNav/TopNav';
 
 function LayoutComponent() {
+    const data = useRef({topHeighPercent:10});
     return (
         <div id="layout" className="d-flex flex-column">
-            <TopNav />
-            <div className="flex-grow-1">
+            <div className="d-flex" style={{height:`${data.current.topHeighPercent}%`}}>
+                <TopNav />
+            </div>
+            <div className="" style={{height:`${100 - data.current.topHeighPercent}%`}}>
                 <Switch>
                     <Route path={UiRoutes.Root} component={Main} />
                 </Switch>

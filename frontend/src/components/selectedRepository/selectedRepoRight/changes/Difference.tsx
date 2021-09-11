@@ -24,12 +24,14 @@ function DifferenceComponent(props:IDifference){
         })
     },[])
     
-    return <div className="d-flex w-100">
-        <div  className="w-50 overflow-auto" style={{whiteSpace: "pre-wrap"}}>              
+    return <div className="d-flex w-100 h-100 overflow-auto">
+        <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre-wrap"}}>              
             {state.lines.map((line,index)=> (<div key={index}>{line}</div>))}
         </div>
         <div className="w-50">
-            <div></div>
+            <div>
+
+            </div>
         </div>
 
     </div>
