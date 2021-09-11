@@ -36,8 +36,6 @@ export class Startup{
 
     private loadSavedData(){
         SavedData.recentRepositories = DB.repository.getAll();        
-        console.log('saved repositories');
-        console.log(SavedData.recentRepositories);
     }
 
     private createWindow() {
