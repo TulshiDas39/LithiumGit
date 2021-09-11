@@ -62,14 +62,6 @@ function ChangesComponent(props:IChangesProps) {
         }
     },[])
 
-    const setAdjustedX = () => {
-        setState({ adjustedX: dragData.current.currentX - dragData.current.initialX });
-    }
-    const handleResize = (e: React.DragEvent<HTMLDivElement>) => {
-        if (dragData.current.initialX === 0) dragData.current.initialX = e.screenX;
-        if (e.screenX !== 0) dragData.current.currentX = e.screenX;
-        setAdjustedX();
-    }
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
         return `- ${-adjustedX}px`;
@@ -82,6 +74,25 @@ function ChangesComponent(props:IChangesProps) {
     const handleSelect = useCallback((path:string)=>{
         setState({selectedFilePath:path});
     },[])
+    const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
+        e.preventDefault();
+        if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
+        function resize(e: MouseEvent) {
+            console.log(e.pageX);
+            dragData.current.currentX = e.pageX;
+            setState({adjustedX:dragData.current.currentX-dragData.current.initialX});        
+        }
+        function stopResize() {
+            window.removeEventListener('mousemove', resize);
+        }
+        window.addEventListener('mousemove', resize);        
+        window.addEventListener('mouseup', stopResize);
+
+    }
+
+    
+      
+    
 
     // if(!props.repoInfo) return null;
 
@@ -102,7 +113,7 @@ function ChangesComponent(props:IChangesProps) {
                 onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
             }
         </div>
-        <div className="bg-info cur-resize" onDrag={handleResize} style={{ width: '3px',zIndex:2 }} />
+        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
             <SelectedFile selectedFilePath={state.selectedFilePath} />
