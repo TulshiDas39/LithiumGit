@@ -91,6 +91,10 @@ html {
   .bg-select-color{
     background-color: var(--bg-select-color);
   }
+
+  .selected{
+    background-color: var(--bg-select-color);
+  }
   
   body {
     background-color: var(--bg-color);

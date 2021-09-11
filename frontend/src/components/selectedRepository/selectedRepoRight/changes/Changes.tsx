@@ -105,7 +105,7 @@ function ChangesComponent(props:IChangesProps) {
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={props.repoInfo} 
-                onStatusChange={onStatusChange} onFileSelect={handleSelect} />
+                onStatusChange={onStatusChange} onFileSelect={handleSelect} selectedFilePath={state.selectedFilePath} />
             
             {
                 !!state.status?.created?.length &&
