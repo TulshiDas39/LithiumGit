@@ -18,6 +18,19 @@ export class GitManager{
         this.addStageItemHandler();
         this.addUnStageItemHandler();
         this.addDiscardUnStagedItemHandler();
+        this.addDiffHandler();
+    }
+    addDiffHandler() {
+        ipcMain.on(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
+            const res = await this.getDiff(options,repoInfo);
+            e.reply(RendererEvents.diff().replyChannel, res);
+        })
+    }
+    async getDiff(options: string[], repoInfo: RepositoryInfo) {
+        const git = this.getGitRunner(repoInfo);        
+        const result = await git.diff(options);
+        AppData.mainWindow.webContents.send(RendererEvents.logger,result);
+        return result;
     }
 
     private addDiscardUnStagedItemHandler() {
@@ -122,8 +135,7 @@ export class GitManager{
         result.isClean = status?.isClean();
         result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
         result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
-        result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
-        AppData.mainWindow.webContents.send(RendererEvents.logger,status);
+        result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
         
         return result;
     }

@@ -100,4 +100,13 @@ export class RendererEvents{
         }
         return result;
     };
+
+    static diff(){
+        const channel = "diff";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel;        
+    }
 }
+5800319

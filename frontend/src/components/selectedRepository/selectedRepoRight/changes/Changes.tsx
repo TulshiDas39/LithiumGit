@@ -116,7 +116,7 @@ function ChangesComponent(props:IChangesProps) {
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && <Difference path={state.selectedFilePath} />}
+            {!!state.selectedFilePath && !!props.repoInfo && <Difference path={state.selectedFilePath} repoInfo={props.repoInfo} />}
         </div>
     </div>
 }
