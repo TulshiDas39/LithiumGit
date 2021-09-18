@@ -1,7 +1,6 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment } from "react"
 import { useCallback } from "react";
-import { useEffect } from "react";
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { UiUtils, useMultiState } from "../../../../lib";
 
@@ -61,6 +60,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
     </div>
+    
     {state.isChangesExpanded && 
         <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
