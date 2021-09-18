@@ -1,5 +1,5 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { UiUtils, useMultiState } from "../../../../lib";
 
 interface IDifferenceProps{
@@ -21,12 +21,11 @@ interface ILine{
 interface IState{
     currentLines:ILine[];
     previousLines:ILine[];
-    textLines:string[];
     editorWidth:number;
 }
 
 function DifferenceComponent(props:IDifferenceProps){
-    const [state,setState]=useMultiState<IState>({currentLines:[],previousLines:[],textLines:[],editorWidth:300});
+    const [state,setState]=useMultiState<IState>({currentLines:[],previousLines:[],editorWidth:300});
 
     useEffect(()=>{
         if(props.path) {            
@@ -34,7 +33,9 @@ function DifferenceComponent(props:IDifferenceProps){
         }
     },[props.path])
 
-    const setUiLines=(diff:string)=>{
+    const isMounted = useRef(false);
+
+    const setUiLines=(diff:string,textLines:string[])=>{
         const diffLines = diff.split('\n');
         // const sections:number[][]=[];
         let startIndexesOfSections = 0;
@@ -58,27 +59,26 @@ function DifferenceComponent(props:IDifferenceProps){
             }
         }
 
-        for(let i=0;i<lineNumberOfFile;i++){
+        let currentLines:ILine[]=[];
+        let previousLines:ILine[]=[];
+
+        for(let i=0;i<lineNumberOfFile-1;i++){
             const previousLine:ILine={
-                text:state.textLines[i],
+                text:textLines[i],
                 hightlightIndexRanges:[],
             }
 
             const currentLine:ILine={
-                text:state.textLines[i],
+                text:textLines[i],
                 hightlightIndexRanges:[],
             }
-            setState({
-                currentLines:[...state.currentLines,currentLine],
-                previousLines:[...state.previousLines,previousLine],
-            });
+            currentLines.push(currentLine);
+            previousLines.push(previousLine);            
         }
 
         // let trackingIndex = 0;
         let currentCharTrackingIndex = 0;
         let previousCharTrackingIndex = 0;
-        let currentLines:ILine[]=[];
-        let previousLines:ILine[]=[];
         let currentLine:ILine ={
             hightlightIndexRanges:[],
         }
@@ -93,11 +93,11 @@ function DifferenceComponent(props:IDifferenceProps){
                 const nextStartingFileLineNumber = getFileLineNumber(diffLine);
                 for(let i = lineNumberOfFile-1; i < nextStartingFileLineNumber-1;i++){
                     currentLine ={
-                        text:state.textLines[i],
+                        text:textLines[i],
                         hightlightIndexRanges:[],
                     }
                     previousLine ={
-                        text:state.textLines[i],
+                        text:textLines[i],
                         hightlightIndexRanges:[],
                     }
 
@@ -108,7 +108,7 @@ function DifferenceComponent(props:IDifferenceProps){
             }            
 
             else if(diffLine.startsWith(" ")){
-                if(!currentLine.text) currentLine.text = state.textLines[lineNumberOfFile-1];
+                if(!currentLine.text) currentLine.text = textLines[lineNumberOfFile-1];
                 if(!previousLine.text) previousLine.text = "";
                 previousLine.text += diffLine.substr(1);
                 currentCharTrackingIndex += diffLine.length-1;
@@ -145,22 +145,22 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     useEffect(()=>{
+        isMounted.current = true;
+        let textLines:string[] = [];
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
-            setState({textLines:lines,editorWidth:Math.max(...lines.map(l=>l.length))});            
+            // setState({textLines:lines,editorWidth:Math.max(...lines.map(l=>l.length))});            
+            textLines = lines;
+            const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",props.path];
+            window.ipcRenderer.send(RendererEvents.diff().channel,options,props.repoInfo);
         })
-        window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,result:string)=>{
-            console.log(result);
-            setUiLines(result);
+        window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
+            console.log(diff);
+            setUiLines(diff,textLines);
         });
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getFileContent().replyChannel,RendererEvents.diff().replyChannel])
         }
     },[]);
-
-    useEffect(()=>{
-        const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",props.path];
-        window.ipcRenderer.send(RendererEvents.diff().channel,options,props.repoInfo);
-    },[state.textLines])
     
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
@@ -170,7 +170,7 @@ function DifferenceComponent(props:IDifferenceProps){
                         <div className="d-flex flex-column align-items-stretch" key={index}>
                             <div>
                                 
-                                <div className="d-flex w-100">
+                                <div className="d-flex w-100 mw-100">
                                     <span className="pe-1">{index+1}</span>    
                                     <input
                                         type="text" 
@@ -187,7 +187,7 @@ function DifferenceComponent(props:IDifferenceProps){
             </div>
         </div>
         <div className="w-50 overflow-auto " >
-            <div className="d-flex flex-column" style={{width:`${state.editorWidth}ch`}}>
+            <div className="d-flex flex-column mw-100" style={{width:`${state.editorWidth}ch`}}>
                 {
                     state.currentLines.map((line,index)=> (
                         <input key={index} type="text" 

@@ -49,7 +49,7 @@ export class Startup{
           width: 800,
         });
         AppData.mainWindow = mainWindow;
-        mainWindow.loadURL("http://localhost:60557");      
+        mainWindow.loadURL("http://localhost:60558");      
         mainWindow.webContents.openDevTools();
     }
 
