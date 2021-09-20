@@ -34,6 +34,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[props.path])
 
     const isMounted = useRef(false);
+    const isFocussed = useRef(false);
 
     const setUiLines=(diff:string,textLines:string[])=>{
         const diffLines = diff.split('\n');
@@ -161,6 +162,29 @@ function DifferenceComponent(props:IDifferenceProps){
             UiUtils.removeIpcListeners([RendererEvents.getFileContent().replyChannel,RendererEvents.diff().replyChannel])
         }
     },[]);
+
+    const getSelectionPosition = () => {
+        var selection = window.getSelection();
+        const node = selection?.focusNode as any; 
+        console.log(node.data[selection?.focusOffset!]);
+        console.log(selection?.focusOffset);
+    }
+    const handleFocus = ()=>{
+        isFocussed.current = true;
+    }
+
+    const handleLineChange=(line:string,index:number)=>{
+        setState({
+            currentLines:[
+                ...state.currentLines.slice(0,index),
+                {
+                    ...state.currentLines[index],
+                    text:line,
+                },
+                ...state.currentLines.slice(index+1),
+            ]
+        })
+    }
     
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
@@ -171,13 +195,17 @@ function DifferenceComponent(props:IDifferenceProps){
                             <div>
                                 
                                 <div className="d-flex w-100 mw-100">
-                                    <span className="pe-1">{index+1}</span>    
-                                    <input
+                                    <span className="pe-1">{index+1}</span>
+                                    <div>
+                                        <span>{line.text?.substr(0,1)}</span>                                        
+                                        <span>{line.text?.substr(1)}</span>
+                                    </div>    
+                                    {/* <input
                                         type="text" 
-                                        value={line.text} className="outline-none flex-grow-1" 
-                                        onChange={_=>{}}
+                                        value={line.text} className="outline-none flex-grow-1 bg-danger" 
+                                        onChange={_=>{}}|
                                         spellCheck={false} 
-                                    />
+                                    /> */}
                                 </div>
                                 
                             </div>                            
@@ -190,11 +218,24 @@ function DifferenceComponent(props:IDifferenceProps){
             <div className="d-flex flex-column mw-100" style={{width:`${state.editorWidth}ch`}}>
                 {
                     state.currentLines.map((line,index)=> (
-                        <input key={index} type="text" 
-                            value={line.text} className="outline-none"
-                            onChange={_=>{}}
-                            spellCheck={false}
-                        />))
+                        // <div key={index} contentEditable suppressContentEditableWarning onClick={_=> handleFocus()}
+                        //     onBlur={_=> {console.log("blurring"); isFocussed.current=false;}} 
+                        //     onKeyPress={(e)=>{e.preventDefault(); console.log("key pressing");}}>
+                        //     <span>{line.text?.substr(0,1)}</span>                            
+                        //     <span>{line.text?.substr(1)}</span>
+                        // </div>
+                        <div key={index} className="position-relative">
+                            <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
+                                value={line.text} className="outline-none w-100"
+                                onChange={e => handleLineChange(e.target.value,index)}
+                                spellCheck={false}
+                            />
+                            <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
+                                <span>{line.text}</span>
+                            </div>
+                        </div>
+                        
+                        ))
                 }
             </div>
             

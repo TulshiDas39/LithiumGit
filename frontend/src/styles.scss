@@ -136,20 +136,46 @@ html {
     border: 0;
   }
 
-  // $insets: top, right, left, right;
-  // $gs-colors: var(--gs-normal),var(--gs-primary), var(--gs-primary),var(--gs-secondary),var(--gs-info),var(--gs-warning),var(--gs-danger);
-  // $gs_variants: gs-normal, gs-primary, gs-primary,gs-secondary,gs-info,gs-warning,gs-danger;
+  @keyframes caret {
+    0%   {
+      // border-left: 1px solid green;
+      visibility: visible;
+    }
+    49% {
+      // border-left: 1px solid green;
+      visibility: visible;
+    }
+    50%  {
+      // border-left: none;
+      visibility: hidden;
 
-  // $variantLenght : list.length($gs_variants);
-  // @for $variantIndex from 0 through $variantLenght  {
-    
-  //   .border-#{list.nth($gs_variants, $variantIndex)}{
-  //     border: list.nth($gs-colors, $variantIndex);
-  //   }
+    }
+    99%{
+      // border-left: none;
+      visibility: hidden;
 
-  //   @for $inIndex from 0 through list.length($insets){
-  //     .border-#{list.nth($insets, $inIndex)}-#{list.nth($gs_variants, $variantIndex)}{
-  //       border-#{list.nth($insets, $inIndex)}: 1px solid list.nth($gs-colors,$variantIndex);
-  //     }
-  //   }    
-  // }
+    }
+    100% {
+      // border-left: 1px solid green;
+      visibility: visible;
+
+    }
+    // from {
+    //   height: 0;
+    //   border-left: 0px solid green;
+    // }
+    // to {
+    //   height: 2ch;
+    //   border-left: 10px solid green;
+    // }
+  }
+
+  .caret::before{
+    content: '';            
+    animation-name: caret;
+    animation-duration:1s;
+    animation-iteration-count: infinite;
+    border-left: 1px solid green;
+    // animation-direction: alternate;
+
+  }
