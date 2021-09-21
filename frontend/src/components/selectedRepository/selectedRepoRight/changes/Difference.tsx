@@ -125,13 +125,14 @@ function DifferenceComponent(props:IDifferenceProps){
             }            
 
             else if(diffLine.startsWith(" ")){
-                if(!currentLine.text) currentLine.text = textLines[lineNumberOfFile-1];
-                if(!previousLine.text) previousLine.text = "";
+                if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];
+                if(previousLine.text === undefined) previousLine.text = "";
                 previousLine.text += diffLine.substr(1);
                 currentCharTrackingIndex += diffLine.length-1;
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("+")){
+                if(currentLine.text === undefined)currentLine.text = textLines[lineNumberOfFile-1];                
                 currentLine.hightlightIndexRanges.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
                 currentCharTrackingIndex += diffLine.length-1;
             }
@@ -169,6 +170,7 @@ function DifferenceComponent(props:IDifferenceProps){
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
             // setState({textLines:lines,editorWidth:Math.max(...lines.map(l=>l.length))});            
             textLines = lines;
+            console.log("texts",lines);
             const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",propsRef.current.path];
             window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
         })
