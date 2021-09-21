@@ -20,18 +20,29 @@ interface ILine{
 
 interface IState{
     currentLines:ILine[];
-    previousLines:ILine[];
-    editorWidth:number;
+    previousLines:ILine[];    
+    previousLineMaxWidth:number;
+    currentLineMaxWidth:number;
 }
 
 function DifferenceComponent(props:IDifferenceProps){
-    const [state,setState]=useMultiState<IState>({currentLines:[],previousLines:[],editorWidth:300});
+    const [state,setState] = useMultiState<IState>({
+        currentLines:[],
+        previousLines:[],        
+        currentLineMaxWidth:300,
+        previousLineMaxWidth:300,
+    });
 
     useEffect(()=>{
         if(props.path) {            
             window.ipcRenderer.send(RendererEvents.getFileContent().channel,props.path);            
         }
     },[props.path])
+    
+    const getEditorWidth = (lines:string[])=>{
+        const width = Math.max(...lines.map(l=>l.length));
+        return width;
+    }
 
     const isMounted = useRef(false);
     const isFocussed = useRef(false);
@@ -174,27 +185,21 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     const handleLineChange=(line:string,index:number)=>{
-        setState({
-            currentLines:[
-                ...state.currentLines.slice(0,index),
-                {
-                    ...state.currentLines[index],
-                    text:line,
-                },
-                ...state.currentLines.slice(index+1),
-            ]
-        })
+        const currentLines = state.currentLines.slice();
+        currentLines[index] = {...currentLines[index],text:line};
+        const currentLineMaxWidth = getEditorWidth(currentLines.map(x=> x.text?x.text:""))+1;
+        setState({currentLines,currentLineMaxWidth});
     }
     
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
-            <div className="d-flex flex-column" style={{width:`${state.editorWidth}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
                 {
                     state.previousLines.map((line,index)=> (
                         <div className="d-flex flex-column align-items-stretch" key={index}>
                             <div>
                                 
-                                <div className="d-flex w-100 mw-100">
+                                <div className="d-flex w-100 minw-100" >
                                     <span className="pe-1">{index+1}</span>
                                     <div>
                                         <span>{line.text?.substr(0,1)}</span>                                        
@@ -215,7 +220,7 @@ function DifferenceComponent(props:IDifferenceProps){
             </div>
         </div>
         <div className="w-50 overflow-auto " >
-            <div className="d-flex flex-column mw-100" style={{width:`${state.editorWidth}ch`}}>
+            <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
                     state.currentLines.map((line,index)=> (
                         // <div key={index} contentEditable suppressContentEditableWarning onClick={_=> handleFocus()}

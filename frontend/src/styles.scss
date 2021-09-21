@@ -95,6 +95,9 @@ html {
   .selected{
     background-color: var(--bg-select-color);
   }
+  .minw-100{
+    min-width: 100%;
+  }
   
   body {
     background-color: var(--bg-color);
