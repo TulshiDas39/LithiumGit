@@ -6,7 +6,6 @@ interface IDifferenceProps{
     path:string;
     repoInfo:RepositoryInfo;
 }
-
 interface ILine{
     text?:string;
     hightlightIndexRanges:{
@@ -33,8 +32,14 @@ function DifferenceComponent(props:IDifferenceProps){
         previousLineMaxWidth:300,
     });
 
+    const propsRef = useRef(props);
     useEffect(()=>{
-        if(props.path) {            
+        propsRef.current = props;
+    },[props])
+
+    useEffect(()=>{
+        if(props.path) {
+            console.log("path",props.path);
             window.ipcRenderer.send(RendererEvents.getFileContent().channel,props.path);            
         }
     },[props.path])
@@ -153,7 +158,9 @@ function DifferenceComponent(props:IDifferenceProps){
 
         console.log("current lines",currentLines);
         console.log("Previous lines",previousLines);
-        setState({currentLines,previousLines});
+        const previousLineMaxWidth = getEditorWidth(previousLines.map(x=>x.text?x.text:""));
+        const currentLineMaxWidth = getEditorWidth(currentLines.map(x=>x.text?x.text:""));
+        setState({currentLines,previousLines,previousLineMaxWidth,currentLineMaxWidth});
     }
 
     useEffect(()=>{
@@ -162,8 +169,8 @@ function DifferenceComponent(props:IDifferenceProps){
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
             // setState({textLines:lines,editorWidth:Math.max(...lines.map(l=>l.length))});            
             textLines = lines;
-            const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",props.path];
-            window.ipcRenderer.send(RendererEvents.diff().channel,options,props.repoInfo);
+            const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",propsRef.current.path];
+            window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
             console.log(diff);
@@ -173,16 +180,6 @@ function DifferenceComponent(props:IDifferenceProps){
             UiUtils.removeIpcListeners([RendererEvents.getFileContent().replyChannel,RendererEvents.diff().replyChannel])
         }
     },[]);
-
-    const getSelectionPosition = () => {
-        var selection = window.getSelection();
-        const node = selection?.focusNode as any; 
-        console.log(node.data[selection?.focusOffset!]);
-        console.log(selection?.focusOffset);
-    }
-    const handleFocus = ()=>{
-        isFocussed.current = true;
-    }
 
     const handleLineChange=(line:string,index:number)=>{
         const currentLines = state.currentLines.slice();
@@ -223,22 +220,24 @@ function DifferenceComponent(props:IDifferenceProps){
             <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
                     state.currentLines.map((line,index)=> (
-                        // <div key={index} contentEditable suppressContentEditableWarning onClick={_=> handleFocus()}
-                        //     onBlur={_=> {console.log("blurring"); isFocussed.current=false;}} 
-                        //     onKeyPress={(e)=>{e.preventDefault(); console.log("key pressing");}}>
-                        //     <span>{line.text?.substr(0,1)}</span>                            
-                        //     <span>{line.text?.substr(1)}</span>
-                        // </div>
-                        <div key={index} className="position-relative">
-                            <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
-                                value={line.text} className="outline-none w-100"
-                                onChange={e => handleLineChange(e.target.value,index)}
-                                spellCheck={false}
-                            />
-                            <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
-                                <span>{line.text}</span>
-                            </div>
+                        <div className="w-100">
+                            {line.text !== undefined && <div key={index} className="position-relative">
+                                <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
+                                    value={line.text} className="outline-none w-100"
+                                    onChange={e => handleLineChange(e.target.value,index)}
+                                    spellCheck={false}
+                                />
+                                <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
+                                    <span>{line.text}</span>
+                                </div>
+                            </div>}
+                            {line.text === undefined &&
+                               <div className="bg-danger">
+                                   <div className="invisible">/</div>
+                               </div> 
+                            }
                         </div>
+                        
                         
                         ))
                 }
