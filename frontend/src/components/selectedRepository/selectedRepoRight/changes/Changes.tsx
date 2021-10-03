@@ -3,13 +3,13 @@ import React, { useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { ExampleDocument, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
-import { SelectedFile } from "./SelectedFile";
 import { StagedChanges } from "./StagedChanges";
 import { UntrackedFiles } from "./UntrackedFiles";
+import {Descendant} from 'slate';
 
 interface IChangesProps{
     repoInfo?:RepositoryInfo;
@@ -19,11 +19,13 @@ interface IState {
     adjustedX: number;
     status?:IStatus;
     selectedFilePath?:string;
+    document:Descendant[],
 }
 
 function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
-        adjustedX: 0,        
+        adjustedX: 0,
+        document:ExampleDocument,        
     });
 
     const store = useSelectorTyped(state=>({
@@ -61,7 +63,8 @@ function ChangesComponent(props:IChangesProps) {
                 RendererEvents.stageItem().replyChannel,
             ]);
         }
-    },[])
+    },[])    
+
 
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
@@ -91,6 +94,10 @@ function ChangesComponent(props:IChangesProps) {
     }
 
     
+    const onChange = useCallback((document:Descendant[])=>{
+        console.log(document);
+        setState({document});
+    },[])
       
     
 
@@ -117,6 +124,7 @@ function ChangesComponent(props:IChangesProps) {
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
             {!!state.selectedFilePath && !!props.repoInfo && <Difference path={state.selectedFilePath} repoInfo={props.repoInfo} />}
+            {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>
 }

@@ -4,6 +4,7 @@ import './styles.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-quill/dist/quill.snow.css';
 import {Provider} from 'react-redux';
 import { ReduxStore } from './store';
 

@@ -22,6 +22,7 @@
     "react-bootstrap": "^2.0.0-beta.4",
     "react-dom": "^17.0.1",
     "react-icons": "^4.2.0",
+    "react-quill": "2.0.0-beta.1",
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.1",
@@ -29,7 +30,7 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set FAST_REFRESH=false && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -1,5 +1,8 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
+import { DeltaStatic } from "quill";
 import React, { useEffect, useRef } from "react"
+import ReactQuill, { Quill } from "react-quill";
+import {DeltaOperation} from "quill";
 import { UiUtils, useMultiState } from "../../../../lib";
 
 interface IDifferenceProps{
@@ -189,6 +192,57 @@ function DifferenceComponent(props:IDifferenceProps){
         const currentLineMaxWidth = getEditorWidth(currentLines.map(x=> x.text?x.text:""))+1;
         setState({currentLines,currentLineMaxWidth});
     }
+
+    const getEditorValue=()=>{
+        console.log("state.currentLines",state.currentLines)
+        const operations:DeltaOperation[]=[];
+
+        state.currentLines.forEach((line,lineIndex)=>{
+            if(line.transparent) operations.push({
+                insert: `\n${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
+                attributes:{background:"black"}
+            })
+            else if(!!line.text){
+                const heightLightCount = line.hightlightIndexRanges.length;
+                if(!!heightLightCount){
+                    let insertedUpto = -1;                    
+                    line.hightlightIndexRanges.forEach((range,index)=>{
+                        // let prefix = lineIndex !== 0 && index === 0? "\n":"";
+                        if(range.fromIndex > insertedUpto+1 ){                            
+                            operations.push({
+                                insert:line.text!.substring(insertedUpto+1,range.fromIndex)
+                            });
+                            // prefix = "";
+                        }
+                        operations.push({
+                            insert:line.text!.substr(range.fromIndex,range.count),
+                            attributes:{
+                                background:"green",
+                            }
+                        })                        
+    
+                        insertedUpto += range.fromIndex+range.count;
+                    })
+                    if(insertedUpto < line.text.length-1){
+                        operations.push({
+                            insert: line.text.substring(insertedUpto+1)
+                        })
+                    }
+                } else{
+                    operations.push({
+                        insert:line.text
+                    })
+                }
+            }
+        })
+
+        console.log("operations",operations);
+
+        const delta = {
+            ops:operations,
+        } as DeltaStatic;
+        return delta;        
+    }
     
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
@@ -221,27 +275,30 @@ function DifferenceComponent(props:IDifferenceProps){
         <div className="w-50 overflow-auto " >
             <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
-                    state.currentLines.map((line,index)=> (
-                        <div className="w-100">
-                            {line.text !== undefined && <div key={index} className="position-relative">
-                                <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
-                                    value={line.text} className="outline-none w-100"
-                                    onChange={e => handleLineChange(e.target.value,index)}
-                                    spellCheck={false}
-                                />
-                                <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
-                                    <span>{line.text}</span>
-                                </div>
-                            </div>}
-                            {line.text === undefined &&
-                               <div className="bg-danger">
-                                   <div className="invisible">/</div>
-                               </div> 
-                            }
-                        </div>
+                    <ReactQuill  theme="snow" value={getEditorValue()} onChange={value=>{console.log(value)}} 
+                        modules={{"toolbar":false}}
+                    />
+                    // state.currentLines.map((line,index)=> (
+                    //     <div className="w-100">
+                    //         {line.text !== undefined && <div key={index} className="position-relative">
+                    //             <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
+                    //                 value={line.text} className="outline-none w-100"
+                    //                 onChange={e => handleLineChange(e.target.value,index)}
+                    //                 spellCheck={false}
+                    //             />
+                    //             <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
+                    //                 <span>{line.text}</span>
+                    //             </div>
+                    //         </div>}
+                    //         {line.text === undefined &&
+                    //            <div className="bg-danger">
+                    //                <div className="invisible">/</div>
+                    //            </div> 
+                    //         }
+                    //     </div>
                         
                         
-                        ))
+                    //     ))
                 }
             </div>
             
