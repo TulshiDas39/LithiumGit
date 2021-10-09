@@ -3,7 +3,7 @@ import { DeltaStatic } from "quill";
 import React, { useEffect, useRef } from "react"
 import ReactQuill, { Quill } from "react-quill";
 import {DeltaOperation} from "quill";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EditorColors, IEditorLineColor, UiUtils, useMultiState } from "../../../../lib";
 
 interface IDifferenceProps{
     path:string;
@@ -193,11 +193,11 @@ function DifferenceComponent(props:IDifferenceProps){
         setState({currentLines,currentLineMaxWidth});
     }
 
-    const getEditorValue=()=>{
+    const getEditorValue=(type:keyof IEditorLineColor)=>{
         console.log("state.currentLines",state.currentLines)
         const operations:DeltaOperation[]=[];
-
-        state.currentLines.forEach((line,lineIndex)=>{
+        const lines = type === "current"?state.currentLines:state.previousLines;
+        lines.forEach((line,lineIndex)=>{
             if(line.transparent) operations.push({
                 insert: `\n${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
@@ -210,14 +210,17 @@ function DifferenceComponent(props:IDifferenceProps){
                         // let prefix = lineIndex !== 0 && index === 0? "\n":"";
                         if(range.fromIndex > insertedUpto+1 ){                            
                             operations.push({
-                                insert:line.text!.substring(insertedUpto+1,range.fromIndex)
+                                insert:line.text!.substring(insertedUpto+1,range.fromIndex),
+                                attributes:{
+                                    background:EditorColors.line[type].background,
+                                }
                             });
                             // prefix = "";
                         }
                         operations.push({
                             insert:line.text!.substr(range.fromIndex,range.count),
                             attributes:{
-                                background:"green",
+                                background:EditorColors.line[type].forgound,
                             }
                         })                        
     
@@ -247,7 +250,10 @@ function DifferenceComponent(props:IDifferenceProps){
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
             <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
-                {
+            <ReactQuill  theme="snow" value={getEditorValue("previous")} onChange={value=>{console.log(value)}} 
+                        modules={{"toolbar":false}}
+                    />
+                {/* {
                     state.previousLines.map((line,index)=> (
                         <div className="d-flex flex-column align-items-stretch" key={index}>
                             <div>
@@ -257,25 +263,19 @@ function DifferenceComponent(props:IDifferenceProps){
                                     <div>
                                         <span>{line.text?.substr(0,1)}</span>                                        
                                         <span>{line.text?.substr(1)}</span>
-                                    </div>    
-                                    {/* <input
-                                        type="text" 
-                                        value={line.text} className="outline-none flex-grow-1 bg-danger" 
-                                        onChange={_=>{}}|
-                                        spellCheck={false} 
-                                    /> */}
+                                    </div>                                        
                                 </div>
                                 
                             </div>                            
                         </div>
                     ))
-                }
+                } */}
             </div>
         </div>
         <div className="w-50 overflow-auto " >
             <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
-                    <ReactQuill  theme="snow" value={getEditorValue()} onChange={value=>{console.log(value)}} 
+                    <ReactQuill  theme="snow" value={getEditorValue("current")} onChange={value=>{console.log(value)}} 
                         modules={{"toolbar":false}}
                     />
                     // state.currentLines.map((line,index)=> (

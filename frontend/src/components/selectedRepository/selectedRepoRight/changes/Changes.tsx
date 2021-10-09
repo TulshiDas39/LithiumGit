@@ -3,13 +3,12 @@ import React, { useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { ExampleDocument, UiUtils, useMultiState } from "../../../../lib";
+import { UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
 import { UntrackedFiles } from "./UntrackedFiles";
-import {Descendant} from 'slate';
 
 interface IChangesProps{
     repoInfo?:RepositoryInfo;
@@ -19,13 +18,13 @@ interface IState {
     adjustedX: number;
     status?:IStatus;
     selectedFilePath?:string;
-    document:Descendant[],
+    // document:Descendant[],
 }
 
 function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,
-        document:ExampleDocument,        
+        // document:ExampleDocument,        
     });
 
     const store = useSelectorTyped(state=>({
@@ -94,10 +93,6 @@ function ChangesComponent(props:IChangesProps) {
     }
 
     
-    const onChange = useCallback((document:Descendant[])=>{
-        console.log(document);
-        setState({document});
-    },[])
       
     
 
