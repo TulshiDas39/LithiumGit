@@ -133,6 +133,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 previousLine.text += diffLine.substr(1);
                 currentCharTrackingIndex += diffLine.length-1;
                 previousCharTrackingIndex += diffLine.length-1;
+                console.log(diffLine,diffLine.length);
             }
             else if(diffLine.startsWith("+")){
                 if(currentLine.text === undefined)currentLine.text = textLines[lineNumberOfFile-1];                
@@ -142,6 +143,7 @@ function DifferenceComponent(props:IDifferenceProps){
             else if(diffLine.startsWith("-")){
                 if(!previousLine.text) previousLine.text = "";
                 previousLine.text += diffLine.substr(1);
+                console.log(diffLine,diffLine.length);            
                 previousLine.hightlightIndexRanges.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
                 previousCharTrackingIndex += diffLine.length-1;
             }
@@ -249,7 +251,7 @@ function DifferenceComponent(props:IDifferenceProps){
     
     return <div className="d-flex w-100 h-100 overflow-auto">
         <div  className="w-50 overflow-auto border-end" style={{whiteSpace: "pre"}}>
-            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
+            <div className="d-flex flex-column">
             <ReactQuill  theme="snow" value={getEditorValue("previous")} onChange={value=>{console.log(value)}} 
                         modules={{"toolbar":false}}
                     />
