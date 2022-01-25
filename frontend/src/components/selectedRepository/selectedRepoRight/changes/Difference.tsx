@@ -199,12 +199,16 @@ function DifferenceComponent(props:IDifferenceProps){
         console.log("state.currentLines",state.currentLines)
         const operations:DeltaOperation[]=[];
         const lines = type === "current"?state.currentLines:state.previousLines;
+        let lineNumber=1;
         lines.forEach((line,lineIndex)=>{
             if(line.transparent) operations.push({
                 insert: `\n${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
             })
             else if(!!line.text){
+                operations.push({
+                    insert:`${lineNumber} `
+                })
                 const heightLightCount = line.hightlightIndexRanges.length;
                 if(!!heightLightCount){
                     let insertedUpto = -1;                    
@@ -220,7 +224,7 @@ function DifferenceComponent(props:IDifferenceProps){
                             // prefix = "";
                         }
                         operations.push({
-                            insert:line.text!.substr(range.fromIndex,range.count),
+                            insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
                             attributes:{
                                 background:EditorColors.line[type].forgound,
                             }
@@ -238,6 +242,7 @@ function DifferenceComponent(props:IDifferenceProps){
                         insert:line.text
                     })
                 }
+                lineNumber++;
             }
         })
 
@@ -254,6 +259,7 @@ function DifferenceComponent(props:IDifferenceProps){
             <div className="d-flex flex-column">
             <ReactQuill  theme="snow" value={getEditorValue("previous")} onChange={value=>{console.log(value)}} 
                         modules={{"toolbar":false}}
+                        
                     />
                 {/* {
                     state.previousLines.map((line,index)=> (
