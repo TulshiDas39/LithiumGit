@@ -23,7 +23,7 @@ export class FileManager{
         return new Promise<string[]>((resolve,reject)=>{
             fs.readFile(path,{encoding:"utf8"},(err,data)=>{
                 if(data){
-                    const lines = data.split('\n');
+                    const lines = data.split(/\r\n|\r|\n/g);
                     resolve(lines);
                 }
                 else if(err) reject(err);

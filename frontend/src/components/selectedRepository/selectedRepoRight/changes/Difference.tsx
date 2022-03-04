@@ -5,6 +5,8 @@ import ReactQuill, { Quill } from "react-quill";
 import {DeltaOperation} from "quill";
 import { EditorColors, IEditorLineColor, UiUtils, useMultiState } from "../../../../lib";
 
+type TDiffLineType = "unchanged"|"added"|"removed";
+
 interface IDifferenceProps{
     path:string;
     repoInfo:RepositoryInfo;
@@ -28,6 +30,7 @@ interface IState{
 }
 
 function DifferenceComponent(props:IDifferenceProps){
+    const tabSize = 4;
     const [state,setState] = useMultiState<IState>({
         currentLines:[],
         previousLines:[],        
@@ -48,7 +51,14 @@ function DifferenceComponent(props:IDifferenceProps){
     },[props.path])
     
     const getEditorWidth = (lines:string[])=>{
-        const width = Math.max(...lines.map(l=>l.length));
+        const width = Math.max(...lines.map(l=>{
+            let length = l.length;
+            if(l.includes('\t')) {
+                let tabCount = l.match(/\t/g)?.length ?? 0;
+                length += tabCount * (tabSize) - tabCount;
+            }
+            return length;
+        }));
         return width;
     }
 
@@ -56,6 +66,7 @@ function DifferenceComponent(props:IDifferenceProps){
     const isFocussed = useRef(false);
 
     const setUiLines=(diff:string,textLines:string[])=>{
+        console.log("textlines",textLines);
         const diffLines = diff.split('\n');
         // const sections:number[][]=[];
         let startIndexesOfSections = 0;
@@ -106,41 +117,51 @@ function DifferenceComponent(props:IDifferenceProps){
             hightlightIndexRanges:[],
         }
 
+        let currentChangeType:TDiffLineType = "unchanged";
+
         for(let i=startIndexesOfSections;i<diffLines.length;i++){
             const diffLine = diffLines[i];
             
             if(diffLine.startsWith("@@")){
                 const nextStartingFileLineNumber = getFileLineNumber(diffLine);
-                for(let i = lineNumberOfFile-1; i < nextStartingFileLineNumber-1;i++){
-                    currentLine ={
+                for(let i = lineNumberOfFile-1; i < nextStartingFileLineNumber-1;i++){                    
+                    currentLines.push({
                         text:textLines[i],
                         hightlightIndexRanges:[],
-                    }
-                    previousLine ={
+                    });
+                    previousLines.push({
                         text:textLines[i],
                         hightlightIndexRanges:[],
+                    });
+                    currentLine ={           
+                        hightlightIndexRanges:[],
                     }
-
-                    currentLines.push(currentLine);
-                    previousLines.push(previousLine);
+                    previousLine ={                        
+                        hightlightIndexRanges:[],
+                    }
                 }
                 lineNumberOfFile = nextStartingFileLineNumber;
             }            
 
             else if(diffLine.startsWith(" ")){
-                if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];
+                currentChangeType = "unchanged";
+                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];
                 if(previousLine.text === undefined) previousLine.text = "";
-                previousLine.text += diffLine.substr(1);
+                if(currentLine.text === undefined) currentLine.text = "";
+                previousLine.text += diffLine.substring(1);
+                currentLine.text += diffLine.substring(1);
                 currentCharTrackingIndex += diffLine.length-1;
-                previousCharTrackingIndex += diffLine.length-1;
-                console.log(diffLine,diffLine.length);
+                previousCharTrackingIndex += diffLine.length-1;                
             }
             else if(diffLine.startsWith("+")){
-                if(currentLine.text === undefined)currentLine.text = textLines[lineNumberOfFile-1];                
+                currentChangeType = "added";
+                //if(currentLine.text === undefined)currentLine.text = textLines[lineNumberOfFile-1];                
+                currentLine.text! += diffLine.substring(1);
                 currentLine.hightlightIndexRanges.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
                 currentCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("-")){
+                currentChangeType = "removed";
                 if(!previousLine.text) previousLine.text = "";
                 previousLine.text += diffLine.substring(1);
                 console.log(diffLine,diffLine.length);            
@@ -148,17 +169,22 @@ function DifferenceComponent(props:IDifferenceProps){
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-                currentLines.push(currentLine);
-                previousLines.push(previousLine);
-                currentLine ={
-                    hightlightIndexRanges:[],
-                }
-                previousLine ={
-                    hightlightIndexRanges:[],
-                }
-                previousCharTrackingIndex = 0;
-                currentCharTrackingIndex = 0;
-                lineNumberOfFile++;
+                if(currentChangeType !== "removed"){
+                    currentLines.push(currentLine);
+                    currentLine ={
+                        hightlightIndexRanges:[],
+                        text:""
+                    }
+                    currentCharTrackingIndex = 0;
+                    lineNumberOfFile++;
+                } 
+                if(currentChangeType !== "added"){
+                    previousLines.push(previousLine);
+                    previousLine ={
+                        hightlightIndexRanges:[],
+                    }
+                    previousCharTrackingIndex = 0;
+                }                                
             }
         }
 
@@ -215,9 +241,9 @@ function DifferenceComponent(props:IDifferenceProps){
                 insert: `\n${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
             })
-            else if(!!line.text){
+            else if(line.text != undefined){
                 operations.push({
-                    insert:`${lineNumber} `
+                    insert:`\n${lineNumber} `
                 })
                 const heightLightCount = line.hightlightIndexRanges.length;
                 if(!!heightLightCount){
@@ -256,7 +282,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 lineNumber++;
             }
         })
-
+        console.log("operation type:"+type);
         console.log("operations",operations);
 
         const delta = {
@@ -287,8 +313,8 @@ function DifferenceComponent(props:IDifferenceProps){
                                 
                             </div>                            
                         </div>
-                    ))
                 } */}
+                
             </div>
         </div>
         <div className="w-50 overflow-auto " >
