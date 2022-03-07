@@ -11,6 +11,7 @@ interface IDifferenceProps{
     path:string;
     repoInfo:RepositoryInfo;
 }
+
 interface ILine{
     text?:string;
     hightlightIndexRanges:{
@@ -113,9 +114,12 @@ function DifferenceComponent(props:IDifferenceProps){
         let currentLine:ILine ={
             hightlightIndexRanges:[],
         }
+        currentLines.push(currentLine);
+
         let previousLine:ILine ={
             hightlightIndexRanges:[],
         }
+        previousLines.push(previousLine);
 
         let currentChangeType:TDiffLineType = "unchanged";
 
@@ -132,20 +136,24 @@ function DifferenceComponent(props:IDifferenceProps){
                     previousLines.push({
                         text:textLines[i],
                         hightlightIndexRanges:[],
-                    });
-                    currentLine ={           
-                        hightlightIndexRanges:[],
-                    }
-                    previousLine ={                        
-                        hightlightIndexRanges:[],
-                    }
+                    });                    
                 }
+                currentLine ={           
+                    hightlightIndexRanges:[],
+                }
+                previousLine ={                        
+                    hightlightIndexRanges:[],
+                }
+
+                currentLines.push(currentLine);
+                previousLines.push(previousLine);
+
                 lineNumberOfFile = nextStartingFileLineNumber;
             }            
 
             else if(diffLine.startsWith(" ")){
                 currentChangeType = "unchanged";
-                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];
+                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];                
                 if(previousLine.text === undefined) previousLine.text = "";
                 if(currentLine.text === undefined) currentLine.text = "";
                 previousLine.text += diffLine.substring(1);
@@ -155,7 +163,7 @@ function DifferenceComponent(props:IDifferenceProps){
             }
             else if(diffLine.startsWith("+")){
                 currentChangeType = "added";
-                //if(currentLine.text === undefined)currentLine.text = textLines[lineNumberOfFile-1];                
+                if(currentLine.text === undefined)currentLine.text = "";                
                 currentLine.text! += diffLine.substring(1);
                 currentLine.hightlightIndexRanges.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
                 currentCharTrackingIndex += diffLine.length-1;
@@ -169,21 +177,26 @@ function DifferenceComponent(props:IDifferenceProps){
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-                if(currentChangeType !== "removed"){
-                    currentLines.push(currentLine);
-                    currentLine ={
-                        hightlightIndexRanges:[],
-                        text:""
-                    }
-                    currentCharTrackingIndex = 0;
+                currentLine ={
+                    hightlightIndexRanges:[],
+                    text:""
+                }
+                currentLines.push(currentLine);
+
+                previousLine ={
+                    hightlightIndexRanges:[],
+                }
+                previousLines.push(previousLine);
+                currentCharTrackingIndex = 0;
+                previousCharTrackingIndex = 0;
+
+                if(currentChangeType !== "removed"){                    
+                    
+                    
                     lineNumberOfFile++;
                 } 
                 if(currentChangeType !== "added"){
-                    previousLines.push(previousLine);
-                    previousLine ={
-                        hightlightIndexRanges:[],
-                    }
-                    previousCharTrackingIndex = 0;
+                   
                 }                                
             }
         }
