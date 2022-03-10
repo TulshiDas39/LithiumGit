@@ -14,10 +14,11 @@ interface IDifferenceProps{
 
 interface ILine{
     text?:string;
-    hightlightIndexRanges:{
+    textHightlightIndex:{
         fromIndex:number;
         count:number;
     }[];
+    hightLightBackground?:boolean;
     transparent?:{
         lineCount:number;
     }
@@ -97,12 +98,12 @@ function DifferenceComponent(props:IDifferenceProps){
         for(let i=0;i<lineNumberOfFile-1;i++){
             const previousLine:ILine={
                 text:textLines[i],
-                hightlightIndexRanges:[],
+                textHightlightIndex:[],
             }
 
             const currentLine:ILine={
                 text:textLines[i],
-                hightlightIndexRanges:[],
+                textHightlightIndex:[],
             }
             currentLines.push(currentLine);
             previousLines.push(previousLine);            
@@ -112,14 +113,14 @@ function DifferenceComponent(props:IDifferenceProps){
         let currentCharTrackingIndex = 0;
         let previousCharTrackingIndex = 0;
         let currentLine:ILine ={
-            hightlightIndexRanges:[],
+            textHightlightIndex:[],
         }
-        currentLines.push(currentLine);
+        //currentLines.push(currentLine);
 
         let previousLine:ILine ={
-            hightlightIndexRanges:[],
+            textHightlightIndex:[],
         }
-        previousLines.push(previousLine);
+        //previousLines.push(previousLine);
 
         let currentChangeType:TDiffLineType = "unchanged";
 
@@ -131,18 +132,18 @@ function DifferenceComponent(props:IDifferenceProps){
                 for(let i = lineNumberOfFile-1; i < nextStartingFileLineNumber-1;i++){                    
                     currentLines.push({
                         text:textLines[i],
-                        hightlightIndexRanges:[],
+                        textHightlightIndex:[],
                     });
                     previousLines.push({
                         text:textLines[i],
-                        hightlightIndexRanges:[],
+                        textHightlightIndex:[],
                     });                    
                 }
                 currentLine ={           
-                    hightlightIndexRanges:[],
+                    textHightlightIndex:[],
                 }
                 previousLine ={                        
-                    hightlightIndexRanges:[],
+                    textHightlightIndex:[],
                 }
 
                 currentLines.push(currentLine);
@@ -165,7 +166,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 currentChangeType = "added";
                 if(currentLine.text === undefined)currentLine.text = "";                
                 currentLine.text! += diffLine.substring(1);
-                currentLine.hightlightIndexRanges.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
+                currentLine.textHightlightIndex.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
                 currentCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("-")){
@@ -173,20 +174,21 @@ function DifferenceComponent(props:IDifferenceProps){
                 if(!previousLine.text) previousLine.text = "";
                 previousLine.text += diffLine.substring(1);
                 console.log(diffLine,diffLine.length);            
-                previousLine.hightlightIndexRanges.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
+                previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-                currentLine ={
-                    hightlightIndexRanges:[],
-                    text:""
-                }
                 currentLines.push(currentLine);
 
-                previousLine ={
-                    hightlightIndexRanges:[],
+                currentLine ={
+                    textHightlightIndex:[],
+                    text:""
                 }
                 previousLines.push(previousLine);
+
+                previousLine ={
+                    textHightlightIndex:[],
+                }
                 currentCharTrackingIndex = 0;
                 previousCharTrackingIndex = 0;
 
@@ -203,7 +205,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
         while(lineNumberOfFile < textLines.length){
             let lineConfig:ILine = {
-                hightlightIndexRanges:[],
+                textHightlightIndex:[],
                 text:textLines[lineNumberOfFile],
             };
             currentLines.push(lineConfig);
@@ -249,23 +251,30 @@ function DifferenceComponent(props:IDifferenceProps){
         const operations:DeltaOperation[]=[];
         const lines = type === "current"?state.currentLines:state.previousLines;
         let lineNumber=1;
-        lines.forEach((line,lineIndex)=>{
+        const delta = {
+            ops:operations,
+        } as DeltaStatic;
+        
+        if(!lines.length) 
+            return delta;
+        
+        let createOperation=(line:ILine)=>{
             if(line.transparent) operations.push({
-                insert: `\n${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
+                insert: `${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
             })
             else if(line.text != undefined){
                 operations.push({
-                    insert:`\n${lineNumber} `
+                    insert:`${lineNumber} `
                 })
-                const heightLightCount = line.hightlightIndexRanges.length;
+                const heightLightCount = line.textHightlightIndex.length;
                 if(!!heightLightCount){
-                    let insertedUpto = -1;                    
-                    line.hightlightIndexRanges.forEach((range,index)=>{
+                    let insertedUptoIndex = -1;                    
+                    line.textHightlightIndex.forEach((range,index)=>{
                         // let prefix = lineIndex !== 0 && index === 0? "\n":"";
-                        if(range.fromIndex > insertedUpto+1 ){                            
+                        if(range.fromIndex > insertedUptoIndex+1 ){                            
                             operations.push({
-                                insert:line.text!.substring(insertedUpto+1,range.fromIndex),
+                                insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
                                 attributes:{
                                     background:EditorColors.line[type].background,
                                 }
@@ -279,11 +288,14 @@ function DifferenceComponent(props:IDifferenceProps){
                             }
                         })                        
     
-                        insertedUpto += range.fromIndex+range.count;
+                        insertedUptoIndex += range.fromIndex+range.count;
                     })
-                    if(insertedUpto < line.text.length-1){
+                    if(insertedUptoIndex < line.text.length-1){
                         operations.push({
-                            insert: line.text.substring(insertedUpto+1)
+                            insert: line.text.substring(insertedUptoIndex+1),
+                            attributes:{
+                                background:EditorColors.line[type].background,
+                            }
                         })
                     }
                 } 
@@ -294,13 +306,19 @@ function DifferenceComponent(props:IDifferenceProps){
                 }
                 lineNumber++;
             }
+        }
+
+        createOperation(lines[0]);
+
+        lines.slice(1).forEach((line,lineIndex)=>{
+            operations.push({
+                insert:`\n `
+            })
+            createOperation(line);
         })
         console.log("operation type:"+type);
         console.log("operations",operations);
-
-        const delta = {
-            ops:operations,
-        } as DeltaStatic;
+        
         return delta;        
     }
     
