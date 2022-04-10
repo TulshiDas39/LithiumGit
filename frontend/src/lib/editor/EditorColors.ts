@@ -1,5 +1,5 @@
-interface ILineHighlight{
-    forgound:string;
+export interface ILineHighlight{
+    forground:string;
     background:string;
 }
 export interface IEditorLineColor{
@@ -15,11 +15,11 @@ export class EditorColors{
 
     static line:IEditorLineColor={
         previous:{
-            forgound:"#FFA3A3",
+            forground:"#FFA3A3",
             background:"#FFCCCC"
         },
         current:{
-            forgound:"#DBE6C2",
+            forground:"#DBE6C2",
             background:"#EBF1DD"
         }
     }    

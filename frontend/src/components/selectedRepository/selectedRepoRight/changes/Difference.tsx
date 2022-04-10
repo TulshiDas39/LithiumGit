@@ -3,7 +3,7 @@ import { DeltaStatic } from "quill";
 import React, { useEffect, useRef } from "react"
 import ReactQuill, { Quill } from "react-quill";
 import {DeltaOperation} from "quill";
-import { EditorColors, EnumCustomBlots, IEditorLineColor, UiUtils, useMultiState } from "../../../../lib";
+import { EditorColors, EnumCustomBlots, IEditorLineColor, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 type TDiffLineType = "unchanged"|"added"|"removed";
 
@@ -32,6 +32,8 @@ interface IState{
     currentLineMaxWidth:number;
     previousLineDelta:DeltaStatic,
     currentLineDelta:DeltaStatic,
+    previousLineNumberDelta:DeltaStatic,    
+    currentLineNumberDelta:DeltaStatic,    
 }
 
 function DifferenceComponent(props:IDifferenceProps){
@@ -43,6 +45,8 @@ function DifferenceComponent(props:IDifferenceProps){
         previousLineMaxWidth:300,
         currentLineDelta:{ops:[], } as any ,
         previousLineDelta:{ops:[] } as any,
+        previousLineNumberDelta:{ops:[]} as any,
+        currentLineNumberDelta:{ops:[]} as any,
     });
 
     const propsRef = useRef(props);
@@ -73,7 +77,6 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     const isMounted = useRef(false);
-    const isFocussed = useRef(false);
 
     const setUiLines=(diff:string,textLines:string[])=>{
         console.log("textlines",textLines);
@@ -252,14 +255,116 @@ function DifferenceComponent(props:IDifferenceProps){
         }              
     }
 
+    const getEditorValue=(lines:ILine[],color:ILineHighlight)=>{
+        console.log("state.currentLines",state.currentLines)
+        const operations:DeltaOperation[]=[];
+        //const lines = type === "current"?state.currentLines:state.previousLines;
+        //let lineNumber=1;
+        const delta = {
+            ops:operations,
+        } as DeltaStatic;
+        
+        if(!lines.length) 
+            return delta;
+        
+        let createOperation=(line:ILine)=>{
+            if(line.transparent) operations.push({
+                insert: `${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
+                attributes:{background:"black"}
+            })
+            else if(line.text != undefined){
+                // operations.push({
+                //     insert:`${lineNumber} `,                    
+                // })
+                const heightLightCount = line.textHightlightIndex.length;
+                if(!!heightLightCount){
+                    let insertedUptoIndex = -1;                    
+                    line.textHightlightIndex.forEach((range,index)=>{
+                        // let prefix = lineIndex !== 0 && index === 0? "\n":"";
+                        if(range.fromIndex > insertedUptoIndex+1 ){                            
+                            operations.push({
+                                insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
+                                attributes:{
+                                    background:color.background,// EditorColors.line[type].background,
+                                }
+                            });
+                            // prefix = "";
+                        }
+                        operations.push({
+                            insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
+                            attributes:{
+                                background:color.forground,// EditorColors.line[type].forgound,
+                            }
+                        })                        
+    
+                        insertedUptoIndex += range.fromIndex+range.count;
+                    })
+                    if(insertedUptoIndex < line.text.length-1){
+                        operations.push({
+                            insert: line.text.substring(insertedUptoIndex+1),
+                            attributes:{
+                                background:color.background,
+                            } 
+                        })
+                    }                    
+                } 
+                else{
+                    operations.push({
+                        insert:line.text,
+                        attributes:{background:"white"}
+                    })
+                }
+                // lineNumber++;
+            }
+        }
+
+        createOperation(lines[0]);
+
+        lines.slice(1).forEach((line)=>{
+            operations.push({
+                insert:`\n `
+            })
+            createOperation(line);
+        })
+        //console.log("operation type:"+type);
+        console.log("operations",operations);
+        
+        return delta;        
+    }
+
+    const getDeltaForLineNumber=(lines:ILine[])=>{
+        const operations:DeltaOperation[]=[];
+
+        let lineNumber = 1;
+        for(let i=0;i<lines.length;i++){
+            let line = lines[0];
+            if(!line.transparent){
+                operations.push({insert:`${lineNumber}\n`});
+                lineNumber++;
+            }
+            else
+                operations.push({insert:"\n"});
+        }
+
+        const delta = {
+            ops:operations,
+        } as DeltaStatic;
+        
+        return delta;
+
+    }
+
     useEffect(()=>{        
-        let delta = getEditorValue("previous");
-        setState({previousLineDelta:delta});
+        let delta = getEditorValue(state.previousLines,EditorColors.line.previous);
+        let lineDelta = getDeltaForLineNumber(state.previousLines);
+        console.log("lineDelta",lineDelta);
+        setState({previousLineDelta:delta,previousLineNumberDelta:lineDelta});
     },[state.previousLines])
 
     useEffect(()=>{        
-        let delta = getEditorValue("current");
-        setState({currentLineDelta:delta});
+        let delta = getEditorValue(state.currentLines,EditorColors.line.current);
+        let lineDelta = getDeltaForLineNumber(state.currentLines);
+        setState({currentLineDelta:delta,currentLineNumberDelta:lineDelta});
     },[state.currentLines])
 
     useEffect(()=>{
@@ -289,136 +394,33 @@ function DifferenceComponent(props:IDifferenceProps){
     },[]);
 
 
-    const getEditorValue=(type:keyof IEditorLineColor)=>{
-        console.log("state.currentLines",state.currentLines)
-        const operations:DeltaOperation[]=[];
-        const lines = type === "current"?state.currentLines:state.previousLines;
-        let lineNumber=1;
-        const delta = {
-            ops:operations,
-        } as DeltaStatic;
-        
-        if(!lines.length) 
-            return delta;
-        
-        let createOperation=(line:ILine)=>{
-            if(line.transparent) operations.push({
-                insert: `${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
-                attributes:{background:"black"}
-            })
-            else if(line.text != undefined){
-                operations.push({
-                    insert:`${lineNumber} `,                    
-                })
-                const heightLightCount = line.textHightlightIndex.length;
-                if(!!heightLightCount){
-                    let insertedUptoIndex = -1;                    
-                    line.textHightlightIndex.forEach((range,index)=>{
-                        // let prefix = lineIndex !== 0 && index === 0? "\n":"";
-                        if(range.fromIndex > insertedUptoIndex+1 ){                            
-                            operations.push({
-                                insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
-                                attributes:{
-                                    background:EditorColors.line[type].background,
-                                }
-                            });
-                            // prefix = "";
-                        }
-                        operations.push({
-                            insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
-                            attributes:{
-                                background:EditorColors.line[type].forgound,
-                            }
-                        })                        
     
-                        insertedUptoIndex += range.fromIndex+range.count;
-                    })
-                    if(insertedUptoIndex < line.text.length-1){
-                        operations.push({
-                            insert: line.text.substring(insertedUptoIndex+1),
-                            attributes:{
-                                background:EditorColors.line[type].background,
-                            } 
-                        })
-                    }                    
-                } 
-                else{
-                    operations.push({
-                        insert:line.text,
-                        attributes:{background:"white"}
-                    })
-                }
-                lineNumber++;
-            }
-        }
-
-        createOperation(lines[0]);
-
-        lines.slice(1).forEach((line)=>{
-            operations.push({
-                insert:`\n `
-            })
-            createOperation(line);
-        })
-        console.log("operation type:"+type);
-        console.log("operations",operations);
-        
-        return delta;        
-    }    
     
     return <div className="d-flex w-100 h-100 overflow-auto">
-        <div  className="w-50 overflow-auto border-end" >
-            <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
-            <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } theme="snow" value={state.previousLineDelta}  onChange={value=>{console.log(value)}} 
-                        modules={{"toolbar":false}}
-                        
-                    />
-                {/* {
-                    state.previousLines.map((line,index)=> (
-                        <div className="d-flex flex-column align-items-stretch" key={index}>
-                            <div>
-                                
-                                <div className="d-flex w-100 minw-100" >
-                                    <span className="pe-1">{index+1}</span>
-                                    <div>
-                                        <span>{line.text?.substr(0,1)}</span>                                        
-                                        <span>{line.text?.substr(1)}</span>
-                                    </div>                                        
-                                </div>
-                                
-                            </div>                            
-                        </div>
-                } */}
-                
+        <div className="d-flex w-50 overflow-auto border-end" >
+            <div>
+                <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
+                    onChange={(value)=>{}} readOnly/>
+            </div>
+            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
+                <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } theme="snow" value={state.previousLineDelta}  
+                    onChange={value=>{console.log(value)}} 
+                    modules={{"toolbar":false}}
+                    readOnly
+                        />                
             </div>
         </div>
-        <div className="w-50 overflow-auto " >
-            <div className="d-flex flex-column minw-100" style={{width:`${state.currentLineMaxWidth}ch`}}>
+        <div className="d-flex w-50 overflow-auto " >
+            <div>
+                <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 
+                    onChange={(value)=>{}} readOnly/>
+            </div>
+
+            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
                     <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{console.log(value)}} 
                         modules={{"toolbar":false}}
-                    />
-                    // state.currentLines.map((line,index)=> (
-                    //     <div className="w-100">
-                    //         {line.text !== undefined && <div key={index} className="position-relative">
-                    //             <input type="text" style={{color:'transparent',background:'transparent',caretColor:'black'}}
-                    //                 value={line.text} className="outline-none w-100"
-                    //                 onChange={e => handleLineChange(e.target.value,index)}
-                    //                 spellCheck={false}
-                    //             />
-                    //             <div className="position-absolute w-100" style={{top:0,left:0,zIndex:-5}}>
-                    //                 <span>{line.text}</span>
-                    //             </div>
-                    //         </div>}
-                    //         {line.text === undefined &&
-                    //            <div className="bg-danger">
-                    //                <div className="invisible">/</div>
-                    //            </div> 
-                    //         }
-                    //     </div>
-                        
-                        
-                    //     ))
+                    />                    
                 }
             </div>
             
