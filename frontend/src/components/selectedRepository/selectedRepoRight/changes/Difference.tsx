@@ -1,8 +1,7 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
-import { DeltaStatic } from "quill";
+import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import React, { useEffect, useRef } from "react"
-import ReactQuill, { Quill } from "react-quill";
-import {DeltaOperation} from "quill";
+import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, IEditorLineColor, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 type TDiffLineType = "unchanged"|"added"|"removed";
@@ -232,34 +231,24 @@ function DifferenceComponent(props:IDifferenceProps){
     }
     
 
-    const formatPreviousLinesBackground=()=>{        
-        var quill = previousChangesEditorRef.current?.getEditor();        
+    const formatLinesBackground=(quill:Quill,lines:ILine[],format:string)=>{        
         console.log('deltas:',quill?.getContents());        
-
+        let index = 0;
         for(let i = 0;i<state.previousLines.length;i++){
             let line = state.previousLines[i];
             if(line.textHightlightIndex.length)
-                quill?.formatLine(0,line?.text?.length??0,EnumCustomBlots.PreviousBackground,true,"silent");
+                quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
+            if(line.text){
+                index += line.text.length 
+            }
         }              
     }
     
-    const formatCurrentLinesBackground=()=>{        
-        var quill = currentChangesEditorRef.current?.getEditor();        
-        console.log('deltas:',quill?.getContents());        
-
-        for(let i = 0;i<state.previousLines.length;i++){
-            let line = state.previousLines[i];
-            if(line.textHightlightIndex.length)
-                quill?.formatLine(0,line?.text?.length??0,EnumCustomBlots.CurrentBackground,true,"silent");
-        }              
-    }
 
     const getEditorValue=(lines:ILine[],color:ILineHighlight)=>{
         console.log("state.currentLines",state.currentLines)
-        const operations:DeltaOperation[]=[];
-        //const lines = type === "current"?state.currentLines:state.previousLines;
-        //let lineNumber=1;
+        const operations:DeltaOperation[]=[];        
         const delta = {
             ops:operations,
         } as DeltaStatic;
@@ -272,28 +261,23 @@ function DifferenceComponent(props:IDifferenceProps){
                 insert: `${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
             })
-            else if(line.text != undefined){
-                // operations.push({
-                //     insert:`${lineNumber} `,                    
-                // })
+            else if(line.text != undefined){                
                 const heightLightCount = line.textHightlightIndex.length;
                 if(!!heightLightCount){
                     let insertedUptoIndex = -1;                    
-                    line.textHightlightIndex.forEach((range,index)=>{
-                        // let prefix = lineIndex !== 0 && index === 0? "\n":"";
+                    line.textHightlightIndex.forEach((range,index)=>{                        
                         if(range.fromIndex > insertedUptoIndex+1 ){                            
                             operations.push({
                                 insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
                                 attributes:{
-                                    background:color.background,// EditorColors.line[type].background,
+                                    background:color.background,
                                 }
-                            });
-                            // prefix = "";
+                            });                            
                         }
                         operations.push({
                             insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
                             attributes:{
-                                background:color.forground,// EditorColors.line[type].forgound,
+                                background:color.forground,
                             }
                         })                        
     
@@ -313,8 +297,7 @@ function DifferenceComponent(props:IDifferenceProps){
                         insert:line.text,
                         attributes:{background:"white"}
                     })
-                }
-                // lineNumber++;
+                }                
             }
         }
 
@@ -325,8 +308,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 insert:`\n `
             })
             createOperation(line);
-        })
-        //console.log("operation type:"+type);
+        })        
         console.log("operations",operations);
         
         return delta;        
@@ -368,11 +350,15 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLines])
 
     useEffect(()=>{
-        formatPreviousLinesBackground();
+        var quill = previousChangesEditorRef.current?.getEditor();
+        if(!quill) return;
+        formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);
     },[state.previousLineDelta])
 
     useEffect(()=>{
-        formatCurrentLinesBackground();
+        var quill = currentChangesEditorRef.current?.getEditor();
+        if(!quill) return;
+        formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);        
     },[state.currentLineDelta])
    
 
@@ -403,7 +389,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     onChange={(value)=>{}} readOnly/>
             </div>
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
-                <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } theme="snow" value={state.previousLineDelta}  
+                <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
                     onChange={value=>{console.log(value)}} 
                     modules={{"toolbar":false}}
                     readOnly
