@@ -2,7 +2,7 @@ import { RendererEvents, RepositoryInfo } from "common_library";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import React, { useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
-import { EditorColors, EnumCustomBlots, IEditorLineColor, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
+import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 type TDiffLineType = "unchanged"|"added"|"removed";
 
@@ -234,13 +234,13 @@ function DifferenceComponent(props:IDifferenceProps){
     const formatLinesBackground=(quill:Quill,lines:ILine[],format:string)=>{        
         console.log('deltas:',quill?.getContents());        
         let index = 0;
-        for(let i = 0;i<state.previousLines.length;i++){
-            let line = state.previousLines[i];
+        for(let i = 0;i<lines.length;i++){
+            let line = lines[i];
             if(line.textHightlightIndex.length)
                 quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
             if(line.text){
-                index += line.text.length 
+                index += line.text === '\n'?1: line.text.length+1 
             }
         }              
     }
@@ -265,7 +265,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 const heightLightCount = line.textHightlightIndex.length;
                 if(!!heightLightCount){
                     let insertedUptoIndex = -1;                    
-                    line.textHightlightIndex.forEach((range,index)=>{                        
+                    line.textHightlightIndex.forEach((range)=>{                        
                         if(range.fromIndex > insertedUptoIndex+1 ){                            
                             operations.push({
                                 insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
@@ -305,7 +305,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
         lines.slice(1).forEach((line)=>{
             operations.push({
-                insert:`\n `
+                insert:`\n`
             })
             createOperation(line);
         })        
