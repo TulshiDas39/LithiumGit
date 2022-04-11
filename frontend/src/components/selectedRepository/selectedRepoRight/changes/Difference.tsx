@@ -62,6 +62,8 @@ function DifferenceComponent(props:IDifferenceProps){
 
     const previousChangesEditorRef = useRef<ReactQuill>();
     const currentChangesEditorRef = useRef<ReactQuill>();
+    const previousScrollContainerRef = useRef<HTMLDivElement>();
+    const currentScrollContainerRef = useRef<HTMLDivElement>();
     
     const getEditorWidth = (lines:string[])=>{
         const width = Math.max(...lines.map(l=>{
@@ -232,7 +234,7 @@ function DifferenceComponent(props:IDifferenceProps){
     
 
     const formatLinesBackground=(quill:Quill,lines:ILine[],format:string)=>{        
-        console.log('deltas:',quill?.getContents());        
+        //console.log('deltas:',quill?.getContents());        
         let index = 0;
         for(let i = 0;i<lines.length;i++){
             let line = lines[i];
@@ -350,13 +352,36 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLines])
 
     useEffect(()=>{
-        var quill = previousChangesEditorRef.current?.getEditor();
+        let quill = previousChangesEditorRef.current?.getEditor();        
         if(!quill) return;
         formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);
     },[state.previousLineDelta])
 
+    useEffect(()=>{        
+        let previousChangeScroll = previousScrollContainerRef.current;
+        let currentChangeScroll = currentScrollContainerRef.current;
+        
+        let handler1 = (e:Event)=>{
+            currentChangeScroll?.scrollTo({top:previousChangeScroll?.scrollTop});
+        }
+
+        let handler2 = (e:Event)=>{
+            previousChangeScroll?.scrollTo({top:currentChangeScroll?.scrollTop});
+        }
+
+        if(previousChangeScroll && currentChangeScroll){
+            previousChangeScroll.addEventListener("scroll",handler1)
+            currentChangeScroll.addEventListener("scroll",handler2);
+        }
+
+        return ()=>{
+            previousChangeScroll?.removeEventListener("scroll",handler1);
+            currentChangeScroll?.removeEventListener("scroll",handler2);
+        }
+    },[]);
+
     useEffect(()=>{
-        var quill = currentChangesEditorRef.current?.getEditor();
+        var quill = currentChangesEditorRef.current?.getEditor();        
         if(!quill) return;
         formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);        
     },[state.currentLineDelta])
@@ -382,8 +407,8 @@ function DifferenceComponent(props:IDifferenceProps){
 
     
     
-    return <div className="d-flex w-100 h-100 overflow-auto">
-        <div className="d-flex w-50 overflow-auto border-end" >
+    return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
+        <div ref={previousScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto border-end" >
             <div>
                 <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={(value)=>{}} readOnly/>
@@ -392,11 +417,11 @@ function DifferenceComponent(props:IDifferenceProps){
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
                     onChange={value=>{console.log(value)}} 
                     modules={{"toolbar":false}}
-                    readOnly
+                    readOnly                    
                         />                
             </div>
         </div>
-        <div className="d-flex w-50 overflow-auto " >
+        <div ref={currentScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto" >
             <div>
                 <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={(value)=>{}} readOnly/>
