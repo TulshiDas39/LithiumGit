@@ -54,8 +54,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[props])
 
     useEffect(()=>{
-        if(props.path) {
-            console.log("path",props.path);
+        if(props.path) {            
             window.ipcRenderer.send(RendererEvents.getFileContent().channel,props.path);            
         }
     },[props.path])
@@ -79,8 +78,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
     const isMounted = useRef(false);
 
-    const setUiLines=(diff:string,textLines:string[])=>{
-        console.log("textlines",textLines);
+    const setUiLines=(diff:string,textLines:string[])=>{        
         const diffLines = diff.split('\n');
         // const sections:number[][]=[];
         let startIndexesOfSections = 0;
@@ -184,8 +182,7 @@ function DifferenceComponent(props:IDifferenceProps){
             else if(diffLine.startsWith("-")){
                 currentChangeType = "removed";
                 if(!previousLine.text) previousLine.text = "";
-                previousLine.text += diffLine.substring(1);
-                console.log(diffLine,diffLine.length);            
+                previousLine.text += diffLine.substring(1);                
                 previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
                 previousCharTrackingIndex += diffLine.length-1;
             }
@@ -224,32 +221,28 @@ function DifferenceComponent(props:IDifferenceProps){
             previousLines.push(lineConfig);
             lineNumberOfFile++;
         }
-
-        console.log("current lines",currentLines);
-        console.log("Previous lines",previousLines);
+        
         const previousLineMaxWidth = getEditorWidth(previousLines.map(x=>x.text?x.text:""));
         const currentLineMaxWidth = getEditorWidth(currentLines.map(x=>x.text?x.text:""));
         setState({currentLines,previousLines,previousLineMaxWidth,currentLineMaxWidth});
     }
     
 
-    const formatLinesBackground=(quill:Quill,lines:ILine[],format:string)=>{        
-        //console.log('deltas:',quill?.getContents());        
+    const formatLinesBackground=(quill:Quill,lines:ILine[],format:string)=>{                
         let index = 0;
         for(let i = 0;i<lines.length;i++){
             let line = lines[i];
             if(line.textHightlightIndex.length)
                 quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
-            if(line.text){
-                index += line.text === '\n'?1: line.text.length+1 
+            if(line.text != undefined){
+                index = index + line.text.length+1 
             }
         }              
     }
     
 
-    const getEditorValue=(lines:ILine[],color:ILineHighlight)=>{
-        console.log("state.currentLines",state.currentLines)
+    const getEditorValue=(lines:ILine[],color:ILineHighlight)=>{        
         const operations:DeltaOperation[]=[];        
         const delta = {
             ops:operations,
@@ -258,7 +251,7 @@ function DifferenceComponent(props:IDifferenceProps){
         if(!lines.length) 
             return delta;
         
-        let createOperation=(line:ILine)=>{
+        let createOperation=(line:ILine)=>{    
             if(line.transparent) operations.push({
                 insert: `${Array(state.currentLineMaxWidth).fill(" ").join("")}`,
                 attributes:{background:"black"}
@@ -283,7 +276,7 @@ function DifferenceComponent(props:IDifferenceProps){
                             }
                         })                        
     
-                        insertedUptoIndex += range.fromIndex+range.count;
+                        insertedUptoIndex = range.fromIndex+range.count-1;
                     })
                     if(insertedUptoIndex < line.text.length-1){
                         operations.push({
@@ -311,7 +304,6 @@ function DifferenceComponent(props:IDifferenceProps){
             })
             createOperation(line);
         })        
-        console.log("operations",operations);
         
         return delta;        
     }
@@ -341,7 +333,6 @@ function DifferenceComponent(props:IDifferenceProps){
     useEffect(()=>{        
         let delta = getEditorValue(state.previousLines,EditorColors.line.previous);
         let lineDelta = getDeltaForLineNumber(state.previousLines);
-        console.log("lineDelta",lineDelta);
         setState({previousLineDelta:delta,previousLineNumberDelta:lineDelta});
     },[state.previousLines])
 
@@ -354,7 +345,7 @@ function DifferenceComponent(props:IDifferenceProps){
     useEffect(()=>{
         let quill = previousChangesEditorRef.current?.getEditor();        
         if(!quill) return;
-        formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);
+        formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);        
     },[state.previousLineDelta])
 
     useEffect(()=>{        
@@ -381,7 +372,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[]);
 
     useEffect(()=>{
-        var quill = currentChangesEditorRef.current?.getEditor();        
+        var quill = currentChangesEditorRef.current?.getEditor();
         if(!quill) return;
         formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);        
     },[state.currentLineDelta])
@@ -396,14 +387,13 @@ function DifferenceComponent(props:IDifferenceProps){
             window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
-            console.log(diff);
             setUiLines(diff,textLines);
         });
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getFileContent().replyChannel,RendererEvents.diff().replyChannel])
         }
     },[]);
-
+ 
 
     
     
@@ -415,7 +405,7 @@ function DifferenceComponent(props:IDifferenceProps){
             </div>
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
-                    onChange={value=>{console.log(value)}} 
+                    onChange={value=>{}} 
                     modules={{"toolbar":false}}
                     readOnly                    
                         />                
@@ -429,7 +419,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
-                    <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{console.log(value)}} 
+                    <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{}} 
                         modules={{"toolbar":false}}
                     />                    
                 }
