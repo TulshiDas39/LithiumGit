@@ -41,3 +41,19 @@ EmptyParagraph.blotName = EnumCustomBlots.EmptyParagraph;
 EmptyParagraph.tagName = 'p';
 
 Quill.register(EmptyParagraph);
+
+
+class TransparentBackground extends Block {
+    static create(){
+        let node = super.create();
+        node.setAttribute('class', 'transparent-background');
+        return node;
+    }
+ }
+
+TransparentBackground.blotName = EnumCustomBlots.TransparentBackground;
+TransparentBackground.tagName = 'p';
+
+Quill.register(TransparentBackground);
+
+

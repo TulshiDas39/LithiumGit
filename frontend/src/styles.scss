@@ -189,6 +189,11 @@ html {
 .current-background{
   background: #DBE6C2;;
 }
+
+.transparent-background{
+  background-color: transparent;
+  background-image: repeating-linear-gradient(45deg, black 0px, black 2px, black 2px, transparent 2px, transparent 4px);
+}
 .gs-overflow-x-auto{
   overflow-x: auto;
 }

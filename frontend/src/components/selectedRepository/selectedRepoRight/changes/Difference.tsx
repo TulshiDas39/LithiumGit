@@ -4,15 +4,17 @@ import React, { useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
-type TDiffLineType = "unchanged"|"added"|"removed";
 
+type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps{
     path:string;
     repoInfo:RepositoryInfo;
 }
 
+
 interface ILine{
+
     text?:string;
     textHightlightIndex:{
         fromIndex:number;
@@ -23,7 +25,6 @@ interface ILine{
         lineCount:number;
     }
 }
-
 interface IState{
     currentLines:ILine[];
     previousLines:ILine[];    
@@ -189,25 +190,30 @@ function DifferenceComponent(props:IDifferenceProps){
             else if(diffLine.startsWith("~")){
                 currentLines.push(currentLine);
 
-                currentLine ={
-                    textHightlightIndex:[],
-                    text:""
-                }
+                
                 previousLines.push(previousLine);
 
-                previousLine ={
-                    textHightlightIndex:[],
-                }
+                
                 currentCharTrackingIndex = 0;
                 previousCharTrackingIndex = 0;
 
                 if(currentChangeType !== "removed"){                    
                     
-                    
+                    if(currentChangeType === "added"){
+                        currentLine.hightLightBackground = true;
+                    }
                     lineNumberOfFile++;
                 } 
-                if(currentChangeType !== "added"){
-                   
+                else {
+                   if(currentChangeType === "removed"){
+                       previousLine.hightLightBackground = true;
+                   }
+                }
+                currentLine ={
+                    textHightlightIndex:[],
+                }
+                previousLine ={
+                    textHightlightIndex:[],
                 }                                
             }
         }
@@ -232,12 +238,16 @@ function DifferenceComponent(props:IDifferenceProps){
         let index = 0;
         for(let i = 0;i<lines.length;i++){
             let line = lines[i];
-            if(line.textHightlightIndex.length)
+            if(line.hightLightBackground)
                 quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
-            if(line.text != undefined){
+            else if(line.text === undefined)
+                quill?.formatLine(index,0,EnumCustomBlots.TransparentBackground,true,"silent");
+            if(line.text !== undefined){
                 index = index + line.text.length+1 
             }
+            else
+            index += 1;
         }              
     }
     
@@ -333,16 +343,19 @@ function DifferenceComponent(props:IDifferenceProps){
     useEffect(()=>{        
         let delta = getEditorValue(state.previousLines,EditorColors.line.previous);
         let lineDelta = getDeltaForLineNumber(state.previousLines);
+        console.log("previous lines",state.previousLines);
         setState({previousLineDelta:delta,previousLineNumberDelta:lineDelta});
     },[state.previousLines])
 
     useEffect(()=>{        
         let delta = getEditorValue(state.currentLines,EditorColors.line.current);
         let lineDelta = getDeltaForLineNumber(state.currentLines);
+        console.log("current lines",state.currentLines);
         setState({currentLineDelta:delta,currentLineNumberDelta:lineDelta});
     },[state.currentLines])
 
     useEffect(()=>{
+        console.log("previous deltas",state.previousLineDelta);
         let quill = previousChangesEditorRef.current?.getEditor();        
         if(!quill) return;
         formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);        
@@ -372,6 +385,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[]);
 
     useEffect(()=>{
+        console.log("current delta",state.currentLineDelta);
         var quill = currentChangesEditorRef.current?.getEditor();
         if(!quill) return;
         formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);        
