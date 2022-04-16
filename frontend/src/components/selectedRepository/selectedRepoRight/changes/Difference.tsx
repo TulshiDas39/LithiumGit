@@ -7,11 +7,10 @@ import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState }
 
 type TDiffLineType = "unchanged"|"added"|"removed";
 
-interface IDifferenceProps{
+interface IDifferenceProps {
     path:string;
     repoInfo:RepositoryInfo;
 }
-
 
 interface ILine{
     text?:string;
@@ -24,6 +23,7 @@ interface ILine{
         lineCount:number;
     }
 }
+
 interface IState{
     currentLines:ILine[];
     previousLines:ILine[];    
@@ -195,16 +195,16 @@ function DifferenceComponent(props:IDifferenceProps){
 
                 
                 currentCharTrackingIndex = 0;
-                previousCharTrackingIndex = 0;
-                debugger;
+                previousCharTrackingIndex = 0;                
 
                 if(currentChangeType !== "removed"){                    
                     
                     if(currentChangeType === "added"){
                         currentLine.hightLightBackground = true;
+                        if(previousLine.text !== undefined)
+                            previousLine.hightLightBackground = true;
                     }
-                    else if(diffLines[i-1].startsWith("~")){
-                        debugger;
+                    else if(diffLines[i-1].startsWith("~")){                        
                         if(textLines[lineNumberOfFile-1] === ""){
                             currentLine.text = "";
                             currentLine.hightLightBackground = true;
@@ -217,7 +217,8 @@ function DifferenceComponent(props:IDifferenceProps){
                     lineNumberOfFile++;
                 } 
                 else {                   
-                    previousLine.hightLightBackground = true;                   
+                    previousLine.hightLightBackground = true;
+                    if(currentLine.text !== undefined) currentLine.hightLightBackground = true;                   
                 }
                 currentLine ={
                     textHightlightIndex:[],
@@ -309,8 +310,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 } 
                 else{
                     operations.push({
-                        insert:line.text,
-                        attributes:{background:"white"}
+                        insert:line.text,                        
                     })
                 }                
             }
@@ -408,7 +408,7 @@ function DifferenceComponent(props:IDifferenceProps){
         let textLines:string[] = [];        
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
             textLines = lines;
-            const options =  ["--word-diff=porcelain", "--word-diff-regex=.", "HEAD",propsRef.current.path];
+            const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
             window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{

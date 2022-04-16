@@ -47,6 +47,7 @@ class TransparentBackground extends Block {
     static create(){
         let node = super.create();
         node.setAttribute('class', 'transparent-background');
+        node.setAttribute('contenteditable', 'false');
         return node;
     }
  }
