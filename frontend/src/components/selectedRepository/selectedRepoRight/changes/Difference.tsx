@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
+
 type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps{
@@ -13,7 +14,6 @@ interface IDifferenceProps{
 
 
 interface ILine{
-
     text?:string;
     textHightlightIndex:{
         fromIndex:number;
@@ -81,7 +81,7 @@ function DifferenceComponent(props:IDifferenceProps){
     const setUiLines=(diff:string,textLines:string[])=>{        
         const diffLines = diff.split('\n');
         // const sections:number[][]=[];
-        //console.log("text lines",textLines);
+        console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfFile= 0;
 
@@ -196,6 +196,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 
                 currentCharTrackingIndex = 0;
                 previousCharTrackingIndex = 0;
+                debugger;
 
                 if(currentChangeType !== "removed"){                    
                     
@@ -203,7 +204,8 @@ function DifferenceComponent(props:IDifferenceProps){
                         currentLine.hightLightBackground = true;
                     }
                     else if(diffLines[i-1].startsWith("~")){
-                        if(textLines[lineNumberOfFile] === ""){
+                        debugger;
+                        if(textLines[lineNumberOfFile-1] === ""){
                             currentLine.text = "";
                             currentLine.hightLightBackground = true;
                         }
