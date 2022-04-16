@@ -4,7 +4,6 @@ import React, { useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
-
 type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps{
@@ -82,6 +81,7 @@ function DifferenceComponent(props:IDifferenceProps){
     const setUiLines=(diff:string,textLines:string[])=>{        
         const diffLines = diff.split('\n');
         // const sections:number[][]=[];
+        //console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfFile= 0;
 
@@ -202,12 +202,20 @@ function DifferenceComponent(props:IDifferenceProps){
                     if(currentChangeType === "added"){
                         currentLine.hightLightBackground = true;
                     }
+                    else if(diffLines[i-1].startsWith("~")){
+                        if(textLines[lineNumberOfFile] === ""){
+                            currentLine.text = "";
+                            currentLine.hightLightBackground = true;
+                        }
+                        else{
+                            previousLine.hightLightBackground = true;
+                            previousLine.text = "";
+                        }
+                    }
                     lineNumberOfFile++;
                 } 
-                else {
-                   if(currentChangeType === "removed"){
-                       previousLine.hightLightBackground = true;
-                   }
+                else {                   
+                    previousLine.hightLightBackground = true;                   
                 }
                 currentLine ={
                     textHightlightIndex:[],
@@ -323,8 +331,8 @@ function DifferenceComponent(props:IDifferenceProps){
 
         let lineNumber = 1;
         for(let i=0;i<lines.length;i++){
-            let line = lines[0];
-            if(!line.transparent){
+            let line = lines[i];
+            if(line.text !== undefined){
                 operations.push({insert:`${lineNumber}\n`});
                 lineNumber++;
             }
@@ -344,6 +352,7 @@ function DifferenceComponent(props:IDifferenceProps){
         let delta = getEditorValue(state.previousLines,EditorColors.line.previous);
         let lineDelta = getDeltaForLineNumber(state.previousLines);
         console.log("previous lines",state.previousLines);
+        console.log("previous line delta",lineDelta);
         setState({previousLineDelta:delta,previousLineNumberDelta:lineDelta});
     },[state.previousLines])
 
