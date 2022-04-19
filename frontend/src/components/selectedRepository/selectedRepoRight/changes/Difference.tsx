@@ -5,7 +5,6 @@ import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 
-
 type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps {
@@ -204,18 +203,58 @@ function DifferenceComponent(props:IDifferenceProps){
                         currentLine.hightLightBackground = true;
                         if(previousLine.text !== undefined)
                             previousLine.hightLightBackground = true;
+                        
+                        lineNumberOfFile++;    
                     }
-                    else if(diffLines[i-1].startsWith("~")){                        
-                        if(textLines[lineNumberOfFile-1] === ""){
-                            currentLine.text = "";
-                            currentLine.hightLightBackground = true;
+                    else if(diffLines[i-1].startsWith("~")){
+                        let isAdded = true;
+                        let count = 1;
+                        while(diffLines[i+count].startsWith("~"))
+                            count++;                        
+
+                        if(textLines.slice(i,i+count).some(text=> text !== ""))
+                            isAdded=false;
+
+                        if(isAdded){
+                            for(let x=i;x < i+count; x++){
+                                currentLine.text = "";
+                                currentLine.hightLightBackground = true;
+                                currentLines.push(currentLine);
+                                previousLines.push(previousLine);
+                                
+                                currentLine ={
+                                    textHightlightIndex:[],
+                                }
+                                previousLine ={
+                                    textHightlightIndex:[],
+                                }
+                            }
+
                         }
                         else{
-                            previousLine.hightLightBackground = true;
-                            previousLine.text = "";
+                            for(let x=i;x < i+count; x++){
+                                previousLine.text = "";
+                                previousLine.hightLightBackground = true;
+                                currentLines.push(currentLine);
+                                previousLines.push(previousLine);
+                                
+                                currentLine = {
+                                    textHightlightIndex:[],
+                                }
+                                previousLine = {
+                                    textHightlightIndex:[],
+                                }                                
+                            }                            
                         }
+
+                        currentLines.pop();
+                        previousLines.pop();
+
+                        i = i + count - 1;
+                        if(isAdded)
+                            lineNumberOfFile += count;
                     }
-                    lineNumberOfFile++;
+                    
                 } 
                 else {                   
                     previousLine.hightLightBackground = true;
