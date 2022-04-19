@@ -5,6 +5,7 @@ import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 
+
 type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps {
@@ -405,6 +406,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
     useEffect(()=>{
         isMounted.current = true;
+        currentChangesEditorRef.current?.getEditor().root.setAttribute("spellcheck","false");
         let textLines:string[] = [];        
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
             textLines = lines;
@@ -426,7 +428,8 @@ function DifferenceComponent(props:IDifferenceProps){
         <div ref={previousScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto border-end" >
             <div>
                 <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
-                    onChange={(value)=>{}} readOnly/>
+                    onChange={(value)=>{}} readOnly
+                     />
             </div>
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
