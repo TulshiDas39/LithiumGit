@@ -5,6 +5,8 @@ import ReactQuill from "react-quill";
 import { EditorColors, EnumCustomBlots, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
 
 
+
+
 type TDiffLineType = "unchanged"|"added"|"removed";
 
 interface IDifferenceProps {
@@ -210,9 +212,8 @@ function DifferenceComponent(props:IDifferenceProps){
                         let isAdded = true;
                         let count = 1;
                         while(diffLines[i+count].startsWith("~"))
-                            count++;                        
-
-                        if(textLines.slice(i,i+count).some(text=> text !== ""))
+                            count++;                                                
+                        if(textLines.slice(lineNumberOfFile-1,lineNumberOfFile-1+count).some(text=> text !== ""))
                             isAdded=false;
 
                         if(isAdded){
@@ -254,6 +255,8 @@ function DifferenceComponent(props:IDifferenceProps){
                         if(isAdded)
                             lineNumberOfFile += count;
                     }
+                    else
+                        lineNumberOfFile++;
                     
                 } 
                 else {                   
