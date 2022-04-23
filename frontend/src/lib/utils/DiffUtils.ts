@@ -18,7 +18,7 @@ export class DiffUtils{
             }
             return length;
         }));
-        return width;
+        return width+20;
     }
 
     static GetUiLines(diff:string,textLines:string[]){
@@ -27,15 +27,28 @@ export class DiffUtils{
         // const sections:number[][]=[];
         console.log("text lines",textLines);
         let startIndexesOfSections = 0;
-        let lineNumberOfFile= 0;
+        let lineNumberOfCurrentChange= 0;
+        let lineNumberOfPreviousChange= 0;
+        
+        const getFileLineNumber=(line:string)=>{
+            const diffRange = line.split('@@')[1].trim();
+            const previousRange = diffRange.split('-')[1].trim();
+            const currentRange = diffRange.split('+')[1].trim();
+
+            const lineNumberOfPreviousChange = Number(previousRange.split(',')[0].substring(1))
+            const lineNumberOfCurrentChange = Number(currentRange.split(',')[0])
+            return {
+                lineNumberOfPreviousChange,
+                lineNumberOfCurrentChange,
+            }
+        }
 
         const setFileLineNumber=(line:string)=>{
-            const diffRange = line.split('+')[1].replace("@@","").trim().split(',');
-            lineNumberOfFile = Number(diffRange[0]);
-        }
-        const getFileLineNumber=(line:string)=>{
-            const diffRange = line.split('+')[1].replace("@@","").trim().split(',');
-            return Number(diffRange[0]);
+            const lineNumber = getFileLineNumber(line);
+
+            lineNumberOfPreviousChange = lineNumber.lineNumberOfPreviousChange;
+            lineNumberOfCurrentChange = lineNumber.lineNumberOfCurrentChange;
+
         }
 
         for(let i=0;i<diffLines.length; i++){
@@ -50,7 +63,7 @@ export class DiffUtils{
         let currentLines:ILine[]=[];
         let previousLines:ILine[]=[];
 
-        for(let i=0;i<lineNumberOfFile-1;i++){
+        for(let i=0;i<lineNumberOfCurrentChange-1;i++){
             const previousLine:ILine={
                 text:textLines[i],
                 textHightlightIndex:[],
@@ -84,7 +97,7 @@ export class DiffUtils{
             
             if(diffLine.startsWith("@@")){
                 const nextStartingFileLineNumber = getFileLineNumber(diffLine);
-                for(let i = lineNumberOfFile-1; i < nextStartingFileLineNumber-1;i++){                    
+                for(let i = lineNumberOfCurrentChange-1; i < nextStartingFileLineNumber.lineNumberOfCurrentChange -1;i++){                    
                     currentLines.push({
                         text:textLines[i],
                         textHightlightIndex:[],
@@ -104,7 +117,7 @@ export class DiffUtils{
                 currentLines.push(currentLine);
                 previousLines.push(previousLine);
 
-                lineNumberOfFile = nextStartingFileLineNumber;
+                lineNumberOfCurrentChange = nextStartingFileLineNumber.lineNumberOfCurrentChange;
             }            
 
             else if(diffLine.startsWith(" ")){
@@ -132,96 +145,189 @@ export class DiffUtils{
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-                currentLines.push(currentLine);
+                //currentLines.push(currentLine);
 
                 
-                previousLines.push(previousLine);
+                //previousLines.push(previousLine);
 
                 
                 currentCharTrackingIndex = 0;
                 previousCharTrackingIndex = 0;                
 
-                if(currentChangeType !== "removed"){                    
-                    
-                    if(currentChangeType === "added"){
-                        currentLine.hightLightBackground = true;
-                        if(previousLine.text !== undefined)
-                            previousLine.hightLightBackground = true;
-                        
-                        lineNumberOfFile++;    
-                    }
-                    else if(diffLines[i-1].startsWith("~")){
-                        let isAdded = true;
-                        let count = 1;
-                        while(diffLines[i+count].startsWith("~"))
-                            count++;                                                
-                        if(textLines.slice(lineNumberOfFile-1,lineNumberOfFile-1+count).some(text=> text !== ""))
-                            isAdded=false;
+                if(diffLines[i-1].startsWith("~")){
+                    let isAdded = true;
+                    let count = 1;
+                    while(diffLines[i+count].startsWith("~"))
+                        count++;                                                
+                    if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
+                        isAdded=false;
 
-                        if(isAdded){
-                            for(let x=i;x < i+count; x++){
-                                currentLine.text = "";
-                                currentLine.hightLightBackground = true;
-                                currentLines.push(currentLine);
-                                previousLines.push(previousLine);
-                                
-                                currentLine ={
-                                    textHightlightIndex:[],
-                                }
-                                previousLine ={
-                                    textHightlightIndex:[],
-                                }
+                    if(isAdded){
+                        for(let x=0;x < count; x++){
+                            currentLine.text = "";
+                            currentLine.hightLightBackground = true;
+                            
+                            currentLines.push(currentLine);
+                            previousLines.push(previousLine);                            
+                            
+                            currentLine ={
+                                textHightlightIndex:[],
                             }
-
-                        }
-                        else{
-                            for(let x=i;x < i+count; x++){
-                                previousLine.text = "";
-                                previousLine.hightLightBackground = true;
-                                currentLines.push(currentLine);
-                                previousLines.push(previousLine);
-                                
-                                currentLine = {
-                                    textHightlightIndex:[],
-                                }
-                                previousLine = {
-                                    textHightlightIndex:[],
-                                }                                
-                            }                            
+                            previousLine ={
+                                textHightlightIndex:[],
+                            }
+                            
                         }
 
-                        currentLines.pop();
-                        previousLines.pop();
-
-                        i = i + count - 1;
-                        if(isAdded)
-                            lineNumberOfFile += count;
                     }
+                    else{
+                        for(let x=i;x < i+count; x++){
+                            previousLine.text = "";
+                            previousLine.hightLightBackground = true;                            
+                            
+                            currentLines.push(currentLine);
+                            previousLines.push(previousLine);
+                            
+                            currentLine = {
+                                textHightlightIndex:[],
+                            }
+                            previousLine = {
+                                textHightlightIndex:[],
+                            }                                
+                            
+                        }                            
+                    }
+
+                    i = i + count - 1;
+                    if(isAdded)
+                        lineNumberOfCurrentChange += count;
                     else
-                        lineNumberOfFile++;
-                    
-                } 
-                else {                   
+                        lineNumberOfPreviousChange += count;    
+                }
+                else if(diffLines[i-1].startsWith("+")){                    
+                    currentLine.hightLightBackground = true;
+                    if(previousLine.text !== undefined) previousLine.hightLightBackground = true;                    
+                    currentLines.push(currentLine);
+
+                    currentLine = {
+                        textHightlightIndex:[]
+                    }
+                    lineNumberOfCurrentChange++;
+                }
+                else if(diffLines[i-1].startsWith("-")){
                     previousLine.hightLightBackground = true;
-                    if(currentLine.text !== undefined) currentLine.hightLightBackground = true;                   
+                    if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
+                    previousLines.push(previousLine);
+                    previousLine = {
+                        textHightlightIndex:[],
+                    }
+                    lineNumberOfPreviousChange++;
                 }
-                currentLine ={
-                    textHightlightIndex:[],
+
+                else if(diffLines[i-1].startsWith(" ")){
+                    if(previousLine.textHightlightIndex.length || currentLine.textHightlightIndex.length){
+                        currentLine.hightLightBackground = true;
+                        previousLine.hightLightBackground = true;
+                    }
+                    currentLines.push(currentLine);
+                    previousLines.push(previousLine);
+                    currentLine = {
+                        textHightlightIndex:[]
+                    }
+                    previousLine = {
+                        textHightlightIndex:[],
+                    }
+                    lineNumberOfCurrentChange++;
+                    lineNumberOfPreviousChange++;
                 }
-                previousLine ={
-                    textHightlightIndex:[],
-                }                                
+
+                // else{
+                //     if(currentLine.textHightlightIndex.length){
+                //         currentLine.hightLightBackground = true;
+                //         if(previousLine.text !== undefined) previousLine.hightLightBackground = true;
+                //     }
+                //     else if(previousLine.textHightlightIndex.length){
+                //         previousLine.hightLightBackground = true;
+                //         if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
+                //     }
+                //     if(currentLine.text !== undefined) lineNumberOfCurrentChange++;
+                // }
+
+                // if(currentChangeType !== "removed"){                    
+                    
+                //     if(currentChangeType === "added"){
+                //         currentLine.hightLightBackground = true;
+                //         if(previousLine.text !== undefined)
+                //             previousLine.hightLightBackground = true;
+                        
+                //         lineNumberOfFile++;    
+                //     }
+                //     else if(diffLines[i-1].startsWith("~")){
+                //         let isAdded = true;
+                //         let count = 1;
+                //         while(diffLines[i+count].startsWith("~"))
+                //             count++;                                                
+                //         if(textLines.slice(lineNumberOfFile-1,lineNumberOfFile-1+count).some(text=> text !== ""))
+                //             isAdded=false;
+
+                //         if(isAdded){
+                //             for(let x=i;x < i+count; x++){
+                //                 currentLine.text = "";
+                //                 currentLine.hightLightBackground = true;
+                //                 currentLines.push(currentLine);
+                //                 previousLines.push(previousLine);
+                                
+                //                 currentLine ={
+                //                     textHightlightIndex:[],
+                //                 }
+                //                 previousLine ={
+                //                     textHightlightIndex:[],
+                //                 }
+                //             }
+
+                //         }
+                //         else{
+                //             for(let x=i;x < i+count; x++){
+                //                 previousLine.text = "";
+                //                 previousLine.hightLightBackground = true;
+                //                 currentLines.push(currentLine);
+                //                 previousLines.push(previousLine);
+                                
+                //                 currentLine = {
+                //                     textHightlightIndex:[],
+                //                 }
+                //                 previousLine = {
+                //                     textHightlightIndex:[],
+                //                 }                                
+                //             }                            
+                //         }
+
+                //         currentLines.pop();
+                //         previousLines.pop();
+
+                //         i = i + count - 1;
+                //         if(isAdded)
+                //             lineNumberOfFile += count;
+                //     }
+                //     else
+                //         lineNumberOfFile++;
+                    
+                // } 
+                // else {                   
+                //     previousLine.hightLightBackground = true;
+                //     if(currentLine.text !== undefined) currentLine.hightLightBackground = true;                   
+                // }                                   
             }
         }
 
-        while(lineNumberOfFile < textLines.length){
+        while(lineNumberOfCurrentChange < textLines.length){
             let lineConfig:ILine = {
                 textHightlightIndex:[],
-                text:textLines[lineNumberOfFile],
+                text:textLines[lineNumberOfCurrentChange],
             };
             currentLines.push(lineConfig);
             previousLines.push(lineConfig);
-            lineNumberOfFile++;
+            lineNumberOfCurrentChange++;
         }
         
         const previousLineMaxWidth = this.getEditorWidth(previousLines.map(x=>x.text?x.text:""));

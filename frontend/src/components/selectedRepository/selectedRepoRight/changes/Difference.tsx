@@ -11,7 +11,6 @@ interface IDifferenceProps {
 }
 
 
-
 interface IState{
     currentLines:ILine[];
     previousLines:ILine[];    
@@ -155,7 +154,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     onChange={(value)=>{}} readOnly
                      />
             </div>
-            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth+5}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
                     onChange={value=>{}} 
                     modules={{"toolbar":false}}
@@ -169,7 +168,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     onChange={(value)=>{}} readOnly/>
             </div>
 
-            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth+5}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
                     <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{}} 
                         modules={{"toolbar":false}}
