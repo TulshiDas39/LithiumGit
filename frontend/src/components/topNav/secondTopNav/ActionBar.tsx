@@ -1,10 +1,12 @@
 import React from "react";
+import { ChangeNavigator } from "./ChangeNavigator";
 import { RepoSelectionDropdown } from "./RepoSelectionDropdown";
 
 function ActionBarComponent(){
     
-    return <div>
+    return <div className="d-flex">
             <RepoSelectionDropdown />
+            <ChangeNavigator />
     </div>;
 }
 

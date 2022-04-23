@@ -27,7 +27,10 @@ function SecondTopNavComponent(){
         <span className="px-2 hover">
             <FaHome className="h5 mb-0" onClick={handleHomeClick} />
         </span>
-        {store.hasSelectedRepo && <ActionBar />}        
+        <div className="flex-grow-1">
+            {store.hasSelectedRepo && <ActionBar />}        
+
+        </div>
     </div>
 }
 

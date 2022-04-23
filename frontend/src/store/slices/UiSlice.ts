@@ -15,9 +15,15 @@ interface EventVersions{
     appFocused:number;
 }
 
+interface IChangesState{
+    totalStep:number;
+    currentStep:number;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
-    versions:EventVersions;    
+    versions:EventVersions;
+    changes?:IChangesState;    
 }
 
 const initialState:IUIState={

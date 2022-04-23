@@ -15,7 +15,7 @@ function RepoSelectionDropdownComponent(){
         dispatch(ActionSavedData.setSelectedRepository(repo));
     }
 
-    return <div>
+    return <div className="">
         <Dropdown>
             <Dropdown.Toggle variant="success" id="dropdown-reposelection">
                 {store.recentRepos.find(x=>x.isSelected)?.name || ""}
