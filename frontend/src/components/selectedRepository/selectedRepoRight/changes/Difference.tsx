@@ -1,9 +1,12 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
-import { DeltaStatic,DeltaOperation ,Quill} from "quill";
+import { DeltaStatic} from "quill";
 import React, { useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
-import { EditorColors, EnumCustomBlots, ILine, ILineHighlight, UiUtils, useMultiState } from "../../../../lib";
-import { DiffUtils, TDiffLineType } from "../../../../lib/utils/DiffUtils";
+import { shallowEqual, useDispatch } from "react-redux";
+import { EditorColors, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils } from "../../../../lib/utils/DiffUtils";
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IDifferenceProps {
     path:string;
@@ -19,10 +22,17 @@ interface IState{
     previousLineDelta:DeltaStatic,
     currentLineDelta:DeltaStatic,
     previousLineNumberDelta:DeltaStatic,    
-    currentLineNumberDelta:DeltaStatic,    
+    currentLineNumberDelta:DeltaStatic,
+    comparableLineNumbers:number[],
 }
 
 function DifferenceComponent(props:IDifferenceProps){
+
+    const store = useSelectorTyped(state=>({
+        currentStep:state.ui.changes?.currentStep,
+    }),shallowEqual);
+
+    const dispatch= useDispatch();
     
     const [state,setState] = useMultiState<IState>({
         currentLines:[],
@@ -33,6 +43,7 @@ function DifferenceComponent(props:IDifferenceProps){
         previousLineDelta:{ops:[] } as any,
         previousLineNumberDelta:{ops:[]} as any,
         currentLineNumberDelta:{ops:[]} as any,
+        comparableLineNumbers:[],
     });
 
     const propsRef = useRef(props);
@@ -79,8 +90,9 @@ function DifferenceComponent(props:IDifferenceProps){
     useEffect(()=>{        
         let delta = DiffUtils.getDeltaFromLineConfig(state.currentLines,EditorColors.line.current,state.currentLineMaxWidth);
         let lineDelta = DiffUtils.getDeltaForLineNumber(state.currentLines);
+        let lineNumbers = DiffUtils.getCoparableLineNumbers(state.currentLines);
         console.log("current lines",state.currentLines);
-        setState({currentLineDelta:delta,currentLineNumberDelta:lineDelta});
+        setState({currentLineDelta:delta,currentLineNumberDelta:lineDelta,comparableLineNumbers:lineNumbers});
     },[state.currentLines])
 
     useEffect(()=>{
@@ -93,15 +105,20 @@ function DifferenceComponent(props:IDifferenceProps){
 
     useEffect(()=>{        
         let previousChangeScroll = previousScrollContainerRef.current;
-        let currentChangeScroll = currentScrollContainerRef.current;
-        console.log(currentChangesEditorRef?.current?.getEditor()?.root?.classList);
+        let currentChangeScroll = currentScrollContainerRef.current;        
         
         let handler1 = (e:Event)=>{
-            currentChangeScroll?.scrollTo({top:previousChangeScroll?.scrollTop});
+            currentChangeScroll?.scrollTo({
+                top:previousChangeScroll?.scrollTop,
+                left:previousChangeScroll?.scrollLeft,
+            });
         }
 
         let handler2 = (e:Event)=>{
-            previousChangeScroll?.scrollTo({top:currentChangeScroll?.scrollTop});
+            previousChangeScroll?.scrollTo({
+                top:currentChangeScroll?.scrollTop,
+                left:currentChangeScroll?.scrollLeft,
+            });
         }
 
         if(previousChangeScroll && currentChangeScroll){
@@ -116,8 +133,14 @@ function DifferenceComponent(props:IDifferenceProps){
     },[]);
 
     const setNavigationData=()=>{
-
+        dispatch(ActionUI.setTotalComparable(state.comparableLineNumbers.length));                
     }
+
+    useEffect(()=>{        
+        currentChangesEditorRef.current?.getEditor().root.children.
+            item(state.comparableLineNumbers[store.currentStep!-1])?.scrollIntoView({block:"center"});
+
+    },[store.currentStep])
 
     useEffect(()=>{
         console.log("current delta",state.currentLineDelta);

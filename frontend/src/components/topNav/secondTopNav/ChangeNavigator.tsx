@@ -1,15 +1,31 @@
 import React from "react"
-import { shallowEqual } from "react-redux";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../store/rootReducer";
+import { ActionUI } from "../../../store/slices/UiSlice";
 
 function ChangeNavigatorComponent(){
     const store = useSelectorTyped(state=> state.ui.changes,shallowEqual);
+    const dispatch = useDispatch();
 
     if(!store) return null;
-    return <div className="justify-content-center flex-grow-1 d-flex"> 
+    const handleUp=()=>{
+        if(store.currentStep > 1) dispatch(ActionUI.setComparableStep(store.currentStep-1));
+    }
+
+    const handleDown=()=>{
+        if(store.currentStep < store.totalStep) dispatch(ActionUI.setComparableStep(store.currentStep+1));
+    }
+
+    return <div className="justify-content-center align-items-center flex-grow-1 d-flex"> 
         <span>Showing {store.currentStep}/{store.totalStep}</span>
+        <span className="px-1" />
         <span>
-        <i className="fa-solid fa-up"></i>
+            <FaArrowUp className="cur-point" onClick={handleUp}/>
+        </span>
+        <span className="px-1" />
+        <span>
+            <FaArrowDown className="cur-point" onClick={handleDown} />
         </span>
     </div>
 }

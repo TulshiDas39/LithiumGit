@@ -59,6 +59,13 @@ const UISlice = createSlice({
         },
         resetBranchPanelZoom(state){
             state.versions.branchPanelZoom = 0;
+        },
+        setTotalComparable(state,action:PayloadAction<number>){
+            if(state.changes)state.changes.totalStep = action.payload;
+            else state.changes = {currentStep:1,totalStep:action.payload};
+        },
+        setComparableStep(state,action:PayloadAction<number>){
+            state.changes!.currentStep = action.payload;
         }
     }
 });

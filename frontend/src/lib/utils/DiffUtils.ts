@@ -442,4 +442,23 @@ export class DiffUtils{
             index += 1;
         }              
     }
+
+    static getCoparableLineNumbers(currentLines:ILine[]){
+        const lineNumbers:number[] = [];
+        let lastComparableLine = 0;
+        currentLines.forEach((l,index)=>{
+            if(l.hightLightBackground){                
+                if(lastComparableLine != index)
+                    lineNumbers.push(index+1);
+                lastComparableLine = index+1    
+            }
+            else if(l.text === undefined){
+                if(lastComparableLine != index)
+                    lineNumbers.push(index+1);
+                lastComparableLine = index+1;    
+            }    
+                
+        });
+        return lineNumbers;
+    }
 }
