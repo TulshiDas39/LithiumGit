@@ -2,7 +2,6 @@ import { ILineHighlight } from "../editor";
 import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
-
 export type TDiffLineType = "unchanged"|"added"|"removed";
 
 export class DiffUtils{
@@ -32,9 +31,9 @@ export class DiffUtils{
         
         const getFileLineNumber=(line:string)=>{
             const diffRange = line.split('@@')[1].trim();
-            const previousRange = diffRange.split('-')[1].trim();
+            const previousRange = diffRange.split('+')[0].trim();
             const currentRange = diffRange.split('+')[1].trim();
-
+            //split('+')[0].split(',')[0].split('-')[1]            
             const lineNumberOfPreviousChange = Number(previousRange.split(',')[0].substring(1))
             const lineNumberOfCurrentChange = Number(currentRange.split(',')[0])
             return {
@@ -44,8 +43,7 @@ export class DiffUtils{
         }
 
         const setFileLineNumber=(line:string)=>{
-            const lineNumber = getFileLineNumber(line);
-
+            const lineNumber = getFileLineNumber(line);            
             lineNumberOfPreviousChange = lineNumber.lineNumberOfPreviousChange;
             lineNumberOfCurrentChange = lineNumber.lineNumberOfCurrentChange;
 
@@ -118,13 +116,30 @@ export class DiffUtils{
                 previousLines.push(previousLine);
 
                 lineNumberOfCurrentChange = nextStartingFileLineNumber.lineNumberOfCurrentChange;
+                lineNumberOfPreviousChange = nextStartingFileLineNumber.lineNumberOfPreviousChange;
             }            
 
             else if(diffLine.startsWith(" ")){
                 currentChangeType = "unchanged";
-                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];                
-                if(previousLine.text === undefined) previousLine.text = "";
-                if(currentLine.text === undefined) currentLine.text = "";
+                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];                                
+                if(previousLine.text === undefined){                                                                                      
+                    // while(previousLines.length < currentLines.length){
+                    //     previousLines.push(previousLine);
+                    //     previousLine = {
+                    //         textHightlightIndex:[],
+                    //     }                        
+                    // }                     
+                    previousLine.text = "";
+                }
+                if(currentLine.text === undefined) {
+                    // while(previousLines.length > currentLines.length){
+                    //     currentLines.push(currentLine);
+                    //     currentLine = {
+                    //         textHightlightIndex:[],
+                    //     }                        
+                    // }
+                    currentLine.text = "";
+                }
                 previousLine.text += diffLine.substring(1);
                 currentLine.text += diffLine.substring(1);
                 currentCharTrackingIndex += diffLine.length-1;
@@ -145,15 +160,7 @@ export class DiffUtils{
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-                //currentLines.push(currentLine);
-
-                
-                //previousLines.push(previousLine);
-
-                
-                currentCharTrackingIndex = 0;
-                previousCharTrackingIndex = 0;                
-
+        
                 if(diffLines[i-1].startsWith("~")){
                     let isAdded = true;
                     let count = 1;
@@ -178,10 +185,11 @@ export class DiffUtils{
                             }
                             
                         }
-
+                        lineNumberOfCurrentChange += count;
+                        currentCharTrackingIndex = 0;
                     }
                     else{
-                        for(let x=i;x < i+count; x++){
+                        for(let x=0;x < count; x++){
                             previousLine.text = "";
                             previousLine.hightLightBackground = true;                            
                             
@@ -195,14 +203,12 @@ export class DiffUtils{
                                 textHightlightIndex:[],
                             }                                
                             
-                        }                            
+                        }
+                        lineNumberOfPreviousChange += count;                            
+                        previousCharTrackingIndex = 0;
                     }
 
-                    i = i + count - 1;
-                    if(isAdded)
-                        lineNumberOfCurrentChange += count;
-                    else
-                        lineNumberOfPreviousChange += count;    
+                    i = i + count - 1;                    
                 }
                 else if(diffLines[i-1].startsWith("+")){                    
                     currentLine.hightLightBackground = true;
@@ -213,6 +219,7 @@ export class DiffUtils{
                         textHightlightIndex:[]
                     }
                     lineNumberOfCurrentChange++;
+                    currentCharTrackingIndex = 0;
                 }
                 else if(diffLines[i-1].startsWith("-")){
                     previousLine.hightLightBackground = true;
@@ -222,6 +229,7 @@ export class DiffUtils{
                         textHightlightIndex:[],
                     }
                     lineNumberOfPreviousChange++;
+                    previousCharTrackingIndex = 0;
                 }
 
                 else if(diffLines[i-1].startsWith(" ")){
@@ -231,14 +239,32 @@ export class DiffUtils{
                     }
                     currentLines.push(currentLine);
                     previousLines.push(previousLine);
+
                     currentLine = {
                         textHightlightIndex:[]
                     }
                     previousLine = {
                         textHightlightIndex:[],
                     }
+
+                    while(previousLines.length > currentLines.length){
+                        currentLines.push(currentLine);
+                        currentLine = {
+                            textHightlightIndex:[],
+                        }                        
+                    }
+
+                    while(previousLines.length > currentLines.length){
+                        currentLines.push(currentLine);
+                        currentLine = {
+                            textHightlightIndex:[],
+                        }                        
+                    }                    
+                    
                     lineNumberOfCurrentChange++;
                     lineNumberOfPreviousChange++;
+                    previousCharTrackingIndex = 0;
+                    currentCharTrackingIndex = 0;
                 }
 
                 // else{
@@ -328,6 +354,7 @@ export class DiffUtils{
             currentLines.push(lineConfig);
             previousLines.push(lineConfig);
             lineNumberOfCurrentChange++;
+            lineNumberOfPreviousChange++;
         }
         
         const previousLineMaxWidth = this.getEditorWidth(previousLines.map(x=>x.text?x.text:""));
@@ -426,15 +453,19 @@ export class DiffUtils{
         return delta;
     }
 
-    static formatLinesBackground(quill:Quill,lines:ILine[],format:string){                
+    static formatLinesBackground(quill:Quill,lines:ILine[],format:EnumCustomBlots){                
         let index = 0;
         for(let i = 0;i<lines.length;i++){
-            let line = lines[i];
+            let line = lines[i];            
             if(line.hightLightBackground)
                 quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
-            else if(line.text === undefined)
+            else if(line.text === undefined){
+                if(format === EnumCustomBlots.CurrentBackground){
+                    debugger;
+                }
                 quill?.formatLine(index,0,EnumCustomBlots.TransparentBackground,true,"silent");
+            }
             if(line.text !== undefined){
                 index = index + line.text.length+1 
             }

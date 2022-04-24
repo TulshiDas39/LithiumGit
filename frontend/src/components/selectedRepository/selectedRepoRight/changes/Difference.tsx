@@ -5,8 +5,9 @@ import ReactQuill from "react-quill";
 import { shallowEqual, useDispatch } from "react-redux";
 import { EditorColors, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { DiffUtils } from "../../../../lib/utils/DiffUtils";
-import { useSelectorTyped } from "../../../../store/rootReducer";
-import { ActionUI } from "../../../../store/slices/UiSlice";
+import { useSelectorTyped,RootReducer } from "../../../../store/rootReducer";
+import { ReducerUI, ActionUI } from "../../../../store/slices/UiSlice";
+let z =1;
 
 interface IDifferenceProps {
     path:string;
