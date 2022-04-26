@@ -138,8 +138,20 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     useEffect(()=>{        
-        currentChangesEditorRef.current?.getEditor().root.children.
-            item(state.comparableLineNumbers[store.currentStep!-1])?.scrollIntoView({block:"center"});
+        // currentChangesEditorRef.current?.getEditor().root.children.
+        //     item(state.comparableLineNumbers[store.currentStep!-1])?.scrollIntoView(false);
+        if(!store.currentStep)
+            return;
+        const container = currentChangesEditorRef.current?.getEditor()?.root;
+        if(!container) return;
+        
+        const containerTop = container.getBoundingClientRect().top;
+        const child = container.getElementsByTagName('p').item(store.currentStep);
+        const lineTop = child?.getBoundingClientRect()?.top;
+         if(!lineTop) return;
+        currentScrollContainerRef.current?.scrollTo({top:lineTop-containerTop});
+
+
 
     },[store.currentStep])
 
@@ -195,7 +207,8 @@ function DifferenceComponent(props:IDifferenceProps){
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
                     <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{}} 
-                        modules={{"toolbar":false}}
+                        modules={{"toolbar":false}}                        
+                        id="currentChangesEditor"
                     />                    
                 }
             </div>

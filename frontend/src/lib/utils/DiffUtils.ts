@@ -22,8 +22,7 @@ export class DiffUtils{
 
     static GetUiLines(diff:string,textLines:string[]){
                 
-        const diffLines = diff.split('\n');
-        // const sections:number[][]=[];
+        const diffLines = diff.split('\n');        
         console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfCurrentChange= 0;
@@ -33,7 +32,7 @@ export class DiffUtils{
             const diffRange = line.split('@@')[1].trim();
             const previousRange = diffRange.split('+')[0].trim();
             const currentRange = diffRange.split('+')[1].trim();
-            //split('+')[0].split(',')[0].split('-')[1]            
+            
             const lineNumberOfPreviousChange = Number(previousRange.split(',')[0].substring(1))
             const lineNumberOfCurrentChange = Number(currentRange.split(',')[0])
             return {
@@ -74,21 +73,16 @@ export class DiffUtils{
             currentLines.push(currentLine);
             previousLines.push(previousLine);            
         }
-
-        // let trackingIndex = 0;
+        
         let currentCharTrackingIndex = 0;
         let previousCharTrackingIndex = 0;
         let currentLine:ILine ={
             textHightlightIndex:[],
-        }
-        //currentLines.push(currentLine);
+        }        
 
         let previousLine:ILine ={
             textHightlightIndex:[],
-        }
-        //previousLines.push(previousLine);
-
-        let currentChangeType:TDiffLineType = "unchanged";
+        }        
 
         for(let i=startIndexesOfSections;i<diffLines.length;i++){
             const diffLine = diffLines[i];
@@ -120,24 +114,10 @@ export class DiffUtils{
             }            
 
             else if(diffLine.startsWith(" ")){
-                currentChangeType = "unchanged";
-                //if(currentLine.text === undefined) currentLine.text = textLines[lineNumberOfFile-1];                                
-                if(previousLine.text === undefined){                                                                                      
-                    // while(previousLines.length < currentLines.length){
-                    //     previousLines.push(previousLine);
-                    //     previousLine = {
-                    //         textHightlightIndex:[],
-                    //     }                        
-                    // }                     
+                if(previousLine.text === undefined){                                                                                                                          
                     previousLine.text = "";
                 }
                 if(currentLine.text === undefined) {
-                    // while(previousLines.length > currentLines.length){
-                    //     currentLines.push(currentLine);
-                    //     currentLine = {
-                    //         textHightlightIndex:[],
-                    //     }                        
-                    // }
                     currentLine.text = "";
                 }
                 previousLine.text += diffLine.substring(1);
@@ -146,14 +126,12 @@ export class DiffUtils{
                 previousCharTrackingIndex += diffLine.length-1;                
             }
             else if(diffLine.startsWith("+")){
-                currentChangeType = "added";
                 if(currentLine.text === undefined)currentLine.text = "";                
                 currentLine.text! += diffLine.substring(1);
                 currentLine.textHightlightIndex.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
                 currentCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("-")){
-                currentChangeType = "removed";
                 if(!previousLine.text) previousLine.text = "";
                 previousLine.text += diffLine.substring(1);                
                 previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
@@ -254,9 +232,9 @@ export class DiffUtils{
                         }                        
                     }
 
-                    while(previousLines.length > currentLines.length){
-                        currentLines.push(currentLine);
-                        currentLine = {
+                    while(previousLines.length < currentLines.length){
+                        previousLines.push(previousLine);
+                        previousLine = {
                             textHightlightIndex:[],
                         }                        
                     }                    
@@ -266,83 +244,7 @@ export class DiffUtils{
                     previousCharTrackingIndex = 0;
                     currentCharTrackingIndex = 0;
                 }
-
-                // else{
-                //     if(currentLine.textHightlightIndex.length){
-                //         currentLine.hightLightBackground = true;
-                //         if(previousLine.text !== undefined) previousLine.hightLightBackground = true;
-                //     }
-                //     else if(previousLine.textHightlightIndex.length){
-                //         previousLine.hightLightBackground = true;
-                //         if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
-                //     }
-                //     if(currentLine.text !== undefined) lineNumberOfCurrentChange++;
-                // }
-
-                // if(currentChangeType !== "removed"){                    
-                    
-                //     if(currentChangeType === "added"){
-                //         currentLine.hightLightBackground = true;
-                //         if(previousLine.text !== undefined)
-                //             previousLine.hightLightBackground = true;
-                        
-                //         lineNumberOfFile++;    
-                //     }
-                //     else if(diffLines[i-1].startsWith("~")){
-                //         let isAdded = true;
-                //         let count = 1;
-                //         while(diffLines[i+count].startsWith("~"))
-                //             count++;                                                
-                //         if(textLines.slice(lineNumberOfFile-1,lineNumberOfFile-1+count).some(text=> text !== ""))
-                //             isAdded=false;
-
-                //         if(isAdded){
-                //             for(let x=i;x < i+count; x++){
-                //                 currentLine.text = "";
-                //                 currentLine.hightLightBackground = true;
-                //                 currentLines.push(currentLine);
-                //                 previousLines.push(previousLine);
-                                
-                //                 currentLine ={
-                //                     textHightlightIndex:[],
-                //                 }
-                //                 previousLine ={
-                //                     textHightlightIndex:[],
-                //                 }
-                //             }
-
-                //         }
-                //         else{
-                //             for(let x=i;x < i+count; x++){
-                //                 previousLine.text = "";
-                //                 previousLine.hightLightBackground = true;
-                //                 currentLines.push(currentLine);
-                //                 previousLines.push(previousLine);
-                                
-                //                 currentLine = {
-                //                     textHightlightIndex:[],
-                //                 }
-                //                 previousLine = {
-                //                     textHightlightIndex:[],
-                //                 }                                
-                //             }                            
-                //         }
-
-                //         currentLines.pop();
-                //         previousLines.pop();
-
-                //         i = i + count - 1;
-                //         if(isAdded)
-                //             lineNumberOfFile += count;
-                //     }
-                //     else
-                //         lineNumberOfFile++;
-                    
-                // } 
-                // else {                   
-                //     previousLine.hightLightBackground = true;
-                //     if(currentLine.text !== undefined) currentLine.hightLightBackground = true;                   
-                // }                                   
+                                              
             }
         }
 
@@ -357,12 +259,9 @@ export class DiffUtils{
             lineNumberOfPreviousChange++;
         }
         
-        const previousLineMaxWidth = this.getEditorWidth(previousLines.map(x=>x.text?x.text:""));
-        const currentLineMaxWidth =  this.getEditorWidth(currentLines.map(x=>x.text?x.text:""));
         return {
             currentLines,
             previousLines,
-            //previousLineMaxWidth,currentLineMaxWidth
         };
     
     }
@@ -461,9 +360,6 @@ export class DiffUtils{
                 quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
 
             else if(line.text === undefined){
-                if(format === EnumCustomBlots.CurrentBackground){
-                    debugger;
-                }
                 quill?.formatLine(index,0,EnumCustomBlots.TransparentBackground,true,"silent");
             }
             if(line.text !== undefined){
