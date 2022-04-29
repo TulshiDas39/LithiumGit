@@ -1,13 +1,12 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
 import { DeltaStatic} from "quill";
-import React, { useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { shallowEqual, useDispatch } from "react-redux";
 import { EditorColors, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { DiffUtils } from "../../../../lib/utils/DiffUtils";
-import { useSelectorTyped,RootReducer } from "../../../../store/rootReducer";
-import { ReducerUI, ActionUI } from "../../../../store/slices/UiSlice";
-let z =1;
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IDifferenceProps {
     path:string;
@@ -105,6 +104,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.previousLineDelta])
 
     useEffect(()=>{        
+
         let previousChangeScroll = previousScrollContainerRef.current;
         let currentChangeScroll = currentScrollContainerRef.current;        
         
@@ -138,20 +138,10 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     useEffect(()=>{        
-        // currentChangesEditorRef.current?.getEditor().root.children.
-        //     item(state.comparableLineNumbers[store.currentStep!-1])?.scrollIntoView(false);
         if(!store.currentStep)
-            return;
-        const container = currentChangesEditorRef.current?.getEditor()?.root;
-        if(!container) return;
-        
-        const containerTop = container.getBoundingClientRect().top;
-        const child = container.getElementsByTagName('p').item(store.currentStep);
-        const lineTop = child?.getBoundingClientRect()?.top;
-         if(!lineTop) return;
-        currentScrollContainerRef.current?.scrollTo({top:lineTop-containerTop});
-
-
+            return;        
+        currentChangesEditorRef.current?.getEditor().root.children.
+            item(state.comparableLineNumbers[store.currentStep-1])?.scrollIntoView({block:"center"});
 
     },[store.currentStep])
 
@@ -182,31 +172,37 @@ function DifferenceComponent(props:IDifferenceProps){
         }
     },[]);
     
+    const callbackForPreviousEditor = useCallback(()=>{
+    },[state.previousLineDelta])
+
+    const callbackForCurrentEditor = useCallback(()=>{
+    },[state.currentLineDelta])
     
     return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
         <div ref={previousScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto border-end" >
             <div>
                 <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
-                    onChange={(value)=>{}} readOnly
+                    onChange={callbackForPreviousEditor} readOnly                    
                      />
             </div>
             <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
-                    onChange={value=>{}} 
+                    onChange={callbackForPreviousEditor} 
                     modules={{"toolbar":false}}
-                    readOnly                    
+                    readOnly                                        
                         />                
             </div>
         </div>
         <div ref={currentScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto" >
             <div>
                 <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 
-                    onChange={(value)=>{}} readOnly/>
+                    onChange={callbackForCurrentEditor} readOnly                    
+                    />
             </div>
 
             <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
                 {
-                    <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={value=>{}} 
+                    <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={callbackForCurrentEditor} 
                         modules={{"toolbar":false}}                        
                         id="currentChangesEditor"
                     />                    
