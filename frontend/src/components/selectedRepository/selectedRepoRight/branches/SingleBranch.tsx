@@ -36,7 +36,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
     const getRefs = (commit:ICommitInfo)=>{
         if(!commit.refs) return;
         let refs = commit.refs;
-        if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substr(BranchUtils.headPrefix.length);
+        if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substring(BranchUtils.headPrefix.length);
         const splits = refs.split(",");
 
         const refElements:JSX.Element[] = [];

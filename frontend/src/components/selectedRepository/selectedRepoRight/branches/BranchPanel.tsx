@@ -1,8 +1,9 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { useRef } from "react"
+import React, { useMemo, useRef } from "react"
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { useMultiState } from "../../../../lib";
+import { useDrag } from "../../../../lib/hooks/useDrag";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { SingleBranch } from "./SingleBranch";
 
@@ -19,19 +20,16 @@ interface IState{
     scrollTop:number;
     scrollLeft:number;
     panelWidth:number;
+    horizontalScrollPercent:number;
+    verticalScrollPercent:number;
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
     const panelHeight = 400;
+    const panelWidth = 900;
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
     }),shallowEqual);
-    useEffect(()=>{
-        if(props.repoDetails?.headCommit) {
-            let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
-            if(elmnt) elmnt.scrollIntoView();            
-        }
-    },[props.repoDetails?.headCommit])
 
     useEffect(()=>{
         setState({scale:1+ (store.zoom/10)});        
@@ -44,17 +42,29 @@ function BranchPanelComponent(props:IBranchPanelProps){
         scrollLeft:props.repoDetails.branchPanelWidth,
         scrollTop:0,
         panelWidth:0,
+        horizontalScrollPercent:0,
+        verticalScrollPercent:0,
     });
     
-    const getSVGHeight = ()=>{
+    useEffect(()=>{
+        if(props.repoDetails?.headCommit) {
+            let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
+            if(elmnt) elmnt.scrollIntoView();            
+        }
+        const horizontalPercent = (props.repoDetails?.headCommit.x*100)/props.repoDetails.branchPanelWidth;
+        setState({horizontalScrollPercent:horizontalPercent});
+    },[props.repoDetails?.headCommit])
+
+    const svgHeight = useMemo(()=>{
         if(props.repoDetails.branchPanelHeight < panelHeight) return panelHeight;
         return props.repoDetails.branchPanelHeight;
-    }    
+    },[props.repoDetails.branchPanelHeight])
+        
 
     const scrollPosition = useRef({scrollTop:0,scrollLeft:Number.MAX_SAFE_INTEGER,width:0,});
     const adjustPadding = ()=>{
         if( state.scale < 1) return;
-        const svgHeight = getSVGHeight();
+        //const svgHeight = getSVGHeight();
         const hiddenHeightSpace = svgHeight * state.scale - panelHeight;
         let paddingTop = 0;
         let paddingLeft = 0;
@@ -92,9 +102,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
         },100);
     }
 
-    useEffect(()=>{
-        if(!paddingTimer.current) setPaddingAdjustTimeout();        
-    },[state.scale])
+    // useEffect(()=>{
+    //     if(!paddingTimer.current) setPaddingAdjustTimeout();        
+    // },[state.scale])
 
     const handleScroll =  (e: React.UIEvent<HTMLDivElement, UIEvent>)=>{
         const { scrollTop,scrollLeft,clientWidth } =  e.target as HTMLDivElement;
@@ -108,33 +118,83 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }
         setScrollPositionSetterTimeout();
     }
+
+    const viewBoxValue = useMemo(()=>{
+        const x = props.repoDetails.branchPanelWidth - panelWidth;
+        const y = -10;
+        return {x,y,width:panelWidth,height:panelHeight};
+    },[props.repoDetails.branchPanelWidth]);
     
+    const horizontalScrollWidth = useMemo(()=>{
+        const width = viewBoxValue.width / props.repoDetails.branchPanelWidth;
+        return width*panelWidth;
+    },[viewBoxValue.width,props.repoDetails.branchPanelWidth]);
+
+    const currentMousePositionXRef = useRef<number>();
+
+    const {currentMousePosition,elementRef} = useDrag();
+    console.log("currentMousePosition",currentMousePosition);
+    useEffect(()=>{
+        if(currentMousePosition)
+            currentMousePositionXRef.current = currentMousePosition.x;
+        else{
+            if(currentMousePositionXRef.current === undefined) return;
+            let currentX = (state.horizontalScrollPercent/100)*panelWidth;
+            console.log("currentPercent",state.horizontalScrollPercent);
+            currentX += currentMousePositionXRef.current;
+            const newPercent = (currentX *100)/panelWidth;
+            console.log("newPercent",newPercent);
+            setState({
+                horizontalScrollPercent: newPercent,
+            })
+        }    
+    },[currentMousePosition])
+    
+    let adjustedHorizontalRight = useMemo(()=>{
+        let x = panelWidth * (1-(state.horizontalScrollPercent/100));
+        x -= horizontalScrollWidth / 2;
+        if( x < 0) return 0;
+        return x;        
+    },[state.horizontalScrollPercent])
+    console.log("state.horizontalScrollPercent",state.horizontalScrollPercent);
+    adjustedHorizontalRight = useMemo(()=>{
+        if(!currentMousePosition) return adjustedHorizontalRight;
+        return adjustedHorizontalRight-currentMousePosition.x;
+    },[currentMousePosition,adjustedHorizontalRight])
+    console.log("adjustedHorizontalRight",adjustedHorizontalRight)
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
-    return <div id="branchPanel" className="w-100 overflow-scroll" onScroll={handleScroll}>
-            <svg width={props.repoDetails.branchPanelWidth} height={getSVGHeight()} style={{transform:`scale(${state.scale})`, paddingTop:`${state.paddingTop}px`,paddingLeft:`${state.paddingLeft}px`} }>
-                <g>
-                    {
-                        props.repoDetails.mergedLines.map(line=>(
-                            <line key={`${line.srcX}-${line.srcY}-${line.endX}-${line.endY}`} x1={line.srcX} y1={line.srcY} x2={line.endX} y2={line.endY} stroke="green" strokeWidth={1} />
-                        ))
-                    }
-                    {
-                        props.repoDetails.resolvedBranches.map(branch=>(
-                            <SingleBranch key={branch._id} 
-                                branchDetails ={branch} 
-                                onCommitSelect={props.onCommitSelect} 
-                                selectedCommit={props.selectedCommit} 
-                                scrollLeft={(state.scrollLeft - state.paddingLeft)/state.scale}
-                                scrollTop={state.scrollTop} 
-                                panelWidth={state.panelWidth}
-                                
-                            />
-                        ))
-                    }                                        
-                </g>
+    return <div id="branchPanel" className="w-100 overflow-x-hidden">
+        <div className="d-flex w-100 align-items-stretch">
+            <svg width={panelWidth} height={panelHeight} viewBox={`${viewBoxValue.x} ${viewBoxValue.y} ${viewBoxValue.width} ${viewBoxValue.height}` } style={{transform:`scale(1)`} }>
+                    <g>
+                        {
+                            props.repoDetails.mergedLines.map(line=>(
+                                <line key={`${line.srcX}-${line.srcY}-${line.endX}-${line.endY}`} x1={line.srcX} y1={line.srcY} x2={line.endX} y2={line.endY} stroke="green" strokeWidth={1} />
+                            ))
+                        }
+                        {
+                            props.repoDetails.resolvedBranches.map(branch=>(
+                                <SingleBranch key={branch._id} 
+                                    branchDetails ={branch} 
+                                    onCommitSelect={props.onCommitSelect} 
+                                    selectedCommit={props.selectedCommit} 
+                                    scrollLeft={(state.scrollLeft - state.paddingLeft)/state.scale}
+                                    scrollTop={state.scrollTop} 
+                                    panelWidth={state.panelWidth}
+                                    
+                                />
+                            ))
+                        }                                        
+                    </g>
             </svg>
+            <div className="bg-secondary" style={{width:`10px`}}>
+            </div>
+        </div>            
+            <div className="d-flex w-100 bg-secondary py-2 position-relative">
+                <div ref={elementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, right:adjustedHorizontalRight,top:0}}></div>
+            </div>
     </div>
 }
 
