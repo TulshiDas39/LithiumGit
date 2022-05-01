@@ -54,71 +54,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         const horizontalPercent = (props.repoDetails?.headCommit.x*100)/props.repoDetails.branchPanelWidth;
         setState({horizontalScrollPercent:horizontalPercent});
     },[props.repoDetails?.headCommit])
-
-    const svgHeight = useMemo(()=>{
-        if(props.repoDetails.branchPanelHeight < panelHeight) return panelHeight;
-        return props.repoDetails.branchPanelHeight;
-    },[props.repoDetails.branchPanelHeight])
         
-
-    const scrollPosition = useRef({scrollTop:0,scrollLeft:Number.MAX_SAFE_INTEGER,width:0,});
-    const adjustPadding = ()=>{
-        if( state.scale < 1) return;
-        //const svgHeight = getSVGHeight();
-        const hiddenHeightSpace = svgHeight * state.scale - panelHeight;
-        let paddingTop = 0;
-        let paddingLeft = 0;
-        if(scrollPosition.current.scrollTop < hiddenHeightSpace / 2){
-            paddingTop = Math.ceil(hiddenHeightSpace/2);
-        }
-
-        const svgWidth = props.repoDetails.branchPanelWidth;
-        const hiddenWidthSpace = svgWidth * state.scale - svgWidth;        
-        if(scrollPosition.current.scrollLeft < hiddenWidthSpace / 2){
-            paddingLeft = Math.ceil(hiddenWidthSpace/2);            
-        }
-
-        setState({paddingLeft,paddingTop});
-    }
-    const paddingTimer = useRef<NodeJS.Timeout>();
-
-    const scrollStateTimer = useRef<NodeJS.Timeout>();
-
-    const setPaddingAdjustTimeout = ()=>{
-        paddingTimer.current = setTimeout(()=>{
-            adjustPadding();
-            paddingTimer.current = null!;
-        },100);
-    }
-
-    const setScrollPositionSetterTimeout = ()=>{
-        scrollStateTimer.current = setTimeout(()=>{            
-            setState({
-                scrollLeft:scrollPosition.current.scrollLeft,
-                scrollTop:scrollPosition.current.scrollTop,
-                panelWidth:scrollPosition.current.width,
-            });
-            scrollStateTimer.current = null!;
-        },100);
-    }
-
-    // useEffect(()=>{
-    //     if(!paddingTimer.current) setPaddingAdjustTimeout();        
-    // },[state.scale])
-
-    const handleScroll =  (e: React.UIEvent<HTMLDivElement, UIEvent>)=>{
-        const { scrollTop,scrollLeft,clientWidth } =  e.target as HTMLDivElement;
-        scrollPosition.current.scrollLeft = scrollLeft;
-        scrollPosition.current.scrollTop = scrollTop;   
-        scrollPosition.current.width = clientWidth;
-        console.log(scrollPosition.current);
-        if(!paddingTimer.current && state.scale > 1) setPaddingAdjustTimeout();
-        if(scrollStateTimer.current) {
-           clearTimeout(scrollStateTimer.current);
-        }
-        setScrollPositionSetterTimeout();
-    }
-
     const viewBoxValue = useMemo(()=>{
         const x = props.repoDetails.branchPanelWidth - panelWidth;
         const y = -10;
