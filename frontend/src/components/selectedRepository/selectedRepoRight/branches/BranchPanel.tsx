@@ -1,7 +1,7 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { useMemo, useRef } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useEffect } from "react";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useStore } from "react-redux";
 import { useMultiState } from "../../../../lib";
 import { useDrag } from "../../../../lib/hooks/useDrag";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -32,6 +32,12 @@ function BranchPanelComponent(props:IBranchPanelProps){
         zoom:state.ui.versions.branchPanelZoom,
     }),shallowEqual);
 
+    const propsRef = useRef(props);
+
+    useEffect(()=>{
+        propsRef.current = props;
+    },[props])
+
     useEffect(()=>{
         setState({scale:1+ (store.zoom/10)});        
     },[store.zoom])
@@ -47,6 +53,13 @@ function BranchPanelComponent(props:IBranchPanelProps){
         verticalScrollPercent:0,
         viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:-10,width:panelWidth,height:panelHeight}
     });
+
+    const stateRef = useRef(state);
+
+    useEffect(()=>{
+        stateRef.current = state;
+    },[state])
+
     const initialHorizontalScrollPercent = useRef(state.horizontalScrollPercent);
     const isMounted = useRef(false);
     useEffect(()=>{
@@ -71,7 +84,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const {currentMousePosition,elementRef} = useDrag();
     useEffect(()=>{
         if(currentMousePosition === undefined ) {
-            if(isMounted.current){                
+            if(isMounted.current){
+                //initialHorizontalScrollPercent.current = stateRef.current.horizontalScrollPercent;
                 setState((st)=>{
                     initialHorizontalScrollPercent.current = st.horizontalScrollPercent;
                     return st;
@@ -88,11 +102,26 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }        
     },[currentMousePosition])        
     
-    let adjustedHorizontalRight = useMemo(()=>{
+    useEffect(()=>{
+        const x = propsRef.current.repoDetails.branchPanelWidth *(stateRef.current.horizontalScrollPercent/100);
+        let viewBoxX = x - panelWidth/2;
+        if(viewBoxX < 0) viewBoxX = 0;
+        setState(st=>({
+            ...st,
+            viewBox:{
+                ...st.viewBox,
+                x: viewBoxX
+            }
+        }))
+    },[state.horizontalScrollPercent]);
+
+    const adjustedHorizontalRight = useMemo(()=>{
         let x = panelWidth * (1-(state.horizontalScrollPercent/100));        
         if( x < 0) return 0;
         return x;        
-    },[state.horizontalScrollPercent])   
+    },[state.horizontalScrollPercent]);
+    
+    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
