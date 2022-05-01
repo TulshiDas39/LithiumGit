@@ -22,6 +22,7 @@ interface IState{
     panelWidth:number;
     horizontalScrollPercent:number;
     verticalScrollPercent:number;
+    viewBox:{x:number;y:number;width:number;height:number};
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
@@ -44,66 +45,60 @@ function BranchPanelComponent(props:IBranchPanelProps){
         panelWidth:0,
         horizontalScrollPercent:0,
         verticalScrollPercent:0,
+        viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:-10,width:panelWidth,height:panelHeight}
     });
-    
+    const initialHorizontalScrollPercent = useRef(state.horizontalScrollPercent);
+    const isMounted = useRef(false);
+    useEffect(()=>{
+        isMounted.current = true;
+    },[])
     useEffect(()=>{
         if(props.repoDetails?.headCommit) {
             let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
         }
         const horizontalPercent = (props.repoDetails?.headCommit.x*100)/props.repoDetails.branchPanelWidth;
+        initialHorizontalScrollPercent.current = horizontalPercent;
         setState({horizontalScrollPercent:horizontalPercent});
-    },[props.repoDetails?.headCommit])
-        
-    const viewBoxValue = useMemo(()=>{
-        const x = props.repoDetails.branchPanelWidth - panelWidth;
-        const y = -10;
-        return {x,y,width:panelWidth,height:panelHeight};
-    },[props.repoDetails.branchPanelWidth]);
+
+    },[props.repoDetails?.headCommit])        
     
     const horizontalScrollWidth = useMemo(()=>{
-        const width = viewBoxValue.width / props.repoDetails.branchPanelWidth;
+        const width = state.viewBox.width / props.repoDetails.branchPanelWidth;
         return width*panelWidth;
-    },[viewBoxValue.width,props.repoDetails.branchPanelWidth]);
-
-    const currentMousePositionXRef = useRef<number>();
+    },[state.viewBox.width,props.repoDetails.branchPanelWidth]);
 
     const {currentMousePosition,elementRef} = useDrag();
-    console.log("currentMousePosition",currentMousePosition);
     useEffect(()=>{
-        if(currentMousePosition)
-            currentMousePositionXRef.current = currentMousePosition.x;
+        if(currentMousePosition === undefined ) {
+            if(isMounted.current){                
+                setState((st)=>{
+                    initialHorizontalScrollPercent.current = st.horizontalScrollPercent;
+                    return st;
+                })
+            }
+        }
         else{
-            if(currentMousePositionXRef.current === undefined) return;
-            let currentX = (state.horizontalScrollPercent/100)*panelWidth;
-            console.log("currentPercent",state.horizontalScrollPercent);
-            currentX += currentMousePositionXRef.current;
-            const newPercent = (currentX *100)/panelWidth;
-            console.log("newPercent",newPercent);
+            let initialX = (initialHorizontalScrollPercent.current/100)*panelWidth;
+            const newX = initialX+ currentMousePosition!.x;
+            const newPercent = (newX *100)/panelWidth;
             setState({
                 horizontalScrollPercent: newPercent,
             })
-        }    
-    },[currentMousePosition])
+        }        
+    },[currentMousePosition])        
     
     let adjustedHorizontalRight = useMemo(()=>{
-        let x = panelWidth * (1-(state.horizontalScrollPercent/100));
-        x -= horizontalScrollWidth / 2;
+        let x = panelWidth * (1-(state.horizontalScrollPercent/100));        
         if( x < 0) return 0;
         return x;        
-    },[state.horizontalScrollPercent])
-    console.log("state.horizontalScrollPercent",state.horizontalScrollPercent);
-    adjustedHorizontalRight = useMemo(()=>{
-        if(!currentMousePosition) return adjustedHorizontalRight;
-        return adjustedHorizontalRight-currentMousePosition.x;
-    },[currentMousePosition,adjustedHorizontalRight])
-    console.log("adjustedHorizontalRight",adjustedHorizontalRight)
+    },[state.horizontalScrollPercent])   
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
     return <div id="branchPanel" className="w-100 overflow-x-hidden">
         <div className="d-flex w-100 align-items-stretch">
-            <svg width={panelWidth} height={panelHeight} viewBox={`${viewBoxValue.x} ${viewBoxValue.y} ${viewBoxValue.width} ${viewBoxValue.height}` } style={{transform:`scale(1)`} }>
+            <svg width={panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
                     <g>
                         {
                             props.repoDetails.mergedLines.map(line=>(
