@@ -98,7 +98,11 @@ function BranchPanelComponent(props:IBranchPanelProps){
     
     useEffect(()=>{
         const x = props.repoDetails.branchPanelWidth *(state.horizontalScrollPercent/100);
-        let viewBoxX = x - panelWidth/2;
+        let viewBoxX = x - panelWidth+horizontalScrollWidth;
+
+        if(state.horizontalScrollPercent < 50){
+            viewBoxX = x - panelWidth-horizontalScrollWidth;
+        }
         if(viewBoxX < 0) viewBoxX = 0;
         setState(st=>({
             ...st,
