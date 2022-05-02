@@ -76,6 +76,13 @@ function BranchPanelComponent(props:IBranchPanelProps){
         return width*panelWidth;
     },[state.viewBox.width,props.repoDetails.branchPanelWidth]);
 
+    const verticalScrollWidth = useMemo(()=>{
+        let totalHeight = props.repoDetails.branchPanelHeight;
+        if(totalHeight < panelHeight) totalHeight = panelHeight;
+        const height = state.viewBox.height / panelHeight;        
+        return height*panelHeight;
+    },[state.viewBox.height,props.repoDetails.branchPanelHeight]);
+
     const {currentMousePosition,elementRef} = useDrag();
     useEffect(()=>{
         if(currentMousePosition === undefined ) {
@@ -147,7 +154,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
                         }                                        
                     </g>
             </svg>
-            <div className="bg-secondary" style={{width:`10px`}}>
+            <div className="d-flex bg-secondary position-relative" style={{width:`10px`}}>
+                <div className="bg-danger position-absolute w-100" style={{height:`${verticalScrollWidth}px`,top:0,left:0}}> </div>
             </div>
         </div>            
             <div className="d-flex w-100 bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
