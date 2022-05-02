@@ -28,7 +28,8 @@ interface IState{
 
 function BranchPanelComponent(props:IBranchPanelProps){
     const panelHeight = 400;
-    const panelWidth = 900;
+    const panelWidth = 865;
+    const horizontalScrollContainerWidth = panelWidth+10;
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
     }),shallowEqual);
@@ -109,15 +110,17 @@ function BranchPanelComponent(props:IBranchPanelProps){
     },[state.horizontalScrollPercent]);
 
     const adjustedHorizontalRight = useMemo(()=>{
-        let x = panelWidth * (1-(state.horizontalScrollPercent/100));        
+        let x = horizontalScrollContainerWidth * (1-(state.horizontalScrollPercent/100));        
         if( x < 0) return 0;
+        if(x > horizontalScrollContainerWidth - horizontalScrollWidth) 
+            return horizontalScrollContainerWidth - horizontalScrollWidth;
         return x;        
     },[state.horizontalScrollPercent]);
-
+    console.log("state.horizontalScrollPercent",state.horizontalScrollPercent)
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
     return <div id="branchPanel" className="w-100 overflow-x-hidden">
-        <div className="d-flex w-100 align-items-stretch">
+        <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
             <svg width={panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
                     <g>
                         {
@@ -143,7 +146,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             <div className="bg-secondary" style={{width:`10px`}}>
             </div>
         </div>            
-            <div className="d-flex w-100 bg-secondary py-2 position-relative">
+            <div className="d-flex w-100 bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <div ref={elementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, right:adjustedHorizontalRight,top:0}}></div>
             </div>
     </div>

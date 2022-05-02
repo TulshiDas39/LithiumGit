@@ -16,7 +16,10 @@ export function useDrag(){
                 y:e.clientY-initialMousePosition.current!.y
             });
         }
-        const selectListener = (e:Event) => false;
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
 
         const downListener = (e:MouseEvent)=>{
             initialMousePosition.current = {x:e.clientX,y:e.clientY};
