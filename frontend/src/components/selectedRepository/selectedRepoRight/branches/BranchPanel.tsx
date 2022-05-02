@@ -23,7 +23,7 @@ interface IState{
     horizontalScrollPercent:number;
     verticalScrollPercent:number;
     viewBox:{x:number;y:number;width:number;height:number};
-    notScrolledHorizontally:boolean;
+    notScrolledHorizontallyYet:boolean;
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
@@ -47,7 +47,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         horizontalScrollPercent:0,
         verticalScrollPercent:0,
         viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:-10,width:panelWidth,height:panelHeight},
-        notScrolledHorizontally:true,
+        notScrolledHorizontallyYet:true,
     });
 
     const dataRef = useRef({
@@ -78,17 +78,19 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const {currentMousePosition,elementRef} = useDrag();
     useEffect(()=>{
         if(currentMousePosition === undefined ) {
-            if(!state.notScrolledHorizontally){                
+            if(!state.notScrolledHorizontallyYet){                
                 dataRef.current.initialHorizontalScrollPercent = state.horizontalScrollPercent;
             }
         }
         else{
             let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
             const newX = initialX+ currentMousePosition!.x;
-            const newPercent = (newX *100)/panelWidth;
+            let newPercent = (newX *100)/panelWidth;
+            if(newPercent > 100) newPercent = 100;
+            else if(newPercent < 0) newPercent = 0;
             setState({
                 horizontalScrollPercent: newPercent,
-                notScrolledHorizontally:false,
+                notScrolledHorizontallyYet:false,
             })
         }        
     },[currentMousePosition])        

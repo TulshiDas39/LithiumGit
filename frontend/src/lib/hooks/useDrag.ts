@@ -15,15 +15,19 @@ export function useDrag(){
                 x:e.clientX-initialMousePosition.current!.x,
                 y:e.clientY-initialMousePosition.current!.y
             });
-        }    
+        }
+        const selectListener = (e:Event) => false;
+
         const downListener = (e:MouseEvent)=>{
             initialMousePosition.current = {x:e.clientX,y:e.clientY};
             document.addEventListener("mousemove",moveListener);
-            document.addEventListener("mouseup",upListener);    
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
         }
         const upListener = ()=>{
             document.removeEventListener("mousemove",moveListener);
-            document.removeEventListener("mouseup",upListener);    
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
             setCurrentMousePosition(undefined);
         }        
         
