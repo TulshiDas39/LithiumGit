@@ -87,8 +87,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
             const newX = initialX+ currentMousePosition!.x;
             let newPercent = (newX *100)/panelWidth;
-            if(newPercent > 100) newPercent = 100;
-            else if(newPercent < 0) newPercent = 0;
+            const minPercent = (horizontalScrollWidth*100)/ horizontalScrollContainerWidth;
+            if(newPercent > 100) newPercent = 100;            
+            else if(newPercent < minPercent) newPercent = minPercent;
             setState({
                 horizontalScrollPercent: newPercent,
                 notScrolledHorizontallyYet:false,
@@ -120,7 +121,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
             return horizontalScrollContainerWidth - horizontalScrollWidth;
         return x;        
     },[state.horizontalScrollPercent]);
-    console.log("state.horizontalScrollPercent",state.horizontalScrollPercent)
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
     return <div id="branchPanel" className="w-100 overflow-x-hidden">
