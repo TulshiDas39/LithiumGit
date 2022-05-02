@@ -1,7 +1,7 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { useMemo, useRef, useState } from "react"
+import React, { useMemo, useRef } from "react"
 import { useEffect } from "react";
-import { shallowEqual, useStore } from "react-redux";
+import { shallowEqual } from "react-redux";
 import { useMultiState } from "../../../../lib";
 import { useDrag } from "../../../../lib/hooks/useDrag";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -23,6 +23,7 @@ interface IState{
     horizontalScrollPercent:number;
     verticalScrollPercent:number;
     viewBox:{x:number;y:number;width:number;height:number};
+    notScrolledHorizontally:boolean;
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
@@ -31,12 +32,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
     }),shallowEqual);
-
-    const propsRef = useRef(props);
-
-    useEffect(()=>{
-        propsRef.current = props;
-    },[props])
 
     useEffect(()=>{
         setState({scale:1+ (store.zoom/10)});        
@@ -51,16 +46,14 @@ function BranchPanelComponent(props:IBranchPanelProps){
         panelWidth:0,
         horizontalScrollPercent:0,
         verticalScrollPercent:0,
-        viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:-10,width:panelWidth,height:panelHeight}
+        viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:-10,width:panelWidth,height:panelHeight},
+        notScrolledHorizontally:true,
     });
 
-    const stateRef = useRef(state);
+    const dataRef = useRef({
+        initialHorizontalScrollPercent:0,
+    });
 
-    useEffect(()=>{
-        stateRef.current = state;
-    },[state])
-
-    const initialHorizontalScrollPercent = useRef(state.horizontalScrollPercent);
     const isMounted = useRef(false);
     useEffect(()=>{
         isMounted.current = true;
@@ -70,8 +63,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
         }
+        else return;
         const horizontalPercent = (props.repoDetails?.headCommit.x*100)/props.repoDetails.branchPanelWidth;
-        initialHorizontalScrollPercent.current = horizontalPercent;
+        dataRef.current.initialHorizontalScrollPercent = horizontalPercent;
         setState({horizontalScrollPercent:horizontalPercent});
 
     },[props.repoDetails?.headCommit])        
@@ -84,26 +78,23 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const {currentMousePosition,elementRef} = useDrag();
     useEffect(()=>{
         if(currentMousePosition === undefined ) {
-            if(isMounted.current){
-                //initialHorizontalScrollPercent.current = stateRef.current.horizontalScrollPercent;
-                setState((st)=>{
-                    initialHorizontalScrollPercent.current = st.horizontalScrollPercent;
-                    return st;
-                })
+            if(!state.notScrolledHorizontally){                
+                dataRef.current.initialHorizontalScrollPercent = state.horizontalScrollPercent;
             }
         }
         else{
-            let initialX = (initialHorizontalScrollPercent.current/100)*panelWidth;
+            let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
             const newX = initialX+ currentMousePosition!.x;
             const newPercent = (newX *100)/panelWidth;
             setState({
                 horizontalScrollPercent: newPercent,
+                notScrolledHorizontally:false,
             })
         }        
     },[currentMousePosition])        
     
     useEffect(()=>{
-        const x = propsRef.current.repoDetails.branchPanelWidth *(stateRef.current.horizontalScrollPercent/100);
+        const x = props.repoDetails.branchPanelWidth *(state.horizontalScrollPercent/100);
         let viewBoxX = x - panelWidth/2;
         if(viewBoxX < 0) viewBoxX = 0;
         setState(st=>({
@@ -120,8 +111,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
         if( x < 0) return 0;
         return x;        
     },[state.horizontalScrollPercent]);
-    
-    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
