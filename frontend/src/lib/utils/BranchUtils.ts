@@ -44,7 +44,7 @@ export class BranchUtils{
     }
     
     private static setBranchHeights(repoDetails:IRepositoryDetails){
-        let y = 20;
+        let y = 30;
         repoDetails.resolvedBranches.forEach(branch=>{
             branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
             console.log(y);
