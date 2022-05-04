@@ -17,7 +17,7 @@ interface IState{
     scrollTop:number;
     scrollLeft:number;
     horizontalScrollRatio:number;
-    verticalScrollPercent:number;
+    verticalScrollRatio:number;
     viewBox:{x:number;y:number;width:number;height:number};
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
@@ -41,7 +41,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         scrollLeft:props.repoDetails.branchPanelWidth,
         scrollTop:0,
         horizontalScrollRatio:0,
-        verticalScrollPercent:0,
+        verticalScrollRatio:0,
         viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:0,width:panelWidth,height:panelHeight},
         notScrolledHorizontallyYet:true,
         notScrolledVerticallyYet:true,
@@ -69,18 +69,31 @@ function BranchPanelComponent(props:IBranchPanelProps){
         let totalHeight = props.repoDetails.branchPanelHeight;
         if(totalHeight < panelHeight) totalHeight = panelHeight;
         if(totalWidth < panelWidth) totalHeight = panelWidth;
-        const horizontalScrollRatio = props.repoDetails?.headCommit.x/totalWidth;
-        const verticalPercent = (props.repoDetails?.headCommit.ownerBranch.y*100)/totalHeight;
-        const verticalScrollTop = (panelHeight-verticalScrollHeight)*(verticalPercent/100);
-        const horizontalScrollLeft = (panelWidth-horizontalScrollWidth)*horizontalScrollRatio;
-        dataRef.current.initialHorizontalScrollPercent = horizontalScrollRatio;
+        const horizontalRatio = props.repoDetails?.headCommit.x/totalWidth;
+        const verticalRatio = props.repoDetails?.headCommit.ownerBranch.y/totalHeight;
+        const verticalScrollTop = (panelHeight-verticalScrollHeight)*verticalRatio;
+        const horizontalScrollLeft = (panelWidth-horizontalScrollWidth)*horizontalRatio;
+        dataRef.current.initialHorizontalScrollPercent = horizontalRatio;
         dataRef.current.initialVerticalScrollTop = verticalScrollTop;
         dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
+
+        const x = totalWidth *horizontalRatio;
+        let viewBoxX = x - (panelWidth/2);
+
+
+        const y = totalHeight *verticalRatio;
+        let viewBoxY = y - (panelHeight/2);
+        
         setState({
-            horizontalScrollRatio:horizontalScrollRatio,
-            verticalScrollPercent:verticalPercent,
+            horizontalScrollRatio:horizontalRatio,
+            verticalScrollRatio:verticalRatio,
             verticalScrollTop:verticalScrollTop,
             horizontalScrollLeft:horizontalScrollLeft,
+            viewBox:{
+                ...state.viewBox,
+                x:viewBoxX,
+                y:viewBoxY,
+            }
         });
 
     },[props.repoDetails?.headCommit])        
@@ -120,8 +133,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let totalWidth = props.repoDetails.branchPanelWidth;
             if(totalWidth < panelWidth) totalWidth = panelWidth;
 
-            const y = totalWidth *newRatio;
-            let viewBoxX = y - (panelWidth/2);
+            const x = totalWidth *newRatio;
+            let viewBoxX = x - (panelWidth/2);
+            
 
             setState({
                 horizontalScrollRatio: newRatio,
@@ -146,15 +160,15 @@ function BranchPanelComponent(props:IBranchPanelProps){
             const maxY = panelHeight - verticalScrollHeight;
             if(newY > maxY) newY = maxY;
             else if(newY < 0) newY = 0;
-            const newPercent = (newY *100)/(panelHeight-verticalScrollHeight);
+            const newRatio = newY/(panelHeight-verticalScrollHeight);
             let totalHeight = props.repoDetails.branchPanelHeight;
             if(totalHeight < panelHeight) totalHeight = panelHeight;
 
-            const y = totalHeight *(state.verticalScrollPercent/100);
+            const y = totalHeight *newRatio;
             let viewBoxY = y - (panelHeight/2);
 
             setState({
-                verticalScrollPercent: newPercent,
+                verticalScrollRatio: newRatio,
                 notScrolledVerticallyYet:false,
                 verticalScrollTop:newY,
                 viewBox:{
