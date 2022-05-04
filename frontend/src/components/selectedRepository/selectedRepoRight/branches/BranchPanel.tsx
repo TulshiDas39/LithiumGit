@@ -58,6 +58,21 @@ function BranchPanelComponent(props:IBranchPanelProps){
     useEffect(()=>{
         isMounted.current = true;
     },[])
+
+    const horizontalScrollWidth = useMemo(()=>{
+        let totalWidth = props.repoDetails.branchPanelWidth;
+        if(totalWidth < panelWidth) totalWidth = panelWidth;
+        const width = state.viewBox.width / totalWidth;
+        return width*panelWidth;
+    },[state.viewBox.width,props.repoDetails.branchPanelWidth]);
+
+    const verticalScrollHeight = useMemo(()=>{        
+        let totalHeight = props.repoDetails.branchPanelHeight;
+        if(totalHeight < panelHeight) totalHeight = panelHeight;
+        const height = state.viewBox.height / totalHeight;        
+        return height*panelHeight;
+    },[state.viewBox.height,props.repoDetails.branchPanelHeight]);
+
     useEffect(()=>{
         if(props.repoDetails?.headCommit) {
             let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
@@ -94,19 +109,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         });
 
-    },[props.repoDetails?.headCommit])        
-    
-    const horizontalScrollWidth = useMemo(()=>{
-        const width = state.viewBox.width / props.repoDetails.branchPanelWidth;
-        return width*panelWidth;
-    },[state.viewBox.width,props.repoDetails.branchPanelWidth]);
-
-    const verticalScrollHeight = useMemo(()=>{        
-        let totalHeight = props.repoDetails.branchPanelHeight;
-        if(totalHeight < panelHeight) totalHeight = panelHeight;
-        const height = state.viewBox.height / totalHeight;        
-        return height*panelHeight;
-    },[state.viewBox.height,props.repoDetails.branchPanelHeight]);
+    },[props.repoDetails?.headCommit])                
 
     const {currentMousePosition: horizontalScrollMousePosition,elementRef: horizontalScrollElementRef} = useDrag();
     const {currentMousePosition:verticalScrollMousePosition,elementRef:verticalScrollElementRef} = useDrag();
@@ -117,6 +120,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         }
         else{
+            if(panelWidth <= horizontalScrollWidth) return;
             let newLeft = dataRef.current.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
             const maxLeft = panelWidth - horizontalScrollWidth;
             if(newLeft < 0) newLeft = 0;
@@ -148,6 +152,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         }
         else{
+            if(panelHeight <= verticalScrollHeight) return;
             let newY = dataRef.current.initialVerticalScrollTop + verticalScrollMousePosition!.y;
             const maxY = panelHeight - verticalScrollHeight;
             if(newY > maxY) newY = maxY;
