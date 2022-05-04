@@ -16,12 +16,13 @@ interface IBranchPanelProps{
 interface IState{
     scrollTop:number;
     scrollLeft:number;
-    horizontalScrollPercent:number;
+    horizontalScrollRatio:number;
     verticalScrollPercent:number;
     viewBox:{x:number;y:number;width:number;height:number};
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
-    verticalScrollY:number;
+    verticalScrollTop:number;
+    horizontalScrollLeft:number;
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
@@ -39,17 +40,18 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const [state,setState]=useMultiState<IState>({
         scrollLeft:props.repoDetails.branchPanelWidth,
         scrollTop:0,
-        horizontalScrollPercent:0,
+        horizontalScrollRatio:0,
         verticalScrollPercent:0,
         viewBox:{x:props.repoDetails.branchPanelWidth - panelWidth,y:0,width:panelWidth,height:panelHeight},
         notScrolledHorizontallyYet:true,
         notScrolledVerticallyYet:true,
-        verticalScrollY:0,
+        verticalScrollTop:0,
+        horizontalScrollLeft:0,
     });
 
     const dataRef = useRef({
         initialHorizontalScrollPercent:0,
-        initialVerticalScrollPercent:0,
+        initialHorizontalScrollLeft:0,
         initialVerticalScrollTop:0,
     });
 
@@ -67,16 +69,18 @@ function BranchPanelComponent(props:IBranchPanelProps){
         let totalHeight = props.repoDetails.branchPanelHeight;
         if(totalHeight < panelHeight) totalHeight = panelHeight;
         if(totalWidth < panelWidth) totalHeight = panelWidth;
-        const horizontalPercent = (props.repoDetails?.headCommit.x*100)/totalWidth;
+        const horizontalScrollRatio = props.repoDetails?.headCommit.x/totalWidth;
         const verticalPercent = (props.repoDetails?.headCommit.ownerBranch.y*100)/totalHeight;
         const verticalScrollTop = (panelHeight-verticalScrollHeight)*(verticalPercent/100);
-        dataRef.current.initialHorizontalScrollPercent = horizontalPercent;
-        dataRef.current.initialVerticalScrollPercent = verticalPercent;
+        const horizontalScrollLeft = (panelWidth-horizontalScrollWidth)*horizontalScrollRatio;
+        dataRef.current.initialHorizontalScrollPercent = horizontalScrollRatio;
         dataRef.current.initialVerticalScrollTop = verticalScrollTop;
+        dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
         setState({
-            horizontalScrollPercent:horizontalPercent,
+            horizontalScrollRatio:horizontalScrollRatio,
             verticalScrollPercent:verticalPercent,
-            verticalScrollY:verticalScrollTop,
+            verticalScrollTop:verticalScrollTop,
+            horizontalScrollLeft:horizontalScrollLeft,
         });
 
     },[props.repoDetails?.headCommit])        
@@ -98,19 +102,35 @@ function BranchPanelComponent(props:IBranchPanelProps){
     useEffect(()=>{
         if(horizontalScrollMousePosition === undefined ) {
             if(!state.notScrolledHorizontallyYet){                
-                dataRef.current.initialHorizontalScrollPercent = state.horizontalScrollPercent;
+                dataRef.current.initialHorizontalScrollPercent = state.horizontalScrollRatio;
+                dataRef.current.initialHorizontalScrollLeft = state.horizontalScrollLeft;
             }
         }
         else{
-            let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
-            const newX = initialX+ horizontalScrollMousePosition!.x;
-            let newPercent = (newX *100)/panelWidth;
-            const minPercent = (horizontalScrollWidth*100)/ horizontalScrollContainerWidth;
-            if(newPercent > 100) newPercent = 100;            
-            else if(newPercent < minPercent) newPercent = minPercent;
+            //let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
+            let newLeft = dataRef.current.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
+            const maxLeft = panelWidth - horizontalScrollWidth;
+            if(newLeft < 0) newLeft = 0;
+            else if(newLeft > maxLeft) newLeft = maxLeft;
+            let newRatio = newLeft/maxLeft;
+            //const minPercent = (horizontalScrollWidth*100)/ horizontalScrollContainerWidth;
+            // if(newRatio > 100) newRatio = 100;            
+            // else if(newRatio < minPercent) newRatio = minPercent;
+
+            let totalWidth = props.repoDetails.branchPanelWidth;
+            if(totalWidth < panelWidth) totalWidth = panelWidth;
+
+            const y = totalWidth *newRatio;
+            let viewBoxX = y - (panelWidth/2);
+
             setState({
-                horizontalScrollPercent: newPercent,
-                notScrolledHorizontallyYet:false,
+                horizontalScrollRatio: newRatio,
+                horizontalScrollLeft:newLeft,
+                notScrolledHorizontallyYet:false,       
+                viewBox:{
+                    ...state.viewBox,
+                    x: viewBoxX
+                }
             })
         }        
     },[horizontalScrollMousePosition])        
@@ -118,8 +138,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
     useEffect(()=>{
         if(verticalScrollMousePosition === undefined ) {
             if(!state.notScrolledVerticallyYet){                
-                dataRef.current.initialVerticalScrollPercent = state.verticalScrollPercent;
-                dataRef.current.initialVerticalScrollTop = state.verticalScrollY;
+                dataRef.current.initialVerticalScrollTop = state.verticalScrollTop;
             }
         }
         else{
@@ -137,7 +156,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             setState({
                 verticalScrollPercent: newPercent,
                 notScrolledVerticallyYet:false,
-                verticalScrollY:newY,
+                verticalScrollTop:newY,
                 viewBox:{
                     ...state.viewBox,
                     y:viewBoxY
@@ -146,46 +165,46 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }        
     },[verticalScrollMousePosition])
     
-    useEffect(()=>{
-        const x = props.repoDetails.branchPanelWidth *(state.horizontalScrollPercent/100);
-        let viewBoxX = x - panelWidth+horizontalScrollWidth;
+    // useEffect(()=>{
+    //     const x = props.repoDetails.branchPanelWidth *state.horizontalScrollRatio;
+    //     let viewBoxX = x - panelWidth+horizontalScrollWidth;
 
-        if(state.horizontalScrollPercent < 50){
-            viewBoxX = x - panelWidth-horizontalScrollWidth;
-        }
-        if(viewBoxX < 0) viewBoxX = 0;
-        setState(st=>({
-            ...st,
-            viewBox:{
-                ...st.viewBox,
-                x: viewBoxX
-            }
-        }))
-    },[state.horizontalScrollPercent]);
+    //     if(state.horizontalScrollRatio < .5){
+    //         viewBoxX = x - panelWidth-horizontalScrollWidth;
+    //     }
+    //     if(viewBoxX < 0) viewBoxX = 0;
+    //     setState(st=>({
+    //         ...st,
+    //         viewBox:{
+    //             ...st.viewBox,
+    //             x: viewBoxX
+    //         }
+    //     }))
+    // },[state.horizontalScrollRatio]);
 
-    useEffect(()=>{
-        let totalHeight = props.repoDetails.branchPanelHeight;
-        if(totalHeight < panelHeight) totalHeight = panelHeight;
+    // useEffect(()=>{
+    //     let totalHeight = props.repoDetails.branchPanelHeight;
+    //     if(totalHeight < panelHeight) totalHeight = panelHeight;
 
-        const y = totalHeight *(state.verticalScrollPercent/100);
-        let viewBoxY = y - (panelHeight/2);
+    //     const y = totalHeight *(state.verticalScrollPercent/100);
+    //     let viewBoxY = y - (panelHeight/2);
 
-        setState(st=>({
-            ...st,
-            viewBox:{
-                ...st.viewBox,
-                y: viewBoxY
-            }
-        }))
-    },[state.verticalScrollPercent]);
+    //     setState(st=>({
+    //         ...st,
+    //         viewBox:{
+    //             ...st.viewBox,
+    //             y: viewBoxY
+    //         }
+    //     }))
+    // },[state.verticalScrollPercent]);
 
-    const adjustedHorizontalRight = useMemo(()=>{
-        let x = horizontalScrollContainerWidth * (1-(state.horizontalScrollPercent/100));        
-        if( x < 0) return 0;
-        if(x > horizontalScrollContainerWidth - horizontalScrollWidth) 
-            return horizontalScrollContainerWidth - horizontalScrollWidth;
-        return x;        
-    },[state.horizontalScrollPercent]);        
+    // const adjustedHorizontalRight = useMemo(()=>{
+    //     let x = horizontalScrollContainerWidth * (1-(state.horizontalScrollRatio/100));        
+    //     if( x < 0) return 0;
+    //     if(x > horizontalScrollContainerWidth - horizontalScrollWidth) 
+    //         return horizontalScrollContainerWidth - horizontalScrollWidth;
+    //     return x;        
+    // },[state.horizontalScrollRatio]);        
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
@@ -214,11 +233,11 @@ function BranchPanelComponent(props:IBranchPanelProps){
                     </g>
             </svg>
             <div className="d-flex bg-secondary position-relative" style={{width:`10px`}}>
-                <div ref={verticalScrollElementRef as any} className="bg-danger position-absolute w-100" style={{height:`${verticalScrollHeight}px`,top:state.verticalScrollY,left:0}}> </div>
+                <div ref={verticalScrollElementRef as any} className="bg-danger position-absolute w-100" style={{height:`${verticalScrollHeight}px`,top:state.verticalScrollTop,left:0}}> </div>
             </div>
         </div>            
             <div className="d-flex w-100 bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div ref={horizontalScrollElementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, right:adjustedHorizontalRight,top:0}}></div>
+                <div ref={horizontalScrollElementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, left:state.horizontalScrollLeft,top:0}}></div>
             </div>
     </div>
 }
