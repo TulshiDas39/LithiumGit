@@ -123,14 +123,11 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         }
         else{
-            //let initialY = (dataRef.current.initialVerticalScrollPercent/100)*panelHeight;
             let newY = dataRef.current.initialVerticalScrollTop + verticalScrollMousePosition!.y;
             const maxY = panelHeight - verticalScrollHeight;
             if(newY > maxY) newY = maxY;
             else if(newY < 0) newY = 0;
-            // let newPercent = (newY *100)/panelHeight;
             const newPercent = (newY *100)/(panelHeight-verticalScrollHeight);
-            //const minPercent = (verticalScrollHeight*100)/ panelHeight;
             let totalHeight = props.repoDetails.branchPanelHeight;
             if(totalHeight < panelHeight) totalHeight = panelHeight;
 
@@ -173,10 +170,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
         const y = totalHeight *(state.verticalScrollPercent/100);
         let viewBoxY = y - (panelHeight/2);
 
-        // if(state.verticalScrollPercent < 50){
-        //     viewBoxY = y - panelHeight-verticalScrollHeight;
-        // }
-        //if(viewBoxY < 0) viewBoxY = 0;
         setState(st=>({
             ...st,
             viewBox:{
@@ -192,24 +185,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         if(x > horizontalScrollContainerWidth - horizontalScrollWidth) 
             return horizontalScrollContainerWidth - horizontalScrollWidth;
         return x;        
-    },[state.horizontalScrollPercent]);
-
-
-    const adjustedVerticalTop = useMemo(()=>{
-        let y = panelHeight * (1-(state.verticalScrollPercent/100));   
-        const bottom = (panelHeight - verticalScrollHeight)*(1-(state.verticalScrollPercent/100));
-        // if( y < 0) return 0;
-        // if(y > panelHeight - verticalScrollHeight) 
-        //     return panelHeight - verticalScrollHeight;
-        return bottom;        
-    },[state.verticalScrollPercent]);
-    console.log("state.verticalScrollPercent",state.verticalScrollPercent);
-    console.log("dataRef.current.initialVerticalScrollPercent",dataRef.current.initialVerticalScrollPercent);
-    console.log("dataRef.current.initialVerticalScrollPercent",verticalScrollMousePosition);
-    // console.log("state.viewBox",state.viewBox);
-    // console.log("adjustedVerticalTop",adjustedVerticalTop);
-    // console.log("props.repoDetails.branchPanelHeight",props.repoDetails.branchPanelHeight);
-    // console.log("verticalScrollMousePosition",verticalScrollMousePosition);
+    },[state.horizontalScrollPercent]);        
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
