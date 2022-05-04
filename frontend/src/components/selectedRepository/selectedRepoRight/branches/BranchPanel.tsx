@@ -50,7 +50,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
     });
 
     const dataRef = useRef({
-        initialHorizontalScrollPercent:0,
         initialHorizontalScrollLeft:0,
         initialVerticalScrollTop:0,
     });
@@ -73,7 +72,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
         const verticalRatio = props.repoDetails?.headCommit.ownerBranch.y/totalHeight;
         const verticalScrollTop = (panelHeight-verticalScrollHeight)*verticalRatio;
         const horizontalScrollLeft = (panelWidth-horizontalScrollWidth)*horizontalRatio;
-        dataRef.current.initialHorizontalScrollPercent = horizontalRatio;
         dataRef.current.initialVerticalScrollTop = verticalScrollTop;
         dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
 
@@ -115,27 +113,21 @@ function BranchPanelComponent(props:IBranchPanelProps){
     useEffect(()=>{
         if(horizontalScrollMousePosition === undefined ) {
             if(!state.notScrolledHorizontallyYet){                
-                dataRef.current.initialHorizontalScrollPercent = state.horizontalScrollRatio;
                 dataRef.current.initialHorizontalScrollLeft = state.horizontalScrollLeft;
             }
         }
         else{
-            //let initialX = (dataRef.current.initialHorizontalScrollPercent/100)*panelWidth;
             let newLeft = dataRef.current.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
             const maxLeft = panelWidth - horizontalScrollWidth;
             if(newLeft < 0) newLeft = 0;
             else if(newLeft > maxLeft) newLeft = maxLeft;
-            let newRatio = newLeft/maxLeft;
-            //const minPercent = (horizontalScrollWidth*100)/ horizontalScrollContainerWidth;
-            // if(newRatio > 100) newRatio = 100;            
-            // else if(newRatio < minPercent) newRatio = minPercent;
+            let newRatio = newLeft/maxLeft;            
 
             let totalWidth = props.repoDetails.branchPanelWidth;
             if(totalWidth < panelWidth) totalWidth = panelWidth;
 
             const x = totalWidth *newRatio;
-            let viewBoxX = x - (panelWidth/2);
-            
+            let viewBoxX = x - (panelWidth/2);            
 
             setState({
                 horizontalScrollRatio: newRatio,
@@ -177,48 +169,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
                 }
             })
         }        
-    },[verticalScrollMousePosition])
-    
-    // useEffect(()=>{
-    //     const x = props.repoDetails.branchPanelWidth *state.horizontalScrollRatio;
-    //     let viewBoxX = x - panelWidth+horizontalScrollWidth;
-
-    //     if(state.horizontalScrollRatio < .5){
-    //         viewBoxX = x - panelWidth-horizontalScrollWidth;
-    //     }
-    //     if(viewBoxX < 0) viewBoxX = 0;
-    //     setState(st=>({
-    //         ...st,
-    //         viewBox:{
-    //             ...st.viewBox,
-    //             x: viewBoxX
-    //         }
-    //     }))
-    // },[state.horizontalScrollRatio]);
-
-    // useEffect(()=>{
-    //     let totalHeight = props.repoDetails.branchPanelHeight;
-    //     if(totalHeight < panelHeight) totalHeight = panelHeight;
-
-    //     const y = totalHeight *(state.verticalScrollPercent/100);
-    //     let viewBoxY = y - (panelHeight/2);
-
-    //     setState(st=>({
-    //         ...st,
-    //         viewBox:{
-    //             ...st.viewBox,
-    //             y: viewBoxY
-    //         }
-    //     }))
-    // },[state.verticalScrollPercent]);
-
-    // const adjustedHorizontalRight = useMemo(()=>{
-    //     let x = horizontalScrollContainerWidth * (1-(state.horizontalScrollRatio/100));        
-    //     if( x < 0) return 0;
-    //     if(x > horizontalScrollContainerWidth - horizontalScrollWidth) 
-    //         return horizontalScrollContainerWidth - horizontalScrollWidth;
-    //     return x;        
-    // },[state.horizontalScrollRatio]);        
+    },[verticalScrollMousePosition])             
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
