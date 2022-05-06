@@ -1,5 +1,5 @@
 import { MainEvents } from "common_library";
-import { app, BrowserWindow, ipcMain, ipcRenderer } from "electron";
+import { app, autoUpdater, BrowserWindow } from "electron";
 import express = require("express");
 import getPort = require("get-port");
 import * as path from "path";
@@ -19,6 +19,13 @@ export class Startup{
       await this.loadSavedData();      
       await this.hostFrontend();
       this.startIpcManagers();
+    }
+
+    checkForUpdate(){
+      
+      autoUpdater.checkForUpdates();
+
+
     }
 
     start(){
