@@ -1,5 +1,6 @@
 import { MainEvents } from "common_library";
-import { app, BrowserWindow, ipcRenderer } from "electron";
+import { app, BrowserWindow, ipcMain, ipcRenderer } from "electron";
+import express = require("express");
 import getPort = require("get-port");
 import * as path from "path";
 import { DataManager } from "./businessClasses";
@@ -11,11 +12,12 @@ import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
 
 export class Startup{
-    private uiPort:number;
+    private uiPort = 54523;
 
     async initilise(){
-      this.initAppData();
-      await this.loadSavedData();
+      //this.initAppData();
+      await this.loadSavedData();      
+      await this.hostFrontend();
       this.startIpcManagers();
     }
 
@@ -54,27 +56,47 @@ export class Startup{
         }
     }
 
-    private async getAvailablePort(){
+    private async setAvailablePort(){        
+        console.log("process.NODE_ENV",(process as any).NODE_ENV)
+        console.log("process.FRONTEND_PORT",(process as any).FRONTEND_PORT)
+        console.log("process.env.FRONTEND_PORT",process.env.FRONTEND_PORT)
+        // console.log("process.env",process.env)
+        //console.log("process",process)
+        // if(process.env.NODE_ENV === 'development')
+        //   return process.env.FRONTEND_PORT!;
         let portNumber = SavedData.configInfo.portNumber || 54523;
-        try{
-          
+        try{          
           let availablePort = await getPort({port:portNumber});
 
           if(SavedData.configInfo.portNumber !== availablePort){
             SavedData.configInfo.portNumber = availablePort;
             DB.config.updateOne(SavedData.configInfo);
           }
-          
+          this.uiPort = availablePort;
           return availablePort;
         }catch(e){
           console.error(e);
-          return 54522;
+          this.uiPort = 54522;
         }
     }
 
     private async hostFrontend(){
-        //process.env.NODE_ENV === ''
-       // const x = {};
+      await this.setAvailablePort();
+      
+      //const port = process.env.PORT || 8080;
+      const app = express();
+
+      // serve static assets normally
+      app.use(express.static(__dirname + '/build'));
+
+      // handle every other route with index.html, which will contain
+      // a script tag to your application's JavaScript file(s).
+      app.get('*', function (request, response) {
+        response.sendFile(path.resolve(__dirname,"build", 'index.html'));
+      });
+
+      app.listen(this.uiPort);
+      console.log("server started on port " + this.uiPort);
        
     }
 
@@ -88,14 +110,15 @@ export class Startup{
           width: 800,
         });
         AppData.mainWindow = mainWindow;
-        //const portNumber = await this.getAvailablePort();
-        // mainWindow.loadURL(`http://localhost:${portNumber}`);
-        mainWindow.loadURL(`http://localhost:54533`);//54533
+        mainWindow.loadURL(`http://localhost:${this.uiPort}`);
+
+        // mainWindow.loadURL(`http://localhost:54533`);//54533
         mainWindow.webContents.openDevTools();
     }
 
     private handleReadyState(){
         app.on("ready", async () => {
+            await this.initilise();
             await this.createWindow();
           
             app.on("activate", function () {
