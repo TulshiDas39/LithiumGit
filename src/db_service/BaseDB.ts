@@ -1,4 +1,4 @@
-import { BaseSchema ,StringUtils} from "common_library";
+import { BaseSchema ,createBaseSchema,StringUtils} from "common_library";
 
 import * as DataStore from 'nedb';
 
@@ -24,7 +24,28 @@ export class BaseDB<T extends BaseSchema>{
     }
 
     insertOne(record:T,cb?: (err: Error, document: T) => void){        
-        this.dataStore.insert(record,cb);
+        this.dataStore.insert({
+            ...createBaseSchema(),
+            ...record
+        },cb);
+    }
+
+    insertOrUpdate(record:T,cb?:(err:Error,document:T)=>void){
+        this.getById(record._id,(err,doc)=>{
+            if(doc){
+                doc.updateAt = new Date().toISOString();
+                this.dataStore.update<T>({_id:record._id},record,{},(err,updateCount)=>{
+                    if(cb){
+                        if(err) cb(err,undefined);
+                        else cb(undefined,record);
+                    }
+                });                    
+            }
+            else{                
+                this.insertOne(record);
+            }
+            if(err) console.error(err);
+        });
     }
     
     insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){

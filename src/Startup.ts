@@ -1,14 +1,17 @@
 import { MainEvents } from "common_library";
 import { app, BrowserWindow, ipcRenderer } from "electron";
+import getPort = require("get-port");
 import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
 import { GitManager } from "./businessClasses/GitManager";
+import { ConfigInfo } from "./dataClasses";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
 
 export class Startup{
+    private uiPort:number;
     start(){
         this.initAppData();
         this.loadSavedData();
@@ -36,26 +39,53 @@ export class Startup{
 
     private loadSavedData(){
         SavedData.recentRepositories = DB.repository.getAll();        
+        SavedData.configInfo = DB.config.getAll()[0];
+        if(!SavedData.configInfo){
+          const record={
+            portNumber:54523
+          } as ConfigInfo;
+          DB.config.insertOne(record);
+          SavedData.configInfo = DB.config.getAll()[0];;
+        }
     }
 
-    private createWindow() {
+    private async getAvailablePort(){
+        let portNumber = SavedData.configInfo.portNumber || 54523;
+        try{
+          
+          let availablePort = await getPort({port:portNumber});
+
+          if(SavedData.configInfo.portNumber !== availablePort){
+            SavedData.configInfo.portNumber = availablePort;
+            DB.config.updateOne(SavedData.configInfo);
+          }
+          
+          return availablePort;
+        }catch(e){
+          console.error(e);
+          return 54522;
+        }
+    }
+
+    private async  createWindow() {
         const mainWindow = new BrowserWindow({
           height: 600,
           webPreferences: {
             preload: path.join(__dirname, "preload.js"),
-            // nodeIntegration:true,
             contextIsolation:false,
           },
           width: 800,
         });
         AppData.mainWindow = mainWindow;
-        mainWindow.loadURL("http://localhost:54522");      
+        //const portNumber = await this.getAvailablePort();
+        // mainWindow.loadURL(`http://localhost:${portNumber}`);
+        mainWindow.loadURL(`http://localhost:54533`);//54533
         mainWindow.webContents.openDevTools();
     }
 
     private handleReadyState(){
-        app.on("ready", () => {
-            this.createWindow();
+        app.on("ready", async () => {
+            await this.createWindow();
           
             app.on("activate", function () {
               // On macOS it's common to re-create a window in the app when the
