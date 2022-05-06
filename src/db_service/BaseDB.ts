@@ -16,6 +16,16 @@ export class BaseDB<T extends BaseSchema>{
     getById(id:string,callback: (err: Error, document: T) => void){
         this.dataStore.findOne({_id:id},callback)
     }
+
+    getByIdAsync(id:string,callback: (err: Error, document: T) => void){
+        return new Promise<T>((resolve,reject)=>{
+            this.dataStore.findOne({_id:id},(err,doc)=>{
+                if(err) reject(err);
+                resolve(doc);
+            });
+        });
+    }
+
     getByQuery(query:Partial<T>,callback: (err: Error, document: T) => void){
         this.dataStore.findOne(query,null,callback)
     }
@@ -28,6 +38,15 @@ export class BaseDB<T extends BaseSchema>{
             ...createBaseSchema(),
             ...record
         },cb);
+    }
+
+    insertOneAsync(record:T){        
+        return new Promise<T>((resolve,reject)=>{
+            this.insertOne(record,(err,doc)=>{
+                if(err) reject(err);
+                resolve(doc);
+            });            
+        })       
     }
 
     insertOrUpdate(record:T,cb?:(err:Error,document:T)=>void){
@@ -47,6 +66,16 @@ export class BaseDB<T extends BaseSchema>{
             if(err) console.error(err);
         });
     }
+
+    insertOrUpdateAsync(record:T,cb?:(err:Error,document:T)=>void){
+
+        return new Promise<T>((resove,reject)=>{
+            this.insertOrUpdate(record,(err,doc)=>{
+                if(err) reject(err);
+                resove(doc);
+            });
+        })        
+    }
     
     insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){
         if(records.length === 0) return;
@@ -57,12 +86,32 @@ export class BaseDB<T extends BaseSchema>{
         })
         this.dataStore.insert(records,cb);
     }
+
+    insertManyAsync(records:T[]){
+        return new Promise<T[]>((resolve,reject)=>{
+            this.insertMany(records,(err,docs)=>{
+                if(err) reject(err);
+                resolve(docs);
+            });
+        })
+    }
+
     updateOne(record:T,cb?: (err: Error, documentsCount: number) => void){
         this.getById(record._id,(err,doc)=>{
             if(doc) this.dataStore.update({_id:record._id}, record,{},cb);
             if(err) console.error(err);
         })
     }
+
+    updateOneAsync(record:T){
+        return new Promise<number>((resolve,reject)=>{
+            this.updateOne(record,(err,updateCount)=>{
+                if(err) reject(err);
+                resolve(updateCount);
+            })
+        });        
+    }
+
     updateOrCreateMany(records:T[],cb?: (err: Error, documentsCount: number) => void){
         if(records.length === 0) return ;
         let iteration=0;
@@ -84,7 +133,26 @@ export class BaseDB<T extends BaseSchema>{
         })
     }
 
+    updateOrCreateManyAsync(records:T[]){
+        return new Promise<number>((resolve,reject)=>{
+            this.updateOrCreateMany(records,(err,updatecount)=>{
+                if(err) reject(err);
+                resolve(updatecount);
+            })
+        })
+    }
+
     delete(query:Partial<T>,cb?: (err: Error, n: number) => void){        
         this.dataStore.remove(query,cb);
     }
+
+    deleteAsync(query:Partial<T>){
+        return new Promise<number>((resolve,reject)=>{
+            this.delete(query,(err,deleteCount)=>{
+                if(err) reject(err);
+                resolve(deleteCount);
+            })
+        })
+    }
+
 }

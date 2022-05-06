@@ -12,10 +12,15 @@ import { DB } from "./db_service/db_service";
 
 export class Startup{
     private uiPort:number;
+
+    async initilise(){
+      this.initAppData();
+      await this.loadSavedData();
+      this.startIpcManagers();
+    }
+
     start(){
-        this.initAppData();
-        this.loadSavedData();
-        this.startIpcManagers();
+        
         // this.createWindow();          
           // This method will be called when Electron has finished
           // initialization and is ready to create browser windows.
@@ -37,14 +42,14 @@ export class Startup{
         // AppData.appPath = app.getAppPath();
     }
 
-    private loadSavedData(){
+    private async loadSavedData(){
         SavedData.recentRepositories = DB.repository.getAll();        
         SavedData.configInfo = DB.config.getAll()[0];
         if(!SavedData.configInfo){
           const record={
             portNumber:54523
           } as ConfigInfo;
-          DB.config.insertOne(record);
+          await DB.config.insertOneAsync(record);
           SavedData.configInfo = DB.config.getAll()[0];;
         }
     }
@@ -65,6 +70,12 @@ export class Startup{
           console.error(e);
           return 54522;
         }
+    }
+
+    private async hostFrontend(){
+        //process.env.NODE_ENV === ''
+       // const x = {};
+       
     }
 
     private async  createWindow() {
