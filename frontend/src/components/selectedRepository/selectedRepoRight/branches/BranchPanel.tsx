@@ -91,12 +91,15 @@ function BranchPanelComponent(props:IBranchPanelProps){
         dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
 
         const x = totalWidth *horizontalRatio;
-        let viewBoxX = x - (panelWidth/2);
+        let viewBoxX = 0;
+        if(totalWidth > panelWidth) viewBoxX = x- (panelWidth/2);
+
 
 
         const y = totalHeight *verticalRatio;
-        let viewBoxY = y - (panelHeight/2);
-        
+        let viewBoxY = 0;
+        if(totalHeight > panelHeight) viewBoxY = y - (panelHeight/2);        
+
         setState({
             horizontalScrollRatio:horizontalRatio,
             verticalScrollRatio:verticalRatio,
