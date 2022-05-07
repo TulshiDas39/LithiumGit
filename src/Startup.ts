@@ -1,5 +1,5 @@
 import { MainEvents } from "common_library";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import { autoUpdater } from "electron-updater";
 import express = require("express");
 import getPort = require("get-port");
@@ -113,6 +113,8 @@ export class Startup{
     }
 
     private async  createWindow() {
+        if(process.env.NODE_ENV !== 'development')
+          Menu.setApplicationMenu(null);
         const mainWindow = new BrowserWindow({
           height: 600,
           webPreferences: {
