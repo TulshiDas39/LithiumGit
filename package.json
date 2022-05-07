@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1-alpha",
+  "version": "0.0.1-alpha.1",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -41,7 +41,7 @@
     "simple-git": "^2.42.0"
   },
   "build": {
-    "productName": "Git Studio",
+    "productName": "Git_Studio",
     "appId": "org.gitstudio.electron",
     "asar": false,
     "asarUnpack": "**\\*.{node,dll}",
@@ -110,7 +110,8 @@
       "provider": "github",
       "owner": "tulshidas39",
       "repo": "gitstudio"
-    }
+    },
+    "artifactName":"Git-Studio-Setup-${os}-${arch}-${version}.${ext}"
   },
   "repository": {
     "type": "git",
