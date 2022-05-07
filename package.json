@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -108,7 +108,7 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "tulshidas3",
+      "owner": "tulshidas39",
       "repo": "gitstudio"
     }
   },
