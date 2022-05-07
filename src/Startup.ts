@@ -1,5 +1,6 @@
 import { MainEvents } from "common_library";
-import { app, autoUpdater, BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
+import { autoUpdater } from "electron-updater";
 import express = require("express");
 import getPort = require("get-port");
 import * as path from "path";
@@ -16,13 +17,15 @@ export class Startup{
 
     async initilise(){
       //this.initAppData();
+      this.checkForUpdate();
       await this.loadSavedData();      
       await this.hostFrontend();
       this.startIpcManagers();
     }
 
     checkForUpdate(){
-      
+      if(process.env.NODE_ENV === 'development')
+        return;
       autoUpdater.checkForUpdates();
 
 
@@ -67,10 +70,7 @@ export class Startup{
         console.log("process.NODE_ENV",(process as any).NODE_ENV)
         console.log("process.FRONTEND_PORT",(process as any).FRONTEND_PORT)
         console.log("process.env.FRONTEND_PORT",process.env.FRONTEND_PORT)
-        // console.log("process.env",process.env)
-        //console.log("process",process)
-        // if(process.env.NODE_ENV === 'development')
-        //   return process.env.FRONTEND_PORT!;
+        
         let portNumber = SavedData.configInfo.portNumber || 54523;
         try{          
           let availablePort = await getPort({port:portNumber});
@@ -88,6 +88,10 @@ export class Startup{
     }
 
     private async hostFrontend(){
+      if(process.env.NODE_ENV === 'development'){
+        this.uiPort = process.env.FRONTEND_PORT;
+        return;
+      }
       await this.setAvailablePort();
       
       //const port = process.env.PORT || 8080;
@@ -118,9 +122,9 @@ export class Startup{
         });
         AppData.mainWindow = mainWindow;
         mainWindow.loadURL(`http://localhost:${this.uiPort}`);
-
-        // mainWindow.loadURL(`http://localhost:54533`);//54533
-        mainWindow.webContents.openDevTools();
+        
+        if(process.env.NODE_ENV === 'development')
+          mainWindow.webContents.openDevTools();
     }
 
     private handleReadyState(){
