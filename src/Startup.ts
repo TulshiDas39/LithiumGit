@@ -7,6 +7,7 @@ import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
 import { GitManager } from "./businessClasses/GitManager";
+import { Updater } from "./businessClasses/Updater";
 import { ConfigInfo } from "./dataClasses";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
@@ -26,7 +27,7 @@ export class Startup{
     checkForUpdate(){
       if(process.env.NODE_ENV === 'development')
         return;
-      autoUpdater.checkForUpdates();
+        new Updater().checkForUpdate();
 
 
     }
