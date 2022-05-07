@@ -88,6 +88,15 @@
         "nsis"
       ]
     },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": false,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "license": "LICENSE",
+      "runAfterFinish": true
+    },
     "linux": {
       "target": [
         "AppImage"
