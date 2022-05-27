@@ -123,6 +123,7 @@ export class Startup{
           },
           width: 800,
         });
+        mainWindow.maximize();
         AppData.mainWindow = mainWindow;
         mainWindow.loadURL(`http://localhost:${this.uiPort}`);
         
