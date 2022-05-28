@@ -99,12 +99,12 @@ export class Startup{
       const app = express();
 
       // serve static assets normally
-      app.use(express.static(__dirname + '/build'));
+      app.use(express.static(__dirname + '/frontend'));
 
       // handle every other route with index.html, which will contain
       // a script tag to your application's JavaScript file(s).
       app.get('*', function (request, response) {
-        response.sendFile(path.resolve(__dirname,"build", 'index.html'));
+        response.sendFile(path.resolve(__dirname,"frontend", 'index.html'));
       });
 
       app.listen(this.uiPort);
