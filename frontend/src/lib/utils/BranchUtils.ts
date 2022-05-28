@@ -1,4 +1,5 @@
 import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, StringUtils } from "common_library";
+import { IViewBox } from "../interfaces";
 
 export class BranchUtils{
     static readonly headPrefix = "HEAD -> ";
@@ -272,5 +273,17 @@ export class BranchUtils{
         branchRemote.branchName = branchName;
         branchRemote.remote = remote;        
         return branchRemote;
+    }
+
+    static getViewBoxValue(currentValue:IViewBox,zoomStep:number){
+        if(zoomStep === 0) return {...currentValue};
+        const newViewBox = {} as IViewBox;
+        const pxPerZoom = 10;
+        const changedPx = pxPerZoom*zoomStep;
+        newViewBox.x = currentValue.x + changedPx;
+        newViewBox.y = currentValue.y + changedPx;
+        newViewBox.width = currentValue.width - (changedPx*2);
+        newViewBox.height = currentValue.height - (changedPx*2);
+        return newViewBox;
     }
 }
