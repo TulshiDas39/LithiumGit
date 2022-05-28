@@ -129,9 +129,10 @@ function BranchPanelComponent(props:IBranchPanelProps){
         if(totalWidth < state.panelWidth) totalHeight = state.panelWidth;
         const horizontalRatio = props.repoDetails?.headCommit.x/totalWidth;
         const verticalRatio = props.repoDetails?.headCommit.ownerBranch.y/totalHeight;
-        const verticalScrollTop = (panelHeight-verticalScrollHeight)*verticalRatio;
+        let verticalScrollTop = (panelHeight-verticalScrollHeight)*verticalRatio;
+        //verticalScrollTop -= (verticalScrollHeight/2);
         let horizontalScrollLeft = (horizontalScrollContainerWidth-state.horizontalScrollWidth)*horizontalRatio;
-        horizontalScrollLeft -= (state.horizontalScrollWidth/2);        
+        //horizontalScrollLeft -= (state.horizontalScrollWidth/2);        
         dataRef.current.initialVerticalScrollTop = verticalScrollTop;
         dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
 
@@ -233,14 +234,14 @@ function BranchPanelComponent(props:IBranchPanelProps){
             const width = Math.floor(horizontalScrollContainerRef.current.getBoundingClientRect().width);
             const newPanelWidth = width-10;
             if(state.panelWidth != newPanelWidth){
-                let viewBox = {x:0,y:0} as IViewBox;
+                let viewBox = {x:state.viewBox.x,y:state.viewBox.y} as IViewBox;
                 viewBox.width = newPanelWidth;
                 viewBox.height = panelHeight;
                 viewBox = BranchUtils.getViewBoxValue(viewBox,1);
                 let totalWidth = props.repoDetails.branchPanelWidth;
-                if(totalWidth < state.panelWidth) totalWidth = state.panelWidth;
+                if(totalWidth < newPanelWidth) totalWidth = newPanelWidth;
                 const widthRatio = viewBox.width / totalWidth;
-                const horizontalScrollWidth = widthRatio*newPanelWidth;
+                const horizontalScrollWidth = widthRatio*width;
                 setState({
                     panelWidth:newPanelWidth,
                     viewBox:viewBox,
