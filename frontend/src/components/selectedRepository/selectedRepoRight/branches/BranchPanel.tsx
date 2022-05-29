@@ -1,5 +1,5 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { Fragment, useCallback, useMemo, useRef, useState } from "react"
+import React, { Fragment, useCallback, useMemo, useRef } from "react"
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, IViewBox, useMultiState } from "../../../../lib";
@@ -25,14 +25,12 @@ interface IState{
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;
-    panelWidth:number;
-    // horizontalScrollWidth:number;
+    panelWidth:number;    
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
     const panelHeight = 400;
-    const dispatch = useDispatch();
-    //const panelWidth = 865;
+    const dispatch = useDispatch();    
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
     }),shallowEqual); 
@@ -49,8 +47,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
         horizontalScrollLeft:0,
-        panelWidth:props.containerWidth,
-        // horizontalScrollWidth:0,
+        panelWidth:props.containerWidth,        
     });
 
     const horizontalScrollContainerWidth = state.panelWidth+10;
@@ -80,8 +77,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         dataRef.current.zoom = store.zoom;
 
     },[store.zoom])
-
-    // const horizontalScrollContainerRef = useRef<HTMLDivElement>();
+    
     useEffect(()=>{
         dataRef.current.isMounted = true;
         return ()=>{
@@ -206,29 +202,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         if(store.zoom === 0){
             dataRef.current.initialViewbox = state.viewBox;
         }
-    },[state.viewBox])
-    // useEffect(()=>{
-    //     if(horizontalScrollContainerRef.current){
-    //         const width = Math.floor(horizontalScrollContainerRef.current.getBoundingClientRect().width);
-    //         const newPanelWidth = width-10;
-    //         if(state.panelWidth != newPanelWidth){
-    //             let viewBox = {x:state.viewBox.x,y:state.viewBox.y} as IViewBox;
-    //             viewBox.width = newPanelWidth;
-    //             viewBox.height = panelHeight;
-    //             viewBox = BranchUtils.getViewBoxValue(viewBox,store.zoom);
-    //             let totalWidth = props.repoDetails.branchPanelWidth;
-    //             if(totalWidth < newPanelWidth) totalWidth = newPanelWidth;
-    //             const widthRatio = viewBox.width / totalWidth;
-    //             const horizontalScrollWidth = widthRatio*width;
-    //             setState({
-    //                 panelWidth:newPanelWidth,
-    //                 viewBox:viewBox,
-    //                 // horizontalScrollWidth:horizontalScrollWidth,
-    //             });
-    //         }
-    //     }
-    // },[horizontalScrollContainerRef.current])    
-    // console.log("horizontalScrollWidth",horizontalScrollWidth)  
+    },[state.viewBox])   
     
     const handleWheel = useCallback((e:React.WheelEvent<SVGSVGElement>)=>{
         var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
@@ -239,14 +213,12 @@ function BranchPanelComponent(props:IBranchPanelProps){
         else{
             dispatch(ActionUI.increamentBranchPanelZoom(delta));
         }
-    },[])
-
-    console.log(state.viewBox);
+    },[])    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
-        {state.panelWidth !== -1 && <Fragment>
+        <Fragment>
             <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <svg onWheel={handleWheel}
                 width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
@@ -278,7 +250,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <div ref={horizontalScrollElementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, left:state.horizontalScrollLeft,top:0}}></div>
             </div>           
-        </Fragment>}
+        </Fragment>
     </div>
 }
 
