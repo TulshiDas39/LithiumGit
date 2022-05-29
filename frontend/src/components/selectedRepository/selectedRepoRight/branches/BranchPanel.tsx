@@ -1,5 +1,5 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { Fragment, useMemo, useRef, useState } from "react"
+import React, { Fragment, useCallback, useMemo, useRef, useState } from "react"
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, IViewBox, useMultiState } from "../../../../lib";
@@ -228,14 +228,28 @@ function BranchPanelComponent(props:IBranchPanelProps){
     //         }
     //     }
     // },[horizontalScrollContainerRef.current])    
-    // console.log("horizontalScrollWidth",horizontalScrollWidth)    
+    // console.log("horizontalScrollWidth",horizontalScrollWidth)  
+    
+    const handleWheel = useCallback((e:React.WheelEvent<SVGSVGElement>)=>{
+        var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
+        if(e.deltaX > 0 || e.deltaY > 0) {
+            dispatch(ActionUI.decreamentBranchPanelZoom(delta));
+
+        }
+        else{
+            dispatch(ActionUI.increamentBranchPanelZoom(delta));
+        }
+    },[])
+
+    console.log(state.viewBox);
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         {state.panelWidth !== -1 && <Fragment>
             <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <svg width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
+                <svg onWheel={handleWheel}
+                width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
                         <g>
                             {
                                 props.repoDetails.mergedLines.map(line=>(

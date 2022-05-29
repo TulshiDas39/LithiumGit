@@ -284,6 +284,11 @@ export class BranchUtils{
         newViewBox.y = initialValue.y + changedPx;
         newViewBox.width = initialValue.width - (changedPx*2);
         newViewBox.height = initialValue.height - (changedPx*2);
+        // if(newViewBox.x < 0)newViewBox.x = 0;
+        // if(newViewBox.x < 0)newViewBox.x = 0;
+        if(newViewBox.width <= 0)newViewBox.width = 10;
+        if(newViewBox.height <= 0)newViewBox.height = 10;
+
         return newViewBox;
     }
 }
