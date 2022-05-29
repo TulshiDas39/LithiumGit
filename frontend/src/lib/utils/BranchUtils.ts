@@ -275,15 +275,15 @@ export class BranchUtils{
         return branchRemote;
     }
 
-    static getViewBoxValue(currentValue:IViewBox,zoomStep:number){
-        if(zoomStep === 0) return {...currentValue};
+    static getViewBoxValue(initialValue:IViewBox,zoomStep:number){
+        if(zoomStep === 0) return {...initialValue,};
         const newViewBox = {} as IViewBox;
-        const pxPerZoom = 10;
+        const pxPerZoom = 20;
         const changedPx = pxPerZoom*zoomStep;
-        newViewBox.x = currentValue.x + changedPx;
-        newViewBox.y = currentValue.y + changedPx;
-        newViewBox.width = currentValue.width - (changedPx*2);
-        newViewBox.height = currentValue.height - (changedPx*2);
+        newViewBox.x = initialValue.x + changedPx;
+        newViewBox.y = initialValue.y + changedPx;
+        newViewBox.width = initialValue.width - (changedPx*2);
+        newViewBox.height = initialValue.height - (changedPx*2);
         return newViewBox;
     }
 }

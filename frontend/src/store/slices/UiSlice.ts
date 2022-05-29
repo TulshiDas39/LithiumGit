@@ -52,10 +52,10 @@ const UISlice = createSlice({
             state.versions[action.payload.key] = action.payload.value;
         },
         increamentBranchPanelZoom(state){
-            if(state.versions.branchPanelZoom < 10) state.versions.branchPanelZoom += 1;
+            state.versions.branchPanelZoom += 1;
         },
         decreamentBranchPanelZoom(state){
-            if(state.versions.branchPanelZoom > -9) state.versions.branchPanelZoom -= 1;
+            state.versions.branchPanelZoom -= 1;
         },
         resetBranchPanelZoom(state){
             state.versions.branchPanelZoom = 0;
