@@ -1,16 +1,18 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { Fragment, useMemo, useRef, useState } from "react"
+import React, { Fragment, useCallback, useMemo, useRef } from "react"
 import { useEffect } from "react";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, IViewBox, useMultiState } from "../../../../lib";
 import { useDrag } from "../../../../lib/hooks/useDrag";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 import { SingleBranch } from "./SingleBranch";
 
 interface IBranchPanelProps{
     onCommitSelect:(commit:ICommitInfo)=>void;
     selectedCommit?:ICommitInfo;
     repoDetails:IRepositoryDetails;
+    containerWidth:number;
 }
 
 interface IState{
@@ -23,49 +25,64 @@ interface IState{
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;
-    panelWidth:number;
-    horizontalScrollWidth:number;
-    zoomValue:number;
+    panelWidth:number;    
 }
 
 function BranchPanelComponent(props:IBranchPanelProps){
     const panelHeight = 400;
-    //const panelWidth = 865;
+    const dispatch = useDispatch();    
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
-    }),shallowEqual);
+    }),shallowEqual); 
 
-    useEffect(()=>{
-        //setState({scale:1+ (store.zoom/10)});        
-    },[store.zoom])    
+    
 
     const [state,setState]=useMultiState<IState>({
         scrollLeft:props.repoDetails.branchPanelWidth,
         scrollTop:0,
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
-        viewBox:{x:0,y:0,width:0,height:0},
+        viewBox: {x:0,y:0,width:props.containerWidth,height:panelHeight},
         notScrolledHorizontallyYet:true,
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
         horizontalScrollLeft:0,
-        panelWidth:-1,
-        horizontalScrollWidth:0,
-        zoomValue:0,
+        panelWidth:props.containerWidth,        
     });
 
     const horizontalScrollContainerWidth = state.panelWidth+10;
 
+    const horizontalScrollWidth = useMemo(()=>{
+        let totalWidth = props.repoDetails.branchPanelWidth;
+        if(totalWidth < props.containerWidth) totalWidth = props.containerWidth;
+        const widthRatio = state.viewBox.width / totalWidth;
+        const horizontalScrollWidth = widthRatio*props.containerWidth;
+        return horizontalScrollWidth;
+    },[state.viewBox.width]);
 
     const dataRef = useRef({
         initialHorizontalScrollLeft:0,
         initialVerticalScrollTop:0,
         isMounted:false,
+        zoom:store.zoom,
+        initialViewbox:state.viewBox,
     });
 
-    const horizontalScrollContainerRef = useRef<HTMLDivElement>();
+    useEffect(()=>{
+        const viewBox = BranchUtils.getViewBoxValue(dataRef.current.initialViewbox,store.zoom);        
+        setState({
+            ...state,
+            viewBox:viewBox,
+        });
+        dataRef.current.zoom = store.zoom;
+
+    },[store.zoom])
+    
     useEffect(()=>{
         dataRef.current.isMounted = true;
+        return ()=>{
+            dispatch(ActionUI.resetBranchPanelZoom());
+        }
     },[])    
 
     const verticalScrollHeight = useMemo(()=>{        
@@ -76,20 +93,19 @@ function BranchPanelComponent(props:IBranchPanelProps){
     },[state.viewBox.height,props.repoDetails.branchPanelHeight]);    
 
     useEffect(()=>{
-        if(props.repoDetails?.headCommit && state.panelWidth !== -1) {
+        if(props.repoDetails?.headCommit) {
             let elmnt = document.getElementById(props.repoDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
         }
         else return;
         let totalWidth = props.repoDetails.branchPanelWidth;
         let totalHeight = props.repoDetails.branchPanelHeight;
-        if(totalHeight < panelHeight) totalHeight = panelHeight;
-        debugger;
+        if(totalHeight < panelHeight) totalHeight = panelHeight;        
         if(totalWidth < state.panelWidth) totalHeight = state.panelWidth;
         const horizontalRatio = props.repoDetails?.headCommit.x/totalWidth;
         const verticalRatio = props.repoDetails?.headCommit.ownerBranch.y/totalHeight;
         let verticalScrollTop = (panelHeight-verticalScrollHeight)*verticalRatio;        
-        let horizontalScrollLeft = (horizontalScrollContainerWidth-state.horizontalScrollWidth)*horizontalRatio;        
+        let horizontalScrollLeft = (horizontalScrollContainerWidth-horizontalScrollWidth)*horizontalRatio;        
         dataRef.current.initialVerticalScrollTop = verticalScrollTop;
         dataRef.current.initialHorizontalScrollLeft = horizontalScrollLeft;
 
@@ -126,9 +142,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         }
         else{
-            if(state.panelWidth <= state.horizontalScrollWidth) return;
+            if(state.panelWidth <= horizontalScrollWidth) return;
             let newLeft = dataRef.current.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
-            const maxLeft = state.panelWidth - state.horizontalScrollWidth;
+            const maxLeft = state.panelWidth - horizontalScrollWidth;
             if(newLeft < 0) newLeft = 0;
             else if(newLeft > maxLeft) newLeft = maxLeft;
             let newRatio = newLeft/maxLeft;            
@@ -182,36 +198,30 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }        
     },[verticalScrollMousePosition])
 
-
-
     useEffect(()=>{
-        if(horizontalScrollContainerRef.current){
-            const width = Math.floor(horizontalScrollContainerRef.current.getBoundingClientRect().width);
-            const newPanelWidth = width-10;
-            if(state.panelWidth != newPanelWidth){
-                let viewBox = {x:state.viewBox.x,y:state.viewBox.y} as IViewBox;
-                viewBox.width = newPanelWidth;
-                viewBox.height = panelHeight;
-                viewBox = BranchUtils.getViewBoxValue(viewBox,1);
-                let totalWidth = props.repoDetails.branchPanelWidth;
-                if(totalWidth < newPanelWidth) totalWidth = newPanelWidth;
-                const widthRatio = viewBox.width / totalWidth;
-                const horizontalScrollWidth = widthRatio*width;
-                setState({
-                    panelWidth:newPanelWidth,
-                    viewBox:viewBox,
-                    horizontalScrollWidth:horizontalScrollWidth,
-                });
-            }
+        if(store.zoom === 0){
+            dataRef.current.initialViewbox = state.viewBox;
         }
-    },[horizontalScrollContainerRef.current])        
+    },[state.viewBox])   
+    
+    const handleWheel = useCallback((e:React.WheelEvent<SVGSVGElement>)=>{
+        var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
+        if(e.deltaX > 0 || e.deltaY > 0) {
+            dispatch(ActionUI.decreamentBranchPanelZoom(delta));
+
+        }
+        else{
+            dispatch(ActionUI.increamentBranchPanelZoom(delta));
+        }
+    },[])    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     
-    return <div ref={horizontalScrollContainerRef as any} id="branchPanel" className="w-100 overflow-hidden">
-        {state.panelWidth !== -1 && <Fragment>
+    return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
+        <Fragment>
             <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <svg width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
+                <svg onWheel={handleWheel}
+                width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
                         <g>
                             {
                                 props.repoDetails.mergedLines.map(line=>(
@@ -238,9 +248,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
                 </div>
             </div>            
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div ref={horizontalScrollElementRef as any} className="position-absolute bg-danger h-100" style={{width:`${state.horizontalScrollWidth}px`, left:state.horizontalScrollLeft,top:0}}></div>
+                <div ref={horizontalScrollElementRef as any} className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, left:state.horizontalScrollLeft,top:0}}></div>
             </div>           
-        </Fragment>}
+        </Fragment>
     </div>
 }
 

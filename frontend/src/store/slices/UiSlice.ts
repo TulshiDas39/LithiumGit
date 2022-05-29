@@ -51,11 +51,13 @@ const UISlice = createSlice({
         setVersion(state,action:PayloadAction<{key:keyof EventVersions,value:number}>){
             state.versions[action.payload.key] = action.payload.value;
         },
-        increamentBranchPanelZoom(state){
-            if(state.versions.branchPanelZoom < 10) state.versions.branchPanelZoom += 1;
+        increamentBranchPanelZoom(state,action?:PayloadAction<number|undefined>){
+            if(!action?.payload) state.versions.branchPanelZoom += 1;
+            else state.versions.branchPanelZoom += action.payload;
         },
-        decreamentBranchPanelZoom(state){
-            if(state.versions.branchPanelZoom > -9) state.versions.branchPanelZoom -= 1;
+        decreamentBranchPanelZoom(state,action?:PayloadAction<number|undefined>){
+            if(!action?.payload) state.versions.branchPanelZoom -= 1;
+            else state.versions.branchPanelZoom -= action.payload;
         },
         resetBranchPanelZoom(state){
             state.versions.branchPanelZoom = 0;
