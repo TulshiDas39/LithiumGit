@@ -1,10 +1,11 @@
 import { ICommitInfo, IRepositoryDetails } from "common_library";
 import React, { Fragment, useMemo, useRef, useState } from "react"
 import { useEffect } from "react";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, IViewBox, useMultiState } from "../../../../lib";
 import { useDrag } from "../../../../lib/hooks/useDrag";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 import { SingleBranch } from "./SingleBranch";
 
 interface IBranchPanelProps{
@@ -30,7 +31,7 @@ interface IState{
 
 function BranchPanelComponent(props:IBranchPanelProps){
     const panelHeight = 400;
-    const widthDiffWithContainer = 10;
+    const dispatch = useDispatch();
     //const panelWidth = 865;
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
@@ -43,7 +44,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         scrollTop:0,
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
-        viewBox:{x:0,y:0,width:props.containerWidth,height:panelHeight},
+        viewBox: {x:0,y:0,width:props.containerWidth,height:panelHeight},
         notScrolledHorizontallyYet:true,
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
@@ -83,6 +84,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
     // const horizontalScrollContainerRef = useRef<HTMLDivElement>();
     useEffect(()=>{
         dataRef.current.isMounted = true;
+        return ()=>{
+            dispatch(ActionUI.resetBranchPanelZoom());
+        }
     },[])    
 
     const verticalScrollHeight = useMemo(()=>{        
