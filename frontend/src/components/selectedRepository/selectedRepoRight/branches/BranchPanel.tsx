@@ -135,6 +135,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
 
     const {currentMousePosition: horizontalScrollMousePosition,elementRef: horizontalScrollElementRef} = useDrag();
     const {currentMousePosition:verticalScrollMousePosition,elementRef:verticalScrollElementRef} = useDrag();
+    const {currentMousePosition:svgScrollMousePosition,elementRef:svGRef} = useDrag();
     useEffect(()=>{
         if(horizontalScrollMousePosition === undefined ) {
             if(!state.notScrolledHorizontallyYet){                
@@ -199,6 +200,72 @@ function BranchPanelComponent(props:IBranchPanelProps){
     },[verticalScrollMousePosition])
 
     useEffect(()=>{
+        if(svgScrollMousePosition === undefined ) {
+            if(!state.notScrolledVerticallyYet){                
+                dataRef.current.initialVerticalScrollTop = state.verticalScrollTop;
+            }
+            if(!state.notScrolledHorizontallyYet){
+                dataRef.current.initialHorizontalScrollLeft = state.horizontalScrollLeft;
+            }
+        }
+
+        if(panelHeight <= verticalScrollHeight) return;
+        if(state.panelWidth <= horizontalScrollWidth) return;
+
+        let newViewBox = {...state.viewBox};
+        let newHorizontalRatio = state.horizontalScrollRatio;
+        let newVerticalRatio = state.verticalScrollRatio;
+        let newHorizontalScrollLeft = state.horizontalScrollLeft;
+        let newVerticalScrollTop = state.verticalScrollTop;
+        
+
+        if(!!svgScrollMousePosition?.y){
+            let totalHeight = props.repoDetails.branchPanelHeight;
+            if(totalHeight < panelHeight) totalHeight = panelHeight;
+            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - (svgScrollMousePosition.y*(panelHeight/totalHeight));
+            let maxY = panelHeight - verticalScrollHeight;
+            if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
+            else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
+            newVerticalRatio = newVerticalScrollTop/(panelHeight-verticalScrollHeight);
+            
+
+            const y = totalHeight *newVerticalRatio;
+            let viewBoxY = y - (panelHeight/2);
+            newViewBox.y = viewBoxY;
+
+        }
+        
+        if(!!svgScrollMousePosition?.x){
+            let totalWidth = props.repoDetails.branchPanelWidth;
+            if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
+
+            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- (svgScrollMousePosition.x * (state.panelWidth / totalWidth));
+            const maxLeft = state.panelWidth - horizontalScrollWidth;
+            if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
+            else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
+            newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
+
+            const x = totalWidth *newHorizontalRatio;
+            let viewBoxX = x - (state.panelWidth/2);   
+            newViewBox.x = viewBoxX;                         
+        }
+
+        setState({
+            horizontalScrollRatio: newHorizontalRatio,
+            verticalScrollRatio:newVerticalRatio,
+            horizontalScrollLeft:newHorizontalScrollLeft,
+            verticalScrollTop:newVerticalScrollTop,
+            notScrolledHorizontallyYet:false,
+            notScrolledVerticallyYet:false,
+            viewBox:{
+                ...state.viewBox,
+                ...newViewBox,
+            }
+        })
+
+    },[svgScrollMousePosition])
+
+    useEffect(()=>{
         if(store.zoom === 0){
             dataRef.current.initialViewbox = state.viewBox;
         }
@@ -220,7 +287,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
             <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <svg onWheel={handleWheel}
+                <svg onWheel={handleWheel} ref={svGRef as any}
                 width={state.panelWidth} height={panelHeight} viewBox={`${state.viewBox.x} ${state.viewBox.y} ${state.viewBox.width} ${state.viewBox.height}` } style={{transform:`scale(1)`} }>
                         <g>
                             {

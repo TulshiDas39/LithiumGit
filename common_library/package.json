@@ -4,7 +4,10 @@
     "description": "Can log \"hello world\" and \"goodbye world\" to the console!",
     "main": "./lib/index.js",
     "scripts": {
-        "build": "tsc && cd .. && runner.cmd"
+        "build": "tsc && npm run send",
+        "send": "concurrently \"npm run installToFrontend\" \"npm run installToBackend\" ",
+        "installToFrontend": "cd ../frontend && npm i ../common_library",
+        "installToBackend": "cd .. && npm i ./common_library"
     },
     "files": [
         "/lib"
@@ -14,6 +17,8 @@
         "uuid": "^8.3.2"
     },
     "devDependencies": {
-        "@types/uuid": "^8.3.1"
+        "@types/uuid": "^8.3.1",
+        "concurrently": "^7.2.1",
+        "typescript": "^4.7.3"
     }
 }
