@@ -180,7 +180,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             const maxY = panelHeight - verticalScrollHeight;
             if(newY > maxY) newY = maxY;
             else if(newY < 0) newY = 0;
-            const newRatio = newY/(panelHeight-verticalScrollHeight);
+            const newRatio = newY/maxY;
             let totalHeight = props.repoDetails.branchPanelHeight;
             if(totalHeight < panelHeight) totalHeight = panelHeight;
 
@@ -222,8 +222,9 @@ function BranchPanelComponent(props:IBranchPanelProps){
         if(!!svgScrollMousePosition?.y){
             let totalHeight = props.repoDetails.branchPanelHeight;
             if(totalHeight < panelHeight) totalHeight = panelHeight;
-            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - (svgScrollMousePosition.y*(panelHeight/totalHeight));
             let maxY = panelHeight - verticalScrollHeight;
+            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - (svgScrollMousePosition.y*(maxY/totalHeight));
+            
             if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
             else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
             newVerticalRatio = newVerticalScrollTop/(panelHeight-verticalScrollHeight);
@@ -239,8 +240,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let totalWidth = props.repoDetails.branchPanelWidth;
             if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
 
-            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- (svgScrollMousePosition.x * (state.panelWidth / totalWidth));
             const maxLeft = state.panelWidth - horizontalScrollWidth;
+            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- (svgScrollMousePosition.x * (maxLeft / totalWidth));
             if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
             else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
             newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
