@@ -209,64 +209,67 @@ function BranchPanelComponent(props:IBranchPanelProps){
             }
         }
 
-        if(panelHeight <= verticalScrollHeight) return;
-        if(state.panelWidth <= horizontalScrollWidth) return;
-
-        let newViewBox = {...state.viewBox};
-        let newHorizontalRatio = state.horizontalScrollRatio;
-        let newVerticalRatio = state.verticalScrollRatio;
-        let newHorizontalScrollLeft = state.horizontalScrollLeft;
-        let newVerticalScrollTop = state.verticalScrollTop;
-        
-
-        if(!!svgScrollMousePosition?.y){
-            let totalHeight = props.repoDetails.branchPanelHeight;
-            if(totalHeight < panelHeight) totalHeight = panelHeight;
-            let maxY = panelHeight - verticalScrollHeight;
-            const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(state.viewBox.height/panelHeight));                        
-            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - movedScrollBar;
+        else{
+            if(panelHeight <= verticalScrollHeight) return;
+            if(state.panelWidth <= horizontalScrollWidth) return;
+    
+            let newViewBox = {...state.viewBox};
+            let newHorizontalRatio = state.horizontalScrollRatio;
+            let newVerticalRatio = state.verticalScrollRatio;
+            let newHorizontalScrollLeft = state.horizontalScrollLeft;
+            let newVerticalScrollTop = state.verticalScrollTop;
             
-            if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
-            else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
-            newVerticalRatio = newVerticalScrollTop/(panelHeight-verticalScrollHeight);
-            
-
-            const y = totalHeight *newVerticalRatio;
-            let viewBoxY = y - (panelHeight/2);
-            newViewBox.y = viewBoxY;
-
-        }
-        
-        if(!!svgScrollMousePosition?.x){
-            let totalWidth = props.repoDetails.branchPanelWidth;
-            if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
-
-            const maxLeft = state.panelWidth - horizontalScrollWidth;
-            const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(state.viewBox.width/state.panelWidth));            
-            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- movedScrollBar;
-            if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
-            else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
-            newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
-
-            const x = totalWidth *newHorizontalRatio;
-            let viewBoxX = x - (state.panelWidth/2);   
-            newViewBox.x = viewBoxX;                         
-        }
-
-        setState({
-            horizontalScrollRatio: newHorizontalRatio,
-            verticalScrollRatio:newVerticalRatio,
-            horizontalScrollLeft:newHorizontalScrollLeft,
-            verticalScrollTop:newVerticalScrollTop,
-            notScrolledHorizontallyYet:false,
-            notScrolledVerticallyYet:false,
-            viewBox:{
-                ...state.viewBox,
-                ...newViewBox,
+    
+            if(!!svgScrollMousePosition?.y){
+                let totalHeight = props.repoDetails.branchPanelHeight;
+                if(totalHeight < panelHeight) totalHeight = panelHeight;
+                let maxY = panelHeight - verticalScrollHeight;
+                const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(state.viewBox.height/panelHeight));                        
+                newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - movedScrollBar;
+                
+                if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
+                else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
+                newVerticalRatio = newVerticalScrollTop/(panelHeight-verticalScrollHeight);
+                
+    
+                const y = totalHeight *newVerticalRatio;
+                let viewBoxY = y - (panelHeight/2);
+                newViewBox.y = viewBoxY;
+    
             }
-        })
+            
+            if(!!svgScrollMousePosition?.x){
+                let totalWidth = props.repoDetails.branchPanelWidth;
+                if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
+    
+                const maxLeft = state.panelWidth - horizontalScrollWidth;
+                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(state.viewBox.width/state.panelWidth));            
+                newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- movedScrollBar;
+                if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
+                else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
+                newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
+    
+                const x = totalWidth *newHorizontalRatio;
+                let viewBoxX = x - (state.panelWidth/2);   
+                newViewBox.x = viewBoxX;                         
+            }
+    
+            setState({
+                horizontalScrollRatio: newHorizontalRatio,
+                verticalScrollRatio:newVerticalRatio,
+                horizontalScrollLeft:newHorizontalScrollLeft,
+                verticalScrollTop:newVerticalScrollTop,
+                notScrolledHorizontallyYet:false,
+                notScrolledVerticallyYet:false,
+                viewBox:{
+                    ...state.viewBox,
+                    ...newViewBox,
+                }
+            })
+        }
 
     },[svgScrollMousePosition])
+
 
     useEffect(()=>{
         if(store.zoom === 0){
