@@ -223,7 +223,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let totalHeight = props.repoDetails.branchPanelHeight;
             if(totalHeight < panelHeight) totalHeight = panelHeight;
             let maxY = panelHeight - verticalScrollHeight;
-            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - (svgScrollMousePosition.y*(maxY/totalHeight));
+            const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(state.viewBox.height/panelHeight));                        
+            newVerticalScrollTop = dataRef.current.initialVerticalScrollTop - movedScrollBar;
             
             if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
             else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
@@ -241,7 +242,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
             if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
 
             const maxLeft = state.panelWidth - horizontalScrollWidth;
-            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- (svgScrollMousePosition.x * (maxLeft / totalWidth));
+            const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(state.viewBox.width/state.panelWidth));            
+            newHorizontalScrollLeft = dataRef.current.initialHorizontalScrollLeft- movedScrollBar;
             if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
             else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
             newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
