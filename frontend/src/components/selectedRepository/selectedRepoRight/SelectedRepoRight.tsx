@@ -69,6 +69,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
                 if(elem){
                     elem.classList.remove("d-none");
                 }
+                CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
             }
         }
         
