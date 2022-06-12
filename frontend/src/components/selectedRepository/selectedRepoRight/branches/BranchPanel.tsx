@@ -210,8 +210,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }
 
         else{
-            if(panelHeight <= verticalScrollHeight) return;
-            if(state.panelWidth <= horizontalScrollWidth) return;
+            // if(panelHeight <= verticalScrollHeight) return;
+            // if(state.panelWidth <= horizontalScrollWidth) return;
     
             let newViewBox = {...state.viewBox};
             let newHorizontalRatio = state.horizontalScrollRatio;
@@ -220,7 +220,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let newVerticalScrollTop = state.verticalScrollTop;
             
     
-            if(!!svgScrollMousePosition?.y){
+            if(!!svgScrollMousePosition?.y && panelHeight > verticalScrollHeight){
                 let totalHeight = props.repoDetails.branchPanelHeight;
                 if(totalHeight < panelHeight) totalHeight = panelHeight;
                 let maxY = panelHeight - verticalScrollHeight;
@@ -238,7 +238,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
     
             }
             
-            if(!!svgScrollMousePosition?.x){
+            if(!!svgScrollMousePosition?.x && state.panelWidth > horizontalScrollWidth){
                 let totalWidth = props.repoDetails.branchPanelWidth;
                 if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
     
