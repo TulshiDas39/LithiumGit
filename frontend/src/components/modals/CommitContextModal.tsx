@@ -8,11 +8,23 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
 
 function CommitContextModalComponent(){
+    const Data = ModalData.commitContextModal;
     const dispatch = useDispatch();
     const store = useSelectorTyped((state)=>({
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
+
+    useEffect(()=>{
+        if(store.show){
+            let elem = document.querySelector(".commitContext") as HTMLElement;
+
+            if(elem){
+                elem.style.marginTop = Data.position.y+"px";
+                elem.style.marginLeft = Data.position.x+"px";
+            }
+        }
+    },[store.show])
 
     const hideModal=()=>{
         ModalData.commitContextModal = InitialModalData.commitContextModal;
@@ -21,6 +33,7 @@ function CommitContextModalComponent(){
 
     const checkOutCommit=()=>{
         window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,ModalData.commitContextModal.selectedCommit,store.repo)
+        hideModal();
     }
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,(_e,commit:ICommitInfo)=>{
@@ -29,7 +42,7 @@ function CommitContextModalComponent(){
     },[])
 
     return (
-        <Modal  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} centered onHide={()=> hideModal()}>
+        <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
                 <div className="container">
                     <div className="row g-0 border-bottom">

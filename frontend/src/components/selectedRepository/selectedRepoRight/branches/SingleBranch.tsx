@@ -58,6 +58,10 @@ function SingleBranchComponent(props:ISingleBranchProps){
 
     const handleCommitRightClick=(e:React.MouseEvent<any>, commit:ICommitInfo)=>{
         ModalData.commitContextModal.selectedCommit = commit;
+        ModalData.commitContextModal.position = {
+            x:e.clientX,
+            y:e.clientY,
+        };
         dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
     }
 
