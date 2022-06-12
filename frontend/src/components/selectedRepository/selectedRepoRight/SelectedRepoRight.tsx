@@ -70,6 +70,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
                     elem.classList.remove("d-none");
                 }
                 CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+                setState({selectedCommit:newHead});
             }
         }
         
