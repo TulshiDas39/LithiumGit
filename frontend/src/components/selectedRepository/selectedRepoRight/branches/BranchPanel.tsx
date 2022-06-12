@@ -286,7 +286,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         else{
             dispatch(ActionUI.increamentBranchPanelZoom(delta));
         }
-    },[])    
+    },[]);    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     

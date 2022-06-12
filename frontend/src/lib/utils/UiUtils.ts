@@ -1,3 +1,5 @@
+import { ICommitInfo } from "common_library";
+
 export class UiUtils {
     static removeIpcListeners(channels: string[]) {
         channels.forEach(channel => {
@@ -37,6 +39,10 @@ export class UiUtils {
         
         // initial x =17430.435185185182
         // final x= 16290.407407407405
+
+    }
+
+    static updateHeadCommit=(commit:ICommitInfo)=>{
 
     }
 }

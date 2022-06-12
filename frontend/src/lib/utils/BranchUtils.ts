@@ -48,7 +48,6 @@ export class BranchUtils{
         let y = 30;
         repoDetails.resolvedBranches.forEach(branch=>{
             branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
-            console.log(y);
             y = branch.y + BranchUtils.distanceBetweenBranchLine;
         });
         repoDetails.branchPanelHeight = y;

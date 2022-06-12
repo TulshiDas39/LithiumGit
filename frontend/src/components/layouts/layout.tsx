@@ -4,6 +4,7 @@ import './layout.scss'
 import { Main } from '../main/Main';
 import { UiRoutes } from '../../lib/UiRoutes';
 import { TopNav } from '../topNav/TopNav';
+import { Modals } from '../modals';
 
 function LayoutComponent() {
     const data = useRef({topHeighPercent:10});
@@ -17,7 +18,7 @@ function LayoutComponent() {
                     <Route path={UiRoutes.Root} component={Main} />
                 </Switch>
             </div>
-            
+            <Modals/>
         </div>
     )
 

@@ -108,5 +108,13 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel;        
     }
+
+    static checkoutCommit(){
+        const channel = "checkoutCommit";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
-5800319
+

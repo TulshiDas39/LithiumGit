@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
@@ -19,7 +19,17 @@ export class GitManager{
         this.addUnStageItemHandler();
         this.addDiscardUnStagedItemHandler();
         this.addDiffHandler();
+        this.addCheckOutCommitHandlder();
     }
+
+    addCheckOutCommitHandlder(){
+        // RendererEvents.checkoutCommit
+        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:RepositoryInfo)=>{
+            await this.checkoutCommit(commit,repository);
+            e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        })
+    }
+
     addDiffHandler() {
         ipcMain.on(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.getDiff(options,repoInfo);
@@ -150,13 +160,12 @@ export class GitManager{
         }catch(e){
             console.error("error on get logs:", e);
         }
-        // return new Promise<number>((resolve,reject)=>{
-        //     resolve(7);
-        //     let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict", LogFormat]);
-
-        // })
-       
     
+    }
+
+    private async checkoutCommit(commit:ICommitInfo,repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.checkout(commit.hash);
     }
 
 
@@ -169,4 +178,6 @@ export class GitManager{
         let git = simpleGit(options);  
         return git;
     }
+
+
 }

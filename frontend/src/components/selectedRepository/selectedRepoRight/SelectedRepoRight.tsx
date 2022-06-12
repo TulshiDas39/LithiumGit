@@ -1,4 +1,5 @@
 import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
+import produce from "immer"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
 import { BranchUtils, CacheUtils, UiUtils, useMultiState } from "../../../lib"
@@ -43,7 +44,23 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
         }
         else getRepoDetails();
 
+        
+
     },[store.selectedRepo]);
+
+    useEffect(()=>{
+        if(state.repoDetails){
+            UiUtils.updateHeadCommit = (commitInfo:ICommitInfo)=>{
+                const newRepoDetails = produce(state.repoDetails!,(draftData)=>{
+                    draftData.headCommit.isHead = false;                
+                    draftData.headCommit = draftData.allCommits.find(x=>x.hash === commitInfo.hash)!;
+                    draftData.headCommit.isHead = true;
+                });
+                setState({repoDetails:newRepoDetails});
+            }
+        }
+        
+    },[state.repoDetails])
 
     useEffect(()=>{
         if(!store.refreshVersion) return;
