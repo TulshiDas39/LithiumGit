@@ -26,14 +26,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     }),shallowEqual);
 
     const getRepoDetails=()=>{            
-        window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
-        window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            BranchUtils.getRepoDetails(res);
-            BranchUtils.repositoryDetails = res;        
-            CacheUtils.setRepoDetails(res);
-            setState({repoDetails:res,selectedCommit:res.headCommit});
-            UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
-        });
+        window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);        
     }
 
     useEffect(()=>{               
@@ -81,6 +74,20 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
         setState({repoDetails:undefined});
         getRepoDetails();
     },[store.refreshVersion]);
+
+    useEffect(()=>{
+        window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+            BranchUtils.getRepoDetails(res);
+            BranchUtils.repositoryDetails = res;        
+            CacheUtils.setRepoDetails(res);
+            setState({repoDetails:res,selectedCommit:res.headCommit});
+            
+        });
+
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
+        }
+    },[]);
     
     return <div className="d-flex w-100 h-100">
         {props.selectedTab === "Changes" && <Changes repoInfo={state.repoDetails?.repoInfo} />}
