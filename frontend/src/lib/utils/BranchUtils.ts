@@ -2,6 +2,7 @@ import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemo
 import { IViewBox } from "../interfaces";
 
 export class BranchUtils{
+    static repositoryDetails:IRepositoryDetails = null!;
     static readonly headPrefix = "HEAD -> ";
     static readonly detachedHeadPrefix = "HEAD";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";

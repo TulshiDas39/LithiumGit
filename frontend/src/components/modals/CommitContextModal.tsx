@@ -24,7 +24,6 @@ function CommitContextModalComponent(){
     }
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,(_e,commit:ICommitInfo)=>{
-            console.log("updating head..");
             UiUtils.updateHeadCommit(commit);
         })
     },[])

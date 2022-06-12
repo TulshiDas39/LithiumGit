@@ -2,7 +2,7 @@ import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
 import produce from "immer"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
-import { BranchUtils, CacheUtils, UiUtils, useMultiState } from "../../../lib"
+import { BranchUtils, CacheUtils, EnumIdPrefix, UiUtils, useMultiState } from "../../../lib"
 import { useSelectorTyped } from "../../../store/rootReducer"
 import { ISelectedRepoTabItem } from "../SelectedRepoLeft"
 import { BranchesView } from "./branches"
@@ -28,7 +28,8 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     const getRepoDetails=()=>{            
         window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            BranchUtils.getRepoDetails(res);        
+            BranchUtils.getRepoDetails(res);
+            BranchUtils.repositoryDetails = res;        
             CacheUtils.setRepoDetails(res);
             setState({repoDetails:res,selectedCommit:res.headCommit});
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
@@ -38,7 +39,10 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     useEffect(()=>{               
         if(store.selectedRepo) {
             CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
-                if(res) setState({repoDetails:res,selectedCommit:res.headCommit});
+                if(res) {
+                    BranchUtils.repositoryDetails = res;
+                    setState({repoDetails:res,selectedCommit:res.headCommit});
+                }
                 else getRepoDetails();
             });
         }
@@ -51,12 +55,20 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     useEffect(()=>{
         if(state.repoDetails){
             UiUtils.updateHeadCommit = (commitInfo:ICommitInfo)=>{
-                const newRepoDetails = produce(state.repoDetails!,(draftData)=>{
-                    draftData.headCommit.isHead = false;                
-                    draftData.headCommit = draftData.allCommits.find(x=>x.hash === commitInfo.hash)!;
-                    draftData.headCommit.isHead = true;
-                });
-                setState({repoDetails:newRepoDetails});
+                BranchUtils.repositoryDetails.headCommit.isHead=false;
+                let elemOfOldCheck = document.getElementById(`${EnumIdPrefix.COMMIT_TEXT}${BranchUtils.repositoryDetails.headCommit.hash}`);
+                if(elemOfOldCheck){
+                    elemOfOldCheck.classList.add('d-none');
+                }
+                const newHead = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitInfo.hash)!;
+                newHead.isHead = true;
+                BranchUtils.repositoryDetails.headCommit = newHead;
+                console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
+                
+                let elem = document.getElementById(`${EnumIdPrefix.COMMIT_TEXT}${newHead.hash}`);
+                if(elem){
+                    elem.classList.remove("d-none");
+                }
             }
         }
         
