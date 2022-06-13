@@ -116,5 +116,13 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static refreshBranchPanel(){
+        const channel = "refreshBranchPanel";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
 

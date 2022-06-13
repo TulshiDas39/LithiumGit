@@ -25,7 +25,7 @@ export class GitManager{
     addCheckOutCommitHandlder(){
         // RendererEvents.checkoutCommit
         ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:RepositoryInfo)=>{
-            await this.checkoutCommit(commit,repository);
+            await this.checkoutCommit(commit,repository,e);
             e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         })
     }
@@ -163,13 +163,15 @@ export class GitManager{
     
     }
 
-    private async checkoutCommit(commit:ICommitInfo,repoInfo:RepositoryInfo){
+    private async checkoutCommit(commit:ICommitInfo,repoInfo:RepositoryInfo,e: Electron.IpcMainEvent){
         const git = this.getGitRunner(repoInfo);
         if(commit.nextCommit){
             await git.checkout(commit.hash);
+            e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         }
         else{
             await git.checkout(commit.ownerBranch.name);
+            AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
         }
     }
 

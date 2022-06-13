@@ -84,8 +84,13 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
             
         });
 
+        window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,(_e)=>{
+            getRepoDetails();
+        })
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
+            UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
         }
     },[]);
     
