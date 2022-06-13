@@ -2,7 +2,7 @@ import { ICommitInfo, RendererEvents } from "common_library";
 import React, { useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, UiUtils } from "../../lib";
+import { BranchUtils, EnumModals, UiUtils } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -32,7 +32,7 @@ function CommitContextModalComponent(){
     }
 
     const checkOutCommit=()=>{
-        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,ModalData.commitContextModal.selectedCommit,store.repo)
+        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,ModalData.commitContextModal.selectedCommit,BranchUtils.repositoryDetails)
         hideModal();
     }
     useEffect(()=>{

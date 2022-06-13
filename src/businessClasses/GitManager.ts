@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
@@ -24,7 +24,7 @@ export class GitManager{
 
     addCheckOutCommitHandlder(){
         // RendererEvents.checkoutCommit
-        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:RepositoryInfo)=>{
+        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:IRepositoryDetails)=>{
             await this.checkoutCommit(commit,repository,e);
             e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         })
@@ -117,7 +117,7 @@ export class GitManager{
         const git = this.getGitRunner(repoInfo);
         const commits = await this.getCommits(git);
         repoDetails.allCommits = commits;
-        
+        repoDetails.branchList = await this.getAllBranches(git);
         const remotes = await git.getRemotes(true);
         remotes.forEach(r=>{
             const remote:IRemoteInfo = {
@@ -163,9 +163,21 @@ export class GitManager{
     
     }
 
-    private async checkoutCommit(commit:ICommitInfo,repoInfo:RepositoryInfo,e: Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoInfo);
-        if(commit.nextCommit){
+    private async getAllBranches(git:SimpleGit){
+        let result = await git.branch(["-a"]);
+        return result.all;
+    }
+
+    private isDetachedCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails){
+        if(!commit.referedBranches.length) return true;
+        if(commit.referedBranches.includes(commit.ownerBranch.name)) return false;
+        if(repoDetails.branchList.includes(commit.ownerBranch.name)) return true;
+        return true;
+    }
+
+    private async checkoutCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails,e: Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        if(this.isDetachedCommit(commit,repoDetails)){
             await git.checkout(commit.hash);
             e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         }

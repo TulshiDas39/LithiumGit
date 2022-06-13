@@ -16,7 +16,8 @@ export interface IRepositoryDetails{
     repoInfo:RepositoryInfo;
     branchPanelHeight:number;
     branchPanelWidth:number;
-    mergedLines:IMergeLine[],
+    mergedLines:IMergeLine[];
+    branchList:string[];
     // Group branchPanel;
     // Line selectedMergeLine;
 }
@@ -37,6 +38,7 @@ export function CreateRepositoryDetails(){
         branchPanelHeight:0,
         branchPanelWidth:0,
         mergedLines:[],
+        branchList:[],
     }
     return obj;
 }
