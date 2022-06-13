@@ -165,7 +165,12 @@ export class GitManager{
 
     private async checkoutCommit(commit:ICommitInfo,repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
-        await git.checkout(commit.hash);
+        if(commit.nextCommit){
+            await git.checkout(commit.hash);
+        }
+        else{
+            await git.checkout(commit.ownerBranch.name);
+        }
     }
 
 
