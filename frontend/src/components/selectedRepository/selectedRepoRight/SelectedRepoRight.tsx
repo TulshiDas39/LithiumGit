@@ -1,5 +1,4 @@
 import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
-import produce from "immer"
 import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux"
 import { BranchUtils, CacheUtils, EnumIdPrefix, UiUtils, useMultiState } from "../../../lib"

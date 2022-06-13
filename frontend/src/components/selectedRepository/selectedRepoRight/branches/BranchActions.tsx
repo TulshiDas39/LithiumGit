@@ -1,5 +1,5 @@
 import React from "react"
-import { FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
+import { FaHome, FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
@@ -15,6 +15,12 @@ function BranchActionsComponent(){
         <FaPlus className="px-1 hover border rounded-circle" onClick={()=>dispatch(ActionUI.increamentBranchPanelZoom())} />
         <span className="hover px-1" onClick={()=>dispatch(ActionUI.resetBranchPanelZoom())}  >Reset</span>
     </div>
+
+    <div className="px-1">
+        <FaHome className="cur-point hover" onClick={_=> dispatch(ActionUI.increamentVersion("branchPanelHome"))} />
+
+    </div>
+
 </div>
 }
 

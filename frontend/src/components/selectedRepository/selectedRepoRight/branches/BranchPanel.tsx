@@ -33,6 +33,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const dispatch = useDispatch();    
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
+        homeIconClickVersion:state.ui.versions.branchPanelHome,
     }),shallowEqual); 
 
     
@@ -125,13 +126,11 @@ function BranchPanelComponent(props:IBranchPanelProps){
             viewBox:{
                 ...state.viewBox,
                 x:viewBoxX,
-                y:viewBoxY,
-                width:state.panelWidth,
-                height:panelHeight,
+                y:viewBoxY,                
             }
         });
 
-    },[props.repoDetails?.headCommit,state.panelWidth])                
+    },[props.repoDetails?.headCommit,state.panelWidth,store.homeIconClickVersion])                
 
     const {currentMousePosition: horizontalScrollMousePosition,elementRef: horizontalScrollElementRef} = useDrag();
     const {currentMousePosition:verticalScrollMousePosition,elementRef:verticalScrollElementRef} = useDrag();

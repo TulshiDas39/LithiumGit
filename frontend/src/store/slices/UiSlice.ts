@@ -13,6 +13,7 @@ interface EventVersions{
     branchPanelRefresh:number;
     branchPanelZoom:number;
     appFocused:number;
+    branchPanelHome:number;
 }
 
 interface IChangesState{
@@ -32,6 +33,7 @@ const initialState:IUIState={
         branchPanelRefresh:0,
         branchPanelZoom:0,
         appFocused:0,
+        branchPanelHome:0,
     },    
 }
 
