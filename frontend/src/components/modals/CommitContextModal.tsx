@@ -35,6 +35,11 @@ function CommitContextModalComponent(){
         window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,ModalData.commitContextModal.selectedCommit,BranchUtils.repositoryDetails)
         hideModal();
     }
+    const handleCreateNewBranchClick=()=>{
+        ModalData.createBranchModal.sourceCommit = Data.selectedCommit;
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
+        dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
+    }
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,(_e,commit:ICommitInfo)=>{
             UiUtils.updateHeadCommit(commit);
@@ -49,7 +54,7 @@ function CommitContextModalComponent(){
                         <div className="col-12 hover cur-default " onClick={checkOutCommit}>Checkout this commit</div> 
                     </div>
                     <div className="row g-0 border-bottom">
-                        <div className="col-12 hover cur-default ">Create branch from this commit</div>
+                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
                     </div>
                     <div>
                         <div className="col-12 hover cur-default ">Merge from this commit</div>

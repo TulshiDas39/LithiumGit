@@ -6,11 +6,17 @@ interface ICommitContextModalData{
     position:IPositition;
 }
 
+interface ICreateBranchModal{
+    sourceCommit:ICommitInfo;
+}
+
 export class InitialModalData{
-    static readonly commitContextModal= {        
-    } as ICommitContextModalData; 
+    static readonly commitContextModal= {  } as ICommitContextModalData; 
+    static readonly createBranchModal= {  } as ICreateBranchModal; 
+
 }
 
 export class ModalData{
-    static commitContextModal:ICommitContextModalData=InitialModalData.commitContextModal;
+    static commitContextModal = InitialModalData.commitContextModal;
+    static createBranchModal = InitialModalData.createBranchModal;
 }
