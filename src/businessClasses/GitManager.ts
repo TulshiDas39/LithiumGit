@@ -170,7 +170,7 @@ export class GitManager{
     }
 
     private async getAllBranches(git:SimpleGit){
-        let result = await git.branch(["-a"]);
+        let result = await git.branch(["-av"]);
         return result.all;
     }
 
