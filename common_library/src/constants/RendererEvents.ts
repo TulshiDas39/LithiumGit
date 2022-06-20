@@ -124,5 +124,21 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static createBranch(){
+        const channel = "createBranch";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static showError(){
+        const channel = "showError";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
 

@@ -1,7 +1,8 @@
+import { RendererEvents } from "common_library";
 import React, { useEffect } from "react"
 import { Button, Form, Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, useMultiState } from "../../lib";
+import { BranchUtils, EnumModals, useMultiState } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -20,11 +21,21 @@ function CreateBranchModalComponent(){
     const [state,setState]= useMultiState({branchName:""} as IState);
 
     useEffect(()=>{
-        if(!store.show) ModalData.createBranchModal = InitialModalData.createBranchModal;
+        if(!store.show) {
+            ModalData.createBranchModal = InitialModalData.createBranchModal;
+            setState({
+                branchName:"",
+            })
+        }
     },[store.show])
 
     const handleBranchCreateClick=()=>{
-
+        const branchNames = BranchUtils.getAllBranchNames();
+        console.log("branchnames",branchNames);
+        if(branchNames.includes(state.branchName)) return;
+        console.log('creating branch');
+        window.ipcRenderer.send(RendererEvents.createBranch().channel,Data.sourceCommit,BranchUtils.repositoryDetails,state.branchName);
+        dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
     }
 
     return <Modal show={store.show} dialogClassName="createBranchModal" 

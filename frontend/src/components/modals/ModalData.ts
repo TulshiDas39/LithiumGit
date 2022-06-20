@@ -10,13 +10,23 @@ interface ICreateBranchModal{
     sourceCommit:ICommitInfo;
 }
 
+interface IErrorModalData{
+    message:string;
+}
+
 export class InitialModalData{
     static readonly commitContextModal= {  } as ICommitContextModalData; 
-    static readonly createBranchModal= {  } as ICreateBranchModal; 
+    static get createBranchModal() {
+        return {} as ICreateBranchModal;
+    };
+    static get errorModal(){
+        return {} as IErrorModalData;
+    }
 
 }
 
 export class ModalData{
     static commitContextModal = InitialModalData.commitContextModal;
     static createBranchModal = InitialModalData.createBranchModal;
+    static errorModal = InitialModalData.errorModal;
 }

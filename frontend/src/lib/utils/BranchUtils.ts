@@ -289,4 +289,18 @@ export class BranchUtils{
 
         return newViewBox;
     }
+
+    static getAllBranchNames(){
+        const branchNames:string[]=[];
+        if(!this.repositoryDetails) return branchNames;
+        for(let branchName of this.repositoryDetails.branchList){
+            if(branchName.includes('/')){
+                const lastIndex = branchName.lastIndexOf('/');
+                branchName = branchName.substring(lastIndex+1);
+            }
+            if(!branchNames.includes(branchName))branchNames.push(branchName);
+        }
+
+        return branchNames;
+    }
 }
