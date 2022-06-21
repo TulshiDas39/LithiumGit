@@ -14,6 +14,7 @@ interface EventVersions{
     branchPanelZoom:number;
     appFocused:number;
     branchPanelHome:number;
+    repoDetails:number;
 }
 
 interface IChangesState{
@@ -34,6 +35,7 @@ const initialState:IUIState={
         branchPanelZoom:0,
         appFocused:0,
         branchPanelHome:0,
+        repoDetails:0,
     },    
 }
 

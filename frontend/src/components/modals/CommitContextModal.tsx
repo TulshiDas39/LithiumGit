@@ -41,9 +41,15 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
     }
     useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,(_e,commit:ICommitInfo)=>{
+        const listener = (_e:any,commit:ICommitInfo)=>{
             UiUtils.updateHeadCommit(commit);
-        })
+        }
+        window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
+        
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.checkoutCommit().replyChannel],[listener]);
+        }
+
     },[])
 
     return (

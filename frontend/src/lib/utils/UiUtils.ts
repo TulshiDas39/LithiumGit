@@ -1,7 +1,12 @@
 import { ICommitInfo } from "common_library";
 
 export class UiUtils {
-    static removeIpcListeners(channels: string[]) {
+    static removeIpcListeners(channels: string[],listeners?:any[]) {
+        if(listeners){
+            channels.forEach((c,index)=>{
+                window.ipcRenderer.removeListener(c,listeners[index]);
+            })
+        }
         channels.forEach(channel => {
             window.ipcRenderer.removeAllListeners(channel);
         })

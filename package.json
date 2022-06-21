@@ -38,7 +38,7 @@
     "fs-extra": "^10.1.0",
     "get-port": "^5.1.1",
     "nedb": "^1.8.0",
-    "simple-git": "^2.42.0"
+    "simple-git": "^3.8.0"
   },
   "build": {
     "productName": "Git_Studio",

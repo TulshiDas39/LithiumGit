@@ -1,8 +1,9 @@
 import { ICommitInfo, IRepositoryDetails, RendererEvents } from "common_library"
 import React, { useEffect } from "react"
-import { shallowEqual } from "react-redux"
+import { shallowEqual, useDispatch } from "react-redux"
 import { BranchUtils, CacheUtils, EnumIdPrefix, UiUtils, useMultiState } from "../../../lib"
 import { useSelectorTyped } from "../../../store/rootReducer"
+import { ActionUI } from "../../../store/slices/UiSlice"
 import { ISelectedRepoTabItem } from "../SelectedRepoLeft"
 import { BranchesView } from "./branches"
 import { Changes } from "./changes"
@@ -18,6 +19,7 @@ interface IState{
 
 function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     const [state,setState] = useMultiState<IState>({});
+    const dispatch = useDispatch();
 
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
@@ -34,6 +36,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
                 if(res) {
                     BranchUtils.repositoryDetails = res;
                     setState({repoDetails:res,selectedCommit:res.headCommit});
+                    dispatch(ActionUI.increamentVersion("repoDetails"));
                 }
                 else getRepoDetails();
             });
@@ -79,7 +82,8 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
             BranchUtils.getRepoDetails(res);
             BranchUtils.repositoryDetails = res;        
             CacheUtils.setRepoDetails(res);
-            setState({repoDetails:res,selectedCommit:res.headCommit});
+            setState({repoDetails:res,selectedCommit:res.headCommit});            
+            dispatch(ActionUI.increamentVersion("repoDetails"));
             
         });
 
