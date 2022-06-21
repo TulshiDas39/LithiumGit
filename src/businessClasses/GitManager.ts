@@ -124,7 +124,8 @@ export class GitManager{
         const commits = await this.getCommits(git);
         repoDetails.allCommits = commits;
         repoDetails.branchList = await this.getAllBranches(git);
-        const remotes = await git.getRemotes(true);
+        repoDetails.status = await this.getStatus(repoInfo);
+        const remotes = await git.getRemotes(true);        
         remotes.forEach(r=>{
             const remote:IRemoteInfo = {
                 name:r.name,
@@ -152,7 +153,8 @@ export class GitManager{
         result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
         result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
         result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
-        
+        result.current = status.current;
+        result.isDetached = status.detached;
         return result;
     }
 
@@ -171,6 +173,7 @@ export class GitManager{
 
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
+        let res = await git.status();
         return result.all;
     }
 
