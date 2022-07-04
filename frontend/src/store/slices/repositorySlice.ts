@@ -1,7 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RepositoryInfo } from "common_library";
 
 interface IRepositoryInitialState{
     repositoryDetailsVersion:number,
+    selectedRepo?:RepositoryInfo;
 }
 
 const initialState:IRepositoryInitialState={

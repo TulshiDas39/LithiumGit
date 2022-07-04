@@ -108,7 +108,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     },[]);
     
     return <div className="d-flex w-100 h-100">
-        {props.selectedTab === "Changes" && <Changes repoInfo={state.repoDetails?.repoInfo} />}
+        {props.selectedTab === "Changes" && <Changes />}
         {props.selectedTab === "Branches" && <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
         selectedCommit={state.selectedCommit}   />}
     </div>    

@@ -1,5 +1,5 @@
-import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { useRef } from "react"
+import { IStatus, RendererEvents } from "common_library";
+import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
@@ -11,7 +11,7 @@ import { StagedChanges } from "./StagedChanges";
 import { UntrackedFiles } from "./UntrackedFiles";
 
 interface IChangesProps{
-    repoInfo?:RepositoryInfo;
+    // repoInfo?:RepositoryInfo;
 }
 
 interface IState {
@@ -21,25 +21,29 @@ interface IState {
     // document:Descendant[],
 }
 
-function ChangesComponent(props:IChangesProps) {
+function ChangesComponent() {
     const [state, setState] = useMultiState<IState>({
-        adjustedX: 0,
+        adjustedX: 0,        
         // document:ExampleDocument,        
     });
 
     const store = useSelectorTyped(state=>({
         focusVersion:state.ui.versions.appFocused,
+        recentRepositories:state.savedData.recentRepositories,
     }),shallowEqual);
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
+    const repoInfo = useMemo(()=>{
+        return store.recentRepositories.find(x=>x.isSelected);
+    },[store.recentRepositories])
 
     const getStatus=()=>{
-        if(props.repoInfo) window.ipcRenderer.send(RendererEvents.getStatus().channel,props.repoInfo);
+        if(repoInfo) window.ipcRenderer.send(RendererEvents.getStatus().channel,repoInfo);
     }
 
     useEffect(()=>{
          getStatus();
-    },[props.repoInfo]);
+    },[repoInfo]);
 
     useEffect(()=>{
         getStatus();
@@ -104,21 +108,21 @@ function ChangesComponent(props:IChangesProps) {
             
             {
                 !!state.status?.staged?.length &&
-                <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
+                <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }            
-            <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={props.repoInfo} 
+            <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={handleSelect} selectedFilePath={state.selectedFilePath} />
             
             {
                 !!state.status?.created?.length &&
                 <UntrackedFiles onFileSelect={handleSelect} files={state.status.created} 
-                onStatusChange={onStatusChange} repoInfoInfo={props.repoInfo} />
+                onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && !!props.repoInfo && <Difference path={state.selectedFilePath} repoInfo={props.repoInfo} />}
+            {!!state.selectedFilePath && !!repoInfo && <Difference path={state.selectedFilePath} repoInfo={repoInfo} />}
             {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>

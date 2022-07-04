@@ -18,13 +18,15 @@ interface IState{
     repoDetails?:IRepositoryDetails;
 }
 
-function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
+function SelectedRepoRightComponent(props:ISelectedRepoRightProps){    
+
     const [state,setState] = useMultiState<IState>({});
     const dispatch = useDispatch();
 
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
         refreshVersion:state.ui.versions.branchPanelRefresh,
+        selectedRepoPath:state.repository.selectedRepo,
     }),shallowEqual);
 
     const getRepoDetails=()=>{            
@@ -108,7 +110,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     },[]);
     
     return <div className="d-flex w-100 h-100">
-        {props.selectedTab === "Changes" && <Changes repoInfo={state.repoDetails?.repoInfo} />}
+        {props.selectedTab === "Changes" && <Changes />}
         {props.selectedTab === "Branches" && <BranchesView onCommitSelect ={c=>setState({selectedCommit:c})} repoDetails={state.repoDetails} 
         selectedCommit={state.selectedCommit}   />}
     </div>    
