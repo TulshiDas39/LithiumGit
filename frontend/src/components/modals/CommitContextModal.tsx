@@ -1,10 +1,12 @@
-import { ICommitInfo, RendererEvents } from "common_library";
+import { ICommitInfo, IStatus, RendererEvents } from "common_library";
+import produce from "immer";
 import React, { useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, EnumModals, UiUtils } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
+import { SelectedRepoRightData } from "../selectedRepository/selectedRepoRight/SelectedRepoRightData";
 import { InitialModalData, ModalData } from "./ModalData";
 
 function CommitContextModalComponent(){
@@ -41,8 +43,14 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
     }
     useEffect(()=>{
-        const listener = (_e:any,commit:ICommitInfo)=>{
-            UiUtils.updateHeadCommit(commit);
+        const listener = (_e:any,commit:ICommitInfo,status:IStatus)=>{
+            //UiUtils.updateHeadCommit(commit);
+            const newRepoDetails = produce(BranchUtils.repositoryDetails,(draftState)=>{
+                BranchUtils.handleCheckout(commit,draftState,status);
+            })
+
+            SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
+            
         }
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
         

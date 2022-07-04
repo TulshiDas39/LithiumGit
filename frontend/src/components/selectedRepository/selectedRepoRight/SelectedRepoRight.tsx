@@ -7,6 +7,7 @@ import { ActionUI } from "../../../store/slices/UiSlice"
 import { ISelectedRepoTabItem } from "../SelectedRepoLeft"
 import { BranchesView } from "./branches"
 import { Changes } from "./changes"
+import { SelectedRepoRightData } from "./SelectedRepoRightData"
 
 interface ISelectedRepoRightProps{
     selectedTab:ISelectedRepoTabItem["type"];
@@ -48,7 +49,9 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
     },[store.selectedRepo]);
 
     useEffect(()=>{
+        
         if(state.repoDetails){
+            BranchUtils.repositoryDetails = state.repoDetails;
             UiUtils.updateHeadCommit = (commitInfo:ICommitInfo)=>{
                 BranchUtils.repositoryDetails.headCommit.isHead=false;
                 let elemOfOldCheck = document.getElementById(`${EnumIdPrefix.COMMIT_TEXT}${BranchUtils.repositoryDetails.headCommit.hash}`);
@@ -90,6 +93,13 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,(_e)=>{
             getRepoDetails();
         })
+
+        const handleRepoDetailsUpdate=(repoDetails:IRepositoryDetails)=>{
+            setState({repoDetails});
+        }
+
+        SelectedRepoRightData.handleRepoDetailsUpdate = handleRepoDetailsUpdate;
+
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);

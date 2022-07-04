@@ -32,7 +32,7 @@ export class GitManager{
         // RendererEvents.checkoutCommit
         ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:IRepositoryDetails)=>{
             await this.checkoutCommit(commit,repository,e);
-            e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         })
     }
 
@@ -188,12 +188,15 @@ export class GitManager{
         const git = this.getGitRunner(repoDetails.repoInfo);
         if(this.isDetachedCommit(commit,repoDetails)){
             await git.checkout(commit.hash);
-            e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         }
         else{
             await git.checkout(commit.ownerBranch.name);
-            AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
+            // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
         }
+
+        const status = await this.getStatus(repoDetails.repoInfo);
+        e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
     }
 
     private async createBranch(sourceCommit:ICommitInfo,repoDetails:IRepositoryDetails,newBranchName:string){
