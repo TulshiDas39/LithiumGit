@@ -2,6 +2,7 @@ import { ICommitInfo, IRepositoryDetails } from "common_library";
 import React, { useEffect, useRef } from "react"
 import { useMultiState } from "../../../../lib";
 import { BranchActions } from "./BranchActions";
+import { BranchPanel } from "./BranchPanel";
 import { BranchPanel2 } from "./BranchPanel2";
 import { CommitProperty } from "./CommitProperty";
 
@@ -31,7 +32,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
     <BranchActions />
     <div className="d-flex w-100 overflow-hidden">
         <div ref={branchPanelRef as any} className="w-75">
-            {(!!props.repoDetails && state.branchPanelWidth !== -1) && <BranchPanel2 containerWidth={state.branchPanelWidth-10} repoDetails={props.repoDetails} selectedCommit={props.selectedCommit} onCommitSelect={props.onCommitSelect} />}
+            {(!!props.repoDetails && state.branchPanelWidth !== -1) && <BranchPanel containerWidth={state.branchPanelWidth-10} repoDetails={props.repoDetails} selectedCommit={props.selectedCommit} onCommitSelect={props.onCommitSelect} />}
         </div>
         <div className="w-25 ps-2">
             {!!props.selectedCommit && <CommitProperty selectedCommit={props.selectedCommit} />}
