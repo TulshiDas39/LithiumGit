@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
@@ -19,7 +19,23 @@ export class GitManager{
         this.addUnStageItemHandler();
         this.addDiscardUnStagedItemHandler();
         this.addDiffHandler();
+        this.addCheckOutCommitHandlder();
+        this.addCreateBranchHandler();
     }
+
+    addCreateBranchHandler(){
+        ipcMain.on(RendererEvents.createBranch().channel, async (e,sourceCommit:ICommitInfo,repository:IRepositoryDetails,newBranchName)=>{
+            await this.createBranch(sourceCommit,repository,newBranchName);
+        })
+    }
+    addCheckOutCommitHandlder(){
+        // RendererEvents.checkoutCommit
+        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:IRepositoryDetails)=>{
+            await this.checkoutCommit(commit,repository,e);
+            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        })
+    }
+
     addDiffHandler() {
         ipcMain.on(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.getDiff(options,repoInfo);
@@ -107,8 +123,9 @@ export class GitManager{
         const git = this.getGitRunner(repoInfo);
         const commits = await this.getCommits(git);
         repoDetails.allCommits = commits;
-        
-        const remotes = await git.getRemotes(true);
+        repoDetails.branchList = await this.getAllBranches(git);
+        repoDetails.status = await this.getStatus(repoInfo);
+        const remotes = await git.getRemotes(true);        
         remotes.forEach(r=>{
             const remote:IRemoteInfo = {
                 name:r.name,
@@ -136,7 +153,8 @@ export class GitManager{
         result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
         result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
         result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
-        
+        result.current = status.current;
+        result.isDetached = status.detached;
         return result;
     }
 
@@ -150,13 +168,47 @@ export class GitManager{
         }catch(e){
             console.error("error on get logs:", e);
         }
-        // return new Promise<number>((resolve,reject)=>{
-        //     resolve(7);
-        //     let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict", LogFormat]);
-
-        // })
-       
     
+    }
+
+    private async getAllBranches(git:SimpleGit){
+        let result = await git.branch(["-av"]);
+        let res = await git.status();
+        return result.all;
+    }
+
+    private isDetachedCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails){
+        if(!commit.referedBranches.length) return true;
+        if(commit.referedBranches.includes(commit.ownerBranch.name)) return false;
+        if(repoDetails.branchList.includes(commit.ownerBranch.name)) return true;
+        return true;
+    }
+
+    private async checkoutCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails,e: Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        if(this.isDetachedCommit(commit,repoDetails)){
+            await git.checkout(commit.hash);
+            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        }
+        else{
+            await git.checkout(commit.ownerBranch.name);
+            // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
+        }
+
+        const status = await this.getStatus(repoDetails.repoInfo);
+        e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
+    }
+
+    private async createBranch(sourceCommit:ICommitInfo,repoDetails:IRepositoryDetails,newBranchName:string){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        try{
+            await git.checkout(["-b", newBranchName,sourceCommit.hash]);
+            AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
+        }catch(e){
+            const errorStr = e+"";
+            console.log(e);
+            AppData.mainWindow.webContents.send(RendererEvents.showError().channel,errorStr);
+        }
     }
 
 
@@ -169,4 +221,6 @@ export class GitManager{
         let git = simpleGit(options);  
         return git;
     }
+
+
 }

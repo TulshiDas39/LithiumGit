@@ -14,4 +14,6 @@ export interface IStatus{
     staged:IFile[];
     not_added: IFile[];
     isClean:boolean;
+    current:string | null;
+    isDetached:boolean;
 }

@@ -8,6 +8,7 @@ import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
 import { GitManager } from "./businessClasses/GitManager";
 import { Updater } from "./businessClasses/Updater";
+import { Config } from "./config";
 import { ConfigInfo } from "./dataClasses";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
@@ -25,7 +26,7 @@ export class Startup{
     }
 
     checkForUpdate(){
-      if(process.env.NODE_ENV === 'development')
+      if(Config.env === 'development')
         return;
         new Updater().checkForUpdate();
 
@@ -68,9 +69,6 @@ export class Startup{
     }
 
     private async setAvailablePort(){        
-        console.log("process.NODE_ENV",(process as any).NODE_ENV)
-        console.log("process.FRONTEND_PORT",(process as any).FRONTEND_PORT)
-        console.log("process.env.FRONTEND_PORT",process.env.FRONTEND_PORT)
         
         let portNumber = SavedData.configInfo.portNumber || 54523;
         try{          
@@ -89,20 +87,16 @@ export class Startup{
     }
 
     private async hostFrontend(){
-      if(process.env.NODE_ENV === 'development'){
-        this.uiPort = process.env.FRONTEND_PORT;
+      if(Config.env === 'development'){
+        this.uiPort = Config.FRONTEND_PORT;
         return;
       }
       await this.setAvailablePort();
       
-      //const port = process.env.PORT || 8080;
       const app = express();
 
-      // serve static assets normally
       app.use(express.static(__dirname + '/frontend'));
 
-      // handle every other route with index.html, which will contain
-      // a script tag to your application's JavaScript file(s).
       app.get('*', function (request, response) {
         response.sendFile(path.resolve(__dirname,"frontend", 'index.html'));
       });
@@ -113,7 +107,7 @@ export class Startup{
     }
 
     private async  createWindow() {
-        if(process.env.NODE_ENV !== 'development')
+        if(Config.env !== 'development')
           Menu.setApplicationMenu(null);
         const mainWindow = new BrowserWindow({
           height: 600,
@@ -127,7 +121,7 @@ export class Startup{
         AppData.mainWindow = mainWindow;
         mainWindow.loadURL(`http://localhost:${this.uiPort}`);
         
-        if(process.env.NODE_ENV === 'development')
+        if(Config.env === 'development')
           mainWindow.webContents.openDevTools();
     }
 

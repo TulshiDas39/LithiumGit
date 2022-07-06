@@ -33,9 +33,10 @@ function BranchPanelComponent(props:IBranchPanelProps){
     const dispatch = useDispatch();    
     const store = useSelectorTyped(state=>({
         zoom:state.ui.versions.branchPanelZoom,
+        homeIconClickVersion:state.ui.versions.branchPanelHome,
     }),shallowEqual); 
 
-    
+    console.log("props.repoDetails",props.repoDetails);
 
     const [state,setState]=useMultiState<IState>({
         scrollLeft:props.repoDetails.branchPanelWidth,
@@ -125,13 +126,11 @@ function BranchPanelComponent(props:IBranchPanelProps){
             viewBox:{
                 ...state.viewBox,
                 x:viewBoxX,
-                y:viewBoxY,
-                width:state.panelWidth,
-                height:panelHeight,
+                y:viewBoxY,                
             }
         });
 
-    },[props.repoDetails?.headCommit,state.panelWidth])                
+    },[props.repoDetails?.headCommit,state.panelWidth,store.homeIconClickVersion])                
 
     const {currentMousePosition: horizontalScrollMousePosition,elementRef: horizontalScrollElementRef} = useDrag();
     const {currentMousePosition:verticalScrollMousePosition,elementRef:verticalScrollElementRef} = useDrag();
@@ -210,8 +209,8 @@ function BranchPanelComponent(props:IBranchPanelProps){
         }
 
         else{
-            if(panelHeight <= verticalScrollHeight) return;
-            if(state.panelWidth <= horizontalScrollWidth) return;
+            // if(panelHeight <= verticalScrollHeight) return;
+            // if(state.panelWidth <= horizontalScrollWidth) return;
     
             let newViewBox = {...state.viewBox};
             let newHorizontalRatio = state.horizontalScrollRatio;
@@ -220,7 +219,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
             let newVerticalScrollTop = state.verticalScrollTop;
             
     
-            if(!!svgScrollMousePosition?.y){
+            if(!!svgScrollMousePosition?.y && panelHeight > verticalScrollHeight){
                 let totalHeight = props.repoDetails.branchPanelHeight;
                 if(totalHeight < panelHeight) totalHeight = panelHeight;
                 let maxY = panelHeight - verticalScrollHeight;
@@ -238,7 +237,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
     
             }
             
-            if(!!svgScrollMousePosition?.x){
+            if(!!svgScrollMousePosition?.x && state.panelWidth > horizontalScrollWidth){
                 let totalWidth = props.repoDetails.branchPanelWidth;
                 if(totalWidth <state.panelWidth) totalWidth = state.panelWidth;
     
@@ -286,7 +285,7 @@ function BranchPanelComponent(props:IBranchPanelProps){
         else{
             dispatch(ActionUI.increamentBranchPanelZoom(delta));
         }
-    },[])    
+    },[]);    
 
     if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
     

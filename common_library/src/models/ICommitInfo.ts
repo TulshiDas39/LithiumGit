@@ -13,6 +13,7 @@ export interface ICommitInfo{
     date:string;
     message:string;
     refs:string;
+    refValues:string[]
     body:string;
     author_name:string;
     author_email:string;
@@ -40,6 +41,7 @@ export function CreateCommitInfoObj(){
         ownerBranch:null!,
         previousCommit:null!,
         isHead:false,
+        refValues:[],
     }
     return obj;
 }

@@ -2,10 +2,11 @@ import { RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { useMultiState } from "../../lib";
+import { EnumModals, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { ActionSavedData } from "../../store/slices";
+import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
+import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
 
@@ -23,8 +24,18 @@ function MainComponent(){
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected)
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
+
+    const registerIpcEvents=()=>{
+        window.ipcRenderer.on(RendererEvents.showError().channel,(e,message:any)=>{
+            const str = typeof message === 'string'?message:JSON.stringify(message);
+            console.log("str",str);
+            ModalData.errorModal.message = str;
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+        })
+    }
     
     useEffect(()=>{
+        registerIpcEvents();
         const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires); 
         console.log('repos',repos);
         if(!repos?.length){

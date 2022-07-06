@@ -10,7 +10,9 @@ export interface IBranchDetails{
     parentCommit?:ICommitInfo;
     serial:number;
     y:number;
+    // commitWithMaxRefCount:ICommitInfo;
     maxRefCount:number;
+    increasedHeightForDetached:number;
     // Group uiObj;
 }
 
@@ -22,8 +24,9 @@ export function createBranchDetailsObj(){
         commits:[],
         noDerivedCommits:false,
         serial:0,
-        y:0,
+        y:0,        
         maxRefCount:0,
+        increasedHeightForDetached:0,
     }
     return branchDetails;
 }

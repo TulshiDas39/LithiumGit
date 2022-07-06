@@ -108,5 +108,37 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel;        
     }
+
+    static checkoutCommit(){
+        const channel = "checkoutCommit";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static refreshBranchPanel(){
+        const channel = "refreshBranchPanel";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static createBranch(){
+        const channel = "createBranch";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static showError(){
+        const channel = "showError";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
-5800319
+

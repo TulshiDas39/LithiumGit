@@ -1,5 +1,12 @@
+import { ICommitInfo } from "common_library";
+
 export class UiUtils {
-    static removeIpcListeners(channels: string[]) {
+    static removeIpcListeners(channels: string[],listeners?:any[]) {
+        if(listeners){
+            channels.forEach((c,index)=>{
+                window.ipcRenderer.removeListener(c,listeners[index]);
+            })
+        }
         channels.forEach(channel => {
             window.ipcRenderer.removeAllListeners(channel);
         })
@@ -37,6 +44,10 @@ export class UiUtils {
         
         // initial x =17430.435185185182
         // final x= 16290.407407407405
+
+    }
+
+    static updateHeadCommit=(commit:ICommitInfo)=>{
 
     }
 }

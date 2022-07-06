@@ -1,6 +1,10 @@
 import { IBranchDetails, ICommitInfo } from "common_library";
-import React, { Fragment, useMemo } from "react";
-import { BranchUtils } from "../../../../lib";
+import { dialog } from "electron";
+import React, { Fragment, MouseEvent, useMemo } from "react";
+import { useDispatch } from "react-redux";
+import { BranchUtils, EnumIdPrefix, EnumModals } from "../../../../lib";
+import { ActionModals } from "../../../../store";
+import { ModalData } from "../../../modals/ModalData";
 
 interface ISingleBranchProps{
     branchDetails:IBranchDetails;
@@ -12,6 +16,7 @@ interface ISingleBranchProps{
 }
 
 function SingleBranchComponent(props:ISingleBranchProps){
+    const dispatch = useDispatch();
     const data = useMemo(()=>{
         const parentCommit = props.branchDetails.parentCommit;
         const startX = parentCommit?.x || 20;
@@ -51,6 +56,15 @@ function SingleBranchComponent(props:ISingleBranchProps){
         return refElements;
     }
 
+    const handleCommitRightClick=(e:React.MouseEvent<any>, commit:ICommitInfo)=>{
+        ModalData.commitContextModal.selectedCommit = commit;
+        ModalData.commitContextModal.position = {
+            x:e.clientX,
+            y:e.clientY,
+        };
+        dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
+    }
+
     return <> 
     <path d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="3"
          >
@@ -61,9 +75,9 @@ function SingleBranchComponent(props:ISingleBranchProps){
                 <Fragment key={c.hash}>
                 {!!c.refs && getRefs(c)}
                     <circle id={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
-                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"blueviolet":"cadetblue"}`} onClick={()=>props.onCommitSelect(c)} />
-                    {c.isHead && 
-                    <text x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>}
+                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"blueviolet":"cadetblue"}`} onClick={()=>props.onCommitSelect(c)} 
+                        onContextMenu={(e) => handleCommitRightClick(e,c)}/>                     
+                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`cur-default ${c.isHead?"":"d-none"}`} x={c.x} onContextMenu={(e) => handleCommitRightClick(e,c)} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
                 </Fragment>
             ))
         }

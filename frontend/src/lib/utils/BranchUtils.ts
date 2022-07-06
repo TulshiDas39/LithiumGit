@@ -1,7 +1,8 @@
-import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, StringUtils } from "common_library";
+import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
 import { IViewBox } from "../interfaces";
 
 export class BranchUtils{
+    static repositoryDetails:IRepositoryDetails = null!;
     static readonly headPrefix = "HEAD -> ";
     static readonly detachedHeadPrefix = "HEAD";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
@@ -48,7 +49,6 @@ export class BranchUtils{
         let y = 30;
         repoDetails.resolvedBranches.forEach(branch=>{
             branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
-            console.log(y);
             y = branch.y + BranchUtils.distanceBetweenBranchLine;
         });
         repoDetails.branchPanelHeight = y;
@@ -226,6 +226,7 @@ export class BranchUtils{
     	const branches:string[] = [];
     	if(!commitRef) return;
         const splits = commitRef.split(",");
+        commit.refValues = splits.map(x=> x.trim());
         if(commitRef.includes(BranchUtils.headPrefix)) {
             repoDetails.headCommit = commit;
             commit.isHead = true;
@@ -233,7 +234,9 @@ export class BranchUtils{
         }
         else if(splits.some(sp=>sp === BranchUtils.detachedHeadPrefix)) repoDetails.headCommit = commit;        
         const refLenght = splits.length;
-        if(refLenght > commit.ownerBranch.maxRefCount) commit.ownerBranch.maxRefCount = refLenght;
+        if(refLenght > commit.ownerBranch.maxRefCount) {
+            commit.ownerBranch.maxRefCount = refLenght;
+        }
         for (let split of splits) {
             split = split.trim();
             if(split.startsWith("tag:")) continue;
@@ -288,5 +291,50 @@ export class BranchUtils{
         if(newViewBox.height <= 0)newViewBox.height = 10;
 
         return newViewBox;
+    }
+
+    static getAllBranchNames(){
+        const branchNames:string[]=[];
+        if(!this.repositoryDetails) return branchNames;
+        for(let branchName of this.repositoryDetails.branchList){
+            if(branchName.includes('/')){
+                const lastIndex = branchName.lastIndexOf('/');
+                branchName = branchName.substring(lastIndex+1);
+            }
+            if(!branchNames.includes(branchName))branchNames.push(branchName);
+        }
+
+        return branchNames;
+    }
+
+    static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
+        const existingHead = repoDetails.headCommit;
+        existingHead.isHead = false;
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
+        if(!newHeadCommit) throw "New checkout commit not found";
+        repoDetails.headCommit = newHeadCommit;
+        newHeadCommit.isHead = true;        
+
+        const existingStatus = repoDetails.status;
+        repoDetails.status = newStatus;                
+
+        if(existingStatus.isDetached){
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== "HEAD");
+            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                existingHead.ownerBranch.increasedHeightForDetached = 0;
+            }            
+        }
+
+        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+
+        if(newStatus.isDetached){
+            newHeadCommit.refValues.push("HEAD");
+            if(newHeadCommit.refValues.length > existingMaxRefLength){
+                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            }
+        }
+                
     }
 }
