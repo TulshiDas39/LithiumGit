@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1-alpha.3",
+  "version": "0.0.1-alpha.4",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -8,7 +8,7 @@
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
-    "package": "electron-builder build"
+    "package": "npm run build && electron-builder build"
   },
   "main": "./dist/main.js",
   "keywords": [
