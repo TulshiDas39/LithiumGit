@@ -5,15 +5,14 @@ import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { SingleBranch2 } from "./SingleBranch2";
 
 interface IBranchPanelProps{
-    // onCommitSelect:(commit:ICommitInfo)=>void;
-    // selectedCommit?:ICommitInfo;
     panelHeight:number;
     containerWidth:number;
     viewBox:IViewBox;
     repoDetails:IRepositoryDetails;
     horizontalScrollWidth:number;
     verticalScrollHeight:number;
-    
+    horizontalScrollLeft:number;
+    verticalScrollTop:number;
 }
 
 export function BranchPanel2(props:IBranchPanelProps){    
@@ -45,11 +44,11 @@ export function BranchPanel2(props:IBranchPanelProps){
                         </g>
                 </svg>
                 <div className="d-flex bg-secondary position-relative" style={{width:`10px`}}>
-                    <div className="bg-danger position-absolute w-100" style={{height:`${props.verticalScrollHeight}px`,top:0,left:0}}> </div>
+                    <div id={BranchGraphUtils.verticalScrollBarId} className="bg-danger position-absolute w-100" style={{height:`${props.verticalScrollHeight}px`,top:props.verticalScrollTop,left:0}}> </div>
                 </div>
             </div>            
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:BranchGraphUtils.state.horizontalScrollLeft,top:0}}></div>
+                <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:props.horizontalScrollLeft,top:0}}></div>
             </div>           
         </Fragment>
     </div>

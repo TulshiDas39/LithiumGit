@@ -19,10 +19,12 @@ interface IState{
 export class BranchGraphUtils{
     static branchPanelContainerId = "branchPanelContainer";
     static horizontalScrollBarId = "horizontalScrollBar";
+    static verticalScrollBarId = "verticalScrollBar";
     static branchPanelContainer:HTMLDivElement;
     static branchPanelRootElement:HTMLDivElement= null!;
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
+    static verticalScrollBarElement:HTMLDivElement = null!;
     static branchPanelHtml:string='';
     static panelWidth = -1;
     static panelHeight = 400;
@@ -108,23 +110,21 @@ export class BranchGraphUtils{
             viewBox:this.state.viewBox,
             horizontalScrollWidth:this.horizontalScrollWidth,
             verticalScrollHeight:this.verticalScrollHeight,
+            verticalScrollTop:this.state.verticalScrollTop,
+            horizontalScrollLeft:this.state.horizontalScrollLeft,
         }))
         this.branchPanelHtml = html;
 
     }
 
     static insertNewBranchGraph(){
-        
-        // if(!this.branchPanelRootElement) return;
         this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;
         if(!this.branchPanelContainer) return;
-        // container.innerHTML = '';
-        // container.appendChild(this.branchPanelRootElement);
-        // container.innerHTML = this.branchPanelHtml;
         this.branchPanelContainer.innerHTML = this.branchPanelHtml;
 
         this.svgElement = this.branchPanelContainer.querySelector('svg')!;
         this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
+        this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
 
         this.addEventListeners();
     }
@@ -163,9 +163,39 @@ export class BranchGraphUtils{
         }        
     }
 
+    static handleVerticalScroll=(verticalScrollMousePosition?:IPositition)=>{
+        if(verticalScrollMousePosition === undefined ) {
+            if(!this.state.notScrolledVerticallyYet){                
+                this.dataRef.initialVerticalScrollTop = this.state.verticalScrollTop;
+            }
+        }
+        else{
+            if(this.panelHeight <= this.verticalScrollHeight) return;
+            let newY = this.dataRef.initialVerticalScrollTop + verticalScrollMousePosition!.y;
+            const maxY = this.panelHeight - this.verticalScrollHeight;
+            if(newY > maxY) newY = maxY;
+            else if(newY < 0) newY = 0;
+            const newRatio = newY/maxY;
+            let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
+            if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;
+
+            const y = totalHeight *newRatio;
+            let viewBoxY = y - (this.panelHeight/2);            
+            
+            this.state.verticalScrollRatio= newRatio;
+            this.state.notScrolledVerticallyYet=false;
+            this.state.verticalScrollTop=newY;
+            this.state.viewBox.y=viewBoxY;
+
+            this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
+            this.verticalScrollBarElement.style.top = `${this.state.verticalScrollTop}px`;            
+        }
+    }
+
     static addEventListeners(){
-        const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
-        UiUtils.handleDrag(horizontalScrollBar,this.handleHozontalScroll);
+        // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
+        UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
+        UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
         
     }
 
@@ -214,6 +244,7 @@ export class BranchGraphUtils{
         this.state.horizontalScrollRatio=horizontalRatio;
         this.state.verticalScrollRatio=verticalRatio;
         this.state.verticalScrollTop=verticalScrollTop;
+        console.log("this.state.verticalScrollTop",this.state.verticalScrollTop);
         this.state.horizontalScrollLeft=horizontalScrollLeft;
         this.state.viewBox={
             ...this.state.viewBox,
