@@ -1,9 +1,8 @@
-import { IRepositoryDetails } from "common_library";
-import ReactDOM from "react-dom";
-import { IViewBox } from "../interfaces";
+import { IPositition, IViewBox } from "../interfaces";
 import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
+import { UiUtils } from "./UiUtils";
 
 interface IState{
     scrollTop:number;
@@ -19,11 +18,17 @@ interface IState{
 
 export class BranchGraphUtils{
     static branchPanelContainerId = "branchPanelContainer";
+    static horizontalScrollBarId = "horizontalScrollBar";
+    static branchPanelContainer:HTMLDivElement;
     static branchPanelRootElement:HTMLDivElement= null!;
+    static svgElement:SVGSVGElement = null!;
+    static horizontalScrollBarElement:HTMLDivElement = null!;
     static branchPanelHtml:string='';
     static panelWidth = -1;
     static panelHeight = 400;
     static zoom = 0;
+    static horizontalScrollWidth = 0;
+    static verticalScrollHeight = 0;
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
     }
@@ -90,19 +95,19 @@ export class BranchGraphUtils{
         this.state.viewBox.width = this.panelWidth;
         this.state.viewBox.height = this.panelHeight;
 
+        this.horizontalScrollWidth = this.getHorizontalScrollWidth();
+        this.verticalScrollHeight = this.getVerticalScrollHeight();
 
         this.setScrollInfos();
-
-        const horizontalScrollWidth = this.getHorizontalScrollWidth();
-        const verticalScrollHeighth = this.getVerticalScrollHeight();
+        
 
         const html = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             containerWidth:this.panelWidth,
             panelHeight:this.panelHeight,
             repoDetails:BranchUtils.repositoryDetails,
             viewBox:this.state.viewBox,
-            horizontalScrollWidth:horizontalScrollWidth,
-            verticalScrollHeight:verticalScrollHeighth,
+            horizontalScrollWidth:this.horizontalScrollWidth,
+            verticalScrollHeight:this.verticalScrollHeight,
         }))
         this.branchPanelHtml = html;
 
@@ -111,12 +116,57 @@ export class BranchGraphUtils{
     static insertNewBranchGraph(){
         
         // if(!this.branchPanelRootElement) return;
-        const container = document.querySelector(`#${this.branchPanelContainerId}`);
-        if(!container) return;
+        this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;
+        if(!this.branchPanelContainer) return;
         // container.innerHTML = '';
         // container.appendChild(this.branchPanelRootElement);
         // container.innerHTML = this.branchPanelHtml;
-        container.innerHTML = this.branchPanelHtml;
+        this.branchPanelContainer.innerHTML = this.branchPanelHtml;
+
+        this.svgElement = this.branchPanelContainer.querySelector('svg')!;
+        this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
+
+        this.addEventListeners();
+    }
+
+    static getViewBoxStr(){
+        return `${this.state.viewBox.x} ${this.state.viewBox.y} ${this.state.viewBox.width} ${this.state.viewBox.height}`;
+    }
+
+    static handleHozontalScroll=(horizontalScrollMousePosition?:IPositition)=>{        
+        if(horizontalScrollMousePosition === undefined ) {
+            if(!this.state.notScrolledHorizontallyYet){                
+                this.dataRef.initialHorizontalScrollLeft = this.state.horizontalScrollLeft;
+            }
+        }
+        else{
+            if(this.panelWidth <= this.horizontalScrollWidth) return;
+            let newLeft = this.dataRef.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
+            const maxLeft = this.panelWidth - this.horizontalScrollWidth;
+            if(newLeft < 0) newLeft = 0;
+            else if(newLeft > maxLeft) newLeft = maxLeft;
+            let newRatio = newLeft/maxLeft;            
+
+            let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
+            if(totalWidth <this.panelWidth) totalWidth = this.panelWidth;
+
+            const x = totalWidth *newRatio;
+            let viewBoxX = x - (this.panelWidth/2);
+
+            
+            this.state.horizontalScrollRatio= newRatio;
+            this.state.horizontalScrollLeft=newLeft;
+            this.state.notScrolledHorizontallyYet=false;
+            this.state.viewBox.x = viewBoxX;  
+            this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
+            this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
+        }        
+    }
+
+    static addEventListeners(){
+        const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
+        UiUtils.handleDrag(horizontalScrollBar,this.handleHozontalScroll);
+        
     }
 
     static getVerticalScrollHeight(){        
@@ -146,10 +196,10 @@ export class BranchGraphUtils{
         if(totalWidth < this.panelWidth) totalHeight = this.panelWidth;
         const horizontalRatio = BranchUtils.repositoryDetails.headCommit.x/totalWidth;
         const verticalRatio = BranchUtils.repositoryDetails.headCommit.ownerBranch.y/totalHeight;
-        const verticalScrollHeight = this.getVerticalScrollHeight();
-        let verticalScrollTop = (this.panelHeight-verticalScrollHeight)*verticalRatio;   
-        const horizontalScrollWidth = this.getHorizontalScrollWidth();     
-        let horizontalScrollLeft = (this.horizontalScrollContainerWidth-horizontalScrollWidth)*horizontalRatio;        
+        // const verticalScrollHeight = this.getVerticalScrollHeight();
+        let verticalScrollTop = (this.panelHeight-this.verticalScrollHeight)*verticalRatio;   
+        // const horizontalScrollWidth = this.getHorizontalScrollWidth();     
+        let horizontalScrollLeft = (this.horizontalScrollContainerWidth-this.horizontalScrollWidth)*horizontalRatio;
         this.dataRef.initialVerticalScrollTop = verticalScrollTop;
         this.dataRef.initialHorizontalScrollLeft = horizontalScrollLeft;
 

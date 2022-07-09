@@ -1,4 +1,5 @@
 import { ICommitInfo } from "common_library";
+import { IPositition } from "../interfaces";
 
 export class UiUtils {
     static removeIpcListeners(channels: string[],listeners?:any[]) {
@@ -34,7 +35,6 @@ export class UiUtils {
         const realMovedScrollBar = 5.945466930935044;
 
         console.log("expectedMovedScrollBar", expectedMovedScrollBar);
-        debugger;
         //864 px mouse move korle horizontal scroll move hoi 51.36883428328// from experiment
 
         ///18020 px svg move korle scroll move hoi 809.14894561598 px 
@@ -48,6 +48,42 @@ export class UiUtils {
     }
 
     static updateHeadCommit=(commit:ICommitInfo)=>{
+
+    }
+
+    static handleDrag(element:HTMLElement,listener:(position?:IPositition)=>void){
+        let initialMousePosition:IPositition | undefined = undefined;
+        let currentMousePosition:IPositition | undefined = undefined;
+        if(!element)
+            return;
+
+        const moveListener =(e:MouseEvent)=>{     
+            currentMousePosition={
+                x:e.clientX-initialMousePosition!.x,
+                y:e.clientY-initialMousePosition!.y
+            };
+            listener(currentMousePosition);
+        }
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
+
+        const downListener = (e:MouseEvent)=>{
+            initialMousePosition = {x:e.clientX,y:e.clientY};
+            document.addEventListener("mousemove",moveListener);
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
+        }
+        const upListener = ()=>{
+            document.removeEventListener("mousemove",moveListener);
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
+            currentMousePosition = undefined;
+            listener(currentMousePosition);
+        }        
+        
+        element?.addEventListener("mousedown",downListener);    
 
     }
 }

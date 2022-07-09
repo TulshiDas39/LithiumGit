@@ -16,16 +16,8 @@ interface IBranchPanelProps{
     
 }
 
-export function BranchPanel2(props:IBranchPanelProps){
-    // const panelHeight = 400;
-    const horizontalScrollContainerWidth = props.containerWidth+10;
-    
-    // if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
-
-    // const verticalScrollHeight = BranchGraphUtils.getVerticalScrollHeight();
-    
-    // const horizontalScrollWidth = BranchGraphUtils.getHorizontalScrollWidth();
-    console.log("props",props);
+export function BranchPanel2(props:IBranchPanelProps){    
+    const horizontalScrollContainerWidth = props.containerWidth+10;        
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
@@ -57,7 +49,7 @@ export function BranchPanel2(props:IBranchPanelProps){
                 </div>
             </div>            
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:BranchGraphUtils.state.horizontalScrollLeft,top:0}}></div>
+                <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:BranchGraphUtils.state.horizontalScrollLeft,top:0}}></div>
             </div>           
         </Fragment>
     </div>
