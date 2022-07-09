@@ -34,7 +34,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
             const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width);
             if(BranchGraphUtils.panelWidth !== width){
                 const existingPanelWidth = BranchGraphUtils.panelWidth;
-                BranchGraphUtils.panelWidth = width;
+                BranchGraphUtils.panelWidth = width-10;
                 if(existingPanelWidth === -1){
                     BranchGraphUtils.createBranchPanel();
                     BranchGraphUtils.insertNewBranchGraph();

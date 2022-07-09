@@ -1,6 +1,7 @@
 import { IRepositoryDetails } from "common_library";
 import  { Fragment } from "react"
 import { IViewBox } from "../../../../lib";
+import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { SingleBranch2 } from "./SingleBranch2";
 
 interface IBranchPanelProps{
@@ -10,6 +11,8 @@ interface IBranchPanelProps{
     containerWidth:number;
     viewBox:IViewBox;
     repoDetails:IRepositoryDetails;
+    horizontalScrollWidth:number;
+    verticalScrollHeight:number;
     
 }
 
@@ -19,20 +22,9 @@ export function BranchPanel2(props:IBranchPanelProps){
     
     // if(!props.repoDetails) return <span className="d-flex justify-content-center w-100">Loading...</span>;
 
-    const verticalScrollHeight = (()=>{        
-        let totalHeight = props.repoDetails.branchPanelHeight;
-        if(totalHeight < props.panelHeight) totalHeight = props.panelHeight;
-        const height = props.viewBox.height / totalHeight;        
-        return height*props.panelHeight;
-    })();
+    // const verticalScrollHeight = BranchGraphUtils.getVerticalScrollHeight();
     
-    const horizontalScrollWidth = (()=>{
-        let totalWidth = props.repoDetails.branchPanelWidth;
-        if(totalWidth < props.containerWidth) totalWidth = props.containerWidth;
-        const widthRatio = props.viewBox.width / totalWidth;
-        const horizontalScrollWidth = widthRatio*props.containerWidth;
-        return horizontalScrollWidth;
-    })();
+    // const horizontalScrollWidth = BranchGraphUtils.getHorizontalScrollWidth();
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
@@ -60,11 +52,11 @@ export function BranchPanel2(props:IBranchPanelProps){
                         </g>
                 </svg>
                 <div className="d-flex bg-secondary position-relative" style={{width:`10px`}}>
-                    <div className="bg-danger position-absolute w-100" style={{height:`${verticalScrollHeight}px`,top:0,left:0}}> </div>
+                    <div className="bg-danger position-absolute w-100" style={{height:`${props.verticalScrollHeight}px`,top:0,left:0}}> </div>
                 </div>
             </div>            
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div className="position-absolute bg-danger h-100" style={{width:`${horizontalScrollWidth}px`, left:state.horizontalScrollLeft,top:0}}></div>
+                <div className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:BranchGraphUtils.state.horizontalScrollLeft,top:0}}></div>
             </div>           
         </Fragment>
     </div>

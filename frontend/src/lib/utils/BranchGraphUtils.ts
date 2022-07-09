@@ -1,6 +1,9 @@
 import { IRepositoryDetails } from "common_library";
+import ReactDOM from "react-dom";
 import { IViewBox } from "../interfaces";
 import { BranchUtils } from "./BranchUtils";
+import * as ReactDOMServer from 'react-dom/server';
+import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 
 interface IState{
     scrollTop:number;
@@ -18,9 +21,10 @@ interface IState{
 export class BranchGraphUtils{
     static branchPanelContainerId = "branchPanelContainer";
     static branchPanelRootElement:HTMLDivElement= null!;
+    static branchPanelHtml:string='';
     static panelWidth = -1;
     static panelHeight = 400;
-    static zoom = 1;
+    static zoom = 0;
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
     }
@@ -64,34 +68,58 @@ export class BranchGraphUtils{
         if(!BranchUtils.repositoryDetails) return;
         if(this.panelWidth ===  -1) return;
 
-        this.branchPanelRootElement = document.createElement('div');
-        this.branchPanelRootElement.id = "branchPanel";
-        this.branchPanelRootElement.classList.add("w-100");
-        this.branchPanelRootElement.style.overflow="hidden";
+        // this.branchPanelRootElement = document.createElement('div');
+        // this.branchPanelRootElement.id = "branchPanel";
+        // this.branchPanelRootElement.classList.add("w-100");
+        // this.branchPanelRootElement.style.overflow="hidden";
 
-        let svgContainer = document.createElement('div');
-        svgContainer.classList.add("d-flex","align-items-stretch");
-        svgContainer.style.width = `${this.horizontalScrollContainerWidth}px`;
-        const svg = document.createElement('svg');
-        svg.setAttribute('width',`${this.panelWidth}px`);
-        svg.setAttribute('height',`${this.panelHeight}px`)
-        // svg.style.height = `${this.panelHeight}px`;
-        const viewBox:IViewBox =  {x:0,y:0,width:this.panelWidth,height:this.panelHeight};
-        svg.setAttribute('viewBox',`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`)
-        svg.style.transform = `scale(1)`;
-        svgContainer.appendChild(svg);
+        // let svgContainer = document.createElement('div');
+        // svgContainer.classList.add("d-flex","align-items-stretch");
+        // svgContainer.style.width = `${this.horizontalScrollContainerWidth}px`;
+        // const svg = document.createElement('svg');
+        // svg.setAttribute('width',`${this.panelWidth}px`);
+        // svg.setAttribute('height',`${this.panelHeight}px`)
+        // // svg.style.height = `${this.panelHeight}px`;
+        // const viewBox:IViewBox =  {x:0,y:0,width:this.panelWidth,height:this.panelHeight};
+        // svg.setAttribute('viewBox',`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`)
+        // svg.style.transform = `scale(1)`;
+        // svgContainer.appendChild(svg);
 
 
 
-        this.branchPanelRootElement.appendChild(svgContainer);
+        // this.branchPanelRootElement.appendChild(svgContainer);
+        
+        this.state.viewBox.width = this.panelWidth;
+        this.state.viewBox.height = this.panelHeight;
+
+
+        this.setScrollInfos();
+
+        const horizontalScrollWidth = this.getHorizontalScrollWidth();
+        const verticalScrollHeighth = this.getVerticalScrollHeight();
+
+        const html = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
+            containerWidth:this.panelWidth,
+            panelHeight:this.panelHeight,
+            repoDetails:BranchUtils.repositoryDetails,
+            viewBox:this.state.viewBox,
+            horizontalScrollWidth:horizontalScrollWidth,
+            verticalScrollHeight:verticalScrollHeighth,
+        }))
+        console.log("html",html);
+        this.branchPanelHtml = html;
+
     }
 
     static insertNewBranchGraph(){
-        if(!this.branchPanelRootElement) return;
+        
+        // if(!this.branchPanelRootElement) return;
         const container = document.querySelector(`#${this.branchPanelContainerId}`);
         if(!container) return;
-        container.innerHTML = '';
-        container.appendChild(this.branchPanelRootElement);
+        // container.innerHTML = '';
+        // container.appendChild(this.branchPanelRootElement);
+        // container.innerHTML = this.branchPanelHtml;
+        container.innerHTML = this.branchPanelHtml;
     }
 
     static getVerticalScrollHeight(){        
@@ -102,6 +130,7 @@ export class BranchGraphUtils{
     }
 
     static  getHorizontalScrollWidth(){
+        debugger;
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         if(totalWidth < this.panelWidth) totalWidth = this.panelWidth;
         const widthRatio = this.state.viewBox.width / totalWidth;
@@ -109,7 +138,7 @@ export class BranchGraphUtils{
         return horizontalScrollWidth;
     }
 
-    static getScrollInfos () {
+    static setScrollInfos () {
         if(BranchUtils.repositoryDetails?.headCommit) {
             let elmnt = document.getElementById(BranchUtils.repositoryDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
@@ -137,9 +166,9 @@ export class BranchGraphUtils{
         if(totalHeight > this.panelHeight) viewBoxY = y - (this.panelHeight/2);        
         
         this.state.horizontalScrollRatio=horizontalRatio;
-        this.state.verticalScrollRatio=verticalRatio,
-        this.state.verticalScrollTop=verticalScrollTop,
-        this.state.horizontalScrollLeft=horizontalScrollLeft,
+        this.state.verticalScrollRatio=verticalRatio;
+        this.state.verticalScrollTop=verticalScrollTop;
+        this.state.horizontalScrollLeft=horizontalScrollLeft;
         this.state.viewBox={
             ...this.state.viewBox,
             x:viewBoxX,
