@@ -25,6 +25,7 @@ export function BranchPanel2(props:IBranchPanelProps){
     // const verticalScrollHeight = BranchGraphUtils.getVerticalScrollHeight();
     
     // const horizontalScrollWidth = BranchGraphUtils.getHorizontalScrollWidth();
+    console.log("props",props);
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>

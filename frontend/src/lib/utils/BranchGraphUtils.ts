@@ -14,8 +14,7 @@ interface IState{
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
-    horizontalScrollLeft:number;
-    panelWidth:number;    
+    horizontalScrollLeft:number;    
 }
 
 export class BranchGraphUtils{
@@ -60,7 +59,6 @@ export class BranchGraphUtils{
             notScrolledVerticallyYet:true,
             verticalScrollTop:0,
             horizontalScrollLeft:0,
-            panelWidth:this.panelWidth,    
         }
     }
 
@@ -106,7 +104,6 @@ export class BranchGraphUtils{
             horizontalScrollWidth:horizontalScrollWidth,
             verticalScrollHeight:verticalScrollHeighth,
         }))
-        console.log("html",html);
         this.branchPanelHtml = html;
 
     }
@@ -130,7 +127,6 @@ export class BranchGraphUtils{
     }
 
     static  getHorizontalScrollWidth(){
-        debugger;
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         if(totalWidth < this.panelWidth) totalWidth = this.panelWidth;
         const widthRatio = this.state.viewBox.width / totalWidth;
@@ -138,7 +134,7 @@ export class BranchGraphUtils{
         return horizontalScrollWidth;
     }
 
-    static setScrollInfos () {
+    static setScrollInfos () {        
         if(BranchUtils.repositoryDetails?.headCommit) {
             let elmnt = document.getElementById(BranchUtils.repositoryDetails.headCommit.hash);
             if(elmnt) elmnt.scrollIntoView();            
@@ -147,7 +143,7 @@ export class BranchGraphUtils{
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;        
-        if(totalWidth < this.state.panelWidth) totalHeight = this.state.panelWidth;
+        if(totalWidth < this.panelWidth) totalHeight = this.panelWidth;
         const horizontalRatio = BranchUtils.repositoryDetails.headCommit.x/totalWidth;
         const verticalRatio = BranchUtils.repositoryDetails.headCommit.ownerBranch.y/totalHeight;
         const verticalScrollHeight = this.getVerticalScrollHeight();
@@ -159,7 +155,7 @@ export class BranchGraphUtils{
 
         const x = totalWidth *horizontalRatio;
         let viewBoxX = 0;
-        if(totalWidth > this.state.panelWidth) viewBoxX = x- (this.state.panelWidth/2);
+        if(totalWidth > this.panelWidth) viewBoxX = x- (this.panelWidth/2);
 
         const y = totalHeight *verticalRatio;
         let viewBoxY = 0;
