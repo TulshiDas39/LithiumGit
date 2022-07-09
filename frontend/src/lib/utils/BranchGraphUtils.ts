@@ -3,6 +3,8 @@ import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
+import { HeadText } from "../../components/selectedRepository/selectedRepoRight/branches/HeadText";
+import { EnumIdPrefix } from "../enums";
 
 interface IState{
     scrollTop:number;
@@ -25,6 +27,7 @@ export class BranchGraphUtils{
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
     static verticalScrollBarElement:HTMLDivElement = null!;
+    static headElement:HTMLElement = null!;
     static branchPanelHtml:string='';
     static panelWidth = -1;
     static panelHeight = 400;
@@ -117,16 +120,45 @@ export class BranchGraphUtils{
 
     }
 
+    static createElementForHeadText(){
+        const elem = document.createElement('text');
+        // <text id={`${EnumIdPrefix.COMMIT_TEXT}${props.commitHash}`} className={`cur-default`} x={props.x} onContextMenu={(e) => props.handleContext(e)} y={props.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
+        //<text id="ctext_f7c2f1f4c3907820b9010d93bbf9cccce8bfe98a" class="cur-default" x="17984" y="948" text-anchor="middle" alignment-baseline="middle" font-size="12" fill="green" font-weight="bold">H</text>
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        elem.id = `${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`;
+        elem.classList.add("cur-default");
+        elem.setAttribute("x",`${headCommit.x}`);
+        elem.setAttribute("y",`${headCommit.ownerBranch.y}`);
+        elem.setAttribute("y",`${headCommit.ownerBranch.y}`);
+        elem.setAttribute("text-anchor",`middle`);
+        elem.setAttribute("alignment-baseline",`middle`);
+        elem.setAttribute("font-size",`${BranchUtils.branchPanelFontSize}`);
+        elem.setAttribute("font-weight",`bold`);
+        elem.setAttribute("fill",`green`);
+        elem.innerText = "H";
+        this.headElement = elem;
+    }
+
+    static displayHeadIdentifier(){
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        const headElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`)
+        headElem?.classList.remove("d-none");             
+    }
+
     static insertNewBranchGraph(){
+        if(!this.branchPanelHtml) return;
         this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;
-        if(!this.branchPanelContainer) return;
+        // if(!this.branchPanelContainer) return;
         this.branchPanelContainer.innerHTML = this.branchPanelHtml;
 
         this.svgElement = this.branchPanelContainer.querySelector('svg')!;
         this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
         this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
 
+        this.displayHeadIdentifier();
+        
         this.addEventListeners();
+        
     }
 
     static getViewBoxStr(){

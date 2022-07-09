@@ -1,5 +1,7 @@
 import { ICommitInfo } from "common_library";
 import { IPositition } from "../interfaces";
+import * as ReactDOMServer from 'react-dom/server';
+
 
 export class UiUtils {
     static removeIpcListeners(channels: string[],listeners?:any[]) {
@@ -85,5 +87,9 @@ export class UiUtils {
         
         element?.addEventListener("mousedown",downListener);    
 
+    }
+
+    static JsxToHtml(jsx:JSX.Element){
+        return ReactDOMServer.renderToStaticMarkup(jsx);
     }
 }

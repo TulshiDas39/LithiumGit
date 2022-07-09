@@ -1,6 +1,6 @@
 import { IBranchDetails, ICommitInfo } from "common_library";
 import { Fragment, useMemo } from "react";
-import { BranchUtils } from "../../../../lib";
+import { BranchUtils, EnumIdPrefix } from "../../../../lib";
 
 interface ISingleBranchProps{
     branchDetails:IBranchDetails;
@@ -62,7 +62,7 @@ interface ISingleBranchProps{
                 {!!c.refs && getRefs(c)}
                     <circle id={c.hash} cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
                         strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?"blueviolet":"cadetblue"}`}/>                     
-                    {/* <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`cur-default ${c.isHead?"":"d-none"}`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text> */}
+                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`cur-default d-none`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
                 </Fragment>
             ))
         }
