@@ -3,7 +3,6 @@ import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
-import { HeadText } from "../../components/selectedRepository/selectedRepoRight/branches/HeadText";
 import { EnumIdPrefix } from "../enums";
 
 interface IState{
@@ -82,7 +81,7 @@ export class BranchGraphUtils{
         this.horizontalScrollWidth = this.getHorizontalScrollWidth();
         this.verticalScrollHeight = this.getVerticalScrollHeight();
 
-        this.setScrollInfos();
+        this.setScrollPosition();
         
 
         this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
@@ -149,8 +148,9 @@ export class BranchGraphUtils{
             this.state.horizontalScrollLeft=newLeft;
             this.state.notScrolledHorizontallyYet=false;
             this.state.viewBox.x = viewBoxX;  
-            this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
-            this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
+            this.updateViewBoxUi();
+            this.updateHorizontalScroll();
+            // this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
         }        
     }
 
@@ -279,21 +279,43 @@ export class BranchGraphUtils{
         return horizontalScrollWidth;
     }
 
-    static setScrollInfos () {        
-        if(BranchUtils.repositoryDetails?.headCommit) {
-            let elmnt = document.getElementById(BranchUtils.repositoryDetails.headCommit.hash);
-            if(elmnt) elmnt.scrollIntoView();            
-        }
-        else return;
+    static updateHorizontalScroll(){
+        this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
+    }
+
+    static updateVerticalScroll(){
+        this.verticalScrollBarElement.style.top = `${this.state.verticalScrollTop}px`;
+    }
+
+    static updateViewBoxUi(){
+        this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
+    }
+
+    static scrollToHeadCommit(){
+        if(!this.branchPanelHtml) return;
+
+        this.setScrollPosition();
+        
+        this.updateHorizontalScroll();
+        this.updateVerticalScroll();
+        this.updateViewBoxUi();
+
+        // let elmnt = document.getElementById(BranchUtils.repositoryDetails.headCommit.hash);
+        // if(elmnt) elmnt.scrollIntoView();        
+        // else return;        
+        
+    }
+
+    static setScrollPosition () {        
+        if(!BranchUtils.repositoryDetails?.headCommit) return;
+
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;        
         if(totalWidth < this.panelWidth) totalHeight = this.panelWidth;
         const horizontalRatio = BranchUtils.repositoryDetails.headCommit.x/totalWidth;
         const verticalRatio = BranchUtils.repositoryDetails.headCommit.ownerBranch.y/totalHeight;
-        // const verticalScrollHeight = this.getVerticalScrollHeight();
         let verticalScrollTop = (this.panelHeight-this.verticalScrollHeight)*verticalRatio;   
-        // const horizontalScrollWidth = this.getHorizontalScrollWidth();     
         let horizontalScrollLeft = (this.horizontalScrollContainerWidth-this.horizontalScrollWidth)*horizontalRatio;
         this.dataRef.initialVerticalScrollTop = verticalScrollTop;
         this.dataRef.initialHorizontalScrollLeft = horizontalScrollLeft;
@@ -309,7 +331,6 @@ export class BranchGraphUtils{
         this.state.horizontalScrollRatio=horizontalRatio;
         this.state.verticalScrollRatio=verticalRatio;
         this.state.verticalScrollTop=verticalScrollTop;
-        console.log("this.state.verticalScrollTop",this.state.verticalScrollTop);
         this.state.horizontalScrollLeft=horizontalScrollLeft;
         this.state.viewBox={
             ...this.state.viewBox,

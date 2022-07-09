@@ -1,6 +1,7 @@
 import React from "react"
 import { FaHome, FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
+import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
 function BranchActionsComponent(){
@@ -17,7 +18,7 @@ function BranchActionsComponent(){
     </div>
 
     <div className="px-1">
-        <FaHome className="cur-point hover" onClick={_=> dispatch(ActionUI.increamentVersion("branchPanelHome"))} />
+        <FaHome className="cur-point hover" onClick={_=> BranchGraphUtils.scrollToHeadCommit()} />
 
     </div>
 
