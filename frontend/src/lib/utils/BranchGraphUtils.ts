@@ -192,10 +192,84 @@ export class BranchGraphUtils{
         }
     }
 
+    static handleSvgDragging=(svgScrollMousePosition?:IPositition)=>{
+        if(svgScrollMousePosition === undefined ) {
+            if(!this.state.notScrolledVerticallyYet){                
+                this.dataRef.initialVerticalScrollTop = this.state.verticalScrollTop;
+            }
+            if(!this.state.notScrolledHorizontallyYet){
+                this.dataRef.initialHorizontalScrollLeft = this.state.horizontalScrollLeft;
+            }
+        }
+
+        else{
+            // if(panelHeight <= verticalScrollHeight) return;
+            // if(state.panelWidth <= horizontalScrollWidth) return;
+    
+            let newViewBox = {...this.state.viewBox};
+            let newHorizontalRatio = this.state.horizontalScrollRatio;
+            let newVerticalRatio = this.state.verticalScrollRatio;
+            let newHorizontalScrollLeft = this.state.horizontalScrollLeft;
+            let newVerticalScrollTop = this.state.verticalScrollTop;
+            
+    
+            if(!!svgScrollMousePosition?.y && this.panelHeight > this.verticalScrollHeight){
+                let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
+                if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;
+                let maxY = this.panelHeight - this.verticalScrollHeight;
+                const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(this.state.viewBox.height/this.panelHeight));                        
+                newVerticalScrollTop = this.dataRef.initialVerticalScrollTop - movedScrollBar;
+                
+                if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
+                else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
+                newVerticalRatio = newVerticalScrollTop/(this.panelHeight-this.verticalScrollHeight);
+                
+    
+                const y = totalHeight *newVerticalRatio;
+                let viewBoxY = y - (this.panelHeight/2);
+                newViewBox.y = viewBoxY;
+    
+            }
+            
+            if(!!svgScrollMousePosition?.x && this.panelWidth > this.horizontalScrollWidth){
+                let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
+                if(totalWidth <this.panelWidth) totalWidth = this.panelWidth;
+    
+                const maxLeft = this.panelWidth - this.horizontalScrollWidth;
+                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(this.state.viewBox.width/this.panelWidth));            
+                newHorizontalScrollLeft = this.dataRef.initialHorizontalScrollLeft- movedScrollBar;
+                if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
+                else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
+                newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
+    
+                const x = totalWidth *newHorizontalRatio;
+                let viewBoxX = x - (this.panelWidth/2);   
+                newViewBox.x = viewBoxX;                         
+            }
+                
+            this.state.horizontalScrollRatio= newHorizontalRatio;
+            this.state.verticalScrollRatio=newVerticalRatio;
+            this.state.horizontalScrollLeft=newHorizontalScrollLeft;
+            this.state.verticalScrollTop=newVerticalScrollTop;
+            this.state.notScrolledHorizontallyYet=false;
+            this.state.notScrolledVerticallyYet=false;
+            this.state.viewBox={
+                ...this.state.viewBox,
+                ...newViewBox,
+            };
+
+            this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
+            this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
+            this.verticalScrollBarElement.style.top = `${this.state.verticalScrollTop}px`;
+        
+        }
+    }
+
     static addEventListeners(){
         // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
         UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
         UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
+        UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
         
     }
 
