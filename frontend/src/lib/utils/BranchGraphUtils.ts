@@ -74,28 +74,7 @@ export class BranchGraphUtils{
 
     static createBranchPanel(){
         if(!BranchUtils.repositoryDetails) return;
-        if(this.panelWidth ===  -1) return;
-
-        // this.branchPanelRootElement = document.createElement('div');
-        // this.branchPanelRootElement.id = "branchPanel";
-        // this.branchPanelRootElement.classList.add("w-100");
-        // this.branchPanelRootElement.style.overflow="hidden";
-
-        // let svgContainer = document.createElement('div');
-        // svgContainer.classList.add("d-flex","align-items-stretch");
-        // svgContainer.style.width = `${this.horizontalScrollContainerWidth}px`;
-        // const svg = document.createElement('svg');
-        // svg.setAttribute('width',`${this.panelWidth}px`);
-        // svg.setAttribute('height',`${this.panelHeight}px`)
-        // // svg.style.height = `${this.panelHeight}px`;
-        // const viewBox:IViewBox =  {x:0,y:0,width:this.panelWidth,height:this.panelHeight};
-        // svg.setAttribute('viewBox',`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`)
-        // svg.style.transform = `scale(1)`;
-        // svgContainer.appendChild(svg);
-
-
-
-        // this.branchPanelRootElement.appendChild(svgContainer);
+        if(this.panelWidth ===  -1) return;        
         
         this.state.viewBox.width = this.panelWidth;
         this.state.viewBox.height = this.panelHeight;
@@ -106,7 +85,7 @@ export class BranchGraphUtils{
         this.setScrollInfos();
         
 
-        const html = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
+        this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             containerWidth:this.panelWidth,
             panelHeight:this.panelHeight,
             repoDetails:BranchUtils.repositoryDetails,
@@ -116,28 +95,8 @@ export class BranchGraphUtils{
             verticalScrollTop:this.state.verticalScrollTop,
             horizontalScrollLeft:this.state.horizontalScrollLeft,
         }))
-        this.branchPanelHtml = html;
 
-    }
-
-    static createElementForHeadText(){
-        const elem = document.createElement('text');
-        // <text id={`${EnumIdPrefix.COMMIT_TEXT}${props.commitHash}`} className={`cur-default`} x={props.x} onContextMenu={(e) => props.handleContext(e)} y={props.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
-        //<text id="ctext_f7c2f1f4c3907820b9010d93bbf9cccce8bfe98a" class="cur-default" x="17984" y="948" text-anchor="middle" alignment-baseline="middle" font-size="12" fill="green" font-weight="bold">H</text>
-        const headCommit = BranchUtils.repositoryDetails.headCommit;
-        elem.id = `${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`;
-        elem.classList.add("cur-default");
-        elem.setAttribute("x",`${headCommit.x}`);
-        elem.setAttribute("y",`${headCommit.ownerBranch.y}`);
-        elem.setAttribute("y",`${headCommit.ownerBranch.y}`);
-        elem.setAttribute("text-anchor",`middle`);
-        elem.setAttribute("alignment-baseline",`middle`);
-        elem.setAttribute("font-size",`${BranchUtils.branchPanelFontSize}`);
-        elem.setAttribute("font-weight",`bold`);
-        elem.setAttribute("fill",`green`);
-        elem.innerText = "H";
-        this.headElement = elem;
-    }
+    }  
 
     static displayHeadIdentifier(){
         const headCommit = BranchUtils.repositoryDetails.headCommit;
