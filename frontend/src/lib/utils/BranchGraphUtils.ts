@@ -131,6 +131,7 @@ export class BranchGraphUtils{
         this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
 
         this.displayHeadIdentifier();
+        this.handleCommitSelect(this.selectedCommit);
         
         this.addEventListeners();
         
