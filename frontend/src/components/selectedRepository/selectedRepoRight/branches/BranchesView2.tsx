@@ -11,6 +11,7 @@ import { CommitProperty2 } from "./CommitProperty2";
 interface IBranchesViewProps{
     // repoDetails?:IRepositoryDetails;    
     // onCommitSelect:(commit:ICommitInfo)=>void;
+    show:boolean;
 }
 
 interface IState{
@@ -30,6 +31,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
 
     const branchPanelRef = useRef<HTMLDivElement>();
     useEffect(()=>{
+        if(!props.show) return;
         if(branchPanelRef.current){
             const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width);
             if(BranchGraphUtils.panelWidth !== width){
@@ -52,7 +54,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
         
     },[]);
 
-    return <div id="selectedRepoRight" className="d-flex w-100 flex-column">
+    return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${props.show?'':'d-none'}`}>
     <BranchActions />
     <div className="d-flex w-100 overflow-hidden">
         <div id={BranchGraphUtils.branchPanelContainerId} ref={branchPanelRef as any} className="w-75">

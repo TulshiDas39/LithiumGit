@@ -9,8 +9,8 @@ interface ISelectedRepoRightProps{
 
 function SelectedRepoRightComponent(props:ISelectedRepoRightProps){        
     return <div className="d-flex w-100 h-100">
-        {props.selectedTab === "Changes" && <Changes />}
-        {props.selectedTab === "Branches" && <BranchesView2  />}
+        <Changes show={props.selectedTab === "Changes"}/>
+        <BranchesView2 show={props.selectedTab === "Branches"} />
     </div>    
 }
 

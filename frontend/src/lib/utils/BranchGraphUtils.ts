@@ -141,13 +141,15 @@ export class BranchGraphUtils{
         return `${this.state.viewBox.x} ${this.state.viewBox.y} ${this.state.viewBox.width} ${this.state.viewBox.height}`;
     }
 
-    static handleHozontalScroll=(horizontalScrollMousePosition?:IPositition)=>{        
+    static handleHozontalScroll=(horizontalScrollMousePosition?:IPositition)=>{     
+        debugger;   
         if(horizontalScrollMousePosition === undefined ) {
             if(!this.state.notScrolledHorizontallyYet){                
                 this.dataRef.initialHorizontalScrollLeft = this.state.horizontalScrollLeft;
             }
         }
         else{
+            console.log("this.panelWidth",this.panelWidth);
             if(this.panelWidth <= this.horizontalScrollWidth) return;
             let newLeft = this.dataRef.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
             const maxLeft = this.panelWidth - this.horizontalScrollWidth;

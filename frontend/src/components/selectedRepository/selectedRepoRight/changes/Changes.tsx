@@ -12,6 +12,7 @@ import { UntrackedFiles } from "./UntrackedFiles";
 
 interface IChangesProps{
     // repoInfo?:RepositoryInfo;
+    show:boolean;
 }
 
 interface IState {
@@ -21,7 +22,7 @@ interface IState {
     // document:Descendant[],
 }
 
-function ChangesComponent() {
+function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,        
         // document:ExampleDocument,        
@@ -102,7 +103,7 @@ function ChangesComponent() {
 
     // if(!props.repoInfo) return null;
 
-    return <div className="d-flex w-100 h-100">
+    return <div className={`d-flex w-100 h-100 ${props.show?'':'d-none'}`}>
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
             
