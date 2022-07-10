@@ -5,6 +5,7 @@ import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRi
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
 import { ICommitInfo } from "common_library";
+import { ModalData } from "../../components/modals/ModalData";
 
 interface IState{
     scrollTop:number;
@@ -41,6 +42,9 @@ export class BranchGraphUtils{
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
     }
+
+    static handleCommitSelect=(commit:ICommitInfo)=>{};
+    static openContextModal=()=>{};
    
 
     static state:IState={
@@ -282,14 +286,9 @@ export class BranchGraphUtils{
         }
     }
     
+    static addEventListendersOnCommit(){
 
-    static addEventListeners(){
-        // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
-        UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
-        UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
-        UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
-        UiUtils.addEventListenderByClassName("commit",(target)=>{
-            
+        const clickListener = (target:HTMLElement)=>{
             const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
             existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
@@ -297,8 +296,32 @@ export class BranchGraphUtils{
             target.setAttribute("fill",this.selectedCommitColor);
             this.handleCommitSelect(selectedCommit!);
             this.selectedCommit = selectedCommit!;
+        }
+        
+        UiUtils.addEventListenderByClassName("commit","click",clickListener);
 
-        })
+        const contextEventListener=(target:HTMLElement,event:MouseEvent)=>{            
+            const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
+            const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
+            ModalData.commitContextModal.selectedCommit=selectedCommit!;            
+            ModalData.commitContextModal.position = {
+                x:event.clientX,
+                y:event.clientY,
+            }
+
+            this.openContextModal();
+        }
+
+        UiUtils.addEventListenderByClassName("commit","contextmenu",contextEventListener)
+    }
+
+    static addEventListeners(){
+        // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
+        UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
+        UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
+        UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
+        this.addEventListendersOnCommit();
+        
     }
 
     static getVerticalScrollHeight(){        
@@ -396,7 +419,5 @@ export class BranchGraphUtils{
         this.handleZoomEffect();
     }
 
-    static handleCommitSelect=(commit:ICommitInfo)=>{
-
-    }
+    
 }

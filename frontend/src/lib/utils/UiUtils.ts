@@ -93,12 +93,12 @@ export class UiUtils {
         return ReactDOMServer.renderToStaticMarkup(jsx);
     }
 
-    static addEventListenderByClassName(className:string,listener:(target:HTMLElement)=>void){
+    static addEventListenderByClassName<K extends keyof HTMLElementEventMap>(className:string,eventKey:K,listener:(target:HTMLElement,event:any)=>void){
         const elems = document.querySelectorAll<HTMLElement>(`.${className}`);
         
         elems.forEach((elem)=>{
-            elem.addEventListener("click",()=>{
-                listener(elem);
+            elem.addEventListener(eventKey,(e)=>{
+                listener(elem,e);
             })
         })
     }

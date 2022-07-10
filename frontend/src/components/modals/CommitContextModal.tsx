@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, EnumModals, UiUtils } from "../../lib";
+import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { SelectedRepoRightData } from "../selectedRepository/selectedRepoRight/SelectedRepoRightData";
@@ -43,6 +44,12 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
     }
     useEffect(()=>{
+        const modalOpenEventListener = ()=>{
+            dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
+        }
+
+        BranchGraphUtils.openContextModal = modalOpenEventListener;
+        
         const listener = (_e:any,commit:ICommitInfo,status:IStatus)=>{
             //UiUtils.updateHeadCommit(commit);
             const newRepoDetails = produce(BranchUtils.repositoryDetails,(draftState)=>{
