@@ -1,5 +1,7 @@
 import { IRepositoryDetails } from "common_library";
 import  { Fragment } from "react"
+import { ScaleLoader } from "react-spinners";
+import { LoaderIcon } from "../../../../assets";
 import { IViewBox } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { SingleBranch2 } from "./SingleBranch2";
@@ -51,10 +53,10 @@ export function BranchPanel2(props:IBranchPanelProps){
                 <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:props.horizontalScrollLeft,top:0}}></div>
             </div>           
         </Fragment>
-        <div className="position-absolute w-100 h-100 bg-secondary text-center" style={{top:0,left:0,opacity:0.5}}>            
+        <div id="branchPanelLoader" className="position-absolute w-100 h-100 bg-white text-center d-none" style={{top:0,left:0,opacity:0.8}}>            
             <div className="row g-0 h-100 align-items-center">
-                <div className="col-12">
-                    Loading...
+                <div className="col-12">                    
+                    <ScaleLoader loading={true} color="black" />
                 </div>
             </div>
         </div>

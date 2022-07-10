@@ -140,6 +140,8 @@ export class BranchGraphUtils{
         this.addEventListeners();
         
         this.handleZoomEffect();
+
+        this.hideBrnchPanelLoader();
     }
 
     static handleZoomEffect(){
@@ -436,5 +438,16 @@ export class BranchGraphUtils{
         this.handleZoomEffect();
     }
 
+    static showBrnchPanelLoader(){
+        if(!this.svgElement) return;
+        const loaderElem = this.branchPanelContainer.querySelector("#branchPanelLoader");
+        loaderElem?.classList.remove("d-none")
+    }
+
+    static hideBrnchPanelLoader(){
+        if(!this.svgElement) return;
+        const loaderElem = this.branchPanelContainer.querySelector("#branchPanelLoader");
+        loaderElem?.classList.add("d-none")
+    }
     
 }

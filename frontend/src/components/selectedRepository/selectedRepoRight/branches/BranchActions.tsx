@@ -6,9 +6,15 @@ import { ActionUI } from "../../../../store/slices/UiSlice";
 
 function BranchActionsComponent(){
     const dispatch = useDispatch();
+    
+    const handleRefresh = ()=>{
+        BranchGraphUtils.showBrnchPanelLoader();
+        dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+    }
+
     return <div className="d-flex py-2 align-items-center">
     <div className="px-2">
-        <FaSyncAlt className="hover" onClick={()=> dispatch(ActionUI.increamentVersion("branchPanelRefresh"))} />
+        <FaSyncAlt className="hover" onClick={handleRefresh} />
     </div>
     <div className="d-flex align-items-center justify-content-center border px-2">
         <FaMinus className="px-1 hover border rounded-circle" onClick={()=> BranchGraphUtils.controlZoom("zoomOut")} />
