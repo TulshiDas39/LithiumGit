@@ -35,16 +35,16 @@ interface ISingleBranchProps{
         return true;
     }
     const getRefs = (commit:ICommitInfo)=>{
-        if(!commit.refs) return;
-        let refs = commit.refs;
-        if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substring(BranchUtils.headPrefix.length);
-        const splits = refs.split(",");
+        if(!commit.refValues.length) return;
+        // let refs = commit.refs;
+        // if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substring(BranchUtils.headPrefix.length);
+        // const splits = refs.split(",");
 
         const refElements:JSX.Element[] = [];
         let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
-        for(let sp of splits){
+        for(let sp of commit.refValues){
             const x = commit.x + BranchUtils.commitRadius ;
-            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === "HEAD"?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === BranchUtils.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
             refElements.push(elem);
             y = y - BranchUtils.branchPanelFontSize - 1;
         }

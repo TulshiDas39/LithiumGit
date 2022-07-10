@@ -4,7 +4,7 @@ import { IViewBox } from "../interfaces";
 export class BranchUtils{
     static repositoryDetails:IRepositoryDetails = null!;
     static readonly headPrefix = "HEAD -> ";
-    static readonly detachedHeadPrefix = "HEAD";
+    static readonly detachedHeadIdentifier = "HEAD";
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
@@ -225,21 +225,22 @@ export class BranchUtils{
         let commitRef = commit.refs;
     	const branches:string[] = [];
     	if(!commitRef) return;
-        const splits = commitRef.split(",");
-        commit.refValues = splits.map(x=> x.trim());
+        
         if(commitRef.includes(BranchUtils.headPrefix)) {
             repoDetails.headCommit = commit;
             commit.isHead = true;
             commitRef = commitRef.substring(BranchUtils.headPrefix.length);
         }
-        else if(splits.some(sp=>sp === BranchUtils.detachedHeadPrefix)) repoDetails.headCommit = commit;        
+        const splits = commitRef.split(",");
+        commit.refValues = splits.map(x=> x.trim());
+        if(!commit.isHead && splits.some(sp=>sp === BranchUtils.detachedHeadIdentifier)) repoDetails.headCommit = commit;        
         const refLenght = splits.length;
         if(refLenght > commit.ownerBranch.maxRefCount) {
             commit.ownerBranch.maxRefCount = refLenght;
         }
         for (let split of splits) {
             split = split.trim();
-            if(split.startsWith("tag:")) continue;
+            if(split.startsWith("tag:") || split === BranchUtils.detachedHeadIdentifier) continue;
             branches.push(split);  
         }        
         
@@ -319,7 +320,7 @@ export class BranchUtils{
         repoDetails.status = newStatus;                
 
         if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== "HEAD");
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== this.detachedHeadIdentifier);
             if(existingHead.ownerBranch.increasedHeightForDetached > 0){
                 existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
                 existingHead.ownerBranch.increasedHeightForDetached = 0;
@@ -329,7 +330,7 @@ export class BranchUtils{
         const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
         if(newStatus.isDetached){
-            newHeadCommit.refValues.push("HEAD");
+            newHeadCommit.refValues.push(this.detachedHeadIdentifier);
             if(newHeadCommit.refValues.length > existingMaxRefLength){
                 newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;

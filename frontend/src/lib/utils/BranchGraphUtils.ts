@@ -8,6 +8,7 @@ import { ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
+import { CacheUtils } from "./CacheUtils";
 
 interface IState{
     scrollTop:number;
@@ -467,7 +468,7 @@ export class BranchGraphUtils{
         elem.setAttribute("font-size",`${BranchUtils.branchPanelFontSize}`);
         elem.setAttribute("fill",`blue`);
         elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`,"headRef")
-        elem.innerHTML = "HEAD";
+        elem.innerHTML = BranchUtils.detachedHeadIdentifier;
         return elem;
     }
     
@@ -521,7 +522,7 @@ export class BranchGraphUtils{
         repoDetails.status = newStatus;                
 
         if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== "HEAD");
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== BranchUtils.detachedHeadIdentifier);
             if(existingHead.ownerBranch.increasedHeightForDetached > 0){
                 existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
                 existingHead.ownerBranch.increasedHeightForDetached = 0;
@@ -531,12 +532,15 @@ export class BranchGraphUtils{
         const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
         if(newStatus.isDetached){
-            newHeadCommit.refValues.push("HEAD");
+            newHeadCommit.refs += `,${BranchUtils.detachedHeadIdentifier}`;
+            newHeadCommit.refValues.push(`${BranchUtils.detachedHeadIdentifier}`);
             if(newHeadCommit.refValues.length > existingMaxRefLength){
                 newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
             }
         }
+
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
 
         this.updateUiForCheckout();
 
