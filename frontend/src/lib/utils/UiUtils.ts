@@ -92,4 +92,14 @@ export class UiUtils {
     static JsxToHtml(jsx:JSX.Element){
         return ReactDOMServer.renderToStaticMarkup(jsx);
     }
+
+    static addEventListenderByClassName(className:string,listener:(target:HTMLElement)=>void){
+        const elems = document.querySelectorAll<HTMLElement>(`.${className}`);
+        
+        elems.forEach((elem)=>{
+            elem.addEventListener("click",()=>{
+                listener(elem);
+            })
+        })
+    }
 }

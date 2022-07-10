@@ -4,6 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
+import { ICommitInfo } from "common_library";
 
 interface IState{
     scrollTop:number;
@@ -33,6 +34,10 @@ export class BranchGraphUtils{
     static zoom = 0;
     static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;
+    static selectedCommit:ICommitInfo;
+    static readonly selectedCommitColor = "blueviolet"
+    static readonly commitColor = "cadetblue";
+
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
     }
@@ -94,6 +99,7 @@ export class BranchGraphUtils{
 
         this.setScrollPosition();
         
+        this.selectedCommit = BranchUtils.repositoryDetails.headCommit;
 
         this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             containerWidth:this.panelWidth,
@@ -142,7 +148,6 @@ export class BranchGraphUtils{
     }
 
     static handleHozontalScroll=(horizontalScrollMousePosition?:IPositition)=>{     
-        debugger;   
         if(horizontalScrollMousePosition === undefined ) {
             if(!this.state.notScrolledHorizontallyYet){                
                 this.dataRef.initialHorizontalScrollLeft = this.state.horizontalScrollLeft;
@@ -275,13 +280,24 @@ export class BranchGraphUtils{
         
         }
     }
+    
 
     static addEventListeners(){
         // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
         UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
         UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
         UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
-        
+        UiUtils.addEventListenderByClassName("commit",(target)=>{
+            
+            const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+            const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
+            const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
+            target.setAttribute("fill",this.selectedCommitColor);
+            this.handleCommitSelect(selectedCommit!);
+            this.selectedCommit = selectedCommit!;
+
+        })
     }
 
     static getVerticalScrollHeight(){        
@@ -377,5 +393,9 @@ export class BranchGraphUtils{
         this.updateUIPositioning();
         this.updateScrollWidthUis();
         this.handleZoomEffect();
+    }
+
+    static handleCommitSelect=(commit:ICommitInfo)=>{
+
     }
 }

@@ -1,4 +1,4 @@
-import { IStatus, RendererEvents } from "common_library";
+import { ICommitInfo, IStatus, RendererEvents } from "common_library";
 import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
