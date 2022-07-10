@@ -14,7 +14,7 @@ function BranchActionsComponent(){
         <FaMinus className="px-1 hover border rounded-circle" onClick={()=> BranchGraphUtils.controlZoom("zoomOut")} />
         <span className="px-1" />
         <FaPlus className="px-1 hover border rounded-circle" onClick={()=>BranchGraphUtils.controlZoom("zoomIn")} />
-        <span className="hover px-1" onClick={()=> BranchGraphUtils.controlZoom("reset")}  >Reset</span>
+        <span className="hover px-1 noselect" onClick={()=> BranchGraphUtils.controlZoom("reset")}  >Reset</span>
     </div>
 
     <div className="px-1">
