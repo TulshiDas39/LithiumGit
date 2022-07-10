@@ -300,6 +300,14 @@ export class BranchGraphUtils{
         
         UiUtils.addEventListenderByClassName("commit","click",clickListener);
 
+        const commitTextClickListener=(target:HTMLElement)=>{
+            const commitId = target.id.substring(EnumIdPrefix.COMMIT_TEXT.length);
+            const commitCircleElem = this.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
+            clickListener(commitCircleElem!);
+        }
+
+        UiUtils.addEventListenderByClassName("commit_text","click",commitTextClickListener);
+
         const contextEventListener=(target:HTMLElement,event:MouseEvent)=>{            
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
             const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
@@ -313,6 +321,15 @@ export class BranchGraphUtils{
         }
 
         UiUtils.addEventListenderByClassName("commit","contextmenu",contextEventListener)
+
+        const commitTextContextClickListener=(target:HTMLElement,event:MouseEvent)=>{
+            const commitId = target.id.substring(EnumIdPrefix.COMMIT_TEXT.length);
+            const commitCircleElem = this.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
+            contextEventListener(commitCircleElem!,event);
+        }
+
+        UiUtils.addEventListenderByClassName("commit_text","contextmenu",commitTextContextClickListener)
+
     }
 
     static addEventListeners(){
