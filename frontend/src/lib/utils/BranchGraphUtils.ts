@@ -71,6 +71,18 @@ export class BranchGraphUtils{
         }
     }
 
+    static updateScrollWidthUis(){
+        if(!this.svgElement) return;
+        this.updateScrollWidthValues();
+        this.horizontalScrollBarElement.style.width = `${this.horizontalScrollWidth}px`;
+        this.verticalScrollBarElement.style.height = `${this.verticalScrollHeight}px`;
+    }
+
+    static updateScrollWidthValues(){
+        this.horizontalScrollWidth = this.getHorizontalScrollWidth();
+        this.verticalScrollHeight = this.getVerticalScrollHeight();
+    }
+
     static createBranchPanel(){
         if(!BranchUtils.repositoryDetails) return;
         if(this.panelWidth ===  -1) return;        
@@ -78,8 +90,7 @@ export class BranchGraphUtils{
         this.state.viewBox.width = this.panelWidth;
         this.state.viewBox.height = this.panelHeight;
 
-        this.horizontalScrollWidth = this.getHorizontalScrollWidth();
-        this.verticalScrollHeight = this.getVerticalScrollHeight();
+        this.updateScrollWidthValues();
 
         this.setScrollPosition();
         
@@ -117,6 +128,13 @@ export class BranchGraphUtils{
         
         this.addEventListeners();
         
+        this.handleZoomEffect();
+    }
+
+    static handleZoomEffect(){
+        if(this.zoom === 0){
+            this.dataRef.initialViewbox = this.state.viewBox;
+        }
     }
 
     static getViewBoxStr(){
@@ -291,19 +309,18 @@ export class BranchGraphUtils{
         this.svgElement.setAttribute("viewBox",this.getViewBoxStr());            
     }
 
+    static updateUIPositioning(){
+        
+        this.updateHorizontalScroll();
+        this.updateVerticalScroll();
+        this.updateViewBoxUi(); 
+    }
+
     static scrollToHeadCommit(){
         if(!this.branchPanelHtml) return;
 
         this.setScrollPosition();
-        
-        this.updateHorizontalScroll();
-        this.updateVerticalScroll();
-        this.updateViewBoxUi();
-
-        // let elmnt = document.getElementById(BranchUtils.repositoryDetails.headCommit.hash);
-        // if(elmnt) elmnt.scrollIntoView();        
-        // else return;        
-        
+        this.updateUIPositioning();                      
     }
 
     static setScrollPosition () {        
@@ -338,5 +355,25 @@ export class BranchGraphUtils{
             y:viewBoxY,                
         }        
 
+    }
+
+    static controlZoom(action:"zoomIn"|"zoomOut"|"reset"){
+        if(!this.svgElement) return;
+        if(action === "zoomIn"){
+            this.zoom++;            
+        }
+
+        else if(action === "zoomOut"){
+            this.zoom--;
+        }
+        else this.zoom = 0;
+
+        const viewBox = BranchUtils.getViewBoxValue(this.dataRef.initialViewbox,this.zoom);
+        this.state.viewBox = viewBox;            
+        this.dataRef.zoom = this.zoom;
+
+        this.updateUIPositioning();
+        this.updateScrollWidthUis();
+        this.handleZoomEffect();
     }
 }
