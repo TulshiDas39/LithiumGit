@@ -44,7 +44,7 @@ interface ISingleBranchProps{
         let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
         for(let sp of splits){
             const x = commit.x + BranchUtils.commitRadius ;
-            const elem = <text key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === "HEAD"?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
             refElements.push(elem);
             y = y - BranchUtils.branchPanelFontSize - 1;
         }

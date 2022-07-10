@@ -335,6 +335,8 @@ export class BranchUtils{
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
             }
         }
+
+        
                 
     }
 }

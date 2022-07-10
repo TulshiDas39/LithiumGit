@@ -4,8 +4,10 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { ICommitInfo } from "common_library";
+import { ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
+import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
+import ReactDOM from "react-dom";
 
 interface IState{
     scrollTop:number;
@@ -449,5 +451,94 @@ export class BranchGraphUtils{
         const loaderElem = this.branchPanelContainer.querySelector("#branchPanelLoader");
         loaderElem?.classList.add("d-none")
     }
+
+    static CreateHeadTextElement(commit:ICommitInfo){
+        if(!commit.refValues.length) return null;    
+        let y = commit.ownerBranch.y - BranchUtils.commitRadius - 4;
+        const x = commit.x + BranchUtils.commitRadius;
+        for(let i=0;i<commit.refValues.length-1;i++){                
+            y = y - BranchUtils.branchPanelFontSize - 1;
+        }
+        // return <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">HEAD</text>;
+        const elem = document.createElementNS("http://www.w3.org/2000/svg",'text');        
+        elem.setAttribute("x",`${x}`)
+        elem.setAttribute("y",`${y}`)
+        elem.setAttribute("direction",`rtl`)
+        elem.setAttribute("font-size",`${BranchUtils.branchPanelFontSize}`);
+        elem.setAttribute("fill",`blue`);
+        elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`,"headRef")
+        elem.innerHTML = "HEAD";
+        return elem;
+    }
     
+    static updateUiForCheckout(){
+        if(!this.svgElement) return;
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        if(BranchUtils.repositoryDetails.status.isDetached){
+            const commitElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${headCommit.hash}`);
+            const headTextElem = this.CreateHeadTextElement(headCommit);        
+            commitElem?.insertAdjacentElement("beforebegin",headTextElem!);
+        }
+
+        const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
+
+        HTextElem?.classList.remove("d-none");
+        
+
+        
+    }
+    
+
+    static revertUiOfExistingCheckout(){
+        if(!this.svgElement) return;
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        const headCommitTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
+        if(!headCommitTextElem) return;
+        headCommitTextElem.classList.add("d-none");
+        if(BranchUtils.repositoryDetails.status.isDetached){
+            const refElems = this.svgElement.querySelectorAll(`.${EnumIdPrefix.COMMIT_REF}${headCommit.hash}`);
+            let headTextElem:Element|undefined;
+
+            refElems.forEach(elem=>{
+                if(elem.classList.contains("headRef")) headTextElem = elem;
+            });
+
+            if(headTextElem) headTextElem.remove();
+
+        }
+    }
+
+    static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
+        this.revertUiOfExistingCheckout();
+        const existingHead = repoDetails.headCommit;
+        existingHead.isHead = false;
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
+        if(!newHeadCommit) throw "New checkout commit not found";
+        repoDetails.headCommit = newHeadCommit;
+        newHeadCommit.isHead = true;        
+
+        const existingStatus = repoDetails.status;
+        repoDetails.status = newStatus;                
+
+        if(existingStatus.isDetached){
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== "HEAD");
+            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                existingHead.ownerBranch.increasedHeightForDetached = 0;
+            }            
+        }
+
+        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+
+        if(newStatus.isDetached){
+            newHeadCommit.refValues.push("HEAD");
+            if(newHeadCommit.refValues.length > existingMaxRefLength){
+                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            }
+        }
+
+        this.updateUiForCheckout();
+
+    }
 }

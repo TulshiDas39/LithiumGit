@@ -52,11 +52,9 @@ function CommitContextModalComponent(){
         
         const listener = (_e:any,commit:ICommitInfo,status:IStatus)=>{
             //UiUtils.updateHeadCommit(commit);
-            const newRepoDetails = produce(BranchUtils.repositoryDetails,(draftState)=>{
-                BranchUtils.handleCheckout(commit,draftState,status);
-            })
-
-            SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
+            
+            BranchGraphUtils.handleCheckout(commit,BranchUtils.repositoryDetails,status);            
+            // SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
             
         }
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
