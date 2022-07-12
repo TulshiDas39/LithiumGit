@@ -1,8 +1,9 @@
-import { RendererEvents } from "common_library";
+import { ICommitInfo, IStatus, RendererEvents } from "common_library";
 import React, { useEffect } from "react"
 import { Button, Form, Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, EnumModals, useMultiState } from "../../lib";
+import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -28,6 +29,12 @@ function CreateBranchModalComponent(){
             })
         }
     },[store.show])
+
+    useEffect(()=>{
+        window.ipcRenderer.on(RendererEvents.createBranch().replyChannel,(e,sourceCommit:ICommitInfo,branchName:string,status:IStatus)=>{
+            BranchGraphUtils.handleNewBranch(sourceCommit,branchName,status);
+        })
+    },[])
 
     const handleBranchCreateClick=()=>{
         const branchNames = BranchUtils.getAllBranchNames();

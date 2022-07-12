@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { createBranchDetailsObj, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
@@ -31,7 +31,7 @@ export class BranchGraphUtils{
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
     static verticalScrollBarElement:HTMLDivElement = null!;
-    static headElement:HTMLElement = null!;
+    // static headElement:HTMLElement = null!;
     static branchPanelHtml:string='';
     static panelWidth = -1;
     static panelHeight = 400;
@@ -39,6 +39,7 @@ export class BranchGraphUtils{
     static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;
     static selectedCommit:ICommitInfo;
+    static focusedCommit:ICommitInfo=null!;
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
 
@@ -382,20 +383,20 @@ export class BranchGraphUtils{
 
     static scrollToHeadCommit(){
         if(!this.branchPanelHtml) return;
-
+        this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
         this.setScrollPosition();
         this.updateUIPositioning();                      
     }
 
     static setScrollPosition () {        
-        if(!BranchUtils.repositoryDetails?.headCommit) return;
+        if(!this.focusedCommit) this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
 
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;        
         if(totalWidth < this.panelWidth) totalHeight = this.panelWidth;
-        const horizontalRatio = BranchUtils.repositoryDetails.headCommit.x/totalWidth;
-        const verticalRatio = BranchUtils.repositoryDetails.headCommit.ownerBranch.y/totalHeight;
+        const horizontalRatio = this.focusedCommit.x/totalWidth;
+        const verticalRatio = this.focusedCommit.ownerBranch.y/totalHeight;
         let verticalScrollTop = (this.panelHeight-this.verticalScrollHeight)*verticalRatio;   
         let horizontalScrollLeft = (this.horizontalScrollContainerWidth-this.horizontalScrollWidth)*horizontalRatio;
         this.dataRef.initialVerticalScrollTop = verticalScrollTop;
@@ -483,10 +484,7 @@ export class BranchGraphUtils{
 
         const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
-        HTextElem?.classList.remove("d-none");
-        
-
-        
+        HTextElem?.classList.remove("d-none");        
     }
     
 
@@ -544,5 +542,26 @@ export class BranchGraphUtils{
 
         this.updateUiForCheckout();
 
+    }
+
+    static refreshBranchPanelUi(){
+        // this.showBrnchPanelLoader();
+        this.createBranchPanel();
+        this.insertNewBranchGraph();
+    }
+
+    static handleNewBranch(sourceCommit:ICommitInfo,branch:string,status:IStatus){
+        console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
+        BranchUtils.repositoryDetails.branchList.push(branch);
+        const commitFrom = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === sourceCommit.hash);
+        if(!commitFrom) return;        
+        commitFrom.refValues.push(branch);                
+        const refLimitExcited = commitFrom.refValues.length > commitFrom.ownerBranch.maxRefCount;
+        if(refLimitExcited)  commitFrom.ownerBranch.maxRefCount++;
+        BranchUtils.repositoryDetails.status = status;
+        if(status.current === branch) BranchUtils.repositoryDetails.headCommit = commitFrom;
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+        this.focusedCommit = commitFrom;
+        this.refreshBranchPanelUi();
     }
 }

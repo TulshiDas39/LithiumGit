@@ -25,7 +25,8 @@ export class GitManager{
 
     addCreateBranchHandler(){
         ipcMain.on(RendererEvents.createBranch().channel, async (e,sourceCommit:ICommitInfo,repository:IRepositoryDetails,newBranchName)=>{
-            await this.createBranch(sourceCommit,repository,newBranchName);
+            const status = await this.createBranch(sourceCommit,repository,newBranchName);
+            e.reply(RendererEvents.createBranch().replyChannel,sourceCommit,newBranchName,status);
         })
     }
     addCheckOutCommitHandlder(){
@@ -195,6 +196,7 @@ export class GitManager{
             // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
         }
 
+        commit.isHead = true;
         const status = await this.getStatus(repoDetails.repoInfo);
         e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
     }
@@ -203,7 +205,9 @@ export class GitManager{
         const git = this.getGitRunner(repoDetails.repoInfo);
         try{
             await git.checkout(["-b", newBranchName,sourceCommit.hash]);
-            AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
+            const status = await this.getStatus(repoDetails.repoInfo);
+            return status;
+            // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
         }catch(e){
             const errorStr = e+"";
             console.log(e);
