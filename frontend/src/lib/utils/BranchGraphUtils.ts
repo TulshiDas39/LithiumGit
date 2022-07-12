@@ -559,9 +559,13 @@ export class BranchGraphUtils{
         const refLimitExcited = commitFrom.refValues.length > commitFrom.ownerBranch.maxRefCount;
         if(refLimitExcited)  commitFrom.ownerBranch.maxRefCount++;
         BranchUtils.repositoryDetails.status = status;
-        if(status.current === branch) BranchUtils.repositoryDetails.headCommit = commitFrom;
-        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+        if(status.current === branch) {
+            BranchUtils.repositoryDetails.headCommit = commitFrom;
+        }
         this.focusedCommit = commitFrom;
+
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+        
         this.refreshBranchPanelUi();
     }
 }
