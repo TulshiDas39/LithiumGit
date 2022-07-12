@@ -82,6 +82,7 @@ function SelectedRepoRightComponent(props:ISelectedRepoRightProps){
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+            console.log("repo",res);
             BranchUtils.getRepoDetails(res);
             BranchUtils.repositoryDetails = res;        
             CacheUtils.setRepoDetails(res);

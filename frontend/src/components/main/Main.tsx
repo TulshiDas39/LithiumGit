@@ -84,6 +84,7 @@ function MainComponent(){
         setState({isLoading:false});
 
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
+            console.log("res",res);
             BranchUtils.getRepoDetails(res);
             BranchUtils.repositoryDetails = res;        
             CacheUtils.setRepoDetails(res);
