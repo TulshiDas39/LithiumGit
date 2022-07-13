@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react"
 import { useMultiState } from "../../../../lib";
 import { BranchActions } from "./BranchActions";
 import { BranchPanel } from "./BranchPanel";
+import { BranchPanel2 } from "./BranchPanel2";
 import { CommitProperty } from "./CommitProperty";
 
 interface IBranchesViewProps{
