@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -8,7 +8,11 @@
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
-    "package": "npm run build && electron-builder build"
+    "build_frontend": "cd frontend && npm run build",
+    "build_common_library": "cd common_library && npm run build",
+    "copy_files": "copyfiles -u 2 frontend/build/**/* dist/frontend",
+    "build_all": "npm run build_common_library && npm run build_frontend && npm run copy_files && npm run build",
+    "package": "npm run build_all && electron-builder build"
   },
   "main": "./dist/main.js",
   "keywords": [
@@ -26,6 +30,7 @@
     "@types/node": "^16.4.7",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.28.4",
+    "copyfiles": "^2.4.1",
     "electron": "^13.1.7",
     "electron-builder": "^23.0.3",
     "eslint": "^7.32.0",
