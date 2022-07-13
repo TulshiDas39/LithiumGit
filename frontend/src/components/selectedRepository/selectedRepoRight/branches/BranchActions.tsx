@@ -17,10 +17,10 @@ function BranchActionsComponent(){
         <FaSyncAlt className="hover" onClick={handleRefresh} />
     </div>
     <div className="d-flex align-items-center justify-content-center border px-2">
-        <FaMinus className="px-1 hover border rounded-circle" onClick={()=> BranchGraphUtils.controlZoom("zoomOut")} />
+        <FaMinus className="px-1 hover border rounded-circle" onClick={()=> BranchGraphUtils.controlZoom("zoomOut",undefined)} />
         <span className="px-1" />
-        <FaPlus className="px-1 hover border rounded-circle" onClick={()=>BranchGraphUtils.controlZoom("zoomIn")} />
-        <span className="hover px-1 noselect" onClick={()=> BranchGraphUtils.controlZoom("reset")}  >Reset</span>
+        <FaPlus className="px-1 hover border rounded-circle" onClick={()=>BranchGraphUtils.controlZoom("zoomIn",undefined)} />
+        <span className="hover px-1 noselect" onClick={()=> BranchGraphUtils.controlZoom("reset",undefined)}  >Reset</span>
     </div>
 
     <div className="px-1">
