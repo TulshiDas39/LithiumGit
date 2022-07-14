@@ -1,11 +1,11 @@
-import { IRepositoryDetails, RendererEvents,RepositoryInfo } from "common_library";
+import { IRepositoryDetails, IStatus, RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { BranchUtils, CacheUtils, EnumModals, UiUtils, useMultiState } from "../../lib";
+import { BranchUtils, CacheUtils, EnumModals, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { ActionModals, ActionSavedData } from "../../store/slices";
+import { ActionModals, ActionRepositoy, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
@@ -92,6 +92,13 @@ function MainComponent(){
             BranchGraphUtils.insertNewBranchGraph();
 
         });
+
+        ReduxUtils.setStatusCurrent = (status:IStatus)=>{
+            let current = "";
+            if(status.isDetached) current = BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
+            else current = status.current!;
+            dispatch(ActionRepositoy.setBranchStatusCurrent(current));
+        }
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);

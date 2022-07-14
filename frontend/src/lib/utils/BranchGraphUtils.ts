@@ -9,6 +9,7 @@ import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
 import { CacheUtils } from "./CacheUtils";
+import { ReduxUtils } from "./ReduxUtils";
 
 interface IState{
     scrollTop:number;
@@ -146,7 +147,13 @@ export class BranchGraphUtils{
         this.handleZoomEffect();
 
         this.hideBrnchPanelLoader();
+        this.setReduxData();
     }
+
+    static setReduxData(){
+        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+    }
+
 
     static handleZoomEffect(){
         if(this.zoom === 0){
@@ -507,7 +514,8 @@ export class BranchGraphUtils{
 
         const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
-        HTextElem?.classList.remove("d-none");        
+        HTextElem?.classList.remove("d-none");
+        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
     }
     
 
