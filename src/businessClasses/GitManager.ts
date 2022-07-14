@@ -187,14 +187,25 @@ export class GitManager{
 
     private async checkoutCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails,e: Electron.IpcMainEvent){
         const git = this.getGitRunner(repoDetails.repoInfo);
-        if(this.isDetachedCommit(commit,repoDetails)){
-            await git.checkout(commit.hash);
-            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        try {
+            if(this.isDetachedCommit(commit,repoDetails)){
+                await git.checkout(commit.hash);
+            }
+            else{
+                await git.checkout(commit.ownerBranch.name);
+            }
+        } catch (error) {
+            const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
+            const errorMsg:string = error?.toString() || "";
+            console.log(`Failed to checkout:`+error?.toString());
+            let errorToShow = errorMsg;
+            if(errorMsg.includes(errorSubStr)){
+                errorToShow ="There exist uncommited changes having conflicting state with checkout.";
+            }
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errorToShow); 
+            return;
         }
-        else{
-            await git.checkout(commit.ownerBranch.name);
-            // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
-        }
+        
 
         commit.isHead = true;
         const status = await this.getStatus(repoDetails.repoInfo);
