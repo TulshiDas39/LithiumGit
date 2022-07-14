@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { PullResult, SimpleGit, SimpleGitOptions } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -21,6 +21,7 @@ export class GitManager{
         this.addDiffHandler();
         this.addCheckOutCommitHandlder();
         this.addCreateBranchHandler();
+        this.addPullHandler();
     }
 
     addCreateBranchHandler(){
@@ -226,6 +227,35 @@ export class GitManager{
             const errorStr = e+"";
             console.log(e);
             AppData.mainWindow.webContents.send(RendererEvents.showError().channel,errorStr);
+        }
+    }
+
+    private async addPullHandler(){
+        ipcMain.on(RendererEvents.pull().channel,async (e,repoDetails:IRepositoryDetails)=>{
+            await this.takePull(repoDetails,e);
+        });
+    }
+    
+    private hasChangesInPull(result:PullResult){
+        if(!result) return false;
+        if(result.created?.length) return true;
+        if(result.deleted?.length) return true;
+        if(result.summary?.changes) return true;
+        if(result.summary.deletions) return true;
+        if(result.summary.insertions) return true;
+        return false;
+    }
+
+    private async takePull(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        
+        try {
+            const result = await git.pull(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
+            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
+            else e.reply(RendererEvents.pull().replyChannel);
+        } catch (error) {
+            console.log("Error on pull: "+ error?.toString());
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
     }
 

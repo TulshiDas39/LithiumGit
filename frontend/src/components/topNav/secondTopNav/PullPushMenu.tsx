@@ -1,7 +1,9 @@
+import { RendererEvents } from "common_library";
 import React from "react"
 import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual } from "react-redux";
 import { BranchUtils } from "../../../lib";
+import { BranchGraphUtils } from "../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../store/rootReducer";
 
 function PullPushMenuComponent(){
@@ -12,6 +14,10 @@ function PullPushMenuComponent(){
     }),shallowEqual);
 
     console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
+    const handlePull=()=>{
+        BranchGraphUtils.showBrnchPanelLoader();
+        window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
+    }
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
@@ -53,7 +59,7 @@ function PullPushMenuComponent(){
                 </div>
             </div>
         </div>
-        <div className="col-auto ps-2 pe-1 hover hover-bg-secondary">
+        <div className="col-auto ps-2 pe-1 hover hover-bg-secondary" onClick={handlePull}>
             <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
                     <FaArrowDown />

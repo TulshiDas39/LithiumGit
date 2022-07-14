@@ -103,6 +103,11 @@ function MainComponent(){
             dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
         }
 
+        window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
+            console.log("pull reply");
+            BranchGraphUtils.hideBrnchPanelLoader();
+        })
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
