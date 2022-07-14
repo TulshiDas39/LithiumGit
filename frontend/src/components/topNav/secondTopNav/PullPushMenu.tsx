@@ -1,5 +1,5 @@
 import React from "react"
-import { FaAngleDoubleDown, FaAngleDoubleUp } from "react-icons/fa";
+import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual } from "react-redux";
 import { BranchUtils } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
@@ -43,7 +43,26 @@ function PullPushMenuComponent(){
             </div>
 
         </div>
-        <div className="col-auto"></div>
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-center hover hover-bg-secondary py-2">
+                <div className="col-auto">
+                    <FaArrowUp />
+                </div>
+                <div className="col-auto">
+                    Push
+                </div>
+            </div>
+        </div>
+        <div className="col-auto ps-2 pe-1">
+            <div className="row g-0 align-items-center hover hover-bg-secondary py-2">
+                <div className="col-auto">
+                    <FaArrowDown />
+                </div>
+                <div className="col-auto">
+                    Pull
+                </div>
+            </div>
+        </div>
     </div>
 }
 
