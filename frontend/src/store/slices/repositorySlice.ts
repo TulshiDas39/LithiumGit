@@ -5,11 +5,15 @@ interface IRepositoryInitialState{
     repositoryDetailsVersion:number,
     selectedRepo?:RepositoryInfo;
     statusCurrent:string;
+    aheadCount:number;
+    behindCount:number;
 }
 
 const initialState:IRepositoryInitialState={
     repositoryDetailsVersion:0,
     statusCurrent:"",
+    aheadCount:0,
+    behindCount:0,
 }
 
 const slice = createSlice({
@@ -21,6 +25,10 @@ const slice = createSlice({
         },
         setBranchStatusCurrent(state,action:PayloadAction<string>){
             state.statusCurrent = action.payload;
+        },
+        setAheadBehindStatus(state,action:PayloadAction<{ahead:number;behind:number}>){
+            state.aheadCount=action.payload.ahead;
+            state.behindCount=action.payload.behind;
         }
     }
 })

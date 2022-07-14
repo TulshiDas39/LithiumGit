@@ -98,6 +98,7 @@ function MainComponent(){
             if(status.isDetached) current = BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
             else current = status.current!;
             dispatch(ActionRepositoy.setBranchStatusCurrent(current));
+            dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
         }
 
         return ()=>{
