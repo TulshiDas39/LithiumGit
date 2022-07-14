@@ -45,6 +45,7 @@ function MainComponent(){
             CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
                 if(res) {
                     BranchUtils.repositoryDetails = res;
+                    ReduxUtils.setStatusCurrent(res.status);
                     // setState({repoDetails:res,selectedCommit:res.headCommit});
 
                     // dispatch(ActionUI.increamentVersion("repoDetails"));
@@ -84,9 +85,10 @@ function MainComponent(){
         setState({isLoading:false});
 
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            console.log("res",res);
+            console.log("res",res);        
+            ReduxUtils.setStatusCurrent(res.status);
             BranchUtils.getRepoDetails(res);
-            BranchUtils.repositoryDetails = res;        
+            BranchUtils.repositoryDetails = res;                    
             CacheUtils.setRepoDetails(res);
             BranchGraphUtils.createBranchPanel();
             BranchGraphUtils.insertNewBranchGraph();
