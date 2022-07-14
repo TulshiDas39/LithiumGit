@@ -13,9 +13,9 @@ function PullPushMenuComponent(){
 
     console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
 
-    return <div className="row g-0 align-items-center ps-2">
-        <div className="col-auto border py-2 px-1">
-            <div className="row g-0">
+    return <div className="row g-0 align-items-stretch ps-2">
+        <div className="col-auto border px-1">
+            <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
                     {store.current}
                 </div>
@@ -43,8 +43,8 @@ function PullPushMenuComponent(){
             </div>
 
         </div>
-        <div className="col-auto ps-1 pe-1">
-            <div className="row g-0 align-items-center hover hover-bg-secondary py-2">
+        <div className="col-auto ps-1 pe-1 hover hover-bg-secondary">
+            <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
                     <FaArrowUp />
                 </div>
@@ -53,8 +53,8 @@ function PullPushMenuComponent(){
                 </div>
             </div>
         </div>
-        <div className="col-auto ps-2 pe-1">
-            <div className="row g-0 align-items-center hover hover-bg-secondary py-2">
+        <div className="col-auto ps-2 pe-1 hover hover-bg-secondary">
+            <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
                     <FaArrowDown />
                 </div>
