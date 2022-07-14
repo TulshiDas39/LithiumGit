@@ -215,5 +215,7 @@ html {
 
 .hover-bg-secondary:hover{
   background: gray;
-  color: white !important;  
+  *{
+    color: white !important;      
+  }
 }
