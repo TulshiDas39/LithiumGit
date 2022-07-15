@@ -19,6 +19,11 @@ function PullPushMenuComponent(){
         window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
     }
 
+    const handlePush=()=>{
+        BranchGraphUtils.showBrnchPanelLoader();
+        window.ipcRenderer.send(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    }
+
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
             <div className="row g-0 align-items-center h-100">
@@ -49,7 +54,7 @@ function PullPushMenuComponent(){
             </div>
 
         </div>
-        <div className="col-auto ps-1 pe-1 hover hover-bg-secondary">
+        <div className="col-auto ps-1 pe-1 hover hover-bg-secondary" onClick={handlePush}>
             <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
                     <FaArrowUp />

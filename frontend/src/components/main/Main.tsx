@@ -108,6 +108,11 @@ function MainComponent(){
             BranchGraphUtils.hideBrnchPanelLoader();
         })
 
+        window.ipcRenderer.on(RendererEvents.push().replyChannel,(_)=>{
+            console.log("pull reply");
+            BranchGraphUtils.hideBrnchPanelLoader();
+        })
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);

@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { PullResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -22,6 +22,7 @@ export class GitManager{
         this.addCheckOutCommitHandlder();
         this.addCreateBranchHandler();
         this.addPullHandler();
+        this.addPushHandler();
     }
 
     addCreateBranchHandler(){
@@ -235,6 +236,12 @@ export class GitManager{
             await this.takePull(repoDetails,e);
         });
     }
+
+    private async addPushHandler(){
+        ipcMain.on(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
+            await this.givePush(repoDetails,e);
+        });
+    }
     
     private hasChangesInPull(result:PullResult){
         if(!result) return false;
@@ -255,6 +262,24 @@ export class GitManager{
             else e.reply(RendererEvents.pull().replyChannel);
         } catch (error) {
             console.log("Error on pull: "+ error?.toString());
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
+        }
+    }
+
+    private hasChangesInPush(result:PushResult){
+        const hasChange = !!result.pushed?.some(x=>!x.alreadyUpdated);
+        return hasChange;
+    }
+
+    private async givePush(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        
+        try {
+            const result = await git.push(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
+            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
+            else e.reply(RendererEvents.push().replyChannel);
+        } catch (error) {
+            console.log("Error on push: "+ error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
     }
