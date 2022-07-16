@@ -311,7 +311,7 @@ export class GitManager{
     }
 
     private hasChangesInPush(result:PushResult){
-        const hasChange = !!result.pushed?.some(x=>!x.alreadyUpdated);
+        const hasChange = !!result.update?.hash;
         return hasChange;
     }
 
