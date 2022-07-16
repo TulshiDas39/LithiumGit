@@ -1,6 +1,7 @@
 import { RendererEvents } from "common_library";
 import React from "react"
-import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { Dropdown } from "react-bootstrap";
+import { FaAngleDoubleDown, FaAngleDoubleUp, FaAngleDown, FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual } from "react-redux";
 import { BranchUtils } from "../../../lib";
 import { BranchGraphUtils } from "../../../lib/utils/BranchGraphUtils";
@@ -22,6 +23,11 @@ function PullPushMenuComponent(){
     const handlePush=()=>{
         BranchGraphUtils.showBrnchPanelLoader();
         window.ipcRenderer.send(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    }
+
+    const handleFetch=(isAll:boolean)=>{
+        BranchGraphUtils.showBrnchPanelLoader();
+        window.ipcRenderer.send(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
     }
 
     return <div className="row g-0 align-items-stretch ps-2">
@@ -71,6 +77,23 @@ function PullPushMenuComponent(){
                 </div>
                 <div className="col-auto">
                     Pull
+                </div>
+            </div>
+        </div>
+        <div className="col-auto ps-2 pe-1 cur-point">
+            <div className="row g-0 align-items-center h-100">
+                <div className="col-auto hover hover-bg-secondary border-end pe-2" onClick={_=> handleFetch(false)}>
+                    <FaArrowDown />
+                    <span>Fetch</span>
+                </div>
+                <div className="col-auto">
+                    <Dropdown>
+                        <Dropdown.Toggle className="bg-transparent hover-bg-secondary text-dark border-0 outline-none outline-none-focus hover px-2">                            
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu className="min-w-auto py-0" align={"end"}>
+                            <Dropdown.Item className="" onClick={_=> handleFetch(true)}>Fetch All</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </div>
             </div>
         </div>

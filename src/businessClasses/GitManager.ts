@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -23,6 +23,7 @@ export class GitManager{
         this.addCreateBranchHandler();
         this.addPullHandler();
         this.addPushHandler();
+        this.addFetchHandler();
     }
 
     addCreateBranchHandler(){
@@ -242,6 +243,12 @@ export class GitManager{
             await this.givePush(repoDetails,e);
         });
     }
+
+    private async addFetchHandler(){
+        ipcMain.on(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
+            await this.takeFetch(repoDetails,all,e);
+        });
+    }
     
     private hasChangesInPull(result:PullResult){
         if(!result) return false;
@@ -260,6 +267,31 @@ export class GitManager{
             const result = await git.pull(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
             if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
             else e.reply(RendererEvents.pull().replyChannel);
+        } catch (error) {
+            console.log("Error on pull: "+ error?.toString());
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
+        }
+    }
+
+    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean,e:Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoDetails.repoInfo);
+        
+        try {
+            const options:string[]=[];
+            if(all){
+                options.push("--all");
+            }
+            else{
+                options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
+            }
+            if(all) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
+            else {
+                const status = await this.getStatus(repoDetails.repoInfo);
+                if(repoDetails.status.behind !== status.behind ||repoDetails.status.ahead !== status.ahead){
+                        AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel);    
+                }
+                else e.reply(RendererEvents.fetch().replyChannel);
+            }
         } catch (error) {
             console.log("Error on pull: "+ error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
