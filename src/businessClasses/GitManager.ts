@@ -284,6 +284,9 @@ export class GitManager{
             else{
                 options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
             }
+
+            await git.fetch(options);
+            console.log("fetched");
             if(all) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
             else {
                 const status = await this.getStatus(repoDetails.repoInfo);

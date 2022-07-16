@@ -118,6 +118,11 @@ function MainComponent(){
             BranchGraphUtils.hideBrnchPanelLoader();
         })
 
+        window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
+            console.log("refreshing branch panel");
+            dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        })
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
