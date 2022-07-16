@@ -6,7 +6,6 @@ export interface ICommitInfo{
     branchesFromThis:IBranchDetails[];
     parentHashes:string[];  
     ownerBranch:IBranchDetails;
-    referedBranches:string[];
     branchNameWithRemotes:IBranchRemote[] ;
     nextCommit:ICommitInfo;
     previousCommit:ICommitInfo ;
@@ -27,7 +26,6 @@ export function CreateCommitInfoObj(){
         branchesFromThis:[],
         branchNameWithRemotes:[],
         parentHashes:[],
-        referedBranches:[],
         author_email:"",
         author_name:"",
         avrebHash:"",

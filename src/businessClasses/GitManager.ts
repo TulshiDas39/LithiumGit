@@ -121,6 +121,13 @@ export class GitManager{
         });
     }
 
+    private setActiveOrigin(repoDetails:IRepositoryDetails){
+        const defaultOrigin = repoDetails.repoInfo.activeOrigin;
+        let origin = repoDetails.remotes.find(x => x.name === defaultOrigin);
+        if(!origin) origin = repoDetails.remotes[0];
+        repoDetails.repoInfo.activeOrigin = origin.name;
+    }
+
     private async repoDetails(repoInfo:RepositoryInfo){
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
@@ -140,6 +147,8 @@ export class GitManager{
             if(!!r.refs.push) remote.actionTyps.push("push");
             repoDetails.remotes.push(remote);
         });
+
+        this.setActiveOrigin(repoDetails);
         
         return repoDetails;
     }
@@ -182,8 +191,8 @@ export class GitManager{
     }
 
     private isDetachedCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails){
-        if(!commit.referedBranches.length) return true;
-        if(commit.referedBranches.includes(commit.ownerBranch.name)) return false;
+        if(!commit.branchNameWithRemotes.length) return true;
+        if(commit.branchNameWithRemotes.some(br=>br.branchName === commit.ownerBranch.name && !br.remote)) return false;
         if(repoDetails.branchList.includes(commit.ownerBranch.name)) return true;
         return true;
     }
