@@ -32,6 +32,7 @@ function MainComponent(){
             const str = typeof message === 'string'?message:JSON.stringify(message);
             console.log("str",str);
             ModalData.errorModal.message = str;
+            BranchGraphUtils.hideBrnchPanelLoader();
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
