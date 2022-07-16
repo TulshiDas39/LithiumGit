@@ -142,6 +142,16 @@ html {
     border: 0;
   }
 
+  .outline-none-focus:focus{  
+    outline: none !important;
+    border:0 !important;
+    box-shadow: none !important;
+  }
+
+  .min-w-auto{
+    min-width: auto !important;
+  }
+
   @keyframes caret {
     0%   {
       // border-left: 1px solid green;
@@ -211,4 +221,11 @@ html {
 
 .noselect{
   user-select: none;
+}
+
+.hover-bg-secondary:hover{
+  background: gray;
+  *{
+    color: white !important;      
+  }
 }

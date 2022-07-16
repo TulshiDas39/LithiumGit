@@ -4,7 +4,8 @@ export interface RepositoryInfo extends BaseSchema{
     name:string ;
     path:string;
     isSelected:boolean;  
-    lastOpenedAt?:string;  
+    lastOpenedAt?:string;
+    activeOrigin:string;  
 }
 
 export const createRepositoryInfo=(props?:Partial<RepositoryInfo>)=>{
@@ -13,6 +14,7 @@ export const createRepositoryInfo=(props?:Partial<RepositoryInfo>)=>{
         isSelected:false,
         name:"",
         path:"",
+        activeOrigin:"origin",
     }
     if(props) obj = {...obj,...props};
     return obj;

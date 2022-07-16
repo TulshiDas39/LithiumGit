@@ -9,6 +9,7 @@ import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
 import { CacheUtils } from "./CacheUtils";
+import { ReduxUtils } from "./ReduxUtils";
 
 interface IState{
     scrollTop:number;
@@ -146,7 +147,13 @@ export class BranchGraphUtils{
         this.handleZoomEffect();
 
         this.hideBrnchPanelLoader();
+        this.setReduxData();
     }
+
+    static setReduxData(){
+        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+    }
+
 
     static handleZoomEffect(){
         if(this.zoom === 0){
@@ -338,13 +345,35 @@ export class BranchGraphUtils{
 
     }
 
+    static addWheelListender(){
+        if(!this.svgElement) return;
+        
+        this.svgElement.addEventListener("wheel",(e)=>{
+            var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
+            if(e.deltaX > 0 || e.deltaY > 0) {
+                // dispatch(ActionUI.decreamentBranchPanelZoom(delta));
+                // this.zoom -= delta;
+                this.controlZoom("zoomOut",delta);
+
+            }
+            else{
+                // dispatch(ActionUI.increamentBranchPanelZoom(delta));
+                // this.zoom += delta;
+                this.controlZoom("zoomIn",delta);
+
+            }
+
+            
+        })
+    }
+
     static addEventListeners(){
         // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
         UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
         UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
         UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
         this.addEventListendersOnCommit();
-        
+        this.addWheelListender();
     }
 
     static getVerticalScrollHeight(){        
@@ -422,14 +451,15 @@ export class BranchGraphUtils{
 
     }
 
-    static controlZoom(action:"zoomIn"|"zoomOut"|"reset"){
+    static controlZoom(action:"zoomIn"|"zoomOut"|"reset",zoomValue:number|undefined){
         if(!this.svgElement) return;
+        if(!zoomValue) zoomValue = 1;
         if(action === "zoomIn"){
-            this.zoom++;            
+            this.zoom += zoomValue;            
         }
 
-        else if(action === "zoomOut"){
-            this.zoom--;
+        else if(action === "zoomOut"){            
+            this.zoom -= zoomValue;
         }
         else this.zoom = 0;
 
@@ -484,7 +514,8 @@ export class BranchGraphUtils{
 
         const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
-        HTextElem?.classList.remove("d-none");        
+        HTextElem?.classList.remove("d-none");
+        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
     }
     
 

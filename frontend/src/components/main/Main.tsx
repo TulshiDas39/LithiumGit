@@ -1,11 +1,11 @@
-import { IRepositoryDetails, RendererEvents,RepositoryInfo } from "common_library";
+import { IRepositoryDetails, IStatus, RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { BranchUtils, CacheUtils, EnumModals, UiUtils, useMultiState } from "../../lib";
+import { BranchUtils, CacheUtils, EnumModals, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { ActionModals, ActionSavedData } from "../../store/slices";
+import { ActionModals, ActionRepositoy, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
@@ -32,6 +32,7 @@ function MainComponent(){
             const str = typeof message === 'string'?message:JSON.stringify(message);
             console.log("str",str);
             ModalData.errorModal.message = str;
+            BranchGraphUtils.hideBrnchPanelLoader();
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
@@ -45,6 +46,7 @@ function MainComponent(){
             CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
                 if(res) {
                     BranchUtils.repositoryDetails = res;
+                    ReduxUtils.setStatusCurrent(res.status);
                     // setState({repoDetails:res,selectedCommit:res.headCommit});
 
                     // dispatch(ActionUI.increamentVersion("repoDetails"));
@@ -84,14 +86,43 @@ function MainComponent(){
         setState({isLoading:false});
 
         window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            console.log("res",res);
+            console.log("res",res);        
+            ReduxUtils.setStatusCurrent(res.status);
             BranchUtils.getRepoDetails(res);
-            BranchUtils.repositoryDetails = res;        
+            BranchUtils.repositoryDetails = res;                    
             CacheUtils.setRepoDetails(res);
             BranchGraphUtils.createBranchPanel();
             BranchGraphUtils.insertNewBranchGraph();
 
         });
+
+        ReduxUtils.setStatusCurrent = (status:IStatus)=>{
+            let current = "";
+            if(status.isDetached) current = BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
+            else current = status.current!;
+            dispatch(ActionRepositoy.setBranchStatusCurrent(current));
+            dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
+        }
+
+        window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
+            console.log("pull reply");
+            BranchGraphUtils.hideBrnchPanelLoader();
+        })
+
+        window.ipcRenderer.on(RendererEvents.push().replyChannel,(_)=>{
+            console.log("pull reply");
+            BranchGraphUtils.hideBrnchPanelLoader();
+        })
+
+        window.ipcRenderer.on(RendererEvents.fetch().replyChannel,(_)=>{
+            console.log("fetch reply");
+            BranchGraphUtils.hideBrnchPanelLoader();
+        })
+
+        window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
+            console.log("refreshing branch panel");
+            dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        })
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
