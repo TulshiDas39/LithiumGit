@@ -4,13 +4,12 @@ import { BranchesView2 } from "./branches/BranchesView2"
 import { Changes } from "./changes"
 
 interface ISelectedRepoRightProps{
-    selectedTab:ISelectedRepoTabItem["type"];
 }
 
 function SelectedRepoRightComponent(props:ISelectedRepoRightProps){        
     return <div className="d-flex w-100 h-100">
-        <Changes show={props.selectedTab === "Changes"}/>
-        <BranchesView2 show={props.selectedTab === "Branches"} />
+        <Changes />
+        <BranchesView2 />
     </div>    
 }
 

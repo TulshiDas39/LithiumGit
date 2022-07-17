@@ -1,9 +1,9 @@
-import { ICommitInfo, IStatus, RendererEvents } from "common_library";
+import { IStatus, RendererEvents } from "common_library";
 import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
@@ -12,7 +12,7 @@ import { UntrackedFiles } from "./UntrackedFiles";
 
 interface IChangesProps{
     // repoInfo?:RepositoryInfo;
-    show:boolean;
+    // show:boolean;
 }
 
 interface IState {
@@ -31,6 +31,7 @@ function ChangesComponent(props:IChangesProps) {
     const store = useSelectorTyped(state=>({
         focusVersion:state.ui.versions.appFocused,
         recentRepositories:state.savedData.recentRepositories,
+        show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
     }),shallowEqual);
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
@@ -103,7 +104,7 @@ function ChangesComponent(props:IChangesProps) {
 
     // if(!props.repoInfo) return null;
 
-    return <div className={`d-flex w-100 h-100 ${props.show?'':'d-none'}`}>
+    return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
         <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
             

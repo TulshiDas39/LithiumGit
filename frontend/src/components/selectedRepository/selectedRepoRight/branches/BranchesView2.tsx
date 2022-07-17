@@ -1,7 +1,7 @@
 import { IRepositoryDetails } from "common_library";
 import React, { useEffect, useRef } from "react"
 import { useDispatch, shallowEqual } from "react-redux";
-import { useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { SelectedRepoRightData } from "../SelectedRepoRightData";
@@ -11,7 +11,6 @@ import { CommitProperty2 } from "./CommitProperty2";
 interface IBranchesViewProps{
     // repoDetails?:IRepositoryDetails;    
     // onCommitSelect:(commit:ICommitInfo)=>void;
-    show:boolean;
 }
 
 interface IState{
@@ -27,11 +26,12 @@ function BranchesViewComponent(props:IBranchesViewProps){
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),        
         branchPanelRefreshVersion:state.ui.versions.branchPanelRefresh,
+        show:state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
     }),shallowEqual);
 
     const branchPanelRef = useRef<HTMLDivElement>();
     useEffect(()=>{
-        if(!props.show) return;
+        if(!store.show) return;
         if(branchPanelRef.current){
             const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width);
             if(BranchGraphUtils.panelWidth !== width){
@@ -59,7 +59,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
         
     },[]);
 
-    return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${props.show?'':'d-none'}`}>
+    return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show?'':'d-none'}`}>
     <BranchActions />
     <div className="d-flex w-100 overflow-hidden">
         <div id={BranchGraphUtils.branchPanelContainerId} ref={branchPanelRef as any} className="w-75">
