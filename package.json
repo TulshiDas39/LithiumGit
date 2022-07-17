@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1-alpha.5",
+  "version": "0.0.1-alpha.6",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -11,7 +11,7 @@
     "build_frontend": "cd frontend && npm run build",
     "build_common_library": "cd common_library && npm run build",
     "copy_files": "copyfiles -u 2 frontend/build/**/* dist/frontend",
-    "build_all": "npm run build_common_library && npm run build_frontend && npm run copy_files && npm run build",
+    "build_all": "npm run build_frontend && npm run copy_files && npm run build",
     "package": "npm run build_all && electron-builder build"
   },
   "main": "./dist/main.js",
