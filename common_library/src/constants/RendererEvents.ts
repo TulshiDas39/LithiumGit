@@ -173,6 +173,14 @@ export class RendererEvents{
         } as IChannelModel; 
     }
 
+    static joinPath(){
+        const channel = "joinPath";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
     
 }
 

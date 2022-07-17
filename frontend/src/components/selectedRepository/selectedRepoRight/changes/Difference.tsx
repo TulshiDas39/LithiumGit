@@ -52,8 +52,10 @@ function DifferenceComponent(props:IDifferenceProps){
     },[props])
 
     useEffect(()=>{
-        if(props.path) {            
-            window.ipcRenderer.send(RendererEvents.getFileContent().channel,props.path);            
+        if(props.path) {    
+            console.log("path",props.path);
+            const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
+            window.ipcRenderer.send(RendererEvents.getFileContent().channel,joinedPath);
         }
     },[props.path])
 

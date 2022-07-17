@@ -1,6 +1,7 @@
 import { RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
+import path = require("path");
 
 export class FileManager{
     start(){
@@ -11,11 +12,19 @@ export class FileManager{
         this.handleGetDirectoryPath();
         this.handleOpenFileExplorer();
         this.handleGetFileContent();
+        this.handlePathJoin();
     }
     handleGetFileContent() {
         ipcMain.on(RendererEvents.getFileContent().channel,async (e,path:string)=>{
             const lines = await this.getFileContent(path);
             e.reply(RendererEvents.getFileContent().replyChannel,lines);
+        });
+    }
+
+    handlePathJoin(){
+        ipcMain.on(RendererEvents.joinPath().channel,(e,...pathSegments:string[])=>{
+            const joinedPath = path.join(...pathSegments);
+            e.returnValue = joinedPath;
         });
     }
     
