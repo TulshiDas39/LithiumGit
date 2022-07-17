@@ -3,7 +3,7 @@ import React, { useEffect  } from "react"
 import { Form } from "react-bootstrap";
 import { FaCheck } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { useMultiState } from "../../../../lib";
+import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { ActionSavedData } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 
@@ -23,12 +23,23 @@ function CommitBoxComponent(){
     },[store.autoStagingEnabled])
 
     const handleCommit=()=>{
-        window.ipcRenderer.send(RendererEvents.commit().channel);
+        window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);
     }
     const handleAutoStageClick=()=>{
-        const result = window.ipcRenderer.sendSync(RendererEvents.updateAutoStaging().channel,!state.autoStatingEnabled);                
+        window.ipcRenderer.sendSync(RendererEvents.updateAutoStaging().channel,!state.autoStatingEnabled);                
         dispatch(ActionSavedData.updateAutoStaging(!state.autoStatingEnabled));
     }
+
+    useEffect(()=>{
+        const commitReplyLisenter = ()=>{
+            setState({value:""});
+        }
+        window.ipcRenderer.on(RendererEvents.commit().replyChannel,commitReplyLisenter);
+
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.commit().replyChannel],[commitReplyLisenter]);
+        }
+    },[])
 
     return <div className="w-100">
             <Form.Control as="textarea" rows={2} onChange={e=> setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        

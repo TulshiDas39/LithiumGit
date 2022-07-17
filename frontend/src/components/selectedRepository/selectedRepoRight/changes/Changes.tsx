@@ -3,7 +3,7 @@ import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { EnumSelectedRepoTab, UiUtils, useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { Difference } from "./Difference";
@@ -55,6 +55,7 @@ function ChangesComponent(props:IChangesProps) {
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});
+            ReduxUtils.setStatusCurrent(result);
         });
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
             setState({status:res});
