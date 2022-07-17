@@ -417,8 +417,12 @@ export class BranchGraphUtils{
         this.updateUIPositioning();                      
     }
 
-    static setScrollPosition () {        
+    static setScrollPosition () {       
         if(!this.focusedCommit) this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
+        else {
+            const focusedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === this.focusedCommit.hash);
+            if(!focusedCommit) this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
+        }
 
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;

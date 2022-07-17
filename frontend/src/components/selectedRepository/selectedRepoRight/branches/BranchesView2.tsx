@@ -51,6 +51,11 @@ function BranchesViewComponent(props:IBranchesViewProps){
             setState({repoDetails});
         }
         SelectedRepoRightData.handleRepoDetailsUpdate = handleRepoDetailsUpdate;
+
+        return ()=>{
+            BranchGraphUtils.panelWidth = -1;
+            BranchGraphUtils.focusedCommit = null!;
+        }
         
     },[]);
 
