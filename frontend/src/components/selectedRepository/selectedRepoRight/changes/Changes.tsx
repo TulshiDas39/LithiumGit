@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
 import { EnumSelectedRepoTab, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { CommitBox } from "./CommitBox";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
@@ -105,9 +106,10 @@ function ChangesComponent(props:IChangesProps) {
     // if(!props.repoInfo) return null;
 
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
-        <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
+
+        <div className="" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
-            
+            <CommitBox />
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
