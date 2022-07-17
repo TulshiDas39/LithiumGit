@@ -4,8 +4,22 @@ import * as DataStore from 'nedb';
 
 export class BaseDB<T extends BaseSchema>{
     dataStore:DataStore<T>;
+    filePath:string;
     constructor(dataFilePath:string){
         this.dataStore = new DataStore<T>({filename:dataFilePath,autoload:true});
+        this.dataStore.loadDatabase()
+    }
+
+    load(){
+        return new Promise<boolean>((resolve)=>{
+            this.dataStore.loadDatabase((err)=>{
+                if(err){
+                    console.log("Failed to load db. path:"+this.filePath);
+                    resolve(false);
+                }
+                else resolve(true);                
+            })
+        })
     }
 
     getAll(){
@@ -40,7 +54,8 @@ export class BaseDB<T extends BaseSchema>{
         },cb);
     }
 
-    insertOneAsync(record:T){        
+    insertOneAsync(record:T){
+        if(!!record._id) return null;
         return new Promise<T>((resolve,reject)=>{
             this.insertOne(record,(err,doc)=>{
                 if(err) reject(err);

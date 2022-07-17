@@ -8,3 +8,5 @@ export * from './IBranchRemote';
 export * from './IMergeLine';
 export * from './IFile';
 export * from './IStatus';
+export * from './IConfigInfo';
+export * from './ISavedData';

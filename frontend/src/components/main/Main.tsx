@@ -1,4 +1,4 @@
-import { IRepositoryDetails, IStatus, RendererEvents,RepositoryInfo } from "common_library";
+import { IRepositoryDetails, ISavedData, IStatus, RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
@@ -70,8 +70,11 @@ function MainComponent(){
 
     useEffect(()=>{
         registerIpcEvents();
-        const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires); 
-        console.log('repos',repos);
+        const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
+        dispatch(ActionSavedData.updateAutoStaging(savedData.configInfo.autoStage));
+        console.log("savedData",savedData)
+        const repos = savedData.recentRepositories;
+        console.log('repos',repos);        
         if(!repos?.length){
             setState({isLoading:false});
             dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));

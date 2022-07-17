@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { AppData } from '../dataClasses';
-import { ConfigDB } from './PortDB';
+import { ConfigDB } from './ConfigDB';
 import { RepositoryDB } from './RepositoryDB';
 
 

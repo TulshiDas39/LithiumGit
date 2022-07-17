@@ -1,4 +1,4 @@
-import { MainEvents } from "common_library";
+import { IConfigInfo, MainEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import { autoUpdater } from "electron-updater";
 import express = require("express");
@@ -9,7 +9,6 @@ import { FileManager } from "./businessClasses/FileManager";
 import { GitManager } from "./businessClasses/GitManager";
 import { Updater } from "./businessClasses/Updater";
 import { Config } from "./config";
-import { ConfigInfo } from "./dataClasses";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
@@ -56,27 +55,41 @@ export class Startup{
         // AppData.appPath = app.getAppPath();
     }
 
+    private async loadDatabases(){
+      await DB.config.load();
+      await DB.repository.load();
+    }
+
     private async loadSavedData(){
-        SavedData.recentRepositories = DB.repository.getAll();        
-        SavedData.configInfo = DB.config.getAll()[0];
-        if(!SavedData.configInfo){
-          const record={
-            portNumber:54523
-          } as ConfigInfo;
-          await DB.config.insertOneAsync(record);
-          SavedData.configInfo = DB.config.getAll()[0];;
-        }
+        await this.loadDatabases();
+        this.loadRecentRepositories();
+        await this.loadConfigInfo();
+    }
+
+    private async loadRecentRepositories(){                        
+        SavedData.data.recentRepositories = DB.repository.getAll();                
+    }
+
+    private async loadConfigInfo(){      
+      SavedData.data.configInfo = DB.config.getAll()[0];
+      if(!SavedData.data.configInfo){
+        const record={
+          portNumber:54523,
+          autoStage:false,
+        } as IConfigInfo;
+        SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
+      }
     }
 
     private async setAvailablePort(){        
         
-        let portNumber = SavedData.configInfo.portNumber || 54523;
+        let portNumber = SavedData.data.configInfo.portNumber || 54523;
         try{          
           let availablePort = await getPort({port:portNumber});
 
-          if(SavedData.configInfo.portNumber !== availablePort){
-            SavedData.configInfo.portNumber = availablePort;
-            DB.config.updateOne(SavedData.configInfo);
+          if(SavedData.data.configInfo.portNumber !== availablePort){
+            SavedData.data.configInfo.portNumber = availablePort;
+            DB.config.updateOne(SavedData.data.configInfo);
           }
           this.uiPort = availablePort;
           return availablePort;
@@ -126,16 +139,27 @@ export class Startup{
     }
 
     private handleReadyState(){
-        app.on("ready", async () => {
-            await this.initilise();
-            await this.createWindow();
+        // app.on("ready", async () => {
+        //     await this.initilise();
+        //     await this.createWindow();
           
-            app.on("activate", function () {
-              // On macOS it's common to re-create a window in the app when the
-              // dock icon is clicked and there are no other windows open.
-              if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
-            });
-        });
+        //     app.on("activate", function () {
+        //       // On macOS it's common to re-create a window in the app when the
+        //       // dock icon is clicked and there are no other windows open.
+        //       if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
+        //     });
+        // });
+
+        app.whenReady().then(async ()=>{
+          await this.initilise();
+          await this.createWindow();
+        
+          app.on("activate", function () {
+            // On macOS it's common to re-create a window in the app when the
+            // dock icon is clicked and there are no other windows open.
+            if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
+          });
+        })
     }
 
     private handleAppFocus(){
