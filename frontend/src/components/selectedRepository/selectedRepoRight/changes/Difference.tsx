@@ -167,6 +167,8 @@ function DifferenceComponent(props:IDifferenceProps){
         currentChangesEditorRef.current?.getEditor().root.setAttribute("spellcheck","false");
         let textLines:string[] = [];        
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
+            const hasChanges = UiUtils.hasChanges(textLines,lines);
+            if(!hasChanges) return;
             textLines = lines;
             const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
             window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
