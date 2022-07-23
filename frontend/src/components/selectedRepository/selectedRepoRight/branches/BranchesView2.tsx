@@ -21,6 +21,8 @@ function BranchesViewComponent(props:IBranchesViewProps){
         
     })
 
+    const refData = useRef({panelWidth:-1});
+
     const dispatch = useDispatch();
 
     const store = useSelectorTyped(state=>({
@@ -46,14 +48,14 @@ function BranchesViewComponent(props:IBranchesViewProps){
     },[branchPanelRef.current])    
     
     useEffect(()=>{        
-
+        // BranchGraphUtils.panelWidth = getPanelWidth();
         const handleRepoDetailsUpdate=(repoDetails:IRepositoryDetails)=>{
             setState({repoDetails});
         }
         SelectedRepoRightData.handleRepoDetailsUpdate = handleRepoDetailsUpdate;
 
         return ()=>{
-            BranchGraphUtils.panelWidth = -1;
+            // BranchGraphUtils.panelWidth = -1;
             BranchGraphUtils.focusedCommit = null!;
         }
         
