@@ -22,7 +22,7 @@ export class DiffUtils{
 
     static GetUiLines(diff:string,textLines:string[]){
                 
-        const diffLines = diff.split('\n');        
+        const diffLines = diff.split(/[\n\r(\n\r)]/g).filter(x=> !!x);
         console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfCurrentChange= 0;
@@ -138,8 +138,9 @@ export class DiffUtils{
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){
-        
+                debugger;
                 if(diffLines[i-1].startsWith("~")){
+                    debugger;
                     let isAdded = true;
                     let count = 1;
                     while(diffLines[i+count].startsWith("~"))
@@ -147,7 +148,9 @@ export class DiffUtils{
                     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
                         isAdded=false;
 
+                    debugger;    
                     if(isAdded){
+                        debugger;
                         for(let x=0;x < count; x++){
                             currentLine.text = "";
                             currentLine.hightLightBackground = true;
@@ -167,6 +170,7 @@ export class DiffUtils{
                         currentCharTrackingIndex = 0;
                     }
                     else{
+                        debugger;
                         for(let x=0;x < count; x++){
                             previousLine.text = "";
                             previousLine.hightLightBackground = true;                            
@@ -185,7 +189,7 @@ export class DiffUtils{
                         lineNumberOfPreviousChange += count;                            
                         previousCharTrackingIndex = 0;
                     }
-
+                    debugger;
                     i = i + count - 1;                    
                 }
                 else if(diffLines[i-1].startsWith("+")){                    
