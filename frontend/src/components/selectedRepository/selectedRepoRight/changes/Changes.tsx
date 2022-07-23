@@ -20,12 +20,14 @@ interface IState {
     adjustedX: number;
     status?:IStatus;
     selectedFilePath?:string;
+    differenceRefreshKey:number;
     // document:Descendant[],
 }
 
 function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
-        adjustedX: 0,        
+        adjustedX: 0,
+        differenceRefreshKey: Date.now(),
         // document:ExampleDocument,        
     });
 
@@ -50,6 +52,7 @@ function ChangesComponent(props:IChangesProps) {
 
     useEffect(()=>{
         getStatus();
+        setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
 
     useEffect(()=>{
@@ -127,7 +130,7 @@ function ChangesComponent(props:IChangesProps) {
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && !!repoInfo && <Difference path={state.selectedFilePath} repoInfo={repoInfo} />}
+            {!!state.selectedFilePath && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} path={state.selectedFilePath} repoInfo={repoInfo} />}
             {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>

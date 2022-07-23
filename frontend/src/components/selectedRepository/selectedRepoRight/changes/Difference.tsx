@@ -11,6 +11,7 @@ import { ActionUI } from "../../../../store/slices/UiSlice";
 interface IDifferenceProps {
     path:string;
     repoInfo:RepositoryInfo;
+    refreshV:number;
 }
 
 
@@ -51,13 +52,17 @@ function DifferenceComponent(props:IDifferenceProps){
         propsRef.current = props;
     },[props])
 
-    useEffect(()=>{
+    const getFileContent=()=>{
         if(props.path) {    
             console.log("path",props.path);
             const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
             window.ipcRenderer.send(RendererEvents.getFileContent().channel,joinedPath);
         }
-    },[props.path])
+    }
+
+    useEffect(()=>{
+        getFileContent();
+    },[props.path,props.refreshV])
 
     const previousChangesEditorRef = useRef<ReactQuill>();
     const currentChangesEditorRef = useRef<ReactQuill>();
