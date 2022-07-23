@@ -42,7 +42,7 @@ function CommitBoxComponent(){
     },[])
 
     return <div className="w-100">
-            <Form.Control as="textarea" rows={2} onChange={e=> setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
+            <Form.Control as="textarea" rows={2} value={state.value} onChange={e=> setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
                 type="textarea" className="w-100 rounded-0 no-resize" placeholder="Commit message" />
             <div className="row g-0 align-items-center pt-2 justify-content-center flex-nowrap overflow-hidden">  
                 <div className="col-3 pe-1"></div>              
