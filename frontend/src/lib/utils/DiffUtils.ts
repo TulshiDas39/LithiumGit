@@ -246,10 +246,15 @@ export class DiffUtils{
             }
         }
 
-        while(lineNumberOfCurrentChange < textLines.length){
+        while(currentLines.length< previousLines.length)
+            currentLines.push({textHightlightIndex:[]})
+        while(currentLines.length > previousLines.length)
+            previousLines.push({textHightlightIndex:[]})
+
+        while(lineNumberOfCurrentChange <= textLines.length){
             let lineConfig:ILine = {
                 textHightlightIndex:[],
-                text:textLines[lineNumberOfCurrentChange],
+                text:textLines[lineNumberOfCurrentChange-1],
             };
             currentLines.push(lineConfig);
             previousLines.push(lineConfig);
