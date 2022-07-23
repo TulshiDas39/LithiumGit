@@ -21,8 +21,9 @@ export class DiffUtils{
     }
 
     static GetUiLines(diff:string,textLines:string[]){
-                
-        const diffLines = diff.split(/[\n\r(\n\r)]/g).filter(x=> !!x);
+        
+        diff = diff.replace(/\n\r/g,"\n").replace(/\r/g,"\n");
+        const diffLines = diff.split(/\n/g).filter(x=> !!x);
         console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfCurrentChange= 0;
@@ -141,7 +142,7 @@ export class DiffUtils{
                 if(diffLines[i-1].startsWith("~")){                    
                     let isAdded = true;
                     let count = 1;
-                    while(diffLines[i+count].startsWith("~"))
+                    while(diffLines[i+count]?.startsWith("~"))
                         count++;                                                
                     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
                         isAdded=false;

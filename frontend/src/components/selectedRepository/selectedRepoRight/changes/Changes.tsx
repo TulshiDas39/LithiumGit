@@ -48,7 +48,8 @@ function ChangesComponent(props:IChangesProps) {
 
     useEffect(()=>{
          getStatus();
-    },[repoInfo]);
+         setState({selectedFilePath:null!});
+    },[repoInfo?.path]);
 
     useEffect(()=>{
         getStatus();
