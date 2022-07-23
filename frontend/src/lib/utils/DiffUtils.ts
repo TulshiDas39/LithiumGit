@@ -324,7 +324,12 @@ export class DiffUtils{
                 insert:`\n`
             })
             createOperation(line);
-        })        
+        })
+        if(!lines[lines.length-1].text){
+            operations.push({
+                insert:`\n`
+            })
+        }
         
         return delta;        
     }
