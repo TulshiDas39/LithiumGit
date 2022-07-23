@@ -137,20 +137,16 @@ export class DiffUtils{
                 previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
                 previousCharTrackingIndex += diffLine.length-1;
             }
-            else if(diffLine.startsWith("~")){
-                debugger;
-                if(diffLines[i-1].startsWith("~")){
-                    debugger;
+            else if(diffLine.startsWith("~")){                
+                if(diffLines[i-1].startsWith("~")){                    
                     let isAdded = true;
                     let count = 1;
                     while(diffLines[i+count].startsWith("~"))
                         count++;                                                
                     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
                         isAdded=false;
-
-                    debugger;    
-                    if(isAdded){
-                        debugger;
+                    
+                    if(isAdded){                        
                         for(let x=0;x < count; x++){
                             currentLine.text = "";
                             currentLine.hightLightBackground = true;
@@ -169,8 +165,7 @@ export class DiffUtils{
                         lineNumberOfCurrentChange += count;
                         currentCharTrackingIndex = 0;
                     }
-                    else{
-                        debugger;
+                    else{                        
                         for(let x=0;x < count; x++){
                             previousLine.text = "";
                             previousLine.hightLightBackground = true;                            
@@ -188,8 +183,7 @@ export class DiffUtils{
                         }
                         lineNumberOfPreviousChange += count;                            
                         previousCharTrackingIndex = 0;
-                    }
-                    debugger;
+                    }                    
                     i = i + count - 1;                    
                 }
                 else if(diffLines[i-1].startsWith("+")){                    
