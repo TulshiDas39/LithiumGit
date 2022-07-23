@@ -35,14 +35,12 @@ function BranchesViewComponent(props:IBranchesViewProps){
     useEffect(()=>{
         if(!store.show) return;
         if(branchPanelRef.current){
-            const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width);
-            if(BranchGraphUtils.panelWidth !== width){
-                const existingPanelWidth = BranchGraphUtils.panelWidth;
-                BranchGraphUtils.panelWidth = width-10;
-                if(existingPanelWidth === -1){
-                    BranchGraphUtils.createBranchPanel();
-                    BranchGraphUtils.insertNewBranchGraph();
-                }
+            const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width)-10;            
+            const existingPanelWidth = BranchGraphUtils.panelWidth;
+            BranchGraphUtils.panelWidth = width;
+            if(existingPanelWidth === -1 || !BranchGraphUtils.branchPanelHtml){
+                BranchGraphUtils.createBranchPanel();
+                BranchGraphUtils.insertNewBranchGraph();
             }
         }
     },[branchPanelRef.current])    
