@@ -35,7 +35,7 @@ export class BranchGraphUtils{
     // static headElement:HTMLElement = null!;
     static branchPanelHtml:string='';
     static panelWidth = -1;
-    static panelHeight = 400;
+    static panelHeight = Math.floor(window.innerHeight * 0.65);
     static zoom = 0;
     static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;

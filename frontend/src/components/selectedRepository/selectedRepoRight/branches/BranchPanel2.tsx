@@ -1,7 +1,6 @@
 import { IRepositoryDetails } from "common_library";
 import  { Fragment } from "react"
 import { ScaleLoader } from "react-spinners";
-import { LoaderIcon } from "../../../../assets";
 import { IViewBox } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { SingleBranch2 } from "./SingleBranch2";
