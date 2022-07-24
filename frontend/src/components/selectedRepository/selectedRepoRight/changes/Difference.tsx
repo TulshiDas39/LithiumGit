@@ -3,8 +3,9 @@ import { DeltaStatic} from "quill";
 import React, { useCallback, useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EditorColors, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { EditorColors, EnumChangesType, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { DiffUtils } from "../../../../lib/utils/DiffUtils";
+import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
@@ -12,6 +13,7 @@ interface IDifferenceProps {
     path:string;
     repoInfo:RepositoryInfo;
     refreshV:number;
+    mode:EnumChangesType;
 }
 
 
@@ -60,8 +62,24 @@ function DifferenceComponent(props:IDifferenceProps){
         }
     }
 
-    useEffect(()=>{
-        getFileContent();
+    const getDiff=()=>{
+        const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
+        window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
+    }
+
+    const getShowResult=()=>{
+        //git show HEAD:test2.ts
+        if(!props.path) return;
+        const options =  [`HEAD:${propsRef.current.path}`];
+        window.ipcRenderer.send(RendererEvents.gitShow().channel,propsRef.current.repoInfo,options);
+    }
+
+    useEffect(()=>{        
+        if(props.mode === EnumChangesType.DELETED) {
+            getShowResult();
+        }
+        else getFileContent();
+
     },[props.path,props.refreshV])
 
     const previousChangesEditorRef = useRef<ReactQuill>();
@@ -74,7 +92,7 @@ function DifferenceComponent(props:IDifferenceProps){
     const isMounted = useRef(false);
 
     const setUiLines=(diff:string,textLines:string[])=>{
-                
+        console.log("diff",diff);
         let lineConfigs = DiffUtils.GetUiLines(diff,textLines);
         const previousLineMaxWidth = DiffUtils.getEditorWidth(lineConfigs.previousLines.map(x=>x.text?x.text:""));
         const currentLineMaxWidth = DiffUtils.getEditorWidth(lineConfigs.currentLines.map(x=>x.text?x.text:""));
@@ -110,8 +128,7 @@ function DifferenceComponent(props:IDifferenceProps){
         DiffUtils.formatLinesBackground(quill,state.previousLines,EnumCustomBlots.PreviousBackground);        
     },[state.previousLineDelta])
 
-    useEffect(()=>{        
-
+    useEffect(()=>{
         let previousChangeScroll = previousScrollContainerRef.current;
         let currentChangeScroll = currentScrollContainerRef.current;        
         
@@ -138,7 +155,7 @@ function DifferenceComponent(props:IDifferenceProps){
             previousChangeScroll?.removeEventListener("scroll",handler1);
             currentChangeScroll?.removeEventListener("scroll",handler2);
         }
-    },[]);
+    },[previousScrollContainerRef.current,currentScrollContainerRef.current])
 
     const setNavigationData=()=>{
         dispatch(ActionUI.setTotalComparable(state.comparableLineNumbers.length));                
@@ -161,6 +178,16 @@ function DifferenceComponent(props:IDifferenceProps){
         setNavigationData();
     },[state.currentLineDelta])
    
+    const showContentOfDeletedFile=(lines:string[])=>{
+        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+        setState({previousLines:lineConfigs,currentLines:[]});
+    }
+
+    const showContentOfNewFile=(lines:string[])=>{
+        console.log("showing lines of new file",lines);
+        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+        setState({currentLines:lineConfigs,previousLines:[]});
+    }
 
     useEffect(()=>{
         isMounted.current = true;
@@ -170,12 +197,24 @@ function DifferenceComponent(props:IDifferenceProps){
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
-            window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
+            if(propsRef.current.mode === EnumChangesType.MODIFIED){
+                getDiff();
+            }
+            else showContentOfNewFile(lines);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
             setUiLines(diff,textLines);
         });
+
+        window.ipcRenderer.on(RendererEvents.gitShow().replyChannel,(e,content:string)=>{
+            const lines = new StringUtils().getLines(content);
+            const hasChanges = UiUtils.hasChanges(textLines,lines);
+            if(!hasChanges) return;
+            textLines = lines;
+            showContentOfDeletedFile(lines);            
+            // getDiff();
+        })
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.getFileContent().replyChannel,RendererEvents.diff().replyChannel])
         }
@@ -188,7 +227,9 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLineDelta])
     
     return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
-        <div ref={previousScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto border-end" >
+        {(props.mode === EnumChangesType.DELETED || props.mode === EnumChangesType.MODIFIED) &&
+            <div ref={previousScrollContainerRef as any} 
+            className={`d-flex gs-overflow-x-auto border-end ${props.mode === EnumChangesType.DELETED?'w-100':'w-50'}`} >
             <div>
                 <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={callbackForPreviousEditor} readOnly                    
@@ -201,8 +242,9 @@ function DifferenceComponent(props:IDifferenceProps){
                     readOnly                                        
                         />                
             </div>
-        </div>
-        <div ref={currentScrollContainerRef as any} className="d-flex w-50 gs-overflow-x-auto" >
+        </div>}
+        {(props.mode ===  EnumChangesType.MODIFIED || props.mode === EnumChangesType.CREATED || props.mode ===  EnumChangesType.STAGED ) && 
+            <div ref={currentScrollContainerRef as any} className={`d-flex gs-overflow-x-auto ${props.mode === EnumChangesType.CREATED?'w-100':'w-50'}`} >
             <div>
                 <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={callbackForCurrentEditor} readOnly                    
@@ -218,7 +260,7 @@ function DifferenceComponent(props:IDifferenceProps){
                 }
             </div>
             
-        </div>
+        </div>}
 
     </div>
 }

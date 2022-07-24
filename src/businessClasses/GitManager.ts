@@ -25,6 +25,26 @@ export class GitManager{
         this.addPushHandler();
         this.addFetchHandler();
         this.addCommitHandler();
+        this.addGitShowHandler();
+    }
+
+
+    addGitShowHandler(){
+        ipcMain.on(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
+            const result = await this.getShowResult(repository,options);
+            e.reply(RendererEvents.gitShow().replyChannel,result);
+        })
+    }
+
+    async getShowResult(repository:RepositoryInfo,options:string[]){
+        try {
+            const git = this.getGitRunner(repository);
+            const result = await git.show(options);   
+            return result;
+        } catch (error) {
+            console.log("error in git show:"+error?.toString());
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
+        }        
     }
 
     addCommitHandler(){
