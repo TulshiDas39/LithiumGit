@@ -66,7 +66,7 @@ export class Startup{
         await this.loadConfigInfo();
     }
 
-    private async loadRecentRepositories(){                        
+    private loadRecentRepositories(){                        
         SavedData.data.recentRepositories = DB.repository.getAll();                
     }
 

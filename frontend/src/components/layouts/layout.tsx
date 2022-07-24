@@ -5,7 +5,7 @@ import { Main } from '../main/Main';
 import { UiRoutes } from '../../lib/UiRoutes';
 import { TopNav } from '../topNav/TopNav';
 import { Modals } from '../modals';
-import { FirstTopNav } from '../topNav/FirstTopNav';
+import { FooterNav } from '../topNav/FooterNav';
 
 function LayoutComponent() {
     const data = useRef({topHeighPercent:7,bottomNavHeightPercent:3});
@@ -20,7 +20,7 @@ function LayoutComponent() {
                 </Switch>
             </div>
             <div style={{height:`3%`}}>
-                <FirstTopNav />
+                <FooterNav />
             </div>
             <Modals/>
         </div>
