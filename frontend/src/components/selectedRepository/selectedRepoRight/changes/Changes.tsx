@@ -3,9 +3,10 @@ import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangesType, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
+import { DeletedFiles } from "./DeletedFiles";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
@@ -21,6 +22,7 @@ interface IState {
     status?:IStatus;
     selectedFilePath?:string;
     differenceRefreshKey:number;
+    selectedFileModel:EnumChangesType;
     // document:Descendant[],
 }
 
@@ -28,7 +30,7 @@ function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,
         differenceRefreshKey: Date.now(),
-        // document:ExampleDocument,        
+        selectedFileModel:EnumChangesType.MODIFIED,
     });
 
     const store = useSelectorTyped(state=>({
@@ -86,8 +88,8 @@ function ChangesComponent(props:IChangesProps) {
         setState({status})
     },[])
 
-    const handleSelect = useCallback((path:string)=>{
-        setState({selectedFilePath:path});
+    const handleSelect = useCallback((path:string,mode:EnumChangesType)=>{
+        setState({selectedFilePath:path,selectedFileModel:mode});
     },[])
     const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         e.preventDefault();
@@ -106,7 +108,7 @@ function ChangesComponent(props:IChangesProps) {
 
     
       
-    
+    console.log("state.status",state.status);
 
     // if(!props.repoInfo) return null;
 
@@ -120,18 +122,24 @@ function ChangesComponent(props:IChangesProps) {
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
-                onStatusChange={onStatusChange} onFileSelect={handleSelect} selectedFilePath={state.selectedFilePath} />
+                onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath} />
             
             {
                 !!state.status?.created?.length &&
-                <UntrackedFiles onFileSelect={handleSelect} files={state.status.created} 
+                <UntrackedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CREATED)} files={state.status.created} 
+                onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
+            }
+
+            {
+                !!state.status?.deleted?.length &&
+                <DeletedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.DELETED)} files={state.status.deleted} 
                 onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} path={state.selectedFilePath} repoInfo={repoInfo} />}
+            {!!state.selectedFilePath && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} path={state.selectedFilePath} repoInfo={repoInfo} mode={state.selectedFileModel} />}
             {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>
