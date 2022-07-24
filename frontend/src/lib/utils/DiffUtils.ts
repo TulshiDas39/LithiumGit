@@ -21,8 +21,9 @@ export class DiffUtils{
     }
 
     static GetUiLines(diff:string,textLines:string[]){
-                
-        const diffLines = diff.split('\n');        
+        
+        diff = diff.replace(/\n\r/g,"\n").replace(/\r/g,"\n");
+        const diffLines = diff.split(/\n/g).filter(x=> !!x);
         console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfCurrentChange= 0;
@@ -137,17 +138,16 @@ export class DiffUtils{
                 previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
                 previousCharTrackingIndex += diffLine.length-1;
             }
-            else if(diffLine.startsWith("~")){
-        
-                if(diffLines[i-1].startsWith("~")){
+            else if(diffLine.startsWith("~")){                
+                if(diffLines[i-1].startsWith("~")){                    
                     let isAdded = true;
                     let count = 1;
-                    while(diffLines[i+count].startsWith("~"))
+                    while(diffLines[i+count]?.startsWith("~"))
                         count++;                                                
                     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
                         isAdded=false;
-
-                    if(isAdded){
+                    
+                    if(isAdded){                        
                         for(let x=0;x < count; x++){
                             currentLine.text = "";
                             currentLine.hightLightBackground = true;
@@ -166,7 +166,7 @@ export class DiffUtils{
                         lineNumberOfCurrentChange += count;
                         currentCharTrackingIndex = 0;
                     }
-                    else{
+                    else{                        
                         for(let x=0;x < count; x++){
                             previousLine.text = "";
                             previousLine.hightLightBackground = true;                            
@@ -184,8 +184,7 @@ export class DiffUtils{
                         }
                         lineNumberOfPreviousChange += count;                            
                         previousCharTrackingIndex = 0;
-                    }
-
+                    }                    
                     i = i + count - 1;                    
                 }
                 else if(diffLines[i-1].startsWith("+")){                    
@@ -248,10 +247,15 @@ export class DiffUtils{
             }
         }
 
-        while(lineNumberOfCurrentChange < textLines.length){
+        while(currentLines.length< previousLines.length)
+            currentLines.push({textHightlightIndex:[]})
+        while(currentLines.length > previousLines.length)
+            previousLines.push({textHightlightIndex:[]})
+
+        while(lineNumberOfCurrentChange <= textLines.length){
             let lineConfig:ILine = {
                 textHightlightIndex:[],
-                text:textLines[lineNumberOfCurrentChange],
+                text:textLines[lineNumberOfCurrentChange-1],
             };
             currentLines.push(lineConfig);
             previousLines.push(lineConfig);
@@ -326,7 +330,12 @@ export class DiffUtils{
                 insert:`\n`
             })
             createOperation(line);
-        })        
+        })
+        if(!lines[lines.length-1].text){
+            operations.push({
+                insert:`\n`
+            })
+        }
         
         return delta;        
     }

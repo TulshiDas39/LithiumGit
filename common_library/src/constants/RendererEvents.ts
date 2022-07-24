@@ -173,6 +173,36 @@ export class RendererEvents{
         } as IChannelModel; 
     }
 
-    
+    static joinPath(){
+        const channel = "joinPath";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static commit(){
+        const channel = "commit";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static updateAutoStaging(){
+        const channel = "updateAutoStaging";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static getSaveData(){
+        const channel = "getSaveData";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
 

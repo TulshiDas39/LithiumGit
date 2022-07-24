@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -22,10 +23,16 @@ interface IChangesState{
     currentStep:number;
 }
 
+export interface ILoaderInfo{
+    text:string;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
-    changes?:IChangesState;    
+    changes?:IChangesState;
+    selectedRepoTab:EnumSelectedRepoTab;
+    loader?:ILoaderInfo;
 }
 
 const initialState:IUIState={
@@ -37,6 +44,7 @@ const initialState:IUIState={
         branchPanelHome:0,
         repoDetails:0,
     },    
+    selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
 }
 
 const UISlice = createSlice({
@@ -72,6 +80,12 @@ const UISlice = createSlice({
         },
         setComparableStep(state,action:PayloadAction<number>){
             state.changes!.currentStep = action.payload;
+        },
+        setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
+            state.selectedRepoTab = action.payload;
+        },
+        setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
+            state.loader = action.payload;
         }
     }
 });

@@ -55,16 +55,16 @@ function StagedChangesComponent(props:IStagedChangesProps){
         
     </div>
     {state.isStagedChangesExpanded && 
-    <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+    <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges.map(f=>(
-            <div key={f.path} className="d-flex align-items-center flex-nowrap hover w-100" 
+            <div key={f.path} className="row g-0 align-items-center flex-nowrap hover w-100" 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})}>
-                <div className="d-flex overflow-hidden">
+                <div className="col-auto overflow-hidden">
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                     <span className="small text-secondary">{f.path}</span>
                 </div>
                 
-                {state.hoveredFile?.path === f.path && <div className="d-flex bg-white ps-3 flex-grow-1" style={{ right: 0 }}>
+                {state.hoveredFile?.path === f.path && <div className="col bg-white ps-3 text-end" style={{ right: 0 }}>
                     <span className="hover" title="Unstage" onClick={_=> handleUnstageItem(f)}><FaMinus /></span>                                    
                 </div>}
             </div>

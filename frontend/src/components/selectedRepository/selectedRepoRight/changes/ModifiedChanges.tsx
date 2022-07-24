@@ -62,12 +62,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     </div>
     
     {state.isChangesExpanded && 
-        <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+        <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                    className={`d-flex align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}
+                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}
                     >
-                    <div className="d-flex overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
+                    <div className="col-auto overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
                         <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                         <span className="small text-secondary">
                             <span>{f.path}</span>
@@ -75,7 +75,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     </div>
                     
                     {state.hoveredFile?.path === f.path &&
-                     <div className="d-flex ps-2 align-items-center flex-grow-1">
+                     <div className="col ps-2 align-items-center text-end">
                         <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
                         <span className="px-1" />
                         <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>

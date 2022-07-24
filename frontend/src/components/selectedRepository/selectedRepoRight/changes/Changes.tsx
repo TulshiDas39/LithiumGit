@@ -1,10 +1,11 @@
-import { ICommitInfo, IStatus, RendererEvents } from "common_library";
+import { IStatus, RendererEvents } from "common_library";
 import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual } from "react-redux";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { CommitBox } from "./CommitBox";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
@@ -12,25 +13,28 @@ import { UntrackedFiles } from "./UntrackedFiles";
 
 interface IChangesProps{
     // repoInfo?:RepositoryInfo;
-    show:boolean;
+    // show:boolean;
 }
 
 interface IState {
     adjustedX: number;
     status?:IStatus;
     selectedFilePath?:string;
+    differenceRefreshKey:number;
     // document:Descendant[],
 }
 
 function ChangesComponent(props:IChangesProps) {
     const [state, setState] = useMultiState<IState>({
-        adjustedX: 0,        
+        adjustedX: 0,
+        differenceRefreshKey: Date.now(),
         // document:ExampleDocument,        
     });
 
     const store = useSelectorTyped(state=>({
         focusVersion:state.ui.versions.appFocused,
         recentRepositories:state.savedData.recentRepositories,
+        show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
     }),shallowEqual);
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
@@ -44,15 +48,18 @@ function ChangesComponent(props:IChangesProps) {
 
     useEffect(()=>{
          getStatus();
-    },[repoInfo]);
+         setState({selectedFilePath:null!});
+    },[repoInfo?.path]);
 
     useEffect(()=>{
         getStatus();
+        setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});
+            ReduxUtils.setStatusCurrent(result);
         });
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
             setState({status:res});
@@ -103,10 +110,11 @@ function ChangesComponent(props:IChangesProps) {
 
     // if(!props.repoInfo) return null;
 
-    return <div className={`d-flex w-100 h-100 ${props.show?'':'d-none'}`}>
-        <div className="pe-2" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
+    return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
+
+        <div className="" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
-            
+            <CommitBox />
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
@@ -123,7 +131,7 @@ function ChangesComponent(props:IChangesProps) {
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && !!repoInfo && <Difference path={state.selectedFilePath} repoInfo={repoInfo} />}
+            {!!state.selectedFilePath && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} path={state.selectedFilePath} repoInfo={repoInfo} />}
             {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>

@@ -1,23 +1,30 @@
 import React from "react";
 import { useMemo } from "react";
+import { shallowEqual, useDispatch } from "react-redux";
+import { EnumSelectedRepoTab } from "../../lib";
+import { useSelectorTyped } from "../../store/rootReducer";
+import { ActionUI } from "../../store/slices/UiSlice";
 
 export interface ISelectedRepoTabItem{
-    type:"Changes"|"Branches"|"Commits"|"Remotes";
+    type:EnumSelectedRepoTab;
     text:"Changes"|"Branches"|"Commits"|"Remotes";
 }
 
 interface ISelectedRepoLeftProps{
-    selectedTab:ISelectedRepoTabItem;
-    onSelectTab:(tab:ISelectedRepoTabItem)=>void;
 }
 
 function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){
+    const dispatch = useDispatch();
+    const store = useSelectorTyped(state=>({
+        tab:state.ui.selectedRepoTab,        
+    }),shallowEqual);
+
     const tabs = useMemo(()=>{
         const items:ISelectedRepoTabItem[]=[
-            {text:"Changes",type:"Changes"},
-            {text:"Branches",type:"Branches"},
-            {text:"Commits",type:"Commits"},
-            {text:"Remotes",type:"Remotes"}
+            {text:"Changes",type:EnumSelectedRepoTab.CHANGES},
+            {text:"Branches",type:EnumSelectedRepoTab.BRANCHES},
+            {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
+            {text:"Remotes",type: EnumSelectedRepoTab.REMOTES}
         ];
         return items;
     },[]);
@@ -26,8 +33,8 @@ function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){
             {
                 tabs.map(t=>(
                     <span key={t.type} 
-                        className={`tabItem w-100 py-2 border-bottom hover ${props.selectedTab.type === t.type?"bg-select-color":""}`}
-                        onClick={()=> props.onSelectTab(t)}>{t.text}</span>
+                        className={`tabItem w-100 py-2 border-bottom hover ${store.tab === t.type?"bg-select-color":""}`}
+                        onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>{t.text}</span>
                 ))
             }            
     </div>

@@ -11,6 +11,7 @@ import { ActionUI } from "../../../../store/slices/UiSlice";
 interface IDifferenceProps {
     path:string;
     repoInfo:RepositoryInfo;
+    refreshV:number;
 }
 
 
@@ -51,11 +52,17 @@ function DifferenceComponent(props:IDifferenceProps){
         propsRef.current = props;
     },[props])
 
-    useEffect(()=>{
-        if(props.path) {            
-            window.ipcRenderer.send(RendererEvents.getFileContent().channel,props.path);            
+    const getFileContent=()=>{
+        if(props.path) {    
+            console.log("path",props.path);
+            const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
+            window.ipcRenderer.send(RendererEvents.getFileContent().channel,joinedPath);
         }
-    },[props.path])
+    }
+
+    useEffect(()=>{
+        getFileContent();
+    },[props.path,props.refreshV])
 
     const previousChangesEditorRef = useRef<ReactQuill>();
     const currentChangesEditorRef = useRef<ReactQuill>();
@@ -160,6 +167,8 @@ function DifferenceComponent(props:IDifferenceProps){
         currentChangesEditorRef.current?.getEditor().root.setAttribute("spellcheck","false");
         let textLines:string[] = [];        
         window.ipcRenderer.on(RendererEvents.getFileContent().replyChannel,(e,lines:string[])=>{
+            const hasChanges = UiUtils.hasChanges(textLines,lines);
+            if(!hasChanges) return;
             textLines = lines;
             const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
             window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);

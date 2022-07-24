@@ -3,10 +3,12 @@ import { RendererEvents, RepositoryInfo } from "common_library";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
+    autoStagingEnabled:boolean;
 }
 
 const initialState:ISavedData={
     recentRepositories:[],
+    autoStagingEnabled:false,
 }
 
 const SavedDataSlice = createSlice({
@@ -46,6 +48,9 @@ const SavedDataSlice = createSlice({
                 });                 
                 window.ipcRenderer.send(RendererEvents.updateRepositories,selectedRepos.map(rep=>({...rep})));
             }
+        },
+        updateAutoStaging(state,action:PayloadAction<boolean>){
+            state.autoStagingEnabled = action.payload;
         }
 
     }

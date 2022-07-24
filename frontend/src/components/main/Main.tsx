@@ -1,4 +1,4 @@
-import { IRepositoryDetails, IStatus, RendererEvents,RepositoryInfo } from "common_library";
+import { IRepositoryDetails, ISavedData, IStatus, RendererEvents,RepositoryInfo } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
@@ -6,7 +6,7 @@ import { BranchUtils, CacheUtils, EnumModals, ReduxUtils, UiUtils, useMultiState
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionRepositoy, ActionSavedData } from "../../store/slices";
-import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
+import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
@@ -32,7 +32,7 @@ function MainComponent(){
             const str = typeof message === 'string'?message:JSON.stringify(message);
             console.log("str",str);
             ModalData.errorModal.message = str;
-            BranchGraphUtils.hideBrnchPanelLoader();
+            dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
@@ -70,8 +70,14 @@ function MainComponent(){
 
     useEffect(()=>{
         registerIpcEvents();
-        const repos:RepositoryInfo[] =  window.ipcRenderer.sendSync(RendererEvents.getRecentRepositoires); 
-        console.log('repos',repos);
+        ReduxUtils.setLoader = (payload:ILoaderInfo | undefined)=>{
+            dispatch(ActionUI.setLoader(payload));
+        }
+        const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
+        dispatch(ActionSavedData.updateAutoStaging(savedData.configInfo.autoStage));
+        console.log("savedData",savedData)
+        const repos = savedData.recentRepositories;
+        console.log('repos',repos);        
         if(!repos?.length){
             setState({isLoading:false});
             dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
@@ -106,17 +112,17 @@ function MainComponent(){
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
             console.log("pull reply");
-            BranchGraphUtils.hideBrnchPanelLoader();
+            dispatch(ActionUI.setLoader(undefined));
         })
 
         window.ipcRenderer.on(RendererEvents.push().replyChannel,(_)=>{
             console.log("pull reply");
-            BranchGraphUtils.hideBrnchPanelLoader();
+            dispatch(ActionUI.setLoader(undefined));
         })
 
         window.ipcRenderer.on(RendererEvents.fetch().replyChannel,(_)=>{
             console.log("fetch reply");
-            BranchGraphUtils.hideBrnchPanelLoader();
+            dispatch(ActionUI.setLoader(undefined));
         })
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{

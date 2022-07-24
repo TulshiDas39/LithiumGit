@@ -1,7 +1,8 @@
-import { RepositoryInfo } from "common_library";
-import { ConfigInfo } from "./ConfigInfo";
+import { IConfigInfo, ISavedData, RepositoryInfo } from "common_library";
 
 export class SavedData{
-    static recentRepositories:RepositoryInfo[]=[];
-    static configInfo:ConfigInfo = undefined!;
+    static data:ISavedData={
+        configInfo:undefined!,
+        recentRepositories:[]
+    }
 }

@@ -2,7 +2,7 @@ import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IS
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
-import { AppData, LogFields } from "../dataClasses";
+import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 
@@ -24,6 +24,31 @@ export class GitManager{
         this.addPullHandler();
         this.addPushHandler();
         this.addFetchHandler();
+        this.addCommitHandler();
+    }
+
+    addCommitHandler(){
+        ipcMain.on(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,message:string)=>{
+            await this.giveCommit(e,repository,message);
+            // e.reply(RendererEvents.createBranch().replyChannel,sourceCommit,newBranchName,status,checkout);
+        })
+    }
+
+    async giveCommit(e: Electron.IpcMainEvent,repository:RepositoryInfo,message:string){
+        try {
+            const git = this.getGitRunner(repository);
+            if(SavedData.data.configInfo.autoStage){
+                await git.add(["."]);
+            }
+            await git.commit(message);
+            const status = await this.getStatus(repository);
+            e.reply(RendererEvents.commit().replyChannel,true);
+            AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status)
+        } catch (error) {
+            console.log("Error when commit:"+error?.toString());
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
+        }
+        
     }
 
     addCreateBranchHandler(){

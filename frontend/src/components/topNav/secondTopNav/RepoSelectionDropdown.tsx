@@ -17,7 +17,7 @@ function RepoSelectionDropdownComponent(){
 
     return <div className="">
         <Dropdown>
-            <Dropdown.Toggle variant="success" id="dropdown-reposelection">
+            <Dropdown.Toggle variant="success" id="dropdown-reposelection" className="rounded-0">
                 {store.recentRepos.find(x=>x.isSelected)?.name || ""}
             </Dropdown.Toggle>
             <Dropdown.Menu>

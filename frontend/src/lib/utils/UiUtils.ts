@@ -102,4 +102,14 @@ export class UiUtils {
             })
         })
     }
+
+    static hasChanges(prevLines:string[],currentLines:string[]){
+        if(prevLines.length != currentLines.length) return true;
+
+        for(let i=0; i<prevLines.length; i++){
+            if(prevLines[i] !== currentLines[i]) return true;
+        }
+
+        return false;
+    }
 }
