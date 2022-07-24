@@ -8,7 +8,7 @@ function BranchActionsComponent(){
     const dispatch = useDispatch();
     
     const handleRefresh = ()=>{
-        BranchGraphUtils.showBrnchPanelLoader();
+        dispatch(ActionUI.setLoader({text:"Refreshing..."}));
         dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
     }
 

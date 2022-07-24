@@ -146,7 +146,7 @@ export class BranchGraphUtils{
         
         this.handleZoomEffect();
 
-        this.hideBrnchPanelLoader();
+        ReduxUtils.setLoader(undefined);
         this.setReduxData();
     }
 
@@ -476,17 +476,6 @@ export class BranchGraphUtils{
         this.handleZoomEffect();
     }
 
-    static showBrnchPanelLoader(){
-        if(!this.svgElement) return;
-        const loaderElem = this.branchPanelContainer.querySelector("#branchPanelLoader");
-        loaderElem?.classList.remove("d-none")
-    }
-
-    static hideBrnchPanelLoader(){
-        if(!this.svgElement) return;
-        const loaderElem = this.branchPanelContainer.querySelector("#branchPanelLoader");
-        loaderElem?.classList.add("d-none")
-    }
 
     static CreateHeadTextElement(commit:ICommitInfo){
         if(!commit.refValues.length) return null;    
@@ -580,7 +569,6 @@ export class BranchGraphUtils{
     }
 
     static refreshBranchPanelUi(){
-        // this.showBrnchPanelLoader();
         this.createBranchPanel();
         this.insertNewBranchGraph();
     }

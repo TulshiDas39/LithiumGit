@@ -1,11 +1,12 @@
 import { RendererEvents } from "common_library";
 import React from "react"
 import { Dropdown } from "react-bootstrap";
-import { FaAngleDoubleDown, FaAngleDoubleUp, FaAngleDown, FaArrowDown, FaArrowUp } from "react-icons/fa";
-import { shallowEqual } from "react-redux";
+import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils } from "../../../lib";
 import { BranchGraphUtils } from "../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../store/rootReducer";
+import { ActionUI } from "../../../store/slices/UiSlice";
 
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
@@ -14,19 +15,21 @@ function PullPushMenuComponent(){
         behind:state.repository.behindCount,
     }),shallowEqual);
 
+    const dispatch = useDispatch();
+
     console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
     const handlePull=()=>{
-        BranchGraphUtils.showBrnchPanelLoader();
+        dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
     }
 
     const handlePush=()=>{
-        BranchGraphUtils.showBrnchPanelLoader();
+        dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         window.ipcRenderer.send(RendererEvents.push().channel,BranchUtils.repositoryDetails);
     }
 
     const handleFetch=(isAll:boolean)=>{
-        BranchGraphUtils.showBrnchPanelLoader();
+        dispatch(ActionUI.setLoader({text:"Fetching..."}));
         window.ipcRenderer.send(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
     }
 

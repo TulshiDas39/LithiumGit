@@ -23,11 +23,16 @@ interface IChangesState{
     currentStep:number;
 }
 
+export interface ILoaderInfo{
+    text:string;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
     changes?:IChangesState;
-    selectedRepoTab:EnumSelectedRepoTab;    
+    selectedRepoTab:EnumSelectedRepoTab;
+    loader?:ILoaderInfo;
 }
 
 const initialState:IUIState={
@@ -78,6 +83,9 @@ const UISlice = createSlice({
         },
         setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
             state.selectedRepoTab = action.payload;
+        },
+        setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
+            state.loader = action.payload;
         }
     }
 });

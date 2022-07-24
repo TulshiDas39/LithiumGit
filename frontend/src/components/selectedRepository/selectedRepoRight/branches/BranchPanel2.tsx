@@ -19,7 +19,7 @@ interface IBranchPanelProps{
 export function BranchPanel2(props:IBranchPanelProps){    
     const horizontalScrollContainerWidth = props.containerWidth+10;        
     
-    return <div id="branchPanel" className="w-100 position-relative" style={{overflow:'hidden'}}>
+    return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
             <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <svg
@@ -51,14 +51,7 @@ export function BranchPanel2(props:IBranchPanelProps){
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:props.horizontalScrollLeft,top:0}}></div>
             </div>           
-        </Fragment>
-        <div id="branchPanelLoader" className="position-absolute w-100 h-100 bg-white text-center d-none" style={{top:0,left:0,opacity:0.8}}>            
-            <div className="row g-0 h-100 align-items-center">
-                <div className="col-12">                    
-                    <ScaleLoader loading={true} color="black" />
-                </div>
-            </div>
-        </div>
+        </Fragment>        
     </div>
 }
 
