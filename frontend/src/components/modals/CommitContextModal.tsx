@@ -23,8 +23,8 @@ function CommitContextModalComponent(){
             let elem = document.querySelector(".commitContext") as HTMLElement;
             console.log(Data)
             if(elem){
-                elem.style.top = Data.position.y+"px";
-                elem.style.left = Data.position.x+"px";
+                elem.style.marginTop = Data.position.y+"px";
+                elem.style.marginLeft = Data.position.x+"px";
             }
         }
     },[store.show])
