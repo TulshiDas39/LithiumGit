@@ -50,6 +50,7 @@ function CommitContextModalComponent(){
     }
 
     const handleMerge=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         const sourceCommit = Data.selectedCommit;
         let source = sourceCommit.hash;
         refData.current.mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
@@ -58,7 +59,7 @@ function CommitContextModalComponent(){
             refData.current.mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}`;
         }
         const options = [source];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,options);
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
     }
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
@@ -105,7 +106,7 @@ function CommitContextModalComponent(){
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
                     </div>
                     <div>
-                        <div className="col-12 hover cur-default ">Merge from this commit</div>
+                        <div className="col-12 hover cur-default " onClick={handleMerge}>Merge from this commit</div>
                     </div>
                 </div>
             </Modal.Body>
