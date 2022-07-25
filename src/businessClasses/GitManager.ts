@@ -26,8 +26,31 @@ export class GitManager{
         this.addFetchHandler();
         this.addCommitHandler();
         this.addGitShowHandler();
+        this.addMergeHandler();
     }
 
+
+    addMergeHandler(){
+        ipcMain.on(RendererEvents.gitMerge().channel, async (e,repository:RepositoryInfo,options:string[])=>{
+            const result = await this.merge(repository,options);
+            e.reply(RendererEvents.gitMerge().replyChannel,result);
+        })
+    }
+
+    async merge(repoInfo:RepositoryInfo,options:string[]){
+        try {
+            const git = this.getGitRunner(repoInfo);
+            await git.merge(options);
+            const result = await this.getStatus(repoInfo);            
+            return result;
+        } catch (error) {
+            const errStr = error?.toString();
+            console.log("Error in merger:"+errStr);
+            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errStr);
+            return null;
+        }
+        
+    }
 
     addGitShowHandler(){
         ipcMain.on(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
@@ -79,8 +102,8 @@ export class GitManager{
     }
     addCheckOutCommitHandlder(){
         // RendererEvents.checkoutCommit
-        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,commit:ICommitInfo,repository:IRepositoryDetails)=>{
-            await this.checkoutCommit(commit,repository,e);
+        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,repoInfo:RepositoryInfo,options:string[])=>{
+            await this.checkoutCommit(repoInfo,options,e);
             // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
         })
     }
@@ -207,6 +230,7 @@ export class GitManager{
         result.behind = status.behind;
         result.modified = status.modified?.map(x=> ({fileName:path.basename(x),path:x}));
         result.staged = status.staged?.map(x=> ({fileName:path.basename(x),path:x}));
+        result.conflicted = status.conflicted?.map(x=> ({fileName:path.basename(x),path:x}));
         result.isClean = status?.isClean();
         result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
         result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
@@ -242,16 +266,13 @@ export class GitManager{
         return true;
     }
 
-    private async checkoutCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails,e: Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoDetails.repoInfo);
-        try {
-            if(this.isDetachedCommit(commit,repoDetails)){
-                await git.checkout(commit.hash);
-            }
-            else{
-                await git.checkout(commit.ownerBranch.name);
-            }
-        } catch (error) {
+    private async checkoutCommit(repoInfo:RepositoryInfo,options:string[],e: Electron.IpcMainEvent){
+        const git = this.getGitRunner(repoInfo);
+        try {            
+            await git.checkout(options);  
+            const status = await this.getStatus(repoInfo);
+            e.reply(RendererEvents.checkoutCommit().replyChannel,status);
+        }catch (error) {
             const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
             const errorMsg:string = error?.toString() || "";
             console.log(`Failed to checkout:`+error?.toString());
@@ -264,9 +285,9 @@ export class GitManager{
         }
         
 
-        commit.isHead = true;
-        const status = await this.getStatus(repoDetails.repoInfo);
-        e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
+        // commit.isHead = true;
+        // const status = await this.getStatus(repoDetails.repoInfo);
+        // e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
     }
 
     private async createBranch(sourceCommit:ICommitInfo,repoDetails:IRepositoryDetails,newBranchName:string,checkout:boolean){

@@ -348,4 +348,16 @@ export class BranchUtils{
         
                 
     }
+
+    static HasBranchNameRef(commit:ICommitInfo){
+        return commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !ref.remote);
+    }
+
+    static canCheckoutBranch(commit:ICommitInfo){
+        if(!commit.branchNameWithRemotes.length) return false;
+        if(BranchUtils.HasBranchNameRef(commit)) return false;
+        if(commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !!ref.remote)
+         && !BranchUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
+        return false;
+    }
 }

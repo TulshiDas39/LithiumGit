@@ -555,17 +555,25 @@ export class BranchGraphUtils{
 
         if(newStatus.isDetached){
             newHeadCommit.refs += `,${BranchUtils.detachedHeadIdentifier}`;
-            newHeadCommit.refValues.push(`${BranchUtils.detachedHeadIdentifier}`);
-            if(newHeadCommit.refValues.length > existingMaxRefLength){
-                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            newHeadCommit.refValues.push(`${BranchUtils.detachedHeadIdentifier}`);            
+        }
+        else{
+            if(!BranchUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
+                newHeadCommit.refs = `${BranchUtils.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
+                newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
+                newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
             }
         }
-
-        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-
-        this.updateUiForCheckout();
-
+        if(newHeadCommit.refValues.length > existingMaxRefLength){
+            newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+            newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            BranchGraphUtils.refreshBranchPanelUi();
+        }
+        else {
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            this.updateUiForCheckout();
+        }        
     }
 
     static refreshBranchPanelUi(){

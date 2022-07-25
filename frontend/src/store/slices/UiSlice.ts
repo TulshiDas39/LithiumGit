@@ -33,6 +33,7 @@ interface IUIState{
     changes?:IChangesState;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
+    mergerCommitMessage?:string;
 }
 
 const initialState:IUIState={
@@ -86,6 +87,9 @@ const UISlice = createSlice({
         },
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;
+        },
+        setMergerCommitMessage(state,action:PayloadAction<string>){
+            state.mergerCommitMessage = action.payload;
         }
     }
 });
