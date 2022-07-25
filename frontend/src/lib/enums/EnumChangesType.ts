@@ -2,5 +2,6 @@ export enum EnumChangesType{
     CREATED="CREATED",
     MODIFIED="MODIFIED",
     STAGED="STAGED",
-    DELETED="DELETED"
+    DELETED="DELETED",
+    CONFLICTED="CONFLICTED",
 }

@@ -6,6 +6,7 @@ import { shallowEqual } from "react-redux";
 import { EnumChangesType, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
+import { ConflictedFiles } from "./ConflictedFiles";
 import { DeletedFiles } from "./DeletedFiles";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
@@ -120,6 +121,11 @@ function ChangesComponent(props:IChangesProps) {
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
+            }
+            {
+                !!state.status?.conflicted?.length &&
+                <ConflictedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CONFLICTED)} files={state.status.conflicted} 
+                onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath} />
