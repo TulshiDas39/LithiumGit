@@ -108,6 +108,9 @@ function MainComponent(){
             else current = status.current!;
             dispatch(ActionRepositoy.setBranchStatusCurrent(current));
             dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
+
+            const requiredReload = BranchGraphUtils.isRequiredReload(status)
+            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         }
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{

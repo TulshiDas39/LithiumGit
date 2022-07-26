@@ -599,4 +599,14 @@ export class BranchGraphUtils{
         
         this.refreshBranchPanelUi();
     }
+
+    static isRequiredReload(newStatus:IStatus){
+        const existingStatus = BranchUtils.repositoryDetails?.status;
+        if(!existingStatus) return false;
+        if(newStatus.current !== existingStatus.current) return true;
+        if(newStatus.ahead !== existingStatus.ahead) return true;
+        if(newStatus.behind !== existingStatus.behind) return true;
+        if(newStatus.isDetached !== existingStatus.isDetached) return true;
+        return false;        
+    }
 }
