@@ -1,4 +1,4 @@
-import {ICommitInfo,StringUtils,CreateCommitInfoObj} from "common_library"
+import {ICommitInfo,StringUtils,CreateCommitInfoObj, Constants} from "common_library"
 import { LogFields } from "../dataClasses";
 export class CommitParser{
     private static addCommitField(line:string,commit:ICommitInfo){
@@ -28,6 +28,17 @@ export class CommitParser{
         else if(line.startsWith(LogFields.Ref)){
             commit.refs =line.replace(LogFields.Ref+":","");
         }
+
+        let commitRef = commit.refs;    	
+        if(commitRef){
+            if(commitRef.includes(Constants.headPrefix)) {                
+                commit.isHead = true;
+                commitRef = commitRef.substring(Constants.headPrefix.length);
+            }
+            const splits = commitRef.split(",");
+            commit.refValues = splits.map(x=> x.trim());
+        }
+        
     }
     private static getCommit(lines:string[], indexObj:{index:number}){
         var commit = CreateCommitInfoObj();

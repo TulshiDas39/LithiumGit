@@ -7,6 +7,7 @@ import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 
 export class GitManager{
+    private readonly LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
     start(){
         this.addEventHandlers();
     }
@@ -196,6 +197,15 @@ export class GitManager{
         repoDetails.repoInfo.activeOrigin = origin.name;
     }
 
+    setHead(repoDetails:IRepositoryDetails){
+        const status = repoDetails.status;
+        const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash);
+        if(!head) return;
+        head.isHead = true;
+        repoDetails.headCommit = head;
+        status.headCommit = head;
+    }
+
     private async repoDetails(repoInfo:RepositoryInfo){
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
@@ -204,6 +214,7 @@ export class GitManager{
         repoDetails.allCommits = commits;
         repoDetails.branchList = await this.getAllBranches(git);
         repoDetails.status = await this.getStatus(repoInfo);
+        this.setHead(repoDetails);
         const remotes = await git.getRemotes(true);        
         remotes.forEach(r=>{
             const remote:IRemoteInfo = {
@@ -237,14 +248,15 @@ export class GitManager{
         result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
         result.current = status.current;
         result.isDetached = status.detached;
+        result.headCommit = await this.getHeadCommit(git);
         return result;
     }
 
     private async getCommits(git: SimpleGit){
         const commitLimit=500;
-        const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
+        //const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
-            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict", LogFormat]);
+            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict", this.LogFormat]);
             const commits = CommitParser.parse(res);
             return commits;
         }catch(e){
@@ -403,6 +415,16 @@ export class GitManager{
          };
         let git = simpleGit(options);  
         return git;
+    }
+
+    private async getHeadCommit(git:SimpleGit){
+        const result = await git.revparse(["HEAD"]);
+        console.log("result",result);
+        const showResult = await git.show([result, this.LogFormat]);
+        console.log(showResult);
+        AppData.mainWindow?.webContents.send(RendererEvents.logger,showResult);
+        const commit = CommitParser.parse(showResult);        
+        return commit?.[0];
     }
 
 

@@ -109,7 +109,8 @@ function MainComponent(){
             dispatch(ActionRepositoy.setBranchStatusCurrent(current));
             dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
 
-            const requiredReload = BranchGraphUtils.isRequiredReload(status)
+            const requiredReload = BranchGraphUtils.isRequiredReload(status);
+            console.log("requiredReload",requiredReload);
             if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         }
 

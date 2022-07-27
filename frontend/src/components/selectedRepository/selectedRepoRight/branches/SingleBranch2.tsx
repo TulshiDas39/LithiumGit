@@ -1,4 +1,4 @@
-import { IBranchDetails, ICommitInfo } from "common_library";
+import { Constants, IBranchDetails, ICommitInfo } from "common_library";
 import { Fragment, useMemo } from "react";
 import { BranchUtils, EnumIdPrefix } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
@@ -44,7 +44,7 @@ interface ISingleBranchProps{
         let y = props.branchDetails.y - BranchUtils.commitRadius - 4;
         for(let sp of commit.refValues){
             const x = commit.x + BranchUtils.commitRadius ;
-            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === BranchUtils.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === Constants.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">{sp}</text>;
             refElements.push(elem);
             y = y - BranchUtils.branchPanelFontSize - 1;
         }
