@@ -417,12 +417,8 @@ export class GitManager{
         return git;
     }
 
-    private async getHeadCommit(git:SimpleGit){
-        const result = await git.revparse(["HEAD"]);
-        console.log("result",result);
-        const showResult = await git.show([result, this.LogFormat]);
-        console.log(showResult);
-        AppData.mainWindow?.webContents.send(RendererEvents.logger,showResult);
+    private async getHeadCommit(git:SimpleGit){        
+        const showResult = await git.show([this.LogFormat]);        
         const commit = CommitParser.parse(showResult);        
         return commit?.[0];
     }

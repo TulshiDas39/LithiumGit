@@ -607,8 +607,9 @@ export class BranchGraphUtils{
         if(newStatus.ahead !== existingStatus.ahead) return true;
         if(newStatus.behind !== existingStatus.behind) return true;
         if(newStatus.isDetached !== existingStatus.isDetached) return true;
+        if(newStatus.headCommit.hash !== existingStatus.headCommit.hash) return true;
         const existingRefs = existingStatus.headCommit.refValues;
-        const newRefs = newStatus.headCommit.refValues;
+        const newRefs = newStatus.headCommit.refValues;        
         if(newRefs.some(ref=> !existingRefs.includes(ref)) || newRefs.length !== existingRefs.length) return true;
         return false;        
     }
