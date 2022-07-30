@@ -338,7 +338,7 @@ export class BranchUtils{
 
     static canCheckoutBranch(commit:ICommitInfo){
         if(!commit.branchNameWithRemotes.length) return false;
-        if(BranchUtils.HasBranchNameRef(commit)) return false;
+        if(BranchUtils.HasBranchNameRef(commit)) return true;
         if(commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !!ref.remote)
          && !BranchUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
         return false;
