@@ -38,6 +38,7 @@ function ChangesComponent(props:IChangesProps) {
         focusVersion:state.ui.versions.appFocused,
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
+        status:state.ui.status,
     }),shallowEqual);
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
@@ -60,8 +61,12 @@ function ChangesComponent(props:IChangesProps) {
     },[store.focusVersion])
 
     useEffect(()=>{
+        setState({status:store.status});
+    },[store.status])
+
+    useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
-            setState({status:result});
+            setState({status:result});            
             ReduxUtils.setStatusCurrent(result);
         });
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{

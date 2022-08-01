@@ -202,8 +202,7 @@ export class GitManager{
         const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash);
         if(!head) return;
         head.isHead = true;
-        repoDetails.headCommit = head;
-        status.headCommit = head;
+        repoDetails.headCommit = head;        
     }
 
     private async repoDetails(repoInfo:RepositoryInfo){

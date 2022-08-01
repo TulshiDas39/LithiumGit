@@ -56,9 +56,9 @@ function CommitContextModalComponent(){
         refData.current.mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
         if(BranchUtils.HasBranchNameRef(sourceCommit)){
             source = sourceCommit.ownerBranch.name;
-            refData.current.mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}`;
+            refData.current.mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
         }
-        const options = [source];
+        const options = [source,"--no-commit","--no-ff"];
         window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
     }
     useEffect(()=>{
@@ -79,7 +79,9 @@ function CommitContextModalComponent(){
 
         const mergeListener = (e:any,status:IStatus)=>{
             dispatch(ActionUI.setLoader())
-            if(status) {                
+            dispatch(ActionUI.setMergerCommitMessage(refData.current.mergerCommitMessage));
+            if(status) {
+                ReduxUtils.setStatusCurrent(status);
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
             }
         }
