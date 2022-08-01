@@ -197,7 +197,7 @@ function DifferenceComponent(props:IDifferenceProps){
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            if(propsRef.current.mode === EnumChangesType.MODIFIED){
+            if(propsRef.current.mode === EnumChangesType.MODIFIED || propsRef.current.mode === EnumChangesType.CONFLICTED){
                 getDiff();
             }
             else showContentOfNewFile(lines);
@@ -227,7 +227,7 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLineDelta])
     
     return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
-        {(props.mode === EnumChangesType.DELETED || props.mode === EnumChangesType.MODIFIED) &&
+        {(props.mode === EnumChangesType.DELETED || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.MODIFIED) &&
             <div ref={previousScrollContainerRef as any} 
             className={`d-flex gs-overflow-x-auto border-end ${props.mode === EnumChangesType.DELETED?'w-100':'w-50'}`} >
             <div>
@@ -243,7 +243,7 @@ function DifferenceComponent(props:IDifferenceProps){
                         />                
             </div>
         </div>}
-        {(props.mode ===  EnumChangesType.MODIFIED || props.mode === EnumChangesType.CREATED || props.mode ===  EnumChangesType.STAGED ) && 
+        {(props.mode ===  EnumChangesType.MODIFIED  || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.CREATED || props.mode ===  EnumChangesType.STAGED ) && 
             <div ref={currentScrollContainerRef as any} className={`d-flex gs-overflow-x-auto ${props.mode === EnumChangesType.CREATED?'w-100':'w-50'}`} >
             <div>
                 <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 

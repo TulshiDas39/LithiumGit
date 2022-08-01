@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { createBranchDetailsObj, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, createBranchDetailsObj, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
@@ -492,7 +492,7 @@ export class BranchGraphUtils{
         elem.setAttribute("font-size",`${BranchUtils.branchPanelFontSize}`);
         elem.setAttribute("fill",`blue`);
         elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`,"headRef")
-        elem.innerHTML = BranchUtils.detachedHeadIdentifier;
+        elem.innerHTML = Constants.detachedHeadIdentifier;
         return elem;
     }
     
@@ -544,7 +544,7 @@ export class BranchGraphUtils{
         repoDetails.status = newStatus;                
 
         if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== BranchUtils.detachedHeadIdentifier);
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
             if(existingHead.ownerBranch.increasedHeightForDetached > 0){
                 existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
                 existingHead.ownerBranch.increasedHeightForDetached = 0;
@@ -554,18 +554,26 @@ export class BranchGraphUtils{
         const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
         if(newStatus.isDetached){
-            newHeadCommit.refs += `,${BranchUtils.detachedHeadIdentifier}`;
-            newHeadCommit.refValues.push(`${BranchUtils.detachedHeadIdentifier}`);
-            if(newHeadCommit.refValues.length > existingMaxRefLength){
-                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
+            newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
+        }
+        else{
+            if(!BranchUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
+                newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
+                newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
+                newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
             }
         }
-
-        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-
-        this.updateUiForCheckout();
-
+        if(newHeadCommit.refValues.length > existingMaxRefLength){
+            newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+            newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            BranchGraphUtils.refreshBranchPanelUi();
+        }
+        else {
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            this.updateUiForCheckout();
+        }        
     }
 
     static refreshBranchPanelUi(){
@@ -590,5 +598,19 @@ export class BranchGraphUtils{
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
         
         this.refreshBranchPanelUi();
+    }
+
+    static isRequiredReload(newStatus:IStatus){
+        const existingStatus = BranchUtils.repositoryDetails?.status;
+        if(!existingStatus?.headCommit) return false;
+        if(newStatus.current !== existingStatus.current) return true;
+        if(newStatus.ahead !== existingStatus.ahead) return true;
+        if(newStatus.behind !== existingStatus.behind) return true;
+        if(newStatus.isDetached !== existingStatus.isDetached) return true;
+        if(newStatus.headCommit.hash !== existingStatus.headCommit.hash) return true;
+        const existingRefs = existingStatus.headCommit.refValues;
+        const newRefs = newStatus.headCommit.refValues;        
+        if(newRefs.some(ref=> !existingRefs.includes(ref)) || newRefs.length !== existingRefs.length) return true;
+        return false;        
     }
 }

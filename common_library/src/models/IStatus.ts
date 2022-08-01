@@ -1,3 +1,4 @@
+import { ICommitInfo } from "./ICommitInfo";
 import { IFile } from "./IFile";
 
 export interface IStatus{
@@ -16,4 +17,5 @@ export interface IStatus{
     isClean:boolean;
     current:string | null;
     isDetached:boolean;
+    headCommit:ICommitInfo;
 }

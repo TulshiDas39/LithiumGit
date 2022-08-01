@@ -2,7 +2,7 @@ import { IRepositoryDetails, ISavedData, IStatus, RendererEvents,RepositoryInfo 
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { BranchUtils, CacheUtils, EnumModals, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { BranchUtils, CacheUtils, EnumModals, ObjectUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionRepositoy, ActionSavedData } from "../../store/slices";
@@ -108,6 +108,11 @@ function MainComponent(){
             else current = status.current!;
             dispatch(ActionRepositoy.setBranchStatusCurrent(current));
             dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
+
+            const requiredReload = BranchGraphUtils.isRequiredReload(status);
+            console.log("requiredReload",requiredReload);
+            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
+            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         }
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{

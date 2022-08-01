@@ -1,10 +1,8 @@
-import { createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
+import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
 import { IViewBox } from "../interfaces";
 
 export class BranchUtils{
-    static repositoryDetails:IRepositoryDetails = null!;
-    static readonly headPrefix = "HEAD -> ";
-    static readonly detachedHeadIdentifier = "HEAD";
+    static repositoryDetails:IRepositoryDetails = null!;    
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly remoteBranchNamePrefix = "remotes"
     static readonly distanceBetweenBranchLine = 30;    
@@ -231,29 +229,14 @@ export class BranchUtils{
         return false;
     }
 
-    private static setReferences(commit:ICommitInfo,repoDetails:IRepositoryDetails) {
-        let commitRef = commit.refs;
-    	if(!commitRef) return;
-        
-        if(commitRef.includes(BranchUtils.headPrefix)) {
-            repoDetails.headCommit = commit;
-            commit.isHead = true;
-            commitRef = commitRef.substring(BranchUtils.headPrefix.length);
-        }
-        const splits = commitRef.split(",");
-        commit.refValues = splits.map(x=> x.trim());
-        if(!commit.isHead && splits.some(sp=>sp === BranchUtils.detachedHeadIdentifier)) repoDetails.headCommit = commit;        
-        const refLenght = splits.length;
+    private static setReferences(commit:ICommitInfo,repoDetails:IRepositoryDetails) {        
+    	if(!commit.refValues.length) return;                
+        const refLenght = commit.refValues.length;
         if(refLenght > commit.ownerBranch.maxRefCount) {
             commit.ownerBranch.maxRefCount = refLenght;
         }
 
-    	const branches:string[] = commit.refValues.filter(sp=> this.isBranch(sp,repoDetails));
-        // for (let split of splits) {
-        //     split = split.trim();
-        //     if(split.startsWith("tag:") || split === BranchUtils.detachedHeadIdentifier) continue;
-        //     branches.push(split);
-        // }                
+    	const branches:string[] = commit.refValues.filter(sp=> this.isBranch(sp,repoDetails));                   
 
         commit.branchNameWithRemotes = branches.map(x=> BranchUtils.getBranchRemote(x));
     }
@@ -328,7 +311,7 @@ export class BranchUtils{
         repoDetails.status = newStatus;                
 
         if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== this.detachedHeadIdentifier);
+            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
             if(existingHead.ownerBranch.increasedHeightForDetached > 0){
                 existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
                 existingHead.ownerBranch.increasedHeightForDetached = 0;
@@ -338,7 +321,7 @@ export class BranchUtils{
         const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
         if(newStatus.isDetached){
-            newHeadCommit.refValues.push(this.detachedHeadIdentifier);
+            newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
             if(newHeadCommit.refValues.length > existingMaxRefLength){
                 newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
@@ -347,5 +330,17 @@ export class BranchUtils{
 
         
                 
+    }
+
+    static HasBranchNameRef(commit:ICommitInfo){
+        return commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !ref.remote);
+    }
+
+    static canCheckoutBranch(commit:ICommitInfo){
+        if(!commit.branchNameWithRemotes.length) return false;
+        if(BranchUtils.HasBranchNameRef(commit)) return true;
+        if(commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !!ref.remote)
+         && !BranchUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
+        return false;
     }
 }

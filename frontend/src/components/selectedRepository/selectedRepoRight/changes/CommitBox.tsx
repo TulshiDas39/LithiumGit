@@ -15,12 +15,17 @@ interface IState{
 function CommitBoxComponent(){
     const store = useSelectorTyped(state=>({
         autoStagingEnabled:state.savedData.autoStagingEnabled,
+        mergeCommitMessage:state.ui.mergerCommitMessage,
     }),shallowEqual);
     const dispatch = useDispatch();
     const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
     useEffect(()=>{
         setState({autoStatingEnabled:store.autoStagingEnabled});
     },[store.autoStagingEnabled])
+
+    useEffect(()=>{
+        setState({value:store.mergeCommitMessage});
+    },[store.mergeCommitMessage])
 
     const handleCommit=()=>{
         window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);

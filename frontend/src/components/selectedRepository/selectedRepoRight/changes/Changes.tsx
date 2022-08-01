@@ -6,6 +6,7 @@ import { shallowEqual } from "react-redux";
 import { EnumChangesType, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
+import { ConflictedFiles } from "./ConflictedFiles";
 import { DeletedFiles } from "./DeletedFiles";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
@@ -37,6 +38,7 @@ function ChangesComponent(props:IChangesProps) {
         focusVersion:state.ui.versions.appFocused,
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
+        status:state.ui.status,
     }),shallowEqual);
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
@@ -59,8 +61,12 @@ function ChangesComponent(props:IChangesProps) {
     },[store.focusVersion])
 
     useEffect(()=>{
+        setState({status:store.status});
+    },[store.status])
+
+    useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
-            setState({status:result});
+            setState({status:result});            
             ReduxUtils.setStatusCurrent(result);
         });
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
@@ -120,6 +126,11 @@ function ChangesComponent(props:IChangesProps) {
             {
                 !!state.status?.staged?.length &&
                 <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
+            }
+            {
+                !!state.status?.conflicted?.length &&
+                <ConflictedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CONFLICTED)} files={state.status.conflicted} 
+                onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath} />

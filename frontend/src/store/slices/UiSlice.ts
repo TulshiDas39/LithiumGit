@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { IStatus } from "common_library";
 import { EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -33,6 +34,8 @@ interface IUIState{
     changes?:IChangesState;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
+    mergerCommitMessage?:string;
+    status?:IStatus;
 }
 
 const initialState:IUIState={
@@ -86,6 +89,12 @@ const UISlice = createSlice({
         },
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;
+        },
+        setMergerCommitMessage(state,action:PayloadAction<string>){
+            state.mergerCommitMessage = action.payload;
+        },
+        setStatus(state,action:PayloadAction<IStatus>){
+            state.status = action.payload;
         }
     }
 });

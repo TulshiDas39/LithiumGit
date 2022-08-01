@@ -1,13 +1,12 @@
 import { ICommitInfo, IStatus, RendererEvents } from "common_library";
-import produce from "immer";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, UiUtils } from "../../lib";
+import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { SelectedRepoRightData } from "../selectedRepository/selectedRepoRight/SelectedRepoRightData";
+import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
 
 function CommitContextModalComponent(){
@@ -17,6 +16,8 @@ function CommitContextModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
+
+    const refData = useRef({mergerCommitMessage:""});
 
     useEffect(()=>{
         if(store.show){
@@ -35,13 +36,30 @@ function CommitContextModalComponent(){
     }
 
     const checkOutCommit=()=>{
-        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,ModalData.commitContextModal.selectedCommit,BranchUtils.repositoryDetails)
+        const options:string[]=[];
+        const canCheckoutBranch = BranchUtils.canCheckoutBranch(Data.selectedCommit);
+        if(canCheckoutBranch) options.push(Data.selectedCommit.ownerBranch.name);
+        else options.push(Data.selectedCommit.hash);
+        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,BranchUtils.repositoryDetails.repoInfo,options)
         hideModal();
     }
     const handleCreateNewBranchClick=()=>{
         ModalData.createBranchModal.sourceCommit = Data.selectedCommit;
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
+    }
+
+    const handleMerge=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
+        const sourceCommit = Data.selectedCommit;
+        let source = sourceCommit.hash;
+        refData.current.mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
+        if(BranchUtils.HasBranchNameRef(sourceCommit)){
+            source = sourceCommit.ownerBranch.name;
+            refData.current.mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
+        }
+        const options = [source,"--no-commit","--no-ff"];
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
     }
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
@@ -50,17 +68,31 @@ function CommitContextModalComponent(){
 
         BranchGraphUtils.openContextModal = modalOpenEventListener;
         
-        const listener = (_e:any,commit:ICommitInfo,status:IStatus)=>{
+        const listener = (_e:any,status:IStatus)=>{
             //UiUtils.updateHeadCommit(commit);
             
-            BranchGraphUtils.handleCheckout(commit,BranchUtils.repositoryDetails,status);            
+            BranchGraphUtils.handleCheckout(Data.selectedCommit,BranchUtils.repositoryDetails,status);            
             // SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
             
         }
         window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
+
+        const mergeListener = (e:any,status:IStatus)=>{
+            dispatch(ActionUI.setLoader())
+            dispatch(ActionUI.setMergerCommitMessage(refData.current.mergerCommitMessage));
+            if(status) {
+                ReduxUtils.setStatusCurrent(status);
+                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+            }
+        }
+
+        window.ipcRenderer.on(RendererEvents.gitMerge().replyChannel,mergeListener)
         
         return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.checkoutCommit().replyChannel],[listener]);
+            UiUtils.removeIpcListeners([
+                RendererEvents.checkoutCommit().replyChannel,
+                RendererEvents.gitMerge().replyChannel,
+            ],[listener,mergeListener]);
         }
 
     },[])
@@ -76,7 +108,7 @@ function CommitContextModalComponent(){
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
                     </div>
                     <div>
-                        <div className="col-12 hover cur-default ">Merge from this commit</div>
+                        <div className="col-12 hover cur-default " onClick={handleMerge}>Merge from this commit</div>
                     </div>
                 </div>
             </Modal.Body>

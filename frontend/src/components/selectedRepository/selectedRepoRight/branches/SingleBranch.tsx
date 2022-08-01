@@ -1,4 +1,4 @@
-import { IBranchDetails, ICommitInfo } from "common_library";
+import { Constants, IBranchDetails, ICommitInfo } from "common_library";
 import { dialog } from "electron";
 import React, { Fragment, MouseEvent, useMemo } from "react";
 import { useDispatch } from "react-redux";
@@ -41,7 +41,7 @@ function SingleBranchComponent(props:ISingleBranchProps){
     const getRefs = (commit:ICommitInfo)=>{
         if(!commit.refs) return;
         let refs = commit.refs;
-        if(refs.startsWith(BranchUtils.headPrefix)) refs = refs.substring(BranchUtils.headPrefix.length);
+        if(refs.startsWith(Constants.headPrefix)) refs = refs.substring(Constants.headPrefix.length);
         const splits = refs.split(",");
 
         const refElements:JSX.Element[] = [];
