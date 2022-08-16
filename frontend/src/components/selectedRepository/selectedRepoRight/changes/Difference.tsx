@@ -58,12 +58,22 @@ function DifferenceComponent(props:IDifferenceProps){
         if(props.path) {    
             console.log("path",props.path);
             const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
-            window.ipcRenderer.send(RendererEvents.getFileContent().channel,joinedPath);
+            if(props.mode === EnumChangesType.STAGED){
+                const options = [":"+props.path];
+                window.ipcRenderer.send(RendererEvents.gitShow().channel,props.repoInfo,options)
+            }
+            else{
+                window.ipcRenderer.send(RendererEvents.getFileContent().channel,joinedPath);
+            }
+            
         }
     }
 
     const getDiff=()=>{
         const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
+        if(propsRef.current.mode === EnumChangesType.STAGED){
+            options.splice(0,0,"--staged");
+        }
         window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
     }
 
@@ -80,7 +90,7 @@ function DifferenceComponent(props:IDifferenceProps){
         }
         else getFileContent();
 
-    },[props.path,props.refreshV])
+    },[props.path,props.mode,props.refreshV])
 
     const previousChangesEditorRef = useRef<ReactQuill>();
     const currentChangesEditorRef = useRef<ReactQuill>();
@@ -183,6 +193,12 @@ function DifferenceComponent(props:IDifferenceProps){
         setState({previousLines:lineConfigs,currentLines:[]});
     }
 
+    const showContentOfStagedFile=(lines:string[])=>{
+        console.log("content of staged file",lines);
+        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+        setState({previousLines:lineConfigs,currentLines:[]});
+    }
+
     const showContentOfNewFile=(lines:string[])=>{
         console.log("showing lines of new file",lines);
         const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
@@ -203,16 +219,20 @@ function DifferenceComponent(props:IDifferenceProps){
             else showContentOfNewFile(lines);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
+            console.log("diff reply",diff);
             setUiLines(diff,textLines);
         });
 
         window.ipcRenderer.on(RendererEvents.gitShow().replyChannel,(e,content:string)=>{
+            console.log('git show reply');
             const lines = new StringUtils().getLines(content);
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            showContentOfDeletedFile(lines);            
-            // getDiff();
+            console.log("propsRef.current.mode",propsRef.current.mode);
+            if(propsRef.current.mode === EnumChangesType.DELETED) showContentOfDeletedFile(lines);            
+            else if(propsRef.current.mode === EnumChangesType.STAGED)  getDiff();//(lines);
+            // get Diff();
         })
 
         return ()=>{
@@ -227,7 +247,8 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLineDelta])
     
     return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
-        {(props.mode === EnumChangesType.DELETED || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.MODIFIED) &&
+        {(props.mode === EnumChangesType.DELETED || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.MODIFIED
+        || props.mode === EnumChangesType.STAGED) &&
             <div ref={previousScrollContainerRef as any} 
             className={`d-flex gs-overflow-x-auto border-end ${props.mode === EnumChangesType.DELETED?'w-100':'w-50'}`} >
             <div>

@@ -125,7 +125,8 @@ function ChangesComponent(props:IChangesProps) {
             <CommitBox />
             {
                 !!state.status?.staged?.length &&
-                <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
+                <StagedChanges stagedChanges={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
+                 handleSelect={path=> handleSelect(path,EnumChangesType.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileModel} />
             }
             {
                 !!state.status?.conflicted?.length &&
@@ -133,7 +134,8 @@ function ChangesComponent(props:IChangesProps) {
                 onStatusChange={onStatusChange} repoInfoInfo={repoInfo} />
             }            
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
-                onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath} />
+                onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath}
+                selectedMode={state.selectedFileModel} />
             
             {
                 !!state.status?.created?.length &&
