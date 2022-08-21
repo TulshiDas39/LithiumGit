@@ -65,6 +65,18 @@ function ChangesComponent(props:IChangesProps) {
     },[store.status])
 
     useEffect(()=>{
+        if(!state.selectedFilePath) return;
+        if(state.selectedFileModel === EnumChangesType.CONFLICTED &&  state.status?.conflicted?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileModel === EnumChangesType.CREATED &&  state.status?.not_added?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileModel === EnumChangesType.DELETED &&  state.status?.deleted?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileModel === EnumChangesType.MODIFIED &&  state.status?.modified?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileModel === EnumChangesType.STAGED &&  state.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
+
+        setState({selectedFilePath:null!});
+
+    },[state.status])
+
+    useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
             setState({status:result});            
             ReduxUtils.setStatusCurrent(result);
