@@ -2,7 +2,7 @@ import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment } from "react"
 import { useCallback } from "react";
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IModifiedChangesProps{
@@ -11,6 +11,7 @@ interface IModifiedChangesProps{
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
     selectedFilePath?:string;
+    selectedMode:EnumChangesType,
 }
 
 interface IState{
@@ -65,7 +66,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}
+                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}
                     >
                     <div className="col-auto overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
                         <span className="pe-1 flex-shrink-0">{f.fileName}</span>

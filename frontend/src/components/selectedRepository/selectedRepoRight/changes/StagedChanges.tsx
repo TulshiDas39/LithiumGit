@@ -2,14 +2,16 @@ import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { useEffect } from "react";
 import { Fragment } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IStagedChangesProps{
     stagedChanges:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
-
+    handleSelect:(path:string)=>void;
+    selectedMode:EnumChangesType;
+    selectedFilePath?:string;
 }
 
 interface IState{
@@ -57,8 +59,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
     {state.isStagedChangesExpanded && 
     <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges.map(f=>(
-            <div key={f.path} className="row g-0 align-items-center flex-nowrap hover w-100" 
-                title={f.path} onMouseEnter={()=> setState({hoveredFile:f})}>
+            <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
+                title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>
                 <div className="col-auto overflow-hidden">
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                     <span className="small text-secondary">{f.path}</span>
