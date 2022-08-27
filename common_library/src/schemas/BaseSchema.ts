@@ -8,8 +8,8 @@ export interface BaseSchema{
 export function createBaseSchema(props?:Partial<BaseSchema>){
     let obj:BaseSchema={
         _id: uuid(),
-        createdAt:new Date().toDateString(),
-        updateAt:new Date().toDateString(),
+        createdAt:new Date().toISOString(),
+        updateAt:new Date().toISOString(),
     }
     if(props) obj = {...obj,...props};
     return obj;
