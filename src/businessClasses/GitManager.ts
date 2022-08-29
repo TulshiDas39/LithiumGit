@@ -247,8 +247,17 @@ export class GitManager{
         result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
         result.current = status.current;
         result.isDetached = status.detached;
-        result.headCommit = await this.getHeadCommit(git);
+        result.headCommit = await this.getCommitInfo(git,undefined);
         return result;
+    }
+
+    private async getMergingInfo(git:SimpleGit,repo:RepositoryInfo){
+        try {
+            const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
+            return result;
+        } catch (error) {
+            return null;
+        }
     }
 
     private async getCommits(git: SimpleGit){
@@ -416,8 +425,11 @@ export class GitManager{
         return git;
     }
 
-    private async getHeadCommit(git:SimpleGit){        
-        const showResult = await git.show([this.LogFormat]);        
+    private async getCommitInfo(git:SimpleGit,commitHash:string|undefined){
+        const options:string[] = [];
+        if(commitHash) options.push(commitHash);
+        options.push(this.LogFormat);
+        const showResult = await git.show(options);        
         const commit = CommitParser.parse(showResult);        
         return commit?.[0];
     }

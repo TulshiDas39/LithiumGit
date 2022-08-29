@@ -18,4 +18,5 @@ export interface IStatus{
     current:string | null;
     isDetached:boolean;
     headCommit:ICommitInfo;
+    mergingCommitHash?:string;
 }
