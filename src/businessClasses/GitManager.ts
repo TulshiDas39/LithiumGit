@@ -248,10 +248,11 @@ export class GitManager{
         result.current = status.current;
         result.isDetached = status.detached;
         result.headCommit = await this.getCommitInfo(git,undefined);
+        result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
     }
 
-    private async getMergingInfo(git:SimpleGit,repo:RepositoryInfo){
+    private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
             return result;

@@ -1,5 +1,5 @@
 import { Constants, IBranchDetails, ICommitInfo } from "common_library";
-import { Fragment, useMemo } from "react";
+import { Fragment } from "react";
 import { BranchUtils, EnumIdPrefix } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 
@@ -13,20 +13,25 @@ interface ISingleBranchProps{
 }
 
  export function SingleBranch2(props:ISingleBranchProps){
-    const data = useMemo(()=>{
-        const parentCommit = props.branchDetails.parentCommit;
-        const startX = parentCommit?.x || 20;
-        const startY = parentCommit?.ownerBranch.y || props.branchDetails.y;
-        const endX = props.branchDetails.commits[props.branchDetails.commits.length - 1].x;
-        const hLineLength = endX - startX;
-        let vLineHeight =  0;
-        let archRadius = BranchUtils.branchPanelFontSize;
-        if(parentCommit?.ownerBranch.y) vLineHeight = props.branchDetails.y - parentCommit.ownerBranch.y - archRadius;
-        let vLinePath = "";
-        if(!!vLineHeight) vLinePath = `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`
-        return {startX,startY,endX,hLineLength,vLinePath}
+    // const data = useMemo(()=>{
+    //     const parentCommit = props.branchDetails.parentCommit;
+    //     const startX = parentCommit?.x || 20;
+    //     const startY = parentCommit?.ownerBranch.y || props.branchDetails.y;
+    //     const endX = props.branchDetails.commits[props.branchDetails.commits.length - 1].x;
+    //     const hLineLength = endX - startX;
+    //     let vLineHeight =  0;
+    //     let archRadius = BranchUtils.branchPanelFontSize;
+    //     if(parentCommit?.ownerBranch.y) vLineHeight = props.branchDetails.y - parentCommit.ownerBranch.y - archRadius;
+    //     let vLinePath = "";
+    //     if(!!vLineHeight) vLinePath = `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`
+    //     return {startX,startY,endX,hLineLength,vLinePath}
 
-    },[props.branchDetails]);
+    // },[props.branchDetails]);
+
+    const data = BranchGraphUtils.getBranchLinePathData(props.branchDetails);
+
+    const linePath = BranchGraphUtils.getBranchLinePath(data.startX,data.startY,data.vLinePath,data.hLineLength);
+
     const canShowBranchName=()=>{
         const endX = props.branchDetails.commits[props.branchDetails.commits.length-1].x;
         const startX = props.branchDetails.commits[0].x;
@@ -53,7 +58,7 @@ interface ISingleBranchProps{
     }
 
     return <> 
-    <path d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`} fill="none" stroke="black" strokeWidth="3"
+    <path id={`${EnumIdPrefix.BRANCH_LINE}${props.branchDetails._id}`} d={linePath} fill="none" stroke="black" strokeWidth="3"
          >
          <title>{props.branchDetails.name}</title>
     </path>

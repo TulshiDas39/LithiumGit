@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { Constants, createBranchDetailsObj, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, createBranchDetailsObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
@@ -612,5 +612,53 @@ export class BranchGraphUtils{
         const newRefs = newStatus.headCommit.refValues;        
         if(newRefs.some(ref=> !existingRefs.includes(ref)) || newRefs.length !== existingRefs.length) return true;
         return false;        
+    }
+
+    static getVerticalLinePath(vLineHeight:number,archRadius:number){
+        return `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`;
+    }
+
+    static getBranchLinePath(startX:number,startY:number,vLinePath:string,hLineLength:number){
+        return `M${startX},${startY} ${vLinePath} h${hLineLength}`;
+    }
+
+    static getBranchLinePathData(branchDetails:IBranchDetails){
+        const parentCommit = branchDetails.parentCommit;
+        const startX = parentCommit?.x || 20;
+        const startY = parentCommit?.ownerBranch.y || branchDetails.y;
+        const endX = branchDetails.commits[branchDetails.commits.length - 1].x;
+        const hLineLength = endX - startX;
+        let vLineHeight =  0;
+        let archRadius = BranchUtils.branchPanelFontSize;
+        if(parentCommit?.ownerBranch.y) vLineHeight = branchDetails.y - parentCommit.ownerBranch.y - archRadius;
+        let vLinePath = "";
+        if(!!vLineHeight) vLinePath = `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`
+        return {startX,startY,endX,hLineLength,vLinePath}
+    }
+
+    static updateMergingUi(){
+        if(!BranchUtils.repositoryDetails.status.mergingCommitHash)return;
+        const head = BranchUtils.repositoryDetails.headCommit;
+        const allCommits = BranchUtils.repositoryDetails.allCommits;
+        const latestCommit = allCommits[allCommits.length-1];
+        const endX = latestCommit.x + BranchUtils.distanceBetweenCommits;
+        const y = head.ownerBranch.y;
+
+        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
+        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
+        const branchDetails = head.ownerBranch;
+        const lineData = this.getBranchLinePathData(branchDetails);
+        const hLineLength = endX - lineData.startX;
+        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
+        branchLineElem.setAttribute("d",linePath);
+
+    }
+
+    static checkForUiUpdate(newStatus:IStatus){
+        const existingStatus = BranchUtils.repositoryDetails?.status;
+        if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
+            existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
+            this.updateMergingUi();
+        }
     }
 }

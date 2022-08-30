@@ -113,6 +113,7 @@ function MainComponent(){
             console.log("requiredReload",requiredReload);
             dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
             if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+            else BranchGraphUtils.checkForUiUpdate(status);
         }
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
