@@ -43,6 +43,7 @@ export class BranchGraphUtils{
     static focusedCommit:ICommitInfo=null!;
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
+    static readonly svgLnk = "http://www.w3.org/2000/svg";
 
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
@@ -485,7 +486,7 @@ export class BranchGraphUtils{
             y = y - BranchUtils.branchPanelFontSize - 1;
         }
         // return <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">HEAD</text>;
-        const elem = document.createElementNS("http://www.w3.org/2000/svg",'text');        
+        const elem = document.createElementNS(this.svgLnk,'text');        
         elem.setAttribute("x",`${x}`)
         elem.setAttribute("y",`${y}`)
         elem.setAttribute("direction",`rtl`)
@@ -636,6 +637,21 @@ export class BranchGraphUtils{
         return {startX,startY,endX,hLineLength,vLinePath}
     }
 
+    static createMergeCommit(x:number,y:number){
+        // <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
+        //                 strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?BranchGraphUtils.selectedCommitColor:BranchGraphUtils.commitColor}`}/>    
+        const circleElem = document.createElementNS(this.svgLnk, "circle");
+        circleElem.id = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
+        circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
+        circleElem.setAttribute("cx",x+"")
+        circleElem.setAttribute("cy",y+"")
+        circleElem.setAttribute("r",BranchUtils.commitRadius+"")
+        circleElem.setAttribute("stroke","red")
+        circleElem.setAttribute("strokeWidth","3")
+        circleElem.setAttribute("fill",BranchGraphUtils.commitColor)
+        return circleElem;
+    }
+
     static updateMergingUi(){
         if(!BranchUtils.repositoryDetails.status.mergingCommitHash)return;
         const head = BranchUtils.repositoryDetails.headCommit;
@@ -651,6 +667,10 @@ export class BranchGraphUtils{
         const hLineLength = endX - lineData.startX;
         const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
         branchLineElem.setAttribute("d",linePath);
+
+        const commitBox = this.createMergeCommit(endX,y);
+        const gElem = document.querySelector('#branchPanel')?.getElementsByTagName('g').item(0)!;
+        gElem.appendChild(commitBox);
 
     }
 
