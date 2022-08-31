@@ -652,6 +652,33 @@ export class BranchGraphUtils{
         return circleElem;
     }
 
+    static createMergedStateLine(x1:number,y1:number,x2:number,y2:number){
+        //<line x1="40" x2="260" y1="100" y2="100" stroke="#5184AF" stroke-width="2" stroke-linecap="round" stroke-dasharray="4"/>
+        //<line key={`${line.srcX}-${line.srcY}-${line.endX}-${line.endY}`} x1={line.srcX} y1={line.srcY} x2={line.endX} y2={line.endY} stroke="green" strokeWidth={1} />
+        
+        const line = document.createElementNS(this.svgLnk,"line");
+        line.setAttribute("x1", x1+"");
+        line.setAttribute("y1", y1+"");
+        line.setAttribute("x2", x2+"");
+        line.setAttribute("y2", y2+"");
+        line.setAttribute("stroke", "green");
+        line.setAttribute("strokeWidth", "1");
+        line.setAttribute("stroke-dasharray", "4");
+        return line;
+    }
+
+    static getStartingPointOfLineFromCommitCircle(x1:number,y1:number,x2:number,y2:number){
+        const dx = x1-x2;
+        const dy = y1-y2;
+        const distance = Math.sqrt((dx*dx)+(dy*dy));
+        const radius = BranchUtils.commitRadius;
+        const m = radius;
+        const n = distance - radius;
+        const x = (m*x2 + n*x1)/distance;
+        const y = (m*y2 + n*y1)/distance;
+        return {x,y} as IPositition
+    }
+
     static updateMergingUi(){
         if(!BranchUtils.repositoryDetails.status.mergingCommitHash)return;
         const head = BranchUtils.repositoryDetails.headCommit;
@@ -668,9 +695,18 @@ export class BranchGraphUtils{
         const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
         branchLineElem.setAttribute("d",linePath);
 
-        const commitBox = this.createMergeCommit(endX,y);
         const gElem = document.querySelector('#branchPanel')?.getElementsByTagName('g').item(0)!;
+
+        const srcCommit = allCommits.find(x=>x.hash === BranchUtils.repositoryDetails.status.mergingCommitHash)!;
+        const pointFromCircle = this.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
+        const line = this.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
+        gElem.appendChild(line);
+        const commitBox = this.createMergeCommit(endX,y);
         gElem.appendChild(commitBox);
+
+
+
+        
 
     }
 
