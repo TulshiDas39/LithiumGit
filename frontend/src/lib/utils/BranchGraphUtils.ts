@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { Constants, createBranchDetailsObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, createBranchDetailsObj, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
@@ -639,19 +639,49 @@ export class BranchGraphUtils{
         return {startX,startY,endX,hLineLength,vLinePath}
     }
 
-    static createMergeCommit(x:number,y:number){
+    static createMergeCommit(head: ICommitInfo, x:number){
         // <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
         //                 strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?BranchGraphUtils.selectedCommitColor:BranchGraphUtils.commitColor}`}/>    
         const circleElem = document.createElementNS(this.svgLnk, "circle");
         circleElem.id = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
-        circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
+        // circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
         circleElem.setAttribute("cx",x+"")
-        circleElem.setAttribute("cy",y+"")
+        circleElem.setAttribute("cy",head.ownerBranch.y+"")
         circleElem.setAttribute("r",BranchUtils.commitRadius+"")
         circleElem.setAttribute("stroke","red")
         circleElem.setAttribute("strokeWidth","3")
         circleElem.setAttribute("fill",BranchGraphUtils.commitColor)
         circleElem.classList.add("mergingState");
+
+
+        // const clickListener = (target:HTMLElement)=>{
+        //     const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+        //     existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+        //     const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
+        //     const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
+        //     target.setAttribute("fill",this.selectedCommitColor);
+        //     this.handleCommitSelect(selectedCommit!);
+        //     this.selectedCommit = selectedCommit!;
+        // }
+
+        const clickListener = (_e:MouseEvent)=>{
+            console.log("clicked");
+            let existingSelectedCommitElem:HTMLElement|null;
+            if(this.selectedCommit.hash) {
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+                existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+            }
+
+            circleElem.setAttribute("fill",this.selectedCommitColor);
+            const dummyCommit = CreateCommitInfoObj();
+            dummyCommit.hash = null!;
+            dummyCommit.date = new Date().toISOString();
+            dummyCommit.ownerBranch = head.ownerBranch;
+            dummyCommit.previousCommit = head;
+            this.selectedCommit = dummyCommit;
+        }
+
+        circleElem.addEventListener("click",clickListener);
         return circleElem;
     }
 
@@ -728,7 +758,7 @@ export class BranchGraphUtils{
         const pointFromCircle = this.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
         const line = this.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
         gElem.appendChild(line);
-        const commitBox = this.createMergeCommit(endX,y);
+        const commitBox = this.createMergeCommit(head, endX);
         gElem.appendChild(commitBox);
 
     }
