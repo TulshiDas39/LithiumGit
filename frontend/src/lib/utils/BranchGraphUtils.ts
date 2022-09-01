@@ -136,6 +136,8 @@ export class BranchGraphUtils{
         // if(!this.branchPanelContainer) return;
         this.branchPanelContainer.innerHTML = this.branchPanelHtml;
 
+        this.updateUi();
+
         this.svgElement = this.branchPanelContainer.querySelector('svg')!;
         this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
         this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
@@ -649,6 +651,7 @@ export class BranchGraphUtils{
         circleElem.setAttribute("stroke","red")
         circleElem.setAttribute("strokeWidth","3")
         circleElem.setAttribute("fill",BranchGraphUtils.commitColor)
+        circleElem.classList.add("mergingState");
         return circleElem;
     }
 
@@ -664,6 +667,7 @@ export class BranchGraphUtils{
         line.setAttribute("stroke", "green");
         line.setAttribute("strokeWidth", "1");
         line.setAttribute("stroke-dasharray", "4");
+        line.classList.add("mergingState");
         return line;
     }
 
@@ -679,7 +683,30 @@ export class BranchGraphUtils{
         return {x,y} as IPositition
     }
 
-    static updateMergingUi(){
+
+    static removeMergingStateUi(){
+        if(BranchUtils.repositoryDetails.status.mergingCommitHash)return;
+
+        const head = BranchUtils.repositoryDetails.headCommit;
+        const allCommits = BranchUtils.repositoryDetails.allCommits;
+        const latestCommit = allCommits[allCommits.length-1];
+        const endX = latestCommit.x;
+        const y = head.ownerBranch.y;
+
+        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
+        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
+        const branchDetails = head.ownerBranch;
+        const lineData = this.getBranchLinePathData(branchDetails);
+        const hLineLength = endX - lineData.startX;
+        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
+        branchLineElem.setAttribute("d",linePath);
+
+        const elems = document.querySelectorAll(".mergingState");
+        elems.forEach(elem=> elem.remove());
+
+    }
+
+    static updateMerginStategUi(){
         if(!BranchUtils.repositoryDetails.status.mergingCommitHash)return;
         const head = BranchUtils.repositoryDetails.headCommit;
         const allCommits = BranchUtils.repositoryDetails.allCommits;
@@ -704,17 +731,20 @@ export class BranchGraphUtils{
         const commitBox = this.createMergeCommit(endX,y);
         gElem.appendChild(commitBox);
 
+    }
 
-
-        
-
+    static updateUi(){
+        this.updateMerginStategUi();
     }
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = BranchUtils.repositoryDetails?.status;
         if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
-            this.updateMergingUi();
+            if(existingStatus.mergingCommitHash) this.updateMerginStategUi();
+            else this.removeMergingStateUi();
         }
+
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
     }
 }
