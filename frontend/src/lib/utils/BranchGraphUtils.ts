@@ -305,7 +305,13 @@ export class BranchGraphUtils{
     static addEventListendersOnCommit(){
 
         const clickListener = (target:HTMLElement)=>{
-            const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            let existingSelectedCommitElem:Element | null ;
+            if(!this.selectedCommit.hash){
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
+            }
+            else {
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            }
             existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
             const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
