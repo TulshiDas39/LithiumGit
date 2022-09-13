@@ -684,7 +684,7 @@ export class BranchGraphUtils{
             dummyCommit.date = new Date().toISOString();
             dummyCommit.ownerBranch = head.ownerBranch;
             dummyCommit.previousCommit = head;
-            dummyCommit.message = BranchUtils.generateMergeCommit(srcCommit);
+            dummyCommit.message = 'Commit is in merging state.';
             this.selectedCommit = dummyCommit;
             this.handleCommitSelect(this.selectedCommit);
         }

@@ -53,7 +53,7 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         const sourceCommit = Data.selectedCommit;
         let source = sourceCommit.hash;
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommit(sourceCommit);
+        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommit()!;
         if(BranchUtils.HasBranchNameRef(sourceCommit)){
             source = sourceCommit.ownerBranch.name;
         }

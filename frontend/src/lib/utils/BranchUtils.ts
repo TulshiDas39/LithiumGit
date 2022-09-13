@@ -1,4 +1,5 @@
 import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
+import { ReduxStore } from "../../store";
 import { IViewBox } from "../interfaces";
 
 export class BranchUtils{
@@ -344,7 +345,11 @@ export class BranchUtils{
         return false;
     }
 
-    static generateMergeCommit(sourceCommit:ICommitInfo){
+    static generateMergeCommit(){
+        const srcCommitHash = BranchUtils.repositoryDetails.status.mergingCommitHash;
+        if(!srcCommitHash) return;
+        const sourceCommit = BranchUtils.repositoryDetails.allCommits.find(x=> x.hash === srcCommitHash);
+        if(!sourceCommit) return;
         let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
         if(BranchUtils.HasBranchNameRef(sourceCommit)){            
             mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
