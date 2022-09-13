@@ -645,7 +645,7 @@ export class BranchGraphUtils{
         return {startX,startY,endX,hLineLength,vLinePath}
     }
 
-    static createMergeCommit(head: ICommitInfo, x:number){
+    static createMergeCommit(head: ICommitInfo, x:number,srcCommit:ICommitInfo){
         // <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
         //                 strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?BranchGraphUtils.selectedCommitColor:BranchGraphUtils.commitColor}`}/>    
         const circleElem = document.createElementNS(this.svgLnk, "circle");
@@ -684,7 +684,9 @@ export class BranchGraphUtils{
             dummyCommit.date = new Date().toISOString();
             dummyCommit.ownerBranch = head.ownerBranch;
             dummyCommit.previousCommit = head;
+            dummyCommit.message = BranchUtils.generateMergeCommit(srcCommit);
             this.selectedCommit = dummyCommit;
+            this.handleCommitSelect(this.selectedCommit);
         }
 
         circleElem.addEventListener("click",clickListener);
@@ -764,7 +766,7 @@ export class BranchGraphUtils{
         const pointFromCircle = this.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
         const line = this.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
         gElem.appendChild(line);
-        const commitBox = this.createMergeCommit(head, endX);
+        const commitBox = this.createMergeCommit(head, endX,srcCommit);
         gElem.appendChild(commitBox);
 
     }

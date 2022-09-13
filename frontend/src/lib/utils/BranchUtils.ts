@@ -343,4 +343,14 @@ export class BranchUtils{
          && !BranchUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
         return false;
     }
+
+    static generateMergeCommit(sourceCommit:ICommitInfo){
+        let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
+        if(BranchUtils.HasBranchNameRef(sourceCommit)){            
+            mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
+        }
+
+        return mergerCommitMessage;
+        
+    }
 }

@@ -53,10 +53,9 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         const sourceCommit = Data.selectedCommit;
         let source = sourceCommit.hash;
-        refData.current.mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
+        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommit(sourceCommit);
         if(BranchUtils.HasBranchNameRef(sourceCommit)){
             source = sourceCommit.ownerBranch.name;
-            refData.current.mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
         }
         const options = [source,"--no-commit","--no-ff"];
         window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
