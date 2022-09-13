@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { Constants, createBranchDetailsObj, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, createBranchDetailsObj, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
 import ReactDOM from "react-dom";
@@ -43,6 +43,7 @@ export class BranchGraphUtils{
     static focusedCommit:ICommitInfo=null!;
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
+    static readonly svgLnk = "http://www.w3.org/2000/svg";
 
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
@@ -134,6 +135,8 @@ export class BranchGraphUtils{
         this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;
         // if(!this.branchPanelContainer) return;
         this.branchPanelContainer.innerHTML = this.branchPanelHtml;
+
+        this.updateUi();
 
         this.svgElement = this.branchPanelContainer.querySelector('svg')!;
         this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
@@ -302,7 +305,13 @@ export class BranchGraphUtils{
     static addEventListendersOnCommit(){
 
         const clickListener = (target:HTMLElement)=>{
-            const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            let existingSelectedCommitElem:Element | null ;
+            if(!this.selectedCommit.hash){
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
+            }
+            else {
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            }
             existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
             const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
@@ -485,7 +494,7 @@ export class BranchGraphUtils{
             y = y - BranchUtils.branchPanelFontSize - 1;
         }
         // return <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">HEAD</text>;
-        const elem = document.createElementNS("http://www.w3.org/2000/svg",'text');        
+        const elem = document.createElementNS(this.svgLnk,'text');        
         elem.setAttribute("x",`${x}`)
         elem.setAttribute("y",`${y}`)
         elem.setAttribute("direction",`rtl`)
@@ -612,5 +621,168 @@ export class BranchGraphUtils{
         const newRefs = newStatus.headCommit.refValues;        
         if(newRefs.some(ref=> !existingRefs.includes(ref)) || newRefs.length !== existingRefs.length) return true;
         return false;        
+    }
+
+    static getVerticalLinePath(vLineHeight:number,archRadius:number){
+        return `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`;
+    }
+
+    static getBranchLinePath(startX:number,startY:number,vLinePath:string,hLineLength:number){
+        return `M${startX},${startY} ${vLinePath} h${hLineLength}`;
+    }
+
+    static getBranchLinePathData(branchDetails:IBranchDetails){
+        const parentCommit = branchDetails.parentCommit;
+        const startX = parentCommit?.x || 20;
+        const startY = parentCommit?.ownerBranch.y || branchDetails.y;
+        const endX = branchDetails.commits[branchDetails.commits.length - 1].x;
+        const hLineLength = endX - startX;
+        let vLineHeight =  0;
+        let archRadius = BranchUtils.branchPanelFontSize;
+        if(parentCommit?.ownerBranch.y) vLineHeight = branchDetails.y - parentCommit.ownerBranch.y - archRadius;
+        let vLinePath = "";
+        if(!!vLineHeight) vLinePath = `v${vLineHeight} a${archRadius},${archRadius} 0 0 0 ${archRadius},${archRadius}`
+        return {startX,startY,endX,hLineLength,vLinePath}
+    }
+
+    static createMergeCommit(head: ICommitInfo, x:number,srcCommit:ICommitInfo){
+        // <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
+        //                 strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?BranchGraphUtils.selectedCommitColor:BranchGraphUtils.commitColor}`}/>    
+        const circleElem = document.createElementNS(this.svgLnk, "circle");
+        circleElem.id = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
+        // circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
+        circleElem.setAttribute("cx",x+"")
+        circleElem.setAttribute("cy",head.ownerBranch.y+"")
+        circleElem.setAttribute("r",BranchUtils.commitRadius+"")
+        circleElem.setAttribute("stroke","red")
+        circleElem.setAttribute("strokeWidth","3")
+        circleElem.setAttribute("fill",BranchGraphUtils.commitColor)
+        circleElem.classList.add("mergingState");
+
+
+        // const clickListener = (target:HTMLElement)=>{
+        //     const existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+        //     existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+        //     const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
+        //     const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
+        //     target.setAttribute("fill",this.selectedCommitColor);
+        //     this.handleCommitSelect(selectedCommit!);
+        //     this.selectedCommit = selectedCommit!;
+        // }
+
+        const clickListener = (_e:MouseEvent)=>{
+            console.log("clicked");
+            let existingSelectedCommitElem:HTMLElement|null;
+            if(this.selectedCommit.hash) {
+                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+                existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+            }
+
+            circleElem.setAttribute("fill",this.selectedCommitColor);
+            const dummyCommit = CreateCommitInfoObj();
+            dummyCommit.hash = null!;
+            dummyCommit.date = new Date().toISOString();
+            dummyCommit.ownerBranch = head.ownerBranch;
+            dummyCommit.previousCommit = head;
+            dummyCommit.message = 'Commit is in merging state.';
+            this.selectedCommit = dummyCommit;
+            this.handleCommitSelect(this.selectedCommit);
+        }
+
+        circleElem.addEventListener("click",clickListener);
+        return circleElem;
+    }
+
+    static createMergedStateLine(x1:number,y1:number,x2:number,y2:number){
+        //<line x1="40" x2="260" y1="100" y2="100" stroke="#5184AF" stroke-width="2" stroke-linecap="round" stroke-dasharray="4"/>
+        //<line key={`${line.srcX}-${line.srcY}-${line.endX}-${line.endY}`} x1={line.srcX} y1={line.srcY} x2={line.endX} y2={line.endY} stroke="green" strokeWidth={1} />
+        
+        const line = document.createElementNS(this.svgLnk,"line");
+        line.setAttribute("x1", x1+"");
+        line.setAttribute("y1", y1+"");
+        line.setAttribute("x2", x2+"");
+        line.setAttribute("y2", y2+"");
+        line.setAttribute("stroke", "green");
+        line.setAttribute("strokeWidth", "1");
+        line.setAttribute("stroke-dasharray", "4");
+        line.classList.add("mergingState");
+        return line;
+    }
+
+    static getStartingPointOfLineFromCommitCircle(x1:number,y1:number,x2:number,y2:number){
+        const dx = x1-x2;
+        const dy = y1-y2;
+        const distance = Math.sqrt((dx*dx)+(dy*dy));
+        const radius = BranchUtils.commitRadius;
+        const m = radius;
+        const n = distance - radius;
+        const x = (m*x2 + n*x1)/distance;
+        const y = (m*y2 + n*y1)/distance;
+        return {x,y} as IPositition
+    }
+
+
+    static removeMergingStateUi(){
+        if(BranchUtils.repositoryDetails.status.mergingCommitHash)return;
+
+        const head = BranchUtils.repositoryDetails.headCommit;
+        const allCommits = BranchUtils.repositoryDetails.allCommits;
+        const latestCommit = allCommits[allCommits.length-1];
+        const endX = latestCommit.x;
+        const y = head.ownerBranch.y;
+
+        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
+        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
+        const branchDetails = head.ownerBranch;
+        const lineData = this.getBranchLinePathData(branchDetails);
+        const hLineLength = endX - lineData.startX;
+        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
+        branchLineElem.setAttribute("d",linePath);
+
+        const elems = document.querySelectorAll(".mergingState");
+        elems.forEach(elem=> elem.remove());
+
+    }
+
+    static updateMerginStategUi(){
+        if(!BranchUtils.repositoryDetails.status.mergingCommitHash)return;
+        const head = BranchUtils.repositoryDetails.headCommit;
+        const allCommits = BranchUtils.repositoryDetails.allCommits;
+        const latestCommit = allCommits[allCommits.length-1];
+        const endX = latestCommit.x + BranchUtils.distanceBetweenCommits;
+        const y = head.ownerBranch.y;
+
+        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
+        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
+        const branchDetails = head.ownerBranch;
+        const lineData = this.getBranchLinePathData(branchDetails);
+        const hLineLength = endX - lineData.startX;
+        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
+        branchLineElem.setAttribute("d",linePath);
+
+        const gElem = document.querySelector('#branchPanel')?.getElementsByTagName('g').item(0)!;
+
+        const srcCommit = allCommits.find(x=>x.hash === BranchUtils.repositoryDetails.status.mergingCommitHash)!;
+        const pointFromCircle = this.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
+        const line = this.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
+        gElem.appendChild(line);
+        const commitBox = this.createMergeCommit(head, endX,srcCommit);
+        gElem.appendChild(commitBox);
+
+    }
+
+    static updateUi(){
+        this.updateMerginStategUi();
+    }
+
+    static checkForUiUpdate(newStatus:IStatus){
+        const existingStatus = BranchUtils.repositoryDetails?.status;
+        if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
+            existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
+            if(existingStatus.mergingCommitHash) this.updateMerginStategUi();
+            else this.removeMergingStateUi();
+        }
+
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
     }
 }
