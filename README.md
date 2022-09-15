@@ -12,19 +12,23 @@ frontend: This is a react app built with create-react-app template. This is the 
 
 # Steps to run
 
--build and install the common library: navigate to common_library folder and run "npm run build"
--run the frontend: navigate to frontend folder and run "npm start"
--run the backend:
-    -open ./src/config.ts file
-    -ensure static readonly ENV:'development'|'production' = 'development';    
-    -npm start
+build and install the common library:  
+-navigate to common_library folder and run "npm run build"  
+  
+run the frontend:  
+-navigate to frontend folder and run "npm start"  
+  
+run the backend:    
+-open ./src/config.ts file  
+-ensure static readonly ENV:'development'|'production' = 'development';      
+-npm start  
 
 # Steps to create distribution
--build and install the common library: navigate to common_library folder and run "npm run build"
--open ./src/config.ts file
--ensure static readonly ENV:'development'|'production' = 'production';
--delete ./dist/db and ./dist/log folders if exist.
--run "npm run package" in root directory.
+-navigate to common_library folder and run "npm run build"  
+-open ./src/config.ts file  
+-ensure static readonly ENV:'development'|'production' = 'production';  
+-delete ./dist/db and ./dist/log folders if exist.  
+-run "npm run package" in root directory.  
 
 ## License
 
