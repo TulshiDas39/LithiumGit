@@ -68,7 +68,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}
                     >
-                    <div className="col-auto overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
+                    <div className="col-auto overflow-hidden align-items-center flex-shrink-1" onClick={(_)=> props.onFileSelect(f.path)}>
                         <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                         <span className="small text-secondary">
                             <span>{f.path}</span>
@@ -76,10 +76,10 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     </div>
                     
                     {state.hoveredFile?.path === f.path &&
-                     <div className="col ps-2 align-items-center text-end">
-                        <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
-                        <span className="px-1" />
-                        <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>
+                     <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
+                            <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
+                            <span className="px-1" />
+                            <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
                     </div>}
                 </div>
             ))}                                                
