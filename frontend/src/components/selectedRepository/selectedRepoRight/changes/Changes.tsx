@@ -73,7 +73,6 @@ function ChangesComponent(props:IChangesProps) {
         if(state.selectedFileModel === EnumChangesType.STAGED &&  state.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
 
         setState({selectedFilePath:null!});
-
     },[state.status])
 
     useEffect(()=>{

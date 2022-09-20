@@ -256,7 +256,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     onChange={callbackForPreviousEditor} readOnly                    
                      />
             </div>
-            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`,minWidth:`100%`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
                     onChange={callbackForPreviousEditor} 
                     modules={{"toolbar":false}}
@@ -272,7 +272,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     />
             </div>
 
-            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`,minWidth:`100%`}}>
                 {
                     <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={callbackForCurrentEditor} 
                         modules={{"toolbar":false}}                        
