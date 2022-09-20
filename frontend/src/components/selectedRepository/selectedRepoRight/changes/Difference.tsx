@@ -167,16 +167,22 @@ function DifferenceComponent(props:IDifferenceProps){
         }
     },[previousScrollContainerRef.current,currentScrollContainerRef.current])
 
-    const setNavigationData=()=>{
+    const initialiseNavigationData=()=>{
         dispatch(ActionUI.setTotalComparable(state.comparableLineNumbers.length));                
+        dispatch(ActionUI.setComparableStep(1));                
+    }
+
+    const focusInCurrentStep=(currentStep?:number)=>{
+        if(!currentStep)return;        
+
+        const focusElem = currentChangesEditorRef.current?.getEditor().root.children.
+            item(state.comparableLineNumbers[currentStep-1]);
+        console.log("focusElem",focusElem);
+        focusElem?.scrollIntoView({block:"center"});
     }
 
     useEffect(()=>{        
-        if(!store.currentStep)
-            return;        
-        currentChangesEditorRef.current?.getEditor().root.children.
-            item(state.comparableLineNumbers[store.currentStep-1])?.scrollIntoView({block:"center"});
-
+        focusInCurrentStep(store.currentStep);
     },[store.currentStep])
 
     useEffect(()=>{
@@ -185,7 +191,8 @@ function DifferenceComponent(props:IDifferenceProps){
         if(!quill) return;
         quill.root.style.minWidth = state.currentLineMaxWidth+"ch";
         DiffUtils.formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);
-        setNavigationData();
+        initialiseNavigationData();
+        focusInCurrentStep(store.currentStep);
     },[state.currentLineDelta])
    
     const showContentOfDeletedFile=(lines:string[])=>{
