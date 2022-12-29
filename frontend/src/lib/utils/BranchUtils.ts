@@ -274,7 +274,7 @@ export class BranchUtils{
     static getViewBoxValue(initialValue:IViewBox,zoomStep:number){
         if(zoomStep === 0) return {...initialValue,};
         const newViewBox = {} as IViewBox;
-        const pxPerZoom = 20;
+        const pxPerZoom = 1;
         const changedPx = pxPerZoom*zoomStep;
         newViewBox.x = initialValue.x + changedPx;
         newViewBox.y = initialValue.y + changedPx;
