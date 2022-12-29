@@ -466,7 +466,7 @@ export class BranchGraphUtils{
 
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",zoomValue:number|undefined){
         if(!this.svgElement) return;
-        if(!zoomValue) zoomValue = 1;
+        if(!zoomValue) zoomValue = 10;
         if(action === "zoomIn"){
             this.zoom += zoomValue;            
         }
