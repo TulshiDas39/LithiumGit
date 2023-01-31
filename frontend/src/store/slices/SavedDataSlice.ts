@@ -21,6 +21,7 @@ const SavedDataSlice = createSlice({
         setSelectedRepository(state,action:PayloadAction<RepositoryInfo>){
             const updatedList:RepositoryInfo[]=[];            
             const existingSelected = state.recentRepositories.find(x=>x.isSelected);
+            if(action.payload.path === existingSelected?.path) return;
             if(existingSelected) {
                 existingSelected.isSelected = false;
                 updatedList.push({...existingSelected});
@@ -30,7 +31,6 @@ const SavedDataSlice = createSlice({
                 newSelected = action.payload;
                 state.recentRepositories.push(newSelected);
             }
-            else if(newSelected.path === existingSelected?.path) return;
             newSelected.isSelected = true;
             newSelected.lastOpenedAt = new Date().toISOString();
             updatedList.push({...newSelected});
