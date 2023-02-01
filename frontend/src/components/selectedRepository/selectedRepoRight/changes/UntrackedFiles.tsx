@@ -1,7 +1,7 @@
 import { IFile, RepositoryInfo, IStatus, RendererEvents } from "common_library";
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useMemo } from "react";
 import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { useMultiState } from "../../../../lib";
 
 
 interface IUntrackedFilesProps{
@@ -9,6 +9,8 @@ interface IUntrackedFilesProps{
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
+    handleExpand:(isExpanded:boolean)=>void;
+    height:number;
 }
 
 interface IState{
@@ -43,8 +45,10 @@ function UntrackedFilesComponent(props:IUntrackedFilesProps){
         if(!props.files?.length) return;
         window.ipcRenderer.send(RendererEvents.discardItem().channel,props.files.map(x=>x.path),props.repoInfoInfo);
     }
+
+
     
-    return <Fragment>
+    return <div className="overflow-auto" style={{maxHeight:props.height}}>
     <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
@@ -75,7 +79,7 @@ function UntrackedFilesComponent(props:IUntrackedFilesProps){
             ))}                                                
         </div>
     }
-</Fragment>
+</div>
     
 }
 

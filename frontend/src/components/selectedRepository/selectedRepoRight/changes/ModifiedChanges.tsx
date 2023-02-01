@@ -1,6 +1,5 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { Fragment } from "react"
-import { useCallback } from "react";
+import React, { useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
@@ -11,22 +10,36 @@ interface IModifiedChangesProps{
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
     selectedFilePath?:string;
-    selectedMode:EnumChangesType,
+    selectedMode:EnumChangesType;
+    handleExpand:(isExpanded:boolean)=>void;
+    height:number;
+    handleMinHeightChange:(height:number)=>void;
 }
 
 interface IState{
-    isChangesExpanded:boolean;
+    isExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({
-        isChangesExpanded:true,
+        isExpanded:true,
         isHeadHover:false});
 
+    const ref = useRef<HTMLDivElement>();
+
+    useEffect(()=>{
+        if(ref.current?.clientHeight)
+            props.handleMinHeightChange(ref.current.clientHeight);
+    },[ref.current?.clientHeight])
+
+    useEffect(()=>{
+        props.handleExpand(state.isExpanded);
+    },[state.isExpanded])    
+
     const handleChangesCollapse = () => {
-        setState({ isChangesExpanded: !state.isChangesExpanded });
+        setState({ isExpanded: !state.isExpanded });
     }
 
     const handleStage=(file:IFile)=>{
@@ -47,12 +60,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         window.ipcRenderer.send(RendererEvents.discardItem().channel,props.modifiedChanges.map(x=>x.path),props.repoInfoInfo);
     }
     
-    return <Fragment>
+    return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>
     <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
-            <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Changes</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
@@ -62,7 +75,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         </div>}
     </div>
     
-    {state.isChangesExpanded && 
+    {state.isExpanded && 
         <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
@@ -85,7 +98,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             ))}                                                
         </div>
     }
-</Fragment>
+    </div>
 }
 
 export const ModifiedChanges = React.memo(ModifiedChangesComponent);

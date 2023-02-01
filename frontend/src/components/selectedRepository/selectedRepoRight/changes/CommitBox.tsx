@@ -1,5 +1,5 @@
 import { RendererEvents } from "common_library";
-import React, { useEffect  } from "react"
+import React, { useEffect, useRef  } from "react"
 import { Form } from "react-bootstrap";
 import { FaCheck } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -7,17 +7,41 @@ import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { ActionSavedData } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 
+interface ICommitBoxProps{
+    onHeightChange:(height:number)=>void;
+}
+
 interface IState{
     value:string;
     autoStatingEnabled:boolean;
 }
 
-function CommitBoxComponent(){
+function CommitBoxComponent(props:ICommitBoxProps){
     const store = useSelectorTyped(state=>({
         autoStagingEnabled:state.savedData.autoStagingEnabled,
         isMergingState:!!state.ui.status?.mergingCommitHash
     }),shallowEqual);
     const dispatch = useDispatch();
+
+    useEffect(()=>{
+        const commitReplyLisenter = ()=>{
+            setState({value:""});
+        }
+        window.ipcRenderer.on(RendererEvents.commit().replyChannel,commitReplyLisenter);
+
+        return ()=>{
+            UiUtils.removeIpcListeners([RendererEvents.commit().replyChannel],[commitReplyLisenter]);
+        }
+    },[])
+
+    const ref = useRef<HTMLDivElement>();
+
+    useEffect(()=>{
+        if(ref.current?.clientHeight)
+            props.onHeightChange(ref.current.clientHeight);
+
+    },[ref.current?.clientHeight])
+
     const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
     useEffect(()=>{
         setState({autoStatingEnabled:store.autoStagingEnabled});
@@ -37,18 +61,9 @@ function CommitBoxComponent(){
         }        
     },[store.isMergingState])
 
-    useEffect(()=>{
-        const commitReplyLisenter = ()=>{
-            setState({value:""});
-        }
-        window.ipcRenderer.on(RendererEvents.commit().replyChannel,commitReplyLisenter);
+    
 
-        return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.commit().replyChannel],[commitReplyLisenter]);
-        }
-    },[])
-
-    return <div className="w-100">
+    return <div className="w-100" ref={ref as any}>
             <Form.Control as="textarea" rows={2} value={state.value} onChange={e=> setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
                 type="textarea" className="w-100 rounded-0 no-resize" placeholder="Commit message" />
             <div className="row g-0 align-items-center pt-2 justify-content-center flex-nowrap overflow-hidden">  

@@ -11,6 +11,10 @@ import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
 
+interface IMainComponentProps{
+    height:number;
+}
+
 interface IState{
     isLoading:boolean;
 }
@@ -19,7 +23,7 @@ const initialState = {
     isLoading:true,
 } as IState;
 
-function MainComponent(){
+function MainComponent(props:IMainComponentProps){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
@@ -144,7 +148,7 @@ function MainComponent(){
     },[]);
     if(state.isLoading) return null;
     return <div className="h-100">
-        {store.selectedRepo ? <SelectedRepository />:<RepositorySelection />}
+        {store.selectedRepo ? <SelectedRepository height={props.height} />:<RepositorySelection />}
     </div>
 }
 

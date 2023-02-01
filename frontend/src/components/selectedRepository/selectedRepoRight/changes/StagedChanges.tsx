@@ -6,7 +6,7 @@ import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IStagedChangesProps{
-    stagedChanges:IFile[];
+    stagedChanges?:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     handleSelect:(path:string)=>void;
@@ -58,7 +58,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     </div>
     {state.isStagedChangesExpanded && 
     <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-        {props.stagedChanges.map(f=>(
+        {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>
                 <div className="col-auto overflow-hidden">

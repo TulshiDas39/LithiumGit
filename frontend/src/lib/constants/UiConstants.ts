@@ -1,5 +1,6 @@
 export class UiConstants{
-    static readonly screenWidth = window.screen.width;
+    static screenWidth = 0;
+    static screenHeight = 0;
     static readonly selectedRepoLeftMinWidth = 200;
     static readonly selectedRepoLeftMaxWidth = 300;
     static get selectedRepoLeftWidth(){

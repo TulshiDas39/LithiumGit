@@ -1,5 +1,5 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { Fragment } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
@@ -8,10 +8,12 @@ interface IDeletedFilesProps{
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
+    handleExpand:(isExpanded:boolean,fileCount?:number)=>void;
+    height:number;
 }
 
 interface IState{
-    isChangesExpanded:boolean;
+    isExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
@@ -19,11 +21,23 @@ interface IState{
 
 function DeletedFilesComponent(props:IDeletedFilesProps){
     const [state,setState] = useMultiState<IState>({
-        isChangesExpanded:true,
+        isExpanded:true,
         isHeadHover:false});
 
+    const headerRef = useRef<HTMLDivElement>();
+    
+    const fileListPanelHeight = useMemo(()=>{
+        if(!headerRef.current)
+            return props.height - 30;
+        return props.height -headerRef.current.clientHeight;    
+    },[headerRef.current?.clientHeight,props.height]);
+
+    useEffect(()=>{
+        props.handleExpand(state.isExpanded,props.files?.length);
+    },[state.isExpanded,props.files]) 
+    
     const handleChangesCollapse = () => {
-        setState({ isChangesExpanded: !state.isChangesExpanded });
+        setState({ isExpanded: !state.isExpanded });
     }
 
     const handleStage=(file:IFile)=>{
@@ -44,12 +58,12 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
         window.ipcRenderer.send(RendererEvents.discardItem().channel,props.files.map(x=>x.path),props.repoInfoInfo);
     }
     
-    return <Fragment>
-    <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
+    return <div className="" style={{maxHeight:props.height+"px"}}>
+    <div ref={headerRef as any} className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
-            <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Deleted files</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
@@ -58,8 +72,9 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
             <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
     </div>
-    {state.isChangesExpanded && 
-        <div className="d-flex flex-column ps-2 h-75" style={{overflowX:'hidden',overflowY:'auto'}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
+    {state.isExpanded && 
+        <div className="d-flex flex-column ps-2" style={{overflowX:'hidden',overflowY:'auto', maxHeight:`${fileListPanelHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}
+            >
             {props.files?.map(f=>(
                 <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
                     title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})} onClick={(_)=> props.onFileSelect(f.path)}>
@@ -75,7 +90,7 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
             ))}                                                
         </div>
     }
-</Fragment>
+</div>
 }
 
 export const DeletedFiles = React.memo(DeletedFilesComponent);
