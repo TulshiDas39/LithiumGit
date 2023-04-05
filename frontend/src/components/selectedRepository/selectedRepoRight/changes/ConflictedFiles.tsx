@@ -9,25 +9,21 @@ interface IConflictedFilesProps{
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
     selectedFilePath?:string;
-    handleExpand:(isExpanded:boolean)=>void;
+    handleExpand:()=>void;
+    isExpanded:boolean;
 }
 
 interface IState{
-    isExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
 
 function ConflictedFilesComponent(props:IConflictedFilesProps){    
     const [state,setState] = useMultiState<IState>({
-        isExpanded:true,
         isHeadHover:false});
-
-    useEffect(()=>{
-        props.handleExpand(state.isExpanded);
-    },[state.isExpanded])    
+ 
     const handleChangesCollapse = () => {
-        setState({ isExpanded: !state.isExpanded });
+        props.handleExpand();
     }
 
     const handleStage=(file:IFile)=>{
@@ -53,7 +49,7 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
-            <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Conflicted files</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
@@ -63,7 +59,7 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
         </div>}
     </div>
     
-    {state.isExpanded && 
+    {props.isExpanded && 
         <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.files?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}

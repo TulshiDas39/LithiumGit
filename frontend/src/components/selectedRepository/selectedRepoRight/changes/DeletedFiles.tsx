@@ -8,12 +8,12 @@ interface IDeletedFilesProps{
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
-    handleExpand:(isExpanded:boolean,fileCount?:number)=>void;
+    handleExpand:()=>void;
     height:number;
+    isExpanded:boolean;
 }
 
 interface IState{
-    isExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
@@ -21,7 +21,6 @@ interface IState{
 
 function DeletedFilesComponent(props:IDeletedFilesProps){
     const [state,setState] = useMultiState<IState>({
-        isExpanded:true,
         isHeadHover:false});
 
     const headerRef = useRef<HTMLDivElement>();
@@ -33,11 +32,11 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
     },[headerRef.current?.clientHeight,props.height]);
 
     useEffect(()=>{
-        props.handleExpand(state.isExpanded,props.files?.length);
-    },[state.isExpanded,props.files]) 
+        //props.handleExpand();
+    },[props.isExpanded,props.files]) 
     
     const handleChangesCollapse = () => {
-        setState({ isExpanded: !state.isExpanded });
+        props.handleExpand();
     }
 
     const handleStage=(file:IFile)=>{
@@ -63,7 +62,7 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
-            <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Deleted files</span>
         </div>
         {state.isHeadHover && <div className="d-flex">
@@ -72,7 +71,7 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
             <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
     </div>
-    {state.isExpanded && 
+    {props.isExpanded && 
         <div className="d-flex flex-column ps-2" style={{overflowX:'hidden',overflowY:'auto', maxHeight:`${fileListPanelHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}
             >
             {props.files?.map(f=>(

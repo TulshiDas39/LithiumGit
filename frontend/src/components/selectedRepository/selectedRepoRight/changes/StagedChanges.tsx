@@ -12,19 +12,19 @@ interface IStagedChangesProps{
     handleSelect:(path:string)=>void;
     selectedMode:EnumChangesType;
     selectedFilePath?:string;
+    isExpanded:boolean;
+    hanldeExpand:()=>void;
 }
 
 interface IState{
-    isStagedChangesExpanded:boolean;
+    // isStagedChangesExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({isStagedChangesExpanded:true,isHeadHover:false});
-    const handleStageCollapse = () => {
-        setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
-    }
+    const [state,setState] = useMultiState<IState>({isHeadHover:false});
+
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.unStageItem().replyChannel,(_,res:IStatus)=>{
@@ -47,8 +47,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     return <Fragment>
     <div className="d-flex hover" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}>
-        <div className="d-flex flex-grow-1" onClick={handleStageCollapse}>
-            <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+        <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
+            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Staged Changes</span>            
         </div>        
         {state.isHeadHover && <div className="d-flex">            
@@ -56,7 +56,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         </div>}
         
     </div>
-    {state.isStagedChangesExpanded && 
+    {props.isExpanded && 
     <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 

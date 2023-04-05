@@ -23,7 +23,8 @@ interface IState {
     selectedFilePath?:string;
     differenceRefreshKey:number;
     selectedFileModel:EnumChangesType;
-    expandedTabCount:number;
+    // expandedTabCount:number;
+    expandedTabs:EnumChangesType[];
     commitBoxHeight:number;
     minHeightOfEachTab:number;
     // document:Descendant[],
@@ -34,9 +35,10 @@ function ChangesComponent(props:IChangesProps) {
         adjustedX: 0,
         differenceRefreshKey: Date.now(),
         selectedFileModel:EnumChangesType.MODIFIED,
-        expandedTabCount:0,
+        // expandedTabCount:0,
         commitBoxHeight:113,
         minHeightOfEachTab:20,
+        expandedTabs:[],
     });
 
     const store = useSelectorTyped(state=>({
@@ -128,19 +130,22 @@ function ChangesComponent(props:IChangesProps) {
 
     }
 
-    const handleExpand=(isExpanded:boolean,fileCount?:number)=>{
-        if(!fileCount) return;
-        console.log("isExpanded",isExpanded);
-        const adjustment = isExpanded ?1:-1;
-        setState({expandedTabCount:state.expandedTabCount+adjustment});
+    const handleExpand=(tab:EnumChangesType)=>{
+        //if(!fileCount) return;
+        //console.log("isExpanded",isExpanded);
+        //const adjustment = state.expandedTabss.has(tab) ?1:-1;
+        const expandedTabs = state.expandedTabs.includes(tab)? state.expandedTabs.filter(x=> x!= tab)
+        :[...state.expandedTabs,tab]
+        setState({expandedTabs:expandedTabs});
     }
 
     const tabHeight = useMemo(()=>{
-        if(!state.expandedTabCount)
+        if(!state.expandedTabs.length)
             return state.minHeightOfEachTab;
-        const minHeightByTabs = (5-state.expandedTabCount)* state.minHeightOfEachTab;
-        return ((props.height - state.commitBoxHeight-minHeightByTabs)/state.expandedTabCount);
-    },[state.expandedTabCount,state.commitBoxHeight])
+        console.log("done",state.expandedTabs.length,state.commitBoxHeight,state.minHeightOfEachTab);
+        const minHeightByTabs = (5-state.expandedTabs.length)* state.minHeightOfEachTab;
+        return ((props.height - state.commitBoxHeight-minHeightByTabs)/state.expandedTabs.length);
+    },[state.expandedTabs,state.commitBoxHeight])
     console.log("tabHeight",tabHeight);
       
     console.log("state.status",state);
@@ -155,27 +160,32 @@ function ChangesComponent(props:IChangesProps) {
             {!!state.commitBoxHeight && <Fragment>
     
             <StagedChanges stagedChanges={state.status?.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
-                handleSelect={path=> handleSelect(path,EnumChangesType.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileModel} />
+                handleSelect={path=> handleSelect(path,EnumChangesType.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileModel}
+                isExpanded={state.expandedTabs.includes(EnumChangesType.STAGED)} 
+                hanldeExpand={()=> handleExpand(EnumChangesType.STAGED)}/>
     
             <ConflictedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CONFLICTED)} files={state.status?.conflicted} 
-            onStatusChange={onStatusChange} repoInfoInfo={repoInfo} handleExpand={(isExpanded)=>handleExpand(isExpanded,state.status?.conflicted?.length)} />
+            onStatusChange={onStatusChange} repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangesType.CONFLICTED)}
+            isExpanded={state.expandedTabs.includes(EnumChangesType.CONFLICTED)} />
         
             <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileModel}
-                handleExpand={(isExpanded)=>handleExpand(isExpanded,state.status?.not_added?.length)} 
+                handleExpand={()=>handleExpand(EnumChangesType.MODIFIED)} 
                 height = {tabHeight}
                 handleMinHeightChange={(height)=> setState({minHeightOfEachTab:height})} />
             
         
             <UntrackedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CREATED)} files={state.status?.created} 
             onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
-            handleExpand={(isExpanded)=>handleExpand(isExpanded,state.status?.created?.length)} 
+            handleExpand={()=>handleExpand(EnumChangesType.CREATED)} 
             height = {tabHeight} />        
         
             <DeletedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.DELETED)} files={state.status?.deleted} 
             onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
-            handleExpand={handleExpand} height={tabHeight} />
+            handleExpand={()=>handleExpand(EnumChangesType.DELETED)} 
+            isExpanded={state.expandedTabs.includes(EnumChangesType.DELETED)} 
+            height={tabHeight} />
         
 
         </Fragment>
