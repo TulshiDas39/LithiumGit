@@ -41,9 +41,7 @@ function CreateBranchModalComponent(){
 
     const handleBranchCreateClick=()=>{
         const branchNames = BranchUtils.getAllBranchNames();
-        console.log("branchnames",branchNames);
         if(branchNames.includes(state.branchName)) return;
-        console.log('creating branch');
         window.ipcRenderer.send(RendererEvents.createBranch().channel,Data.sourceCommit,BranchUtils.repositoryDetails,state.branchName,state.checkout);
         dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
     }

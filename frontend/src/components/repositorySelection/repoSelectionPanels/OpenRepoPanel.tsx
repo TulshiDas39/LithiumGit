@@ -20,7 +20,6 @@ function OpenRepoPanelComponent(){
     },[])
     const handleOpen=()=>{
         const isValidPath = window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath,state.path);
-        console.log("isValidPath",isValidPath);
         if(!isValidPath) setState({error:"The path is not a git repository"});
         else {
             const newRepoInfo = createRepositoryInfo({

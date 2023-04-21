@@ -14,7 +14,6 @@ export class BaseDB<T extends BaseSchema>{
         return new Promise<boolean>((resolve)=>{
             this.dataStore.loadDatabase((err)=>{
                 if(err){
-                    console.log("Failed to load db. path:"+this.filePath);
                     resolve(false);
                 }
                 else resolve(true);                

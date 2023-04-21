@@ -132,7 +132,6 @@ function ChangesComponent(props:IChangesProps) {
 
     const handleExpand=(tab:EnumChangesType)=>{
         //if(!fileCount) return;
-        //console.log("isExpanded",isExpanded);
         //const adjustment = state.expandedTabss.has(tab) ?1:-1;
         const expandedTabs = state.expandedTabs.includes(tab)? state.expandedTabs.filter(x=> x!= tab)
         :[...state.expandedTabs,tab]
@@ -163,18 +162,14 @@ function ChangesComponent(props:IChangesProps) {
         }
         return count;
     },[state.expandedTabs,state.status])
-    console.log("expanedtabhavingnofiles",expandedTabCountHavingFile);
 
     const tabHeight = useMemo(()=>{
         if(!expandedTabCountHavingFile)
             return state.minHeightOfEachTab;
-        console.log("done",props.height,state.commitBoxHeight,state.minHeightOfEachTab);
         const minHeightByTabs = (5 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
         return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
     },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
-    console.log("tabHeight",tabHeight);
       
-    console.log("state.status",state);
 
     // if(!props.repoInfo) return null;
 
@@ -182,7 +177,7 @@ function ChangesComponent(props:IChangesProps) {
 
         <div className="" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
-            <CommitBox onHeightChange={height=> {console.log("height changed."); setState({commitBoxHeight:height})}} />
+            <CommitBox onHeightChange={height=> {setState({commitBoxHeight:height})}} />
             {!!state.commitBoxHeight && <Fragment>
     
             <StagedChanges stagedChanges={state.status?.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}

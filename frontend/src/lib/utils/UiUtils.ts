@@ -36,7 +36,6 @@ export class UiUtils {
         const expectedMovedScrollBar = 100 * (viewBoxWidth / panelWidth) * (scrollableWidth / totalWidth);
         const realMovedScrollBar = 5.945466930935044;
 
-        console.log("expectedMovedScrollBar", expectedMovedScrollBar);
         //864 px mouse move korle horizontal scroll move hoi 51.36883428328// from experiment
 
         ///18020 px svg move korle scroll move hoi 809.14894561598 px 

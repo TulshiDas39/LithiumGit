@@ -46,7 +46,6 @@ export class GitManager{
             return result;
         } catch (error) {
             const errStr = error?.toString();
-            console.log("Error in merger:"+errStr);
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errStr);
             return null;
         }
@@ -66,7 +65,6 @@ export class GitManager{
             const result = await git.show(options);   
             return result;
         } catch (error) {
-            console.log("error in git show:"+error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
     }
@@ -89,7 +87,6 @@ export class GitManager{
             e.reply(RendererEvents.commit().replyChannel,true);
             AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status)
         } catch (error) {
-            console.log("Error when commit:"+error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
         
@@ -169,7 +166,6 @@ export class GitManager{
                 return;
             }
             const subDirNames = readdirSync(path, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
-            console.log(subDirNames);
             
             if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
@@ -296,7 +292,6 @@ export class GitManager{
         }catch (error) {
             const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
             const errorMsg:string = error?.toString() || "";
-            console.log(`Failed to checkout:`+error?.toString());
             let errorToShow = errorMsg;
             if(errorMsg.includes(errorSubStr)){
                 errorToShow ="There exist uncommited changes having conflicting state with checkout.";
@@ -323,7 +318,6 @@ export class GitManager{
             // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
         }catch(e){
             const errorStr = e+"";
-            console.log(e);
             AppData.mainWindow.webContents.send(RendererEvents.showError().channel,errorStr);
         }
     }
@@ -364,7 +358,6 @@ export class GitManager{
             if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
             else e.reply(RendererEvents.pull().replyChannel);
         } catch (error) {
-            console.log("Error on pull: "+ error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
     }
@@ -382,7 +375,6 @@ export class GitManager{
             }
 
             await git.fetch(options);
-            console.log("fetched");
             if(all) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
             else {
                 const status = await this.getStatus(repoDetails.repoInfo);
@@ -392,7 +384,6 @@ export class GitManager{
                 else e.reply(RendererEvents.fetch().replyChannel);
             }
         } catch (error) {
-            console.log("Error on pull: "+ error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
     }
@@ -410,7 +401,6 @@ export class GitManager{
             if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
             else e.reply(RendererEvents.push().replyChannel);
         } catch (error) {
-            console.log("Error on push: "+ error?.toString());
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
     }

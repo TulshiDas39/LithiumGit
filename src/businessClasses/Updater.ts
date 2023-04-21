@@ -5,7 +5,6 @@ export class Updater{
     sendStatusToWindow(text:string) {
         // log.info(text);
         // win.webContents.send('message', text);
-        console.log(text);
     }
 
     handleEvents(){

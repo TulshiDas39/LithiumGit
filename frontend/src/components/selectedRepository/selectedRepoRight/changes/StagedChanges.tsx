@@ -28,7 +28,6 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.unStageItem().replyChannel,(_,res:IStatus)=>{
-            console.log('unstaged',res);
             props.onStatusChange(res);
         });
         return ()=>{
