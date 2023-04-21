@@ -76,7 +76,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     </div>
     
     {state.isExpanded && 
-        <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+        <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.modifiedChanges?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}

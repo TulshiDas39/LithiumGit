@@ -60,7 +60,7 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
     </div>
     
     {props.isExpanded && 
-        <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+        <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.files?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}

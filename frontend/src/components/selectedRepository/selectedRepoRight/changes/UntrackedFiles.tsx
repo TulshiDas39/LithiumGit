@@ -63,7 +63,7 @@ function UntrackedFilesComponent(props:IUntrackedFilesProps){
         </div>}
     </div>
     {state.isChangesExpanded && 
-        <div className="d-flex flex-column ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+        <div className="d-flex flex-column ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.files?.map(f=>(
                 <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"
                     title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})} onClick={(_)=> props.onFileSelect(f.path)}>

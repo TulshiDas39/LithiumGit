@@ -72,7 +72,7 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
         </div>}
     </div>
     {props.isExpanded && 
-        <div className="d-flex flex-column ps-2" style={{overflowX:'hidden',overflowY:'auto', maxHeight:`${fileListPanelHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}
+        <div className="d-flex flex-column ps-2 border" style={{overflowX:'hidden',overflowY:'auto', maxHeight:`${fileListPanelHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}
             >
             {props.files?.map(f=>(
                 <div key={f.path} className="d-flex align-items-center flex-nowrap position-relative hover"

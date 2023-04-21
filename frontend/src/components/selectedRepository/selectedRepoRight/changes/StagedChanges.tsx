@@ -57,7 +57,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         
     </div>
     {props.isExpanded && 
-    <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+    <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
         {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>

@@ -139,13 +139,39 @@ function ChangesComponent(props:IChangesProps) {
         setState({expandedTabs:expandedTabs});
     }
 
+    const expandedTabCountHavingFile = useMemo(()=>{
+        let count = 0;
+        if(state.expandedTabs.includes(EnumChangesType.CONFLICTED)){
+            if(state.status?.conflicted.length)
+                count++;
+        }
+        if(state.expandedTabs.includes(EnumChangesType.CREATED)){
+            if(state.status?.created.length)
+                count++;
+        }
+        if(state.expandedTabs.includes(EnumChangesType.DELETED)){
+            if(state.status?.deleted.length)
+                count++;
+        }
+        if(state.expandedTabs.includes(EnumChangesType.MODIFIED)){
+            if(state.status?.not_added.length)
+                count++;
+        }
+        if(state.expandedTabs.includes(EnumChangesType.STAGED)){
+            if(state.status?.staged.length)
+                count++;
+        }
+        return count;
+    },[state.expandedTabs,state.status])
+    console.log("expanedtabhavingnofiles",expandedTabCountHavingFile);
+
     const tabHeight = useMemo(()=>{
-        if(!state.expandedTabs.length)
+        if(!expandedTabCountHavingFile)
             return state.minHeightOfEachTab;
-        console.log("done",state.expandedTabs.length,state.commitBoxHeight,state.minHeightOfEachTab);
-        const minHeightByTabs = (5-state.expandedTabs.length)* state.minHeightOfEachTab;
-        return ((props.height - state.commitBoxHeight-minHeightByTabs)/state.expandedTabs.length);
-    },[state.expandedTabs,state.commitBoxHeight])
+        console.log("done",props.height,state.commitBoxHeight,state.minHeightOfEachTab);
+        const minHeightByTabs = (5 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
+        return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
+    },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
     console.log("tabHeight",tabHeight);
       
     console.log("state.status",state);
