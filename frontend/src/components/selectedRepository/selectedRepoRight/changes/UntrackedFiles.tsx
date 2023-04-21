@@ -55,6 +55,7 @@ function UntrackedFilesComponent(props:IUntrackedFilesProps){
             >
             <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>New files</span>
+            {!!props.files?.length && <span className="text-info">({props.files.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>

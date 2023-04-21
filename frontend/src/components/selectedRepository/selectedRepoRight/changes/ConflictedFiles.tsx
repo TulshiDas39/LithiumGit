@@ -51,6 +51,7 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
             >
             <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Conflicted files</span>
+            {!!props.files?.length && <span className="text-info">({props.files.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>

@@ -64,6 +64,7 @@ function DeletedFilesComponent(props:IDeletedFilesProps){
             >
             <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Deleted files</span>
+            {!!props.files?.length && <span className="text-info">({props.files.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>

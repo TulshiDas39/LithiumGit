@@ -67,6 +67,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             >
             <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Changes</span>
+            {!!props.modifiedChanges?.length && <span className="text-info">({props.modifiedChanges.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>

@@ -49,7 +49,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
     <div className="d-flex hover" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
             <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-            <span>Staged Changes</span>            
+            <span>Staged Changes</span>
+            {!!props.stagedChanges?.length && <span className="text-info">(`(${props.stagedChanges.length})`)</span>}
         </div>        
         {state.isHeadHover && <div className="d-flex">            
             <span className="hover" title="UnStage all" onClick={_=> unStageAll()}><FaMinus /></span>
