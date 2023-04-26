@@ -6,29 +6,28 @@ import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
 
 interface IStagedChangesProps{
-    stagedChanges:IFile[];
+    stagedChanges?:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     handleSelect:(path:string)=>void;
     selectedMode:EnumChangesType;
     selectedFilePath?:string;
+    isExpanded:boolean;
+    hanldeExpand:()=>void;
 }
 
 interface IState{
-    isStagedChangesExpanded:boolean;
+    // isStagedChangesExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({isStagedChangesExpanded:true,isHeadHover:false});
-    const handleStageCollapse = () => {
-        setState({ isStagedChangesExpanded: !state.isStagedChangesExpanded });
-    }
+    const [state,setState] = useMultiState<IState>({isHeadHover:false});
+
 
     useEffect(()=>{
         window.ipcRenderer.on(RendererEvents.unStageItem().replyChannel,(_,res:IStatus)=>{
-            console.log('unstaged',res);
             props.onStatusChange(res);
         });
         return ()=>{
@@ -47,18 +46,19 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     return <Fragment>
     <div className="d-flex hover" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}>
-        <div className="d-flex flex-grow-1" onClick={handleStageCollapse}>
-            <span>{state.isStagedChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-            <span>Staged Changes</span>            
+        <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
+            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>Staged Changes</span>
+            {!!props.stagedChanges?.length && <span className="text-info">(`(${props.stagedChanges.length})`)</span>}
         </div>        
         {state.isHeadHover && <div className="d-flex">            
             <span className="hover" title="UnStage all" onClick={_=> unStageAll()}><FaMinus /></span>
         </div>}
         
     </div>
-    {state.isStagedChangesExpanded && 
-    <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-        {props.stagedChanges.map(f=>(
+    {props.isExpanded && 
+    <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+        {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>
                 <div className="col-auto overflow-hidden">

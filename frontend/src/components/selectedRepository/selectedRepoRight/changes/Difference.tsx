@@ -56,7 +56,6 @@ function DifferenceComponent(props:IDifferenceProps){
 
     const getFileContent=()=>{
         if(props.path) {    
-            console.log("path",props.path);
             const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
             if(props.mode === EnumChangesType.STAGED){
                 const options = [":"+props.path];
@@ -102,7 +101,6 @@ function DifferenceComponent(props:IDifferenceProps){
     const isMounted = useRef(false);
 
     const setUiLines=(diff:string,textLines:string[])=>{
-        console.log("diff",diff);
         let lineConfigs = DiffUtils.GetUiLines(diff,textLines);
         const previousLineMaxWidth = DiffUtils.getEditorWidth(lineConfigs.previousLines.map(x=>x.text?x.text:""));
         const currentLineMaxWidth = DiffUtils.getEditorWidth(lineConfigs.currentLines.map(x=>x.text?x.text:""));
@@ -117,8 +115,6 @@ function DifferenceComponent(props:IDifferenceProps){
     useEffect(()=>{        
         let delta = DiffUtils.getDeltaFromLineConfig(state.previousLines,EditorColors.line.previous,state.previousLineMaxWidth);
         let lineDelta = DiffUtils.getDeltaForLineNumber(state.previousLines);
-        console.log("previous lines",state.previousLines);
-        console.log("previous line delta",lineDelta);
         setState({previousLineDelta:delta,previousLineNumberDelta:lineDelta});
     },[state.previousLines])
 
@@ -126,12 +122,10 @@ function DifferenceComponent(props:IDifferenceProps){
         let delta = DiffUtils.getDeltaFromLineConfig(state.currentLines,EditorColors.line.current,state.currentLineMaxWidth);
         let lineDelta = DiffUtils.getDeltaForLineNumber(state.currentLines);
         let lineNumbers = DiffUtils.getCoparableLineNumbers(state.currentLines);
-        console.log("current lines",state.currentLines);
         setState({currentLineDelta:delta,currentLineNumberDelta:lineDelta,comparableLineNumbers:lineNumbers});
     },[state.currentLines])
 
     useEffect(()=>{
-        console.log("previous deltas",state.previousLineDelta);
         let quill = previousChangesEditorRef.current?.getEditor();        
         if(!quill) return;
         quill.root.style.minWidth = state.previousLineMaxWidth+"ch";
@@ -167,25 +161,30 @@ function DifferenceComponent(props:IDifferenceProps){
         }
     },[previousScrollContainerRef.current,currentScrollContainerRef.current])
 
-    const setNavigationData=()=>{
+    const initialiseNavigationData=()=>{
         dispatch(ActionUI.setTotalComparable(state.comparableLineNumbers.length));                
+        dispatch(ActionUI.setComparableStep(1));                
+    }
+
+    const focusInCurrentStep=(currentStep?:number)=>{
+        if(!currentStep)return;        
+
+        const focusElem = currentChangesEditorRef.current?.getEditor().root.children.
+            item(state.comparableLineNumbers[currentStep-1]);
+        focusElem?.scrollIntoView({block:"center"});
     }
 
     useEffect(()=>{        
-        if(!store.currentStep)
-            return;        
-        currentChangesEditorRef.current?.getEditor().root.children.
-            item(state.comparableLineNumbers[store.currentStep-1])?.scrollIntoView({block:"center"});
-
+        focusInCurrentStep(store.currentStep);
     },[store.currentStep])
 
     useEffect(()=>{
-        console.log("current delta",state.currentLineDelta);
         var quill = currentChangesEditorRef.current?.getEditor();
         if(!quill) return;
         quill.root.style.minWidth = state.currentLineMaxWidth+"ch";
         DiffUtils.formatLinesBackground(quill,state.currentLines,EnumCustomBlots.CurrentBackground);
-        setNavigationData();
+        initialiseNavigationData();
+        focusInCurrentStep(store.currentStep);
     },[state.currentLineDelta])
    
     const showContentOfDeletedFile=(lines:string[])=>{
@@ -194,13 +193,11 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     const showContentOfStagedFile=(lines:string[])=>{
-        console.log("content of staged file",lines);
         const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
         setState({previousLines:lineConfigs,currentLines:[]});
     }
 
     const showContentOfNewFile=(lines:string[])=>{
-        console.log("showing lines of new file",lines);
         const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
         setState({currentLines:lineConfigs,previousLines:[]});
     }
@@ -219,17 +216,14 @@ function DifferenceComponent(props:IDifferenceProps){
             else showContentOfNewFile(lines);
         })
         window.ipcRenderer.on(RendererEvents.diff().replyChannel,(e,diff:string)=>{
-            console.log("diff reply",diff);
             setUiLines(diff,textLines);
         });
 
         window.ipcRenderer.on(RendererEvents.gitShow().replyChannel,(e,content:string)=>{
-            console.log('git show reply');
             const lines = new StringUtils().getLines(content);
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            console.log("propsRef.current.mode",propsRef.current.mode);
             if(propsRef.current.mode === EnumChangesType.DELETED) showContentOfDeletedFile(lines);            
             else if(propsRef.current.mode === EnumChangesType.STAGED)  getDiff();//(lines);
             // get Diff();
@@ -256,7 +250,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     onChange={callbackForPreviousEditor} readOnly                    
                      />
             </div>
-            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.previousLineMaxWidth}ch`,minWidth:`100%`}}>
                 <ReactQuill  ref={previousChangesEditorRef as React.LegacyRef<ReactQuill> } value={state.previousLineDelta}  
                     onChange={callbackForPreviousEditor} 
                     modules={{"toolbar":false}}
@@ -272,7 +266,7 @@ function DifferenceComponent(props:IDifferenceProps){
                     />
             </div>
 
-            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`}}>
+            <div className="d-flex flex-column" style={{width:`${state.currentLineMaxWidth}ch`,minWidth:`100%`}}>
                 {
                     <ReactQuill ref={currentChangesEditorRef as any}  theme="snow" value={state.currentLineDelta} onChange={callbackForCurrentEditor} 
                         modules={{"toolbar":false}}                        

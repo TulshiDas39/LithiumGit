@@ -29,7 +29,6 @@ function SecondTopNavComponent(){
         </span>
         <div className="flex-grow-1">
             {store.hasSelectedRepo && <ActionBar />}        
-
         </div>
     </div>
 }

@@ -17,7 +17,6 @@ function PullPushMenuComponent(){
 
     const dispatch = useDispatch();
 
-    console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);

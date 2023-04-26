@@ -1,14 +1,14 @@
 import React from "react"
-import { ISelectedRepoTabItem } from "../SelectedRepoLeft"
 import { BranchesView2 } from "./branches/BranchesView2"
 import { Changes } from "./changes"
 
 interface ISelectedRepoRightProps{
+    height:number;
 }
 
 function SelectedRepoRightComponent(props:ISelectedRepoRightProps){        
     return <div className="d-flex w-100 h-100">
-        <Changes />
+        <Changes height={props.height} />
         <BranchesView2 />
     </div>    
 }

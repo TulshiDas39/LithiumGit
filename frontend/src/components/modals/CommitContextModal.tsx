@@ -22,7 +22,6 @@ function CommitContextModalComponent(){
     useEffect(()=>{
         if(store.show){
             let elem = document.querySelector(".commitContext") as HTMLElement;
-            console.log(Data)
             if(elem){
                 elem.style.marginTop = Data.position.y+"px";
                 elem.style.marginLeft = Data.position.x+"px";

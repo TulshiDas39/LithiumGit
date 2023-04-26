@@ -1,5 +1,5 @@
 import { IFile, RepositoryInfo, IStatus, RendererEvents } from "common_library";
-import React, { Fragment } from "react"
+import React, { Fragment, useEffect } from "react"
 import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
@@ -9,21 +9,21 @@ interface IConflictedFilesProps{
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
     selectedFilePath?:string;
+    handleExpand:()=>void;
+    isExpanded:boolean;
 }
 
 interface IState{
-    isChangesExpanded:boolean;
     hoveredFile?:IFile;
     isHeadHover:boolean;
 }
 
 function ConflictedFilesComponent(props:IConflictedFilesProps){    
     const [state,setState] = useMultiState<IState>({
-        isChangesExpanded:true,
         isHeadHover:false});
-
+ 
     const handleChangesCollapse = () => {
-        setState({ isChangesExpanded: !state.isChangesExpanded });
+        props.handleExpand();
     }
 
     const handleStage=(file:IFile)=>{
@@ -49,8 +49,9 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
         onMouseLeave={_=> setState({isHeadHover:false})}>
         <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
             >
-            <span>{state.isChangesExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
+            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Conflicted files</span>
+            {!!props.files?.length && <span className="text-info">({props.files.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
@@ -59,8 +60,8 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
         </div>}
     </div>
     
-    {state.isChangesExpanded && 
-        <div className="container ps-2" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+    {props.isExpanded && 
+        <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
             {props.files?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}

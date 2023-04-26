@@ -115,7 +115,6 @@ export class Startup{
       });
 
       app.listen(this.uiPort);
-      console.log("server started on port " + this.uiPort);
        
     }
 

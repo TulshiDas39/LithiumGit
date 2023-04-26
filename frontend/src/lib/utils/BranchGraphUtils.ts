@@ -175,7 +175,6 @@ export class BranchGraphUtils{
             }
         }
         else{
-            console.log("this.panelWidth",this.panelWidth);
             if(this.panelWidth <= this.horizontalScrollWidth) return;
             let newLeft = this.dataRef.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
             const maxLeft = this.panelWidth - this.horizontalScrollWidth;
@@ -466,7 +465,7 @@ export class BranchGraphUtils{
 
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",zoomValue:number|undefined){
         if(!this.svgElement) return;
-        if(!zoomValue) zoomValue = 1;
+        if(!zoomValue) zoomValue = 10;
         if(action === "zoomIn"){
             this.zoom += zoomValue;            
         }
@@ -591,7 +590,6 @@ export class BranchGraphUtils{
     }
 
     static handleNewBranch(sourceCommit:ICommitInfo,branch:string,status:IStatus){
-        console.log("BranchUtils.repositoryDetails",BranchUtils.repositoryDetails);
         BranchUtils.repositoryDetails.branchList.push(branch);
         const commitFrom = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === sourceCommit.hash);
         if(!commitFrom) return;        
@@ -671,7 +669,6 @@ export class BranchGraphUtils{
         // }
 
         const clickListener = (_e:MouseEvent)=>{
-            console.log("clicked");
             let existingSelectedCommitElem:HTMLElement|null;
             if(this.selectedCommit.hash) {
                 existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);

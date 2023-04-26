@@ -21,6 +21,7 @@ const SavedDataSlice = createSlice({
         setSelectedRepository(state,action:PayloadAction<RepositoryInfo>){
             const updatedList:RepositoryInfo[]=[];            
             const existingSelected = state.recentRepositories.find(x=>x.isSelected);
+            if(action.payload.path === existingSelected?.path) return;
             if(existingSelected) {
                 existingSelected.isSelected = false;
                 updatedList.push({...existingSelected});

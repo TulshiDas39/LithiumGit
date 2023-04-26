@@ -36,7 +36,6 @@ function BranchPanelComponent(props:IBranchPanelProps){
         homeIconClickVersion:state.ui.versions.branchPanelHome,
     }),shallowEqual); 
 
-    console.log("props.repoDetails",props.repoDetails);
 
     const [state,setState]=useMultiState<IState>({
         scrollLeft:props.repoDetails.branchPanelWidth,

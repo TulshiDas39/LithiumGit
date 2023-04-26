@@ -16,7 +16,6 @@ function SelectedFileComponent(props:ISelectedFileProps){
 
     const handleInput=(e: React.FormEvent<HTMLDivElement>)=>{
         let t = e.target as HTMLDivElement;
-        console.log(t.innerText);        
     }
 
     useEffect(()=>{

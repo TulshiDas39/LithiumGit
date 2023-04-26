@@ -24,7 +24,6 @@ export class DiffUtils{
         
         diff = diff.replace(/\n\r/g,"\n").replace(/\r/g,"\n");
         const diffLines = diff.split(/\n/g).filter(x=> !!x);
-        console.log("text lines",textLines);
         let startIndexesOfSections = 0;
         let lineNumberOfCurrentChange= 0;
         let lineNumberOfPreviousChange= 0;

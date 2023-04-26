@@ -48,6 +48,10 @@ const initialState:IUIState={
         repoDetails:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
+    changes:{
+        currentStep:1,
+        totalStep:1,
+    }
 }
 
 const UISlice = createSlice({
@@ -79,7 +83,7 @@ const UISlice = createSlice({
         },
         setTotalComparable(state,action:PayloadAction<number>){
             if(state.changes)state.changes.totalStep = action.payload;
-            else state.changes = {currentStep:1,totalStep:action.payload};
+            else state.changes = {currentStep:action.payload,totalStep:action.payload};
         },
         setComparableStep(state,action:PayloadAction<number>){
             state.changes!.currentStep = action.payload;

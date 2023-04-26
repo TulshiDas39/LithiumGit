@@ -101,7 +101,6 @@ html {
   
   body {
     background-color: var(--bg-color);
-    height: 100vh;
   }
 
   #root{
@@ -232,4 +231,8 @@ html {
 
 .no-wrap{
   white-space: nowrap
+}
+
+.ql-container.ql-snow{
+  border-right: 0 !important;
 }

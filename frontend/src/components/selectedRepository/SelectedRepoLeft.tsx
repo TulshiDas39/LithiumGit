@@ -11,6 +11,7 @@ export interface ISelectedRepoTabItem{
 }
 
 interface ISelectedRepoLeftProps{
+    height:number;
 }
 
 function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){

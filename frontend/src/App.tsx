@@ -3,9 +3,17 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layouts/layout';
+import { useMultiState } from './lib';
+import { UiConstants } from './lib/constants';
 import { ActionUI } from './store/slices/UiSlice';
 
+interface IState{
+  isInitialised:boolean;
+}
+
 function App() {
+  const [state,setState] = useMultiState<IState>({isInitialised:false});
+
   const dispatch = useDispatch();
   useEffect(()=>{
     if(!window.ipcRenderer) return;
@@ -17,12 +25,19 @@ function App() {
     })
   },[window.ipcRenderer])
 
-  if(!window.ipcRenderer){
+  useEffect(()=>{
+    UiConstants.screenHeight = window.innerHeight;
+    UiConstants.screenWidth = window.innerWidth;
+    setState({isInitialised:true});
+  },[])
+
+  if(!window.ipcRenderer || !state.isInitialised){
     return <div></div>;
   }
+
   return (
     <BrowserRouter>
-        <Layout />
+        <Layout height={UiConstants.screenHeight} width={UiConstants.screenWidth} />
     </BrowserRouter>
   );
 }
