@@ -1,5 +1,5 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Fragment } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
 import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
@@ -35,6 +35,13 @@ function StagedChangesComponent(props:IStagedChangesProps){
             UiUtils.removeIpcListeners([RendererEvents.unStageItem().replyChannel]);
         }
     },[]);
+    const headerRef = useRef<HTMLDivElement>();
+
+    const fileListPanelHeight = useMemo(()=>{
+        if(!headerRef.current)
+            return props.height - 30;
+        return props.height -headerRef.current.clientHeight;    
+    },[headerRef.current?.clientHeight,props.height]);
 
     const handleUnstageItem = (item:IFile)=>{
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
@@ -45,9 +52,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,props.stagedChanges.map(x=>x.path),props.repoInfoInfo)
     }
 
-    return <Fragment>
-    <div className="d-flex hover overflow-auto" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}
-     style={{maxHeight:props.height}}>
+    return <div style={{maxHeight:props.height}}>
+    <div ref={headerRef as any} className="d-flex hover overflow-auto" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}
+     >
         <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
             <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Staged Changes</span>
@@ -59,7 +66,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
         
     </div>
     {props.isExpanded && 
-    <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
+    <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}
+    style={{maxHeight:`${fileListPanelHeight}px`, overflowX:'hidden',overflowY:'auto'}}>
         {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>
@@ -75,7 +83,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         ))}                        
     </div>
     }
-</Fragment>
+</div>
 }
 
 export const StagedChanges = React.memo(StagedChangesComponent);
