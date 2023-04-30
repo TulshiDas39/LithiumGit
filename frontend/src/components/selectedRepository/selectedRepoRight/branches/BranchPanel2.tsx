@@ -14,14 +14,15 @@ interface IBranchPanelProps{
     verticalScrollHeight:number;
     horizontalScrollLeft:number;
     verticalScrollTop:number;
+    scrollBarSize:number;
 }
 
 export function BranchPanel2(props:IBranchPanelProps){    
-    const horizontalScrollContainerWidth = props.containerWidth+10;        
+    const horizontalScrollContainerWidth = props.containerWidth+props.scrollBarSize;        
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
-            <div className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
+            <div id={BranchGraphUtils.svgContainerId} className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
                 <svg
                 width={props.containerWidth} height={props.panelHeight} viewBox={`${props.viewBox.x} ${props.viewBox.y} ${props.viewBox.width} ${props.viewBox.height}` } style={{transform:`scale(1)`} }>
                         <g>

@@ -27,6 +27,7 @@ export class BranchGraphUtils{
     static branchPanelContainerId = "branchPanelContainer";
     static horizontalScrollBarId = "horizontalScrollBar";
     static verticalScrollBarId = "verticalScrollBar";
+    static svgContainerId = "svgContainer";
     static branchPanelContainer:HTMLDivElement;
     static branchPanelRootElement:HTMLDivElement= null!;
     static svgElement:SVGSVGElement = null!;
@@ -44,6 +45,7 @@ export class BranchGraphUtils{
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
+    static readonly scrollbarSize = 10;
 
     static get horizontalScrollContainerWidth(){
         return this.panelWidth+10;
@@ -120,6 +122,7 @@ export class BranchGraphUtils{
             verticalScrollHeight:this.verticalScrollHeight,
             verticalScrollTop:this.state.verticalScrollTop,
             horizontalScrollLeft:this.state.horizontalScrollLeft,
+            scrollBarSize:this.scrollbarSize,
         }))
 
     }  
@@ -375,6 +378,19 @@ export class BranchGraphUtils{
         })
     }
 
+    private static addResizeListener(){
+        const svgContainerElem = document.getElementById(this.svgContainerId);
+        const handleResize = ()=>{
+            const width = this.branchPanelContainer.offsetWidth + this.scrollbarSize;
+            if(svgContainerElem)
+                svgContainerElem.style.width = width+"px";
+            this.resizeGraph(width,this.panelHeight);
+
+        }
+        new ResizeObserver(handleResize).observe(this.branchPanelContainer)
+
+    }
+
     static addEventListeners(){
         // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
         UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
@@ -382,6 +398,7 @@ export class BranchGraphUtils{
         UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
         this.addEventListendersOnCommit();
         this.addWheelListender();
+        this.addResizeListener();
     }
 
     static getVerticalScrollHeight(){        
@@ -781,5 +798,21 @@ export class BranchGraphUtils{
         }
 
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+    }
+
+    private static updateSvgSizeUi(){
+        this.svgElement.setAttribute("height",this.panelHeight+"");                   
+        this.svgElement.setAttribute("width",this.panelWidth+"");                   
+    }
+
+    static resizeGraph(width:number,height:number){
+        console.log("resizing",width,height);
+        BranchGraphUtils.panelWidth = width;
+        BranchGraphUtils.panelHeight = height;
+        this.state.viewBox.width = width;
+        this.state.viewBox.height = height;
+
+        this.updateViewBoxUi();
+        this.updateSvgSizeUi();
     }
 }
