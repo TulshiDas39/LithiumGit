@@ -380,10 +380,14 @@ export class BranchGraphUtils{
 
     private static addResizeListener(){
         const svgContainerElem = document.getElementById(this.svgContainerId);
+        const horizontalScrollBarContainer = this.horizontalScrollBarElement.parentElement!;
         const handleResize = ()=>{
-            const width = this.branchPanelContainer.offsetWidth + this.scrollbarSize;
+            const width = this.branchPanelContainer.offsetWidth;
+            const widthStr = width+"px";
             if(svgContainerElem)
-                svgContainerElem.style.width = width+"px";
+                svgContainerElem.style.width = widthStr;
+            horizontalScrollBarContainer.style.width = widthStr;
+            horizontalScrollBarContainer.style.width = widthStr;
             this.resizeGraph(width,this.panelHeight);
 
         }

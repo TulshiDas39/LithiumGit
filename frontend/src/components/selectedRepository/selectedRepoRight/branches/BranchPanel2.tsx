@@ -19,6 +19,8 @@ interface IBranchPanelProps{
 
 export function BranchPanel2(props:IBranchPanelProps){    
     const horizontalScrollContainerWidth = props.containerWidth+props.scrollBarSize;        
+    console.log("horizontalScrollContainerWidth", horizontalScrollContainerWidth)
+    console.log("props.panelHeight", props.containerWidth)
     
     return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
         <Fragment>
