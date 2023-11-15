@@ -1,10 +1,8 @@
-import { IRepositoryDetails } from "common_library";
 import React, { useEffect, useRef } from "react"
 import { useDispatch, shallowEqual } from "react-redux";
 import { EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { SelectedRepoRightData } from "../SelectedRepoRightData";
 import { BranchActions } from "./BranchActions";
 import { CommitProperty2 } from "./CommitProperty2";
 
@@ -31,29 +29,16 @@ function BranchesViewComponent(props:IBranchesViewProps){
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
     }),shallowEqual);
 
-    const branchPanelRef = useRef<HTMLDivElement>();
-    useEffect(()=>{
-        console.log("ref updated");
-        if(!store.show) return;
-        if(branchPanelRef.current){
-            console.log("measuring width");
-            const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width)-10;            
-            const existingPanelWidth = BranchGraphUtils.panelWidth;
-            BranchGraphUtils.panelWidth = width;
-            if(existingPanelWidth === -1 || !BranchGraphUtils.branchPanelHtml){
-                BranchGraphUtils.createBranchPanel();
-                BranchGraphUtils.insertNewBranchGraph();
-            }
-        }
-    },[branchPanelRef.current])    
-    
+    const branchPanelRef = useRef<HTMLDivElement>(); 
+
     useEffect(()=>{        
-    
-        return ()=>{
-            // BranchGraphUtils.panelWidth = -1;
-            BranchGraphUtils.focusedCommit = null!;
+        if(!BranchGraphUtils.branchPanelHtml){
+            BranchGraphUtils.createBranchPanel();
+            BranchGraphUtils.insertNewBranchGraph();
         }
-        
+        return ()=>{
+            BranchGraphUtils.focusedCommit = null!;
+        }        
     },[]);
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show?'':'d-none'}`}>

@@ -101,6 +101,8 @@ export class BranchGraphUtils{
     }
 
     static createBranchPanel(){
+        const branchPanelContainer = document.querySelector(`#${BranchGraphUtils.branchPanelContainerId}`)!;
+        BranchGraphUtils.panelWidth = Math.floor(branchPanelContainer.getBoundingClientRect().width)-10;         
         if(!BranchUtils.repositoryDetails) return;
         if(this.panelWidth ===  -1) return;        
         
