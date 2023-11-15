@@ -17,7 +17,7 @@ interface IState{
 }
 
 function BranchesViewComponent(props:IBranchesViewProps){
-    const [state,setState]=useMultiState<IState>({
+    const [,setState]=useMultiState<IState>({
         
     })
 
@@ -33,8 +33,10 @@ function BranchesViewComponent(props:IBranchesViewProps){
 
     const branchPanelRef = useRef<HTMLDivElement>();
     useEffect(()=>{
+        console.log("ref updated");
         if(!store.show) return;
         if(branchPanelRef.current){
+            console.log("measuring width");
             const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width)-10;            
             const existingPanelWidth = BranchGraphUtils.panelWidth;
             BranchGraphUtils.panelWidth = width;
@@ -46,12 +48,7 @@ function BranchesViewComponent(props:IBranchesViewProps){
     },[branchPanelRef.current])    
     
     useEffect(()=>{        
-        // BranchGraphUtils.panelWidth = getPanelWidth();
-        const handleRepoDetailsUpdate=(repoDetails:IRepositoryDetails)=>{
-            setState({repoDetails});
-        }
-        SelectedRepoRightData.handleRepoDetailsUpdate = handleRepoDetailsUpdate;
-
+    
         return ()=>{
             // BranchGraphUtils.panelWidth = -1;
             BranchGraphUtils.focusedCommit = null!;

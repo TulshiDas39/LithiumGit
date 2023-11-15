@@ -8,8 +8,8 @@ import { Modals } from '../modals';
 import { FooterNav } from '../topNav/FooterNav';
 import { IDimension } from '../../lib';
 
-interface ILayoutProps extends IDimension{
-
+interface ILayoutProps{
+    height:number
 }
 
 function LayoutComponent(props:ILayoutProps) {
@@ -32,7 +32,7 @@ function LayoutComponent(props:ILayoutProps) {
     },[topNavHeight,footerHeight])
 
     return (
-        <div className="" style={{height:props.height+"px", width:props.width+"px"}}>
+        <div className="" style={{height:props.height+"px"}}>
             <div id="layout" className="d-flex flex-column overflow-auto">
                 <div className="d-flex" style={{height:`${topNavHeight}px`}}>
                     <TopNav />
