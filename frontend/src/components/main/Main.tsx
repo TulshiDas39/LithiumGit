@@ -27,7 +27,6 @@ function MainComponent(props:IMainComponentProps){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
-        branchPanelRefreshVersion:state.ui.versions.branchPanelRefresh,
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
 
@@ -39,37 +38,6 @@ function MainComponent(props:IMainComponentProps){
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
-
-    const getRepoDetails=()=>{            
-        window.ipcRenderer.send(RendererEvents.getRepositoryDetails().channel,store.selectedRepo);        
-    }
-    
-    useEffect(()=>{               
-        if(store.selectedRepo) {
-            CacheUtils.getRepoDetails(store.selectedRepo.path).then(res=>{
-                if(res) {
-                    BranchUtils.repositoryDetails = res;
-                    ReduxUtils.setStatusCurrent(res.status);
-                    // setState({repoDetails:res,selectedCommit:res.headCommit});
-
-                    // dispatch(ActionUI.increamentVersion("repoDetails"));
-                    BranchGraphUtils.createBranchPanel();
-                    BranchGraphUtils.insertNewBranchGraph();
-                }
-                else getRepoDetails();
-            });
-        }
-        // else getRepoDetails();
-
-        
-
-    },[store.selectedRepo]);
-
-    useEffect(()=>{
-        if(!store.branchPanelRefreshVersion) return;
-        // setState({repoDetails:undefined});
-        getRepoDetails();
-    },[store.branchPanelRefreshVersion]); 
 
     useEffect(()=>{
         registerIpcEvents();
@@ -86,21 +54,10 @@ function MainComponent(props:IMainComponentProps){
         }
         const sortedRepos = repos.sort((x1,x2)=> (x1.lastOpenedAt ?? "") > (x2.lastOpenedAt ?? "") ?-1:1);
         batch(()=>{
-            
             dispatch(ActionSavedData.setRecentRepositories(sortedRepos));
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
         });
         setState({isLoading:false});
-
-        window.ipcRenderer.on(RendererEvents.getRepositoryDetails().replyChannel,(e,res:IRepositoryDetails)=>{
-            ReduxUtils.setStatusCurrent(res.status);
-            BranchUtils.getRepoDetails(res);
-            BranchUtils.repositoryDetails = res;                    
-            CacheUtils.setRepoDetails(res);
-            BranchGraphUtils.createBranchPanel();
-            BranchGraphUtils.insertNewBranchGraph();
-
-        });
 
         ReduxUtils.setStatusCurrent = (status:IStatus)=>{
             let current = "";
@@ -139,7 +96,7 @@ function MainComponent(props:IMainComponentProps){
     },[]);
     if(state.isLoading) return null;
     return <div className="h-100">
-        {store.selectedRepo ? <SelectedRepository height={props.height} />:<RepositorySelection />}
+        {store.selectedRepo ? <SelectedRepository repo={store.selectedRepo} height={props.height} />:<RepositorySelection />}
     </div>
 }
 

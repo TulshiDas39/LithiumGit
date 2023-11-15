@@ -4,12 +4,11 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
 import { UiUtils } from "./UiUtils";
 import { EnumIdPrefix } from "../enums";
-import { Constants, createBranchDetailsObj, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
-import { DetachedHeadText } from "../../components/selectedRepository/selectedRepoRight/branches/DetachedHeadText";
-import ReactDOM from "react-dom";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
+import { Publisher } from "../publishers";
 
 interface IState{
     scrollTop:number;
@@ -21,6 +20,12 @@ interface IState{
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;    
+}
+
+interface IPublishers{
+    panelWidth:Publisher<number>;
+    panelHeight:Publisher<number>;
+    zoomLabel:Publisher<number>;
 }
 
 export class BranchGraphUtils{
@@ -35,7 +40,6 @@ export class BranchGraphUtils{
     static verticalScrollBarElement:HTMLDivElement = null!;
     // static headElement:HTMLElement = null!;
     static branchPanelHtml:string='';
-    static panelWidth = -1;
     static panelHeight = Math.floor(window.innerHeight * 0.65);
     static zoom = 0;
     static horizontalScrollWidth = 0;
@@ -46,9 +50,10 @@ export class BranchGraphUtils{
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     static readonly scrollbarSize = 10;
+    static publishers = {} as IPublishers;
 
     static get horizontalScrollContainerWidth(){
-        return this.panelWidth+10;
+        return this.publishers.panelWidth.value+10;
     }
 
     static handleCommitSelect=(commit:ICommitInfo)=>{};
@@ -80,7 +85,7 @@ export class BranchGraphUtils{
             scrollTop:0,
             horizontalScrollRatio:0,
             verticalScrollRatio:0,
-            viewBox: {x:0,y:0,width:this.panelWidth,height:this.panelHeight},
+            viewBox: {x:0,y:0,width:this.publishers.panelWidth.value,height:this.panelHeight},
             notScrolledHorizontallyYet:true,
             notScrolledVerticallyYet:true,
             verticalScrollTop:0,
@@ -101,12 +106,11 @@ export class BranchGraphUtils{
     }
 
     static createBranchPanel(){
-        const branchPanelContainer = document.querySelector(`#${BranchGraphUtils.branchPanelContainerId}`)!;
-        BranchGraphUtils.panelWidth = Math.floor(branchPanelContainer.getBoundingClientRect().width)-10;         
-        if(!BranchUtils.repositoryDetails) return;
-        if(this.panelWidth ===  -1) return;        
+        this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;                        
+        //if(this.panelWidth ===  -1) return;        
+        this.InitPublishers();
         
-        this.state.viewBox.width = this.panelWidth;
+        this.state.viewBox.width = this.publishers.panelWidth.value;
         this.state.viewBox.height = this.panelHeight;
 
         this.updateScrollWidthValues();
@@ -116,7 +120,7 @@ export class BranchGraphUtils{
         this.selectedCommit = BranchUtils.repositoryDetails.headCommit;
 
         this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
-            containerWidth:this.panelWidth,
+            containerWidth:this.publishers.panelWidth.value,
             panelHeight:this.panelHeight,
             repoDetails:BranchUtils.repositoryDetails,
             viewBox:this.state.viewBox,
@@ -127,6 +131,7 @@ export class BranchGraphUtils{
             scrollBarSize:this.scrollbarSize,
         }))
 
+        this.insertNewBranchGraph();
     }  
 
     static displayHeadIdentifier(){
@@ -135,9 +140,8 @@ export class BranchGraphUtils{
         headElem?.classList.remove("d-none");             
     }
 
-    static insertNewBranchGraph(){
-        if(!this.branchPanelHtml) return;
-        this.branchPanelContainer = document.querySelector(`#${this.branchPanelContainerId}`) as HTMLDivElement;
+    private static insertNewBranchGraph(){
+        if(!this.branchPanelHtml) return;        
         // if(!this.branchPanelContainer) return;
         this.branchPanelContainer.innerHTML = this.branchPanelHtml;
 
@@ -180,18 +184,18 @@ export class BranchGraphUtils{
             }
         }
         else{
-            if(this.panelWidth <= this.horizontalScrollWidth) return;
+            if(this.publishers.panelWidth.value <= this.horizontalScrollWidth) return;
             let newLeft = this.dataRef.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
-            const maxLeft = this.panelWidth - this.horizontalScrollWidth;
+            const maxLeft = this.publishers.panelWidth.value - this.horizontalScrollWidth;
             if(newLeft < 0) newLeft = 0;
             else if(newLeft > maxLeft) newLeft = maxLeft;
             let newRatio = newLeft/maxLeft;            
 
             let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-            if(totalWidth <this.panelWidth) totalWidth = this.panelWidth;
+            if(totalWidth <this.publishers.panelWidth.value) totalWidth = this.publishers.panelWidth.value;
 
             const x = totalWidth *newRatio;
-            let viewBoxX = x - (this.panelWidth/2);
+            let viewBoxX = x - (this.publishers.panelWidth.value/2);
 
             
             this.state.horizontalScrollRatio= newRatio;
@@ -272,19 +276,19 @@ export class BranchGraphUtils{
     
             }
             
-            if(!!svgScrollMousePosition?.x && this.panelWidth > this.horizontalScrollWidth){
+            if(!!svgScrollMousePosition?.x && this.publishers.panelWidth.value > this.horizontalScrollWidth){
                 let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-                if(totalWidth <this.panelWidth) totalWidth = this.panelWidth;
+                if(totalWidth <this.publishers.panelWidth.value) totalWidth = this.publishers.panelWidth.value;
     
-                const maxLeft = this.panelWidth - this.horizontalScrollWidth;
-                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(this.state.viewBox.width/this.panelWidth));            
+                const maxLeft = this.publishers.panelWidth.value - this.horizontalScrollWidth;
+                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(this.state.viewBox.width/this.publishers.panelWidth.value));            
                 newHorizontalScrollLeft = this.dataRef.initialHorizontalScrollLeft- movedScrollBar;
                 if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
                 else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
                 newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
     
                 const x = totalWidth *newHorizontalRatio;
-                let viewBoxX = x - (this.panelWidth/2);   
+                let viewBoxX = x - (this.publishers.panelWidth.value/2);   
                 newViewBox.x = viewBoxX;                         
             }
                 
@@ -414,11 +418,11 @@ export class BranchGraphUtils{
         return height*this.panelHeight;
     }
 
-    static  getHorizontalScrollWidth(){
+    static getHorizontalScrollWidth(){
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        if(totalWidth < this.panelWidth) totalWidth = this.panelWidth;
+        if(totalWidth < this.publishers.panelWidth.value) totalWidth = this.publishers.panelWidth.value;
         const widthRatio = this.state.viewBox.width / totalWidth;
-        const horizontalScrollWidth = widthRatio*this.panelWidth;
+        const horizontalScrollWidth = widthRatio*this.publishers.panelWidth.value;
         return horizontalScrollWidth;
     }
 
@@ -458,7 +462,7 @@ export class BranchGraphUtils{
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;        
-        if(totalWidth < this.panelWidth) totalHeight = this.panelWidth;
+        if(totalWidth < this.publishers.panelWidth.value) totalHeight = this.publishers.panelWidth.value;
         const horizontalRatio = this.focusedCommit.x/totalWidth;
         const verticalRatio = this.focusedCommit.ownerBranch.y/totalHeight;
         let verticalScrollTop = (this.panelHeight-this.verticalScrollHeight)*verticalRatio;   
@@ -468,7 +472,7 @@ export class BranchGraphUtils{
 
         const x = totalWidth *horizontalRatio;
         let viewBoxX = 0;
-        if(totalWidth > this.panelWidth) viewBoxX = x- (this.panelWidth/2);
+        if(totalWidth > this.publishers.panelWidth.value) viewBoxX = x- (this.publishers.panelWidth.value/2);
 
         const y = totalHeight *verticalRatio;
         let viewBoxY = 0;
@@ -609,7 +613,6 @@ export class BranchGraphUtils{
 
     static refreshBranchPanelUi(){
         this.createBranchPanel();
-        this.insertNewBranchGraph();
     }
 
     static handleNewBranch(sourceCommit:ICommitInfo,branch:string,status:IStatus){
@@ -808,17 +811,30 @@ export class BranchGraphUtils{
 
     private static updateSvgSizeUi(){
         this.svgElement.setAttribute("height",this.panelHeight+"");                   
-        this.svgElement.setAttribute("width",this.panelWidth+"");                   
+        this.svgElement.setAttribute("width",this.publishers.panelWidth.value+"");                   
     }
 
     static resizeGraph(width:number,height:number){
-        console.log("resizing",width,height);
-        BranchGraphUtils.panelWidth = width;
-        BranchGraphUtils.panelHeight = height;
-        this.state.viewBox.width = width;
-        this.state.viewBox.height = height;
+        // console.log("resizing",width,height);
+        // BranchGraphUtils.panelWidth = width;
+        // BranchGraphUtils.panelHeight = height;
+        // this.state.viewBox.width = width;
+        // this.state.viewBox.height = height;
 
-        this.updateViewBoxUi();
-        this.updateSvgSizeUi();
+        // this.updateViewBoxUi();
+        // this.updateSvgSizeUi();
+    }    
+
+    static InitPublishers(){
+        const width = Math.floor(this.branchPanelContainer.getBoundingClientRect().width)-10;
+        this.publishers.panelWidth = new Publisher(width);
+    }
+
+    static UpdateStates(){
+
+    }
+
+    static updateGraph(){
+
     }
 }
