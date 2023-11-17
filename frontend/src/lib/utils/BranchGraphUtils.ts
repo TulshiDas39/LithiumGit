@@ -40,7 +40,6 @@ export class BranchGraphUtils{
     static verticalScrollBarElement:HTMLDivElement = null!;
     // static headElement:HTMLElement = null!;
     static branchPanelHtml:string='';
-    static panelHeight = Math.floor(window.innerHeight * 0.65);
     static zoom = 0;
     static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;
@@ -85,7 +84,7 @@ export class BranchGraphUtils{
             scrollTop:0,
             horizontalScrollRatio:0,
             verticalScrollRatio:0,
-            viewBox: {x:0,y:0,width:this.publishers.panelWidth.value,height:this.panelHeight},
+            viewBox: {x:0,y:0,width:this.publishers.panelWidth.value,height:this.publishers.panelHeight.value},
             notScrolledHorizontallyYet:true,
             notScrolledVerticallyYet:true,
             verticalScrollTop:0,
@@ -111,7 +110,7 @@ export class BranchGraphUtils{
         this.InitPublishers();
         
         this.state.viewBox.width = this.publishers.panelWidth.value;
-        this.state.viewBox.height = this.panelHeight;
+        this.state.viewBox.height = this.publishers.panelHeight.value;
 
         this.updateScrollWidthValues();
 
@@ -121,7 +120,7 @@ export class BranchGraphUtils{
 
         this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             containerWidth:this.publishers.panelWidth.value,
-            panelHeight:this.panelHeight,
+            panelHeight:this.publishers.panelHeight.value,
             repoDetails:BranchUtils.repositoryDetails,
             viewBox:this.state.viewBox,
             horizontalScrollWidth:this.horizontalScrollWidth,
@@ -215,17 +214,17 @@ export class BranchGraphUtils{
             }
         }
         else{
-            if(this.panelHeight <= this.verticalScrollHeight) return;
+            if(this.publishers.panelHeight.value <= this.verticalScrollHeight) return;
             let newY = this.dataRef.initialVerticalScrollTop + verticalScrollMousePosition!.y;
-            const maxY = this.panelHeight - this.verticalScrollHeight;
+            const maxY = this.publishers.panelHeight.value - this.verticalScrollHeight;
             if(newY > maxY) newY = maxY;
             else if(newY < 0) newY = 0;
             const newRatio = newY/maxY;
             let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
-            if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;
+            if(totalHeight < this.publishers.panelHeight.value) totalHeight = this.publishers.panelHeight.value;
 
             const y = totalHeight *newRatio;
-            let viewBoxY = y - (this.panelHeight/2);            
+            let viewBoxY = y - (this.publishers.panelHeight.value/2);            
             
             this.state.verticalScrollRatio= newRatio;
             this.state.notScrolledVerticallyYet=false;
@@ -258,20 +257,20 @@ export class BranchGraphUtils{
             let newVerticalScrollTop = this.state.verticalScrollTop;
             
     
-            if(!!svgScrollMousePosition?.y && this.panelHeight > this.verticalScrollHeight){
+            if(!!svgScrollMousePosition?.y && this.publishers.panelHeight.value > this.verticalScrollHeight){
                 let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
-                if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;
-                let maxY = this.panelHeight - this.verticalScrollHeight;
-                const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(this.state.viewBox.height/this.panelHeight));                        
+                if(totalHeight < this.publishers.panelHeight.value) totalHeight = this.publishers.panelHeight.value;
+                let maxY = this.publishers.panelHeight.value - this.verticalScrollHeight;
+                const movedScrollBar = (svgScrollMousePosition.y*(maxY/totalHeight)*(this.state.viewBox.height/this.publishers.panelHeight.value));                        
                 newVerticalScrollTop = this.dataRef.initialVerticalScrollTop - movedScrollBar;
                 
                 if(newVerticalScrollTop > maxY) newVerticalScrollTop = maxY;
                 else if(newVerticalScrollTop < 0) newVerticalScrollTop = 0;
-                newVerticalRatio = newVerticalScrollTop/(this.panelHeight-this.verticalScrollHeight);
+                newVerticalRatio = newVerticalScrollTop/(this.publishers.panelHeight.value-this.verticalScrollHeight);
                 
     
                 const y = totalHeight *newVerticalRatio;
-                let viewBoxY = y - (this.panelHeight/2);
+                let viewBoxY = y - (this.publishers.panelHeight.value/2);
                 newViewBox.y = viewBoxY;
     
             }
@@ -394,7 +393,7 @@ export class BranchGraphUtils{
                 svgContainerElem.style.width = widthStr;
             horizontalScrollBarContainer.style.width = widthStr;
             horizontalScrollBarContainer.style.width = widthStr;
-            this.resizeGraph(width,this.panelHeight);
+            this.resizeGraph(width,this.publishers.panelHeight.value);
 
         }
         new ResizeObserver(handleResize).observe(this.branchPanelContainer)
@@ -413,9 +412,9 @@ export class BranchGraphUtils{
 
     static getVerticalScrollHeight(){        
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
-        if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;
+        if(totalHeight < this.publishers.panelHeight.value) totalHeight = this.publishers.panelHeight.value;
         const height = this.state.viewBox.height / totalHeight;        
-        return height*this.panelHeight;
+        return height*this.publishers.panelHeight.value;
     }
 
     static getHorizontalScrollWidth(){
@@ -461,11 +460,11 @@ export class BranchGraphUtils{
 
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
-        if(totalHeight < this.panelHeight) totalHeight = this.panelHeight;        
+        if(totalHeight < this.publishers.panelHeight.value) totalHeight = this.publishers.panelHeight.value;        
         if(totalWidth < this.publishers.panelWidth.value) totalHeight = this.publishers.panelWidth.value;
         const horizontalRatio = this.focusedCommit.x/totalWidth;
         const verticalRatio = this.focusedCommit.ownerBranch.y/totalHeight;
-        let verticalScrollTop = (this.panelHeight-this.verticalScrollHeight)*verticalRatio;   
+        let verticalScrollTop = (this.publishers.panelHeight.value-this.verticalScrollHeight)*verticalRatio;   
         let horizontalScrollLeft = (this.horizontalScrollContainerWidth-this.horizontalScrollWidth)*horizontalRatio;
         this.dataRef.initialVerticalScrollTop = verticalScrollTop;
         this.dataRef.initialHorizontalScrollLeft = horizontalScrollLeft;
@@ -476,7 +475,7 @@ export class BranchGraphUtils{
 
         const y = totalHeight *verticalRatio;
         let viewBoxY = 0;
-        if(totalHeight > this.panelHeight) viewBoxY = y - (this.panelHeight/2);        
+        if(totalHeight > this.publishers.panelHeight.value) viewBoxY = y - (this.publishers.panelHeight.value/2);        
         
         this.state.horizontalScrollRatio=horizontalRatio;
         this.state.verticalScrollRatio=verticalRatio;
@@ -810,7 +809,7 @@ export class BranchGraphUtils{
     }
 
     private static updateSvgSizeUi(){
-        this.svgElement.setAttribute("height",this.panelHeight+"");                   
+        this.svgElement.setAttribute("height",this.publishers.panelHeight.value+"");                   
         this.svgElement.setAttribute("width",this.publishers.panelWidth.value+"");                   
     }
 
@@ -828,6 +827,7 @@ export class BranchGraphUtils{
     static InitPublishers(){
         const width = Math.floor(this.branchPanelContainer.getBoundingClientRect().width)-10;
         this.publishers.panelWidth = new Publisher(width);
+        this.publishers.panelHeight = new Publisher(Math.floor(window.innerHeight * 0.65));
     }
 
     static UpdateStates(){
