@@ -4,3 +4,4 @@ export * from './CacheUtils';
 export * from './DiffUtils';
 export * from './ReduxUtils';
 export * from './ObjectUtils';
+export * from './BranchGraphUtils';

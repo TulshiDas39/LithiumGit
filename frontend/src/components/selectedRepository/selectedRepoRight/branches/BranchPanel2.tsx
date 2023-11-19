@@ -1,19 +1,13 @@
 import { IRepositoryDetails } from "common_library";
 import  { Fragment } from "react"
-import { ScaleLoader } from "react-spinners";
-import { IViewBox } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { SingleBranch2 } from "./SingleBranch2";
+import { EnumHtmlIds } from "../../../../lib";
 
 interface IBranchPanelProps{
     panelHeight:number;
     containerWidth:number;
-    viewBox:IViewBox;
     repoDetails:IRepositoryDetails;
-    horizontalScrollWidth:number;
-    verticalScrollHeight:number;
-    horizontalScrollLeft:number;
-    verticalScrollTop:number;
     scrollBarSize:number;
 }
 
@@ -22,11 +16,11 @@ export function BranchPanel2(props:IBranchPanelProps){
     console.log("horizontalScrollContainerWidth", horizontalScrollContainerWidth)
     console.log("props.panelHeight", props.containerWidth)
     
-    return <div id="branchPanel" className="w-100" style={{overflow:'hidden'}}>
+    return <div id={EnumHtmlIds.branchPanel} className="w-100 d-none" style={{overflow:'hidden'}}>
         <Fragment>
-            <div id={BranchGraphUtils.svgContainerId} className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth}px`}}>
+            <div id={BranchGraphUtils.svgContainerId} className="d-flex align-items-stretch" style={{width:`${horizontalScrollContainerWidth-10}px`}}>
                 <svg
-                width={props.containerWidth} height={props.panelHeight} viewBox={`${props.viewBox.x} ${props.viewBox.y} ${props.viewBox.width} ${props.viewBox.height}` } style={{transform:`scale(1)`} }>
+                width={props.containerWidth} height={props.panelHeight} viewBox={`0 0 ${props.containerWidth} ${props.panelHeight}` } style={{transform:`scale(1)`} }>
                         <g>
                             {
                                 props.repoDetails.mergedLines.map(line=>(
@@ -48,11 +42,11 @@ export function BranchPanel2(props:IBranchPanelProps){
                         </g>
                 </svg>
                 <div className="d-flex bg-secondary position-relative" style={{width:`10px`}}>
-                    <div id={BranchGraphUtils.verticalScrollBarId} className="bg-danger position-absolute w-100" style={{height:`${props.verticalScrollHeight}px`,top:props.verticalScrollTop,left:0}}> </div>
+                    <div id={BranchGraphUtils.verticalScrollBarId} className="bg-danger position-absolute w-100" style={{height:`0px`,top:0,left:0}}> </div>
                 </div>
             </div>            
             <div className="d-flex bg-secondary py-2 position-relative" style={{width:`${horizontalScrollContainerWidth}px`}}>
-                <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`${props.horizontalScrollWidth}px`, left:props.horizontalScrollLeft,top:0}}></div>
+                <div id={BranchGraphUtils.horizontalScrollBarId} className="position-absolute bg-danger h-100" style={{width:`0px`, left:0,top:0}}></div>
             </div>           
         </Fragment>        
     </div>

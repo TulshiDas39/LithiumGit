@@ -43,8 +43,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         BranchUtils.repositoryDetails = res;
         ReduxUtils.setStatusCurrent(res.status);                        
         if(state.isLoading)
-            setState({isLoading:false});
-        BranchGraphUtils.createBranchPanel();
+            setState({isLoading:false});        
         
     }
 
@@ -72,6 +71,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         if(refData.current.previousRepo != props.repo){
             updateRepoData();
             refData.current.previousRepo = props.repo;
+            BranchGraphUtils.createBranchPanel();
         }
     },[props.repo]);
 

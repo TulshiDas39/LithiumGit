@@ -1,6 +1,6 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { shallowEqual } from "react-redux";
-import { EnumSelectedRepoTab } from "../../../../lib";
+import { EnumHtmlIds, EnumSelectedRepoTab } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
@@ -26,7 +26,7 @@ function BranchesViewComponent(){
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show?'':'d-none'}`}>
     <BranchActions />
     <div className="d-flex w-100 overflow-hidden">
-        <div id={BranchGraphUtils.branchPanelContainerId} className="w-75">
+        <div id={EnumHtmlIds.branchPanelContainer} className="w-75">
             {/* branch graph will be displayed here */}
         </div>
         <div className="w-25 ps-2">
