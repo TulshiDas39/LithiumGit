@@ -9,7 +9,7 @@ import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { Publisher } from "../publishers";
-import { BranchPanelWidth, HorizontalScrollWidth } from "./branchPanel";
+import { BranchPanelWidth, HorizontalScrollLeft, HorizontalScrollWidth } from "./branchPanel";
 
 interface IState{
     panelWidth:BranchPanelWidth;
@@ -20,26 +20,27 @@ interface IState{
     selectedCommit:Publisher<ICommitInfo>;
     horizontalScrollWidth:HorizontalScrollWidth;
     horizontalScrollRatio:number;
+    horizontalScrollRatio2: Publisher<number>;
+    zoomLabel2: Publisher<number>;
     verticalScrollRatio:number;
     viewBox:IViewBox;
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
-    horizontalScrollLeft:number;    
+    horizontalScrollLeft:number;
+    horizontalScrollLeft2:Publisher<number>;    
 }
 
 
 export class BranchGraphUtils{
-    static horizontalScrollBarId = "horizontalScrollBar";
-    static verticalScrollBarId = "verticalScrollBar";
-    static svgContainerId = "svgContainer";
-    static branchPanelContainer:HTMLDivElement;
+    //static horizontalScrollBarId = "horizontalScrollBar";    
+    static svgContainer:HTMLDivElement;
     static branchPanelRootElement:HTMLDivElement= null!;
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
     static verticalScrollBarElement:HTMLDivElement = null!;
     // static headElement:HTMLElement = null!;
-    static branchPanelHtml:string='';
+    static branchSvgHtml='';
     static zoom = 0;
     //static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;
@@ -48,7 +49,8 @@ export class BranchGraphUtils{
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
-    static readonly scrollbarSize = 10;
+    //static readonly scrollbarSize = 10;
+    static readonly verticalScrollBarWidth = 10;
 
     static get horizontalScrollContainerWidth(){
         return this.state.panelWidth.value+10;
@@ -64,6 +66,8 @@ export class BranchGraphUtils{
         panelHeight:new Publisher(0),
         selectedCommit: new Publisher<ICommitInfo>(null!),
         zoomLabel:new Publisher(0),
+        zoomLabel2:new Publisher(1),
+        horizontalScrollLeft2:new HorizontalScrollLeft(0),
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
         viewBox: {x:0,y:0,width:0,height:0},
@@ -72,6 +76,7 @@ export class BranchGraphUtils{
         verticalScrollTop:0,
         horizontalScrollLeft:0,
         horizontalScrollWidth:new HorizontalScrollWidth(0).subscribe(BranchGraphUtils.updateHorizontalScrollBarUi),
+        horizontalScrollRatio2:new Publisher(1.0)
     };
 
     static dataRef ={
@@ -83,13 +88,13 @@ export class BranchGraphUtils{
     }
 
     static updateScrollWidthUis(){
-        if(!this.svgElement) return;
+        //if(!this.svgElement) return;
         this.updateScrollWidthValues();
         this.verticalScrollBarElement.style.height = `${this.verticalScrollHeight}px`;
     }
     
     static updateHorizontalScrollBarUi(){
-        this.horizontalScrollBarElement.style.width = `${BranchGraphUtils.state.horizontalScrollWidth.value}px`;
+        BranchGraphUtils.horizontalScrollBarElement.style.width = `${BranchGraphUtils.state.horizontalScrollWidth.value}px`;
     }
 
     static updateScrollWidthValues(){
@@ -98,7 +103,7 @@ export class BranchGraphUtils{
     }
 
     static createBranchPanel(){
-        this.branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                        
+        BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                        
         //this.InitPublishers();
         
         // this.state.viewBox.width = this.publishers.state.panelWidth.value;
@@ -108,28 +113,27 @@ export class BranchGraphUtils{
 
         //this.setScrollPosition();
         
-        this.selectedCommit = BranchUtils.repositoryDetails.headCommit;
+        BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
 
-        this.branchPanelHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
-            containerWidth:this.branchPanelContainer.getBoundingClientRect().width,
-            panelHeight:Math.floor(window.innerHeight * 0.65),
+        BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
+            width:BranchGraphUtils.svgContainer.getBoundingClientRect().width,
+            height:Math.floor(window.innerHeight * 0.65),
             repoDetails:BranchUtils.repositoryDetails,
-            scrollBarSize:this.scrollbarSize,
         }))
 
-        this.branchPanelContainer.innerHTML = this.branchPanelHtml;
+        BranchGraphUtils.svgContainer.innerHTML = this.branchSvgHtml;
 
-        this.svgElement = this.branchPanelContainer.querySelector('svg')!;
-        this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
-        this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
+        this.svgElement = this.svgContainer.querySelector('svg')!;
+        this.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
+        this.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         //this.insertNewBranchGraph();
 //        this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         this.updateUi();
-        this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
+        //this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         //this.updateUi();
         this.handleCommitSelect(this.selectedCommit);
-        const branchPanel = document.querySelector(`#${EnumHtmlIds.branchPanel}`);
-        branchPanel?.classList.remove('d-none');
+        const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
+        branchPanelContainer.classList.remove('invisible');
     }  
 
     private static insertNewBranchGraph(){
@@ -308,10 +312,10 @@ export class BranchGraphUtils{
         const clickListener = (target:HTMLElement)=>{
             let existingSelectedCommitElem:Element | null ;
             if(!this.selectedCommit.hash){
-                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
+                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
             }
             else {
-                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
             }
             existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
@@ -378,10 +382,10 @@ export class BranchGraphUtils{
     }
 
     private static addResizeListener(){
-        const svgContainerElem = document.getElementById(this.svgContainerId);
+        const svgContainerElem = document.getElementById(EnumHtmlIds.branchSvgContainer);
         const horizontalScrollBarContainer = this.horizontalScrollBarElement.parentElement!;
         const handleResize = ()=>{
-            const width = this.branchPanelContainer.offsetWidth;
+            const width = this.svgContainer.offsetWidth;
             const widthStr = width+"px";
             if(svgContainerElem)
                 svgContainerElem.style.width = widthStr;
@@ -390,7 +394,7 @@ export class BranchGraphUtils{
             this.resizeGraph(width,this.state.panelHeight.value);
 
         }
-        new ResizeObserver(handleResize).observe(this.branchPanelContainer)
+        new ResizeObserver(handleResize).observe(this.svgContainer)
 
     }
 
@@ -440,7 +444,7 @@ export class BranchGraphUtils{
     }
 
     static scrollToHeadCommit(){
-        if(!this.branchPanelHtml) return;
+        if(!this.branchSvgHtml) return;
         this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
         this.setScrollPosition();
         this.updateUIPositioning();                      
@@ -691,7 +695,7 @@ export class BranchGraphUtils{
         const clickListener = (_e:MouseEvent)=>{
             let existingSelectedCommitElem:HTMLElement|null;
             if(this.selectedCommit.hash) {
-                existingSelectedCommitElem = this.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
                 existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             }
 
@@ -789,6 +793,7 @@ export class BranchGraphUtils{
     }
 
     static updateUi(){
+        this.state.panelWidth.update();
         this.updateScrollWidthUis();
         this.updateMergingStateUi();
         //this.updateHeadIdentifier();
@@ -799,11 +804,11 @@ export class BranchGraphUtils{
     }
 
     static updateHeadIdentifier(){        
-        const headElem = BranchGraphUtils.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.value.hash}`)
+        const headElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.value.hash}`)
         headElem?.classList.remove("d-none");
         if(!BranchGraphUtils.state.headCommit.prevValue)
             return;
-        const prevHeadElem = BranchGraphUtils.branchPanelContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.prevValue!.hash}`);
+        const prevHeadElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.prevValue!.hash}`);
         prevHeadElem?.classList.add("d-none");         
     }
 
@@ -841,7 +846,7 @@ export class BranchGraphUtils{
     }    
 
     static InitPublishers(){
-        const width = Math.floor(this.branchPanelContainer.getBoundingClientRect().width)-10;
+        const width = Math.floor(this.svgContainer.getBoundingClientRect().width)-10;
         //this.state.panelWidth = new BranchPanelWidth(width);
         this.state.panelHeight = new Publisher(Math.floor(window.innerHeight * 0.65));
         let mergingCommit = null! as ICommitInfo;

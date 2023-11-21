@@ -6,8 +6,10 @@ export class HorizontalScrollWidth extends DerivedPublisher<number>{
     getDerivedValue(): number {
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         if(totalWidth < BranchGraphUtils.state.panelWidth.value) totalWidth = BranchGraphUtils.state.panelWidth.value;
-        const widthRatio = BranchGraphUtils.state.viewBox.width / totalWidth;
-        const horizontalScrollWidth = widthRatio*BranchGraphUtils.state.panelWidth.value;
-        return horizontalScrollWidth;
+        const panelWidth = BranchGraphUtils.state.panelWidth.value;
+        const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;
+        const effectiveWidth = totalWidth * zoomLabel;
+        console.log("hscrol width",panelWidth / effectiveWidth);
+        return panelWidth / effectiveWidth;        
     }
 }
