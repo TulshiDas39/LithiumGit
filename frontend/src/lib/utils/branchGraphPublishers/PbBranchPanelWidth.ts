@@ -1,7 +1,7 @@
 import { EnumHtmlIds } from "../../enums";
 import { DerivedPublisher } from "../../publishers";
 
-export class BranchPanelWidth extends DerivedPublisher<number>{
+export class PbBranchPanelWidth extends DerivedPublisher<number>{
     getDerivedValue() {
         const elem = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`);
         if(!elem)

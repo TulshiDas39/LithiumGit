@@ -8,12 +8,11 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { Publisher } from "../publishers";
-import { BranchPanelWidth, HorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbHorizontalScrollRatio, PbMergeCommit, PbPanelHeight, PbSelectedCommit, PbZoomLabel } from "./branchPanel";
+import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbHorizontalScrollRatio, PbMergeCommit, PbPanelHeight, PbSelectedCommit, PbZoomLabel } from "./branchGraphPublishers";
 
 
 interface IState{
-    panelWidth:BranchPanelWidth;
+    panelWidth:PbBranchPanelWidth;
     panelHeight:PbPanelHeight;
     zoomLabel:PbZoomLabel;
     mergingCommit:PbMergeCommit;
@@ -29,7 +28,7 @@ interface IState{
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;
-    horizontalScrollLeft2:HorizontalScrollLeft; 
+    horizontalScrollLeft2:PbHorizontalScrollLeft; 
 }
 
 
@@ -61,14 +60,14 @@ export class BranchGraphUtils{
     static openContextModal=()=>{};
    
     static state:IState={
-        panelWidth: new BranchPanelWidth(),
+        panelWidth: new PbBranchPanelWidth(),
         headCommit:new PbHeadCommit(null!).subscribe(BranchGraphUtils.updateHeadIdentifier),
         mergingCommit:new PbMergeCommit(null!).subscribe(BranchGraphUtils.updateMergingStateUi),
         panelHeight:new PbPanelHeight(0),
         selectedCommit: new PbSelectedCommit(null!),
         zoomLabel:new PbZoomLabel(0),
         zoomLabel2:new PbZoomLabel(1),
-        horizontalScrollLeft2:new HorizontalScrollLeft(0),
+        horizontalScrollLeft2:new PbHorizontalScrollLeft(0),
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
         viewBox: {x:0,y:0,width:0,height:0},

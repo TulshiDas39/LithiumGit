@@ -1,7 +1,7 @@
 import { DerivedPublisher } from "../../publishers";
 import { BranchGraphUtils } from "../BranchGraphUtils";
 
-export class HorizontalScrollLeft extends DerivedPublisher<number>{
+export class PbHorizontalScrollLeft extends DerivedPublisher<number>{
     onChange(): void {
         //throw new Error("Method not implemented.");
     }
