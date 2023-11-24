@@ -4,6 +4,11 @@ import { BranchGraphUtils } from "../BranchGraphUtils";
 import { BranchUtils } from "../BranchUtils";
 
 export class PbHorizontalScrollWidth extends DerivedPublisher<number>{
+    constructor(value?:number){
+        super(value);
+        BranchGraphUtils.state.panelWidth.subscribe(this.update.bind(this));
+        BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
+    }
     onChange(): void {        
         const elem = BranchGraphUtils.svgContainer.parentElement!.
             parentElement!.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLElement;

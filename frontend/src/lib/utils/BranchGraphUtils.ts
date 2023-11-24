@@ -67,7 +67,6 @@ export class BranchGraphUtils{
         selectedCommit: new PbSelectedCommit(null!),
         zoomLabel:new PbZoomLabel(0),
         zoomLabel2:new PbZoomLabel(1),
-        horizontalScrollLeft2:new PbHorizontalScrollLeft(0),
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
         viewBox: {x:0,y:0,width:0,height:0},
@@ -75,9 +74,8 @@ export class BranchGraphUtils{
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
         horizontalScrollLeft:0,
-        horizontalScrollWidth:new PbHorizontalScrollWidth(0).subscribe(BranchGraphUtils.updateHorizontalScrollBarUi),
-        horizontalScrollRatio2:new PbHorizontalScrollRatio(1.0),
-    };
+        horizontalScrollRatio2:new PbHorizontalScrollRatio(0),
+    } as IState;
 
     static dataRef ={
         initialHorizontalScrollLeft:0,
@@ -85,6 +83,14 @@ export class BranchGraphUtils{
         isMounted:false,
         zoom:this.zoom,
         initialViewbox:this.state.viewBox,
+    }
+
+    static init(){
+        BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
+        BranchGraphUtils.state.horizontalScrollLeft2 = new PbHorizontalScrollLeft(0);
+        window.addEventListener("resize",()=>{
+            BranchGraphUtils.state.panelWidth.update();
+        });
     }
 
     static updateScrollWidthUis(){
@@ -794,7 +800,9 @@ export class BranchGraphUtils{
 
     static updateUi(){
         BranchGraphUtils.state.panelWidth.update();
-        BranchGraphUtils.updateScrollWidthUis();
+        BranchGraphUtils.state.horizontalScrollWidth.update();
+        BranchGraphUtils.state.horizontalScrollRatio2.publish(1);
+        //BranchGraphUtils.updateScrollWidthUis();
         BranchGraphUtils.updateMergingStateUi();
         //this.updateHeadIdentifier();
     }
