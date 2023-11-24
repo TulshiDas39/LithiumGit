@@ -1,12 +1,12 @@
 import { IPublisher } from "../interfaces";
 
-export class Publisher<T> implements IPublisher<T>{
+export abstract class Publisher<T> implements IPublisher<T>{
     protected _prevVal?:T;
     protected _val:T;
     private events:((val: T) => void)[]=[];
     constructor(value:T){
         this._val = value;
-    }
+    }    
     get value(){
         return this._val;
     }
@@ -27,7 +27,9 @@ export class Publisher<T> implements IPublisher<T>{
             return;
         this._prevVal = this._val;
         this._val = v;
+        this.onChange();
         this.events.forEach(f => f(this._val));
     }
 
+    abstract onChange(): void;
 }

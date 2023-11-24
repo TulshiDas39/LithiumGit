@@ -9,26 +9,27 @@ import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { Publisher } from "../publishers";
-import { BranchPanelWidth, HorizontalScrollLeft, HorizontalScrollWidth } from "./branchPanel";
+import { BranchPanelWidth, HorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbHorizontalScrollRatio, PbMergeCommit, PbPanelHeight, PbSelectedCommit, PbZoomLabel } from "./branchPanel";
+
 
 interface IState{
     panelWidth:BranchPanelWidth;
-    panelHeight:Publisher<number>;
-    zoomLabel:Publisher<number>;
-    mergingCommit:Publisher<ICommitInfo>;
-    headCommit:Publisher<ICommitInfo>;
-    selectedCommit:Publisher<ICommitInfo>;
-    horizontalScrollWidth:HorizontalScrollWidth;
+    panelHeight:PbPanelHeight;
+    zoomLabel:PbZoomLabel;
+    mergingCommit:PbMergeCommit;
+    headCommit:PbHeadCommit;
+    selectedCommit:PbSelectedCommit;
+    horizontalScrollWidth:PbHorizontalScrollWidth;
     horizontalScrollRatio:number;
-    horizontalScrollRatio2: Publisher<number>;
-    zoomLabel2: Publisher<number>;
+    horizontalScrollRatio2: PbHorizontalScrollRatio;
+    zoomLabel2: PbZoomLabel;
     verticalScrollRatio:number;
     viewBox:IViewBox;
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;
-    horizontalScrollLeft2:Publisher<number>;    
+    horizontalScrollLeft2:HorizontalScrollLeft; 
 }
 
 
@@ -61,12 +62,12 @@ export class BranchGraphUtils{
    
     static state:IState={
         panelWidth: new BranchPanelWidth(),
-        headCommit:new Publisher<ICommitInfo>(null!).subscribe(BranchGraphUtils.updateHeadIdentifier),
-        mergingCommit:new Publisher<ICommitInfo>(null!).subscribe(BranchGraphUtils.updateMergingStateUi),
-        panelHeight:new Publisher(0),
-        selectedCommit: new Publisher<ICommitInfo>(null!),
-        zoomLabel:new Publisher(0),
-        zoomLabel2:new Publisher(1),
+        headCommit:new PbHeadCommit(null!).subscribe(BranchGraphUtils.updateHeadIdentifier),
+        mergingCommit:new PbMergeCommit(null!).subscribe(BranchGraphUtils.updateMergingStateUi),
+        panelHeight:new PbPanelHeight(0),
+        selectedCommit: new PbSelectedCommit(null!),
+        zoomLabel:new PbZoomLabel(0),
+        zoomLabel2:new PbZoomLabel(1),
         horizontalScrollLeft2:new HorizontalScrollLeft(0),
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
@@ -75,8 +76,8 @@ export class BranchGraphUtils{
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
         horizontalScrollLeft:0,
-        horizontalScrollWidth:new HorizontalScrollWidth(0).subscribe(BranchGraphUtils.updateHorizontalScrollBarUi),
-        horizontalScrollRatio2:new Publisher(1.0)
+        horizontalScrollWidth:new PbHorizontalScrollWidth(0).subscribe(BranchGraphUtils.updateHorizontalScrollBarUi),
+        horizontalScrollRatio2:new PbHorizontalScrollRatio(1.0),
     };
 
     static dataRef ={
@@ -89,8 +90,8 @@ export class BranchGraphUtils{
 
     static updateScrollWidthUis(){
         //if(!this.svgElement) return;
-        this.updateScrollWidthValues();
-        this.verticalScrollBarElement.style.height = `${this.verticalScrollHeight}px`;
+        BranchGraphUtils.updateScrollWidthValues();
+        BranchGraphUtils.verticalScrollBarElement.style.height = `${this.verticalScrollHeight}px`;
     }
     
     static updateHorizontalScrollBarUi(){
@@ -99,7 +100,7 @@ export class BranchGraphUtils{
 
     static updateScrollWidthValues(){
         BranchGraphUtils.state.horizontalScrollWidth.update();
-        this.verticalScrollHeight = this.getVerticalScrollHeight();
+        BranchGraphUtils.verticalScrollHeight = BranchGraphUtils.getVerticalScrollHeight();
     }
 
     static createBranchPanel(){
@@ -123,15 +124,15 @@ export class BranchGraphUtils{
 
         BranchGraphUtils.svgContainer.innerHTML = this.branchSvgHtml;
 
-        this.svgElement = this.svgContainer.querySelector('svg')!;
-        this.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
-        this.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
+        BranchGraphUtils.svgElement = BranchGraphUtils.svgContainer.querySelector('svg')!;
+        BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
+        BranchGraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         //this.insertNewBranchGraph();
 //        this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
-        this.updateUi();
+        BranchGraphUtils.updateUi();
         //this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         //this.updateUi();
-        this.handleCommitSelect(this.selectedCommit);
+        BranchGraphUtils.handleCommitSelect(BranchGraphUtils.selectedCommit);
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
     }  
@@ -793,9 +794,9 @@ export class BranchGraphUtils{
     }
 
     static updateUi(){
-        this.state.panelWidth.update();
-        this.updateScrollWidthUis();
-        this.updateMergingStateUi();
+        BranchGraphUtils.state.panelWidth.update();
+        BranchGraphUtils.updateScrollWidthUis();
+        BranchGraphUtils.updateMergingStateUi();
         //this.updateHeadIdentifier();
     }
 
@@ -848,16 +849,13 @@ export class BranchGraphUtils{
     static InitPublishers(){
         const width = Math.floor(this.svgContainer.getBoundingClientRect().width)-10;
         //this.state.panelWidth = new BranchPanelWidth(width);
-        this.state.panelHeight = new Publisher(Math.floor(window.innerHeight * 0.65));
+        //this.state.panelHeight = new Publisher(Math.floor(window.innerHeight * 0.65));
         let mergingCommit = null! as ICommitInfo;
         if(BranchUtils.repositoryDetails.status.mergingCommitHash){
             mergingCommit = {
                 hash:BranchUtils.repositoryDetails.status.mergingCommitHash,
             } as ICommitInfo;
-        }
-        this.state.mergingCommit = new Publisher(mergingCommit);
-        this.state.headCommit = new Publisher(BranchUtils.repositoryDetails.headCommit);
-        this.state.selectedCommit = new Publisher(null! as ICommitInfo);
+        }        
     }
 
     static UpdateStates(){
