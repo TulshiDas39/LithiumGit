@@ -519,25 +519,21 @@ export class BranchGraphUtils{
 
     }
 
-    static controlZoom(action:"zoomIn"|"zoomOut"|"reset",zoomValue:number|undefined){
-        if(!this.svgElement) return;
-        if(!zoomValue) zoomValue = 10;
+    static controlZoom(action:"zoomIn"|"zoomOut"|"reset",diifValue:number|undefined){
+        if(!BranchGraphUtils.svgElement) return;
+        if(!diifValue) diifValue = 0.1;
+        let newValue = BranchGraphUtils.state.zoomLabel2.value;
         if(action === "zoomIn"){
-            this.zoom += zoomValue;            
+            newValue += diifValue             
         }
 
         else if(action === "zoomOut"){            
-            this.zoom -= zoomValue;
+            newValue -= diifValue;
         }
-        else this.zoom = 0;
+        else newValue = 1;
 
-        const viewBox = BranchUtils.getViewBoxValue(this.dataRef.initialViewbox,this.zoom);
-        this.state.viewBox = viewBox;            
-        this.dataRef.zoom = this.zoom;
-
-        this.updateUIPositioning();
-        this.updateScrollWidthUis();
-        this.handleZoomEffect();
+        newValue = NumUtils.between(0,2,newValue);
+        BranchGraphUtils.state.zoomLabel2.publish(newValue);        
     }
 
 
