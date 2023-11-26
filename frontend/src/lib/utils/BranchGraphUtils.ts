@@ -8,7 +8,7 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY } from "./branchGraphPublishers";
+import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
 
 
@@ -33,15 +33,16 @@ interface IState{
     horizontalScrollLeft2:PbHorizontalScrollLeft; 
     viewBoxX:PbViewBoxX;
     viewBoxY:PbViewBoxY;
-    viewBoxWidth:PbViewBoxWidth
-    viewBoxHeight:PbViewBoxHeight
+    viewBoxWidth:PbViewBoxWidth;
+    viewBoxHeight:PbViewBoxHeight;
+    verticalScrollHeight:PbVerticalScrollHeight;
 }
 
 
 export class BranchGraphUtils{
     //static horizontalScrollBarId = "horizontalScrollBar";    
     static svgContainer:HTMLDivElement;
-    static branchPanelRootElement:HTMLDivElement= null!;
+    static branchPanelContainerElement:HTMLDivElement= null!;
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
     static verticalScrollBarElement:HTMLDivElement = null!;
@@ -57,7 +58,7 @@ export class BranchGraphUtils{
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     //static readonly scrollbarSize = 10;
-    static readonly verticalScrollBarWidth = 10;
+    static readonly scrollBarSize = 10;
 
     static get horizontalScrollContainerWidth(){
         return this.state.panelWidth.value+10;
@@ -95,6 +96,7 @@ export class BranchGraphUtils{
 
     static init(){
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
+        BranchGraphUtils.state.verticalScrollHeight = new PbVerticalScrollHeight(0);
         BranchGraphUtils.state.horizontalScrollLeft2 = new PbHorizontalScrollLeft(0);
         BranchGraphUtils.state.viewBoxWidth = new PbViewBoxWidth(0);
         BranchGraphUtils.state.viewBoxHeight = new PbViewBoxHeight(0);
@@ -145,6 +147,8 @@ export class BranchGraphUtils{
         BranchGraphUtils.svgElement = BranchGraphUtils.svgContainer.querySelector('svg')!;
         BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
+        BranchGraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;
+        
         //this.insertNewBranchGraph();
 //        this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         BranchGraphUtils.updateUi();
@@ -758,8 +762,12 @@ export class BranchGraphUtils{
     static updateUi(){
         BranchGraphUtils.state.panelWidth.update();
         BranchGraphUtils.state.panelHeight.update();
-        BranchGraphUtils.state.horizontalScrollWidth.update();
         BranchGraphUtils.state.horizontalScrollRatio2.publish(1);
+        BranchGraphUtils.state.verticalScrollRatio2.publish(1);
+        BranchGraphUtils.state.horizontalScrollWidth.update();
+        BranchGraphUtils.state.verticalScrollHeight.update();
+        //BranchGraphUtils.state.horizontalScrollWidth.update();
+        
         //BranchGraphUtils.updateScrollWidthUis();
         //BranchGraphUtils.updateMergingStateUi();
         //this.updateHeadIdentifier();

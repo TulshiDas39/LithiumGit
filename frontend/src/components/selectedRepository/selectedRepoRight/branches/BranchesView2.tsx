@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { shallowEqual } from "react-redux";
 import { EnumHtmlIds, EnumSelectedRepoTab } from "../../../../lib";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
@@ -29,14 +29,14 @@ function BranchesViewComponent() {
         <div className="d-flex w-100 overflow-hidden">
             <div id={EnumHtmlIds.branchPanelContainer} className="w-75 invisible">
                 <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ overflow: 'hidden' }}>
-                    <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width:`calc(100% - ${BranchGraphUtils.verticalScrollBarWidth}px)`}}>
+                    <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width:`calc(100% - ${BranchGraphUtils.scrollBarSize}px)`}}>
                         {/* branch graph will be displayed here */}
                     </div>
-                    <div className="d-flex bg-secondary position-relative" style={{width:`${BranchGraphUtils.verticalScrollBarWidth}px`}}>
+                    <div className="d-flex bg-secondary position-relative" style={{width:`${BranchGraphUtils.scrollBarSize}px`}}>
                         <div id={EnumHtmlIds.branchVerticalScrollBar} className="bg-danger position-absolute w-100" style={{height:`0px`,top:0,left:0}}> </div>
                     </div>                    
                 </div>
-                <div className="d-flex bg-secondary py-2 w-100 position-relative">
+                <div className="d-flex bg-secondary w-100 position-relative" style={{height:`${BranchGraphUtils.scrollBarSize}px`}}>
                     <div id={EnumHtmlIds.branchHorizontalScrollBar} className="position-absolute bg-danger h-100" style={{width:`0px`, left:0,top:0}}></div>
                 </div> 
             </div>

@@ -9,3 +9,4 @@ export * from './PbViewBoxWidth';
 export * from './PbViewBoxHeight';
 export * from './PbMergeCommit';
 export * from './PbViewBoxY';
+export * from './PbVerticalScrollHeight';
