@@ -5,7 +5,7 @@ import { BranchGraphUtils } from "../BranchGraphUtils";
 import { BranchUtils } from "../BranchUtils";
 
 export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
-    getDerivedValue(): ICommitInfo|undefined {
+    protected getDerivedValue(): ICommitInfo|undefined {
         const commitHash = BranchUtils.repositoryDetails?.status.mergingCommitHash;
         if(!commitHash)
             return undefined;
@@ -13,7 +13,7 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
             hash:commitHash,
         } as ICommitInfo;
     }
-    applyChange(): void {
+    protected applyChange(): void {
         this.updateMergingStateUi();
     }
 

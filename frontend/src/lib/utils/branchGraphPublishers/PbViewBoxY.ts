@@ -9,14 +9,14 @@ export class PbViewBoxY extends DerivedState<number>{
         BranchGraphUtils.state.panelHeight.subscribe(this.update.bind(this));
         BranchGraphUtils.state.viewBoxHeight.subscribe(this.update.bind(this));
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         const scrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
         const totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         const viewBoxHeight = BranchGraphUtils.state.viewBoxHeight.value;
         const y = (totalHeight * scrollRatio) - (viewBoxHeight/2);
         return y;
     }
-    applyChange(): void {
+    protected applyChange(): void {
         const svgElem = BranchGraphUtils.svgElement;
         svgElem.setAttribute("viewBox",BranchGraphUtils.getViewBoxStr());
     }

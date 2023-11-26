@@ -2,7 +2,7 @@ import { EnumHtmlIds } from "../../enums";
 import { DerivedPublisher } from "../../publishers";
 
 export class PbPanelHeight extends DerivedPublisher<number>{
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         const elem = document.querySelector(`#${EnumHtmlIds.branchPanel}`);
         if(!elem)
             return 0;

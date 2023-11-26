@@ -4,10 +4,6 @@ export class NumUtils{
     }
 
     static between(min:number,max:number,value:number){
-        if(value < min)
-            return min;
-        if(value > max)
-            return max;
-        return value;
+        return Math.max(min,Math.min(max,value));        
     }
 }

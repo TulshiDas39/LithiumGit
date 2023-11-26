@@ -14,7 +14,7 @@ export class PbHorizontalScrollWidth extends DerivedState<number>{
             parentElement!.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLElement;
         elem.style.width = `${this._val}px`;        
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         if(totalWidth < BranchGraphUtils.state.panelWidth.value) totalWidth = BranchGraphUtils.state.panelWidth.value;
         const panelWidth = BranchGraphUtils.state.panelWidth.value;

@@ -9,7 +9,7 @@ export class PbViewBoxX extends DerivedState<number>{
         BranchGraphUtils.state.panelWidth.subscribe(this.update.bind(this));
         BranchGraphUtils.state.viewBoxWidth.subscribe(this.update.bind(this));
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         const scrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
         const totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         const viewBoxWidth = BranchGraphUtils.state.viewBoxWidth.value;

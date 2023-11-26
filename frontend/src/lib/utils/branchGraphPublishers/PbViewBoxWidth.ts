@@ -7,12 +7,12 @@ export class PbViewBoxWidth extends DerivedState<number>{
         BranchGraphUtils.state.panelWidth.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         const panelWidth = BranchGraphUtils.state.panelWidth.value;
         const zoom = BranchGraphUtils.state.zoomLabel2.value;
         return panelWidth / zoom;
     }
-    applyChange(): void {
+    protected applyChange(): void {
         const svgElem = BranchGraphUtils.svgElement;
         svgElem.setAttribute("viewBox",BranchGraphUtils.getViewBoxStr());
     }

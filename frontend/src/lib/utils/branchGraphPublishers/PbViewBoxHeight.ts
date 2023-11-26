@@ -7,12 +7,12 @@ export class PbViewBoxHeight extends DerivedState<number>{
         BranchGraphUtils.state.panelHeight.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         const panelHeight = BranchGraphUtils.state.panelHeight.value;
         const zoom = BranchGraphUtils.state.zoomLabel2.value;
         return panelHeight / zoom;
     }
-    applyChange(): void {
+    protected applyChange(): void {
         const svgElem = BranchGraphUtils.svgElement;
         svgElem.setAttribute("viewBox",BranchGraphUtils.getViewBoxStr());
     }

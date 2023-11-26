@@ -55,7 +55,8 @@ export class UiUtils {
 
     }
 
-    static HandleHorizontalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>void){
+    static HandleHorizontalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number)=>void,
+        initialiser:()=>void){
         let initialMousePositionX  = {value:-1};
         let currentMousePositionX = {value:-1};
         if(!element)
@@ -71,6 +72,7 @@ export class UiUtils {
         };
 
         const downListener = (e:MouseEvent)=>{
+            initialiser();
             initialMousePositionX.value = e.clientX;
             document.addEventListener("mousemove",moveListener);
             document.addEventListener("mouseup",upListener);
@@ -80,14 +82,15 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            listener(initialMousePositionX.value, currentMousePositionX.value,true);
+            listener(initialMousePositionX.value, currentMousePositionX.value);
             currentMousePositionX.value = -1;
         }        
         
         element?.addEventListener("mousedown",downListener);    
     }
 
-    static HandleVerticalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>void){
+    static HandleVerticalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>void,
+        initialiser:()=>void){
         let initialMousePositionY  = {value:-1};
         let currentMousePositionY = {value:-1};        
 
@@ -101,6 +104,7 @@ export class UiUtils {
         };
 
         const downListener = (e:MouseEvent)=>{
+            initialiser();
             initialMousePositionY.value = e.clientY;
             document.addEventListener("mousemove",moveListener);
             document.addEventListener("mouseup",upListener);
