@@ -1,9 +1,10 @@
 import { ICommitInfo } from "common_library";
-import { Publisher } from "../../publishers";
+import { UiState } from "../../publishers";
+import { BranchGraphUtils } from "../BranchGraphUtils";
 
-export class PbHeadCommit extends Publisher<ICommitInfo>{
-    onChange(): void {
-        //throw new Error("Method not implemented.");
+export class PbHeadCommit extends UiState<ICommitInfo>{
+    applyChange(): void {
+        BranchGraphUtils.updateHeadIdentifier();
     }
 
 }

@@ -1,8 +1,13 @@
-import { Publisher } from "../../publishers";
+import { EnumHtmlIds } from "../../enums";
+import { DerivedPublisher } from "../../publishers";
 
-export class PbPanelHeight extends Publisher<number>{
-    onChange(): void {
-        //throw new Error("Method not implemented.");
-    }
+export class PbPanelHeight extends DerivedPublisher<number>{
+    getDerivedValue(): number {
+        const elem = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`);
+        if(!elem)
+            return 0;
+
+        return elem.getBoundingClientRect().height;
+    }    
 
 }

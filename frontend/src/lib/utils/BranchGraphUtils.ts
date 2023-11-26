@@ -8,27 +8,33 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbHorizontalScrollRatio, PbMergeCommit, PbPanelHeight, PbSelectedCommit, PbZoomLabel } from "./branchGraphPublishers";
+import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY } from "./branchGraphPublishers";
+import { Publisher } from "../publishers";
 
 
 interface IState{
     panelWidth:PbBranchPanelWidth;
     panelHeight:PbPanelHeight;
-    zoomLabel:PbZoomLabel;
+    zoomLabel:Publisher<number>;
     mergingCommit:PbMergeCommit;
     headCommit:PbHeadCommit;
     selectedCommit:PbSelectedCommit;
     horizontalScrollWidth:PbHorizontalScrollWidth;
     horizontalScrollRatio:number;
-    horizontalScrollRatio2: PbHorizontalScrollRatio;
-    zoomLabel2: PbZoomLabel;
+    horizontalScrollRatio2: Publisher<number>;
+    zoomLabel2: Publisher<number>;
     verticalScrollRatio:number;
+    verticalScrollRatio2:Publisher<number>;
     viewBox:IViewBox;
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
     horizontalScrollLeft:number;
     horizontalScrollLeft2:PbHorizontalScrollLeft; 
+    viewBoxX:PbViewBoxX;
+    viewBoxY:PbViewBoxY;
+    viewBoxWidth:PbViewBoxWidth
+    viewBoxHeight:PbViewBoxHeight
 }
 
 
@@ -62,12 +68,12 @@ export class BranchGraphUtils{
    
     static state:IState={
         panelWidth: new PbBranchPanelWidth(),
-        headCommit:new PbHeadCommit(null!).subscribe(BranchGraphUtils.updateHeadIdentifier),
-        mergingCommit:new PbMergeCommit(null!).subscribe(BranchGraphUtils.updateMergingStateUi),
-        panelHeight:new PbPanelHeight(0),
+        headCommit:new PbHeadCommit(null!),
+        mergingCommit:new PbMergeCommit(null!),
+        panelHeight:new PbPanelHeight(window.innerHeight * 0.65),
         selectedCommit: new PbSelectedCommit(null!),
-        zoomLabel:new PbZoomLabel(0),
-        zoomLabel2:new PbZoomLabel(1),
+        zoomLabel:new Publisher(0),
+        zoomLabel2:new Publisher(1),
         horizontalScrollRatio:0,
         verticalScrollRatio:0,
         viewBox: {x:0,y:0,width:0,height:0},
@@ -75,7 +81,8 @@ export class BranchGraphUtils{
         notScrolledVerticallyYet:true,
         verticalScrollTop:0,
         horizontalScrollLeft:0,
-        horizontalScrollRatio2:new PbHorizontalScrollRatio(0),
+        horizontalScrollRatio2:new Publisher(0),
+        verticalScrollRatio2:new Publisher(0),
     } as IState;
 
     static dataRef ={
@@ -89,6 +96,11 @@ export class BranchGraphUtils{
     static init(){
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
         BranchGraphUtils.state.horizontalScrollLeft2 = new PbHorizontalScrollLeft(0);
+        BranchGraphUtils.state.viewBoxWidth = new PbViewBoxWidth(0);
+        BranchGraphUtils.state.viewBoxHeight = new PbViewBoxHeight(0);
+        BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
+        BranchGraphUtils.state.viewBoxY = new PbViewBoxY(0);
+
         window.addEventListener("resize",()=>{
             BranchGraphUtils.state.panelWidth.update();
         });
@@ -128,7 +140,7 @@ export class BranchGraphUtils{
             repoDetails:BranchUtils.repositoryDetails,
         }))
 
-        BranchGraphUtils.svgContainer.innerHTML = this.branchSvgHtml;
+        BranchGraphUtils.svgContainer.innerHTML = BranchGraphUtils.branchSvgHtml;
 
         BranchGraphUtils.svgElement = BranchGraphUtils.svgContainer.querySelector('svg')!;
         BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
@@ -144,25 +156,6 @@ export class BranchGraphUtils{
         branchPanelContainer.classList.remove('invisible');
     }  
 
-    private static insertNewBranchGraph(){
-
-        //this.updateUi();
-
-        // this.svgElement = this.branchPanelContainer.querySelector('svg')!;
-        // this.horizontalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLDivElement;
-        // this.verticalScrollBarElement = this.branchPanelContainer.querySelector(`#${this.verticalScrollBarId}`) as HTMLDivElement;
-
-        //this.updateHeadIdentifier();
-        //this.handleCommitSelect(this.selectedCommit);
-        
-        this.addEventListeners();
-        
-        this.handleZoomEffect();
-
-        ReduxUtils.setLoader(undefined);
-        this.setReduxData();
-    }
-
     static setReduxData(){
         ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
     }
@@ -175,7 +168,7 @@ export class BranchGraphUtils{
     }
 
     static getViewBoxStr(){
-        return `${this.state.viewBox.x} ${this.state.viewBox.y} ${this.state.viewBox.width} ${this.state.viewBox.height}`;
+        return `${BranchGraphUtils.state.viewBoxX.value} ${BranchGraphUtils.state.viewBoxY.value} ${BranchGraphUtils.state.viewBoxWidth.value} ${BranchGraphUtils.state.viewBoxHeight.value}`;
     }
 
     static handleHozontalScroll=(horizontalScrollMousePosition?:IPositition)=>{     
@@ -760,64 +753,15 @@ export class BranchGraphUtils{
         const x = (m*x2 + n*x1)/distance;
         const y = (m*y2 + n*y1)/distance;
         return {x,y} as IPositition
-    }
-
-
-    static removeMergingStateUi(){
-        if(BranchUtils.repositoryDetails.status.mergingCommitHash)return;
-
-        const head = BranchUtils.repositoryDetails.headCommit;
-        const allCommits = BranchUtils.repositoryDetails.allCommits;
-        const latestCommit = allCommits[allCommits.length-1];
-        const endX = latestCommit.x;
-        const y = head.ownerBranch.y;
-
-        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
-        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
-        const branchDetails = head.ownerBranch;
-        const lineData = this.getBranchLinePathData(branchDetails);
-        const hLineLength = endX - lineData.startX;
-        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
-        branchLineElem.setAttribute("d",linePath);
-
-        const elems = document.querySelectorAll(".mergingState");
-        elems.forEach(elem=> elem.remove());
-
-    }
-
-    static createMerginStategUi(){
-        if(!this.state.mergingCommit.value)return;
-        const head = BranchUtils.repositoryDetails.headCommit;
-        const allCommits = BranchUtils.repositoryDetails.allCommits;
-        const latestCommit = allCommits[allCommits.length-1];
-        const endX = latestCommit.x + BranchUtils.distanceBetweenCommits;
-        const y = head.ownerBranch.y;
-
-        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
-        //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
-        const branchDetails = head.ownerBranch;
-        const lineData = this.getBranchLinePathData(branchDetails);
-        const hLineLength = endX - lineData.startX;
-        const linePath = this.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
-        branchLineElem.setAttribute("d",linePath);
-
-        const gElem = document.querySelector('#branchPanel')?.getElementsByTagName('g').item(0)!;
-
-        const srcCommit = allCommits.find(x=>x.hash === BranchUtils.repositoryDetails.status.mergingCommitHash)!;
-        const pointFromCircle = this.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
-        const line = this.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
-        gElem.appendChild(line);
-        const commitBox = this.createMergeCommit(head, endX,srcCommit);
-        gElem.appendChild(commitBox);
-
-    }
+    }    
 
     static updateUi(){
         BranchGraphUtils.state.panelWidth.update();
+        BranchGraphUtils.state.panelHeight.update();
         BranchGraphUtils.state.horizontalScrollWidth.update();
         BranchGraphUtils.state.horizontalScrollRatio2.publish(1);
         //BranchGraphUtils.updateScrollWidthUis();
-        BranchGraphUtils.updateMergingStateUi();
+        //BranchGraphUtils.updateMergingStateUi();
         //this.updateHeadIdentifier();
     }
 
@@ -832,20 +776,14 @@ export class BranchGraphUtils{
             return;
         const prevHeadElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.prevValue!.hash}`);
         prevHeadElem?.classList.add("d-none");         
-    }
-
-    static updateMergingStateUi(){
-        if(this.state.mergingCommit.prevValue)
-            this.removeMergingStateUi();
-        this.createMerginStategUi();
-    }
+    }    
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = BranchUtils.repositoryDetails?.status;
         if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
-            if(existingStatus.mergingCommitHash) this.createMerginStategUi();
-            else this.removeMergingStateUi();
+            // if(existingStatus.mergingCommitHash) this.createMerginStategUi();
+            // else this.removeMergingStateUi();
         }
 
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);

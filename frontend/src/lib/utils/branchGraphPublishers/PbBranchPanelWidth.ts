@@ -9,9 +9,4 @@ export class PbBranchPanelWidth extends DerivedPublisher<number>{
 
         return elem.getBoundingClientRect().width;
     }
-    onChange(){
-        
-    }
-
-
 }
