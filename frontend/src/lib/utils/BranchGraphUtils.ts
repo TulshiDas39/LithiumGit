@@ -10,6 +10,7 @@ import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
+import { NumUtils } from "./NumUtils";
 
 
 interface IState{
@@ -50,6 +51,7 @@ export class BranchGraphUtils{
     // static headElement:HTMLElement = null!;
     static branchSvgHtml='';
     static initialHorizontalScrollRatio = 1;
+    static initialVerticalScrollRatio = 1;
     static zoom = 0;
     //static horizontalScrollWidth = 0;
     static verticalScrollHeight = 0;
@@ -157,6 +159,7 @@ export class BranchGraphUtils{
         //this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         //this.updateUi();
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2);
+        UiUtils.HandleVerticalDragging(BranchGraphUtils.verticalScrollBarElement,BranchGraphUtils.handleVerticalScroll2);
         BranchGraphUtils.handleCommitSelect(BranchGraphUtils.selectedCommit);
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
@@ -212,14 +215,23 @@ export class BranchGraphUtils{
         const positionDiff = currentPosition - initialPosition;
         const ratioDiff = positionDiff / panelWidth;
         let newRatio = BranchGraphUtils.initialHorizontalScrollRatio + ratioDiff;
-        if(newRatio < 0)
-            newRatio = 0;
-        if(newRatio > 1)
-            newRatio = 1;
+        newRatio = NumUtils.between1_0(newRatio);
         BranchGraphUtils.state.horizontalScrollRatio2.publish(newRatio);
         if(mouseReleased)
             BranchGraphUtils.initialHorizontalScrollRatio = newRatio;
     }
+
+    static handleVerticalScroll2=(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>{     
+        const panelHeight = BranchGraphUtils.state.panelHeight.value;
+        const positionDiff = currentPosition - initialPosition;
+        const ratioDiff = positionDiff / panelHeight;
+        let newRatio = BranchGraphUtils.initialVerticalScrollRatio + ratioDiff;
+        newRatio = NumUtils.between1_0(newRatio);        
+        BranchGraphUtils.state.verticalScrollRatio2.publish(newRatio);
+        if(mouseReleased)
+            BranchGraphUtils.initialVerticalScrollRatio = newRatio;
+    }
+
     static handleVerticalScroll=(verticalScrollMousePosition?:IPositition)=>{
         if(verticalScrollMousePosition === undefined ) {
             if(!this.state.notScrolledVerticallyYet){                

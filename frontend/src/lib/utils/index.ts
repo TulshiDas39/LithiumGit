@@ -5,3 +5,4 @@ export * from './DiffUtils';
 export * from './ReduxUtils';
 export * from './ObjectUtils';
 export * from './BranchGraphUtils';
+export * from './NumUtils';

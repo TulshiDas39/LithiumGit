@@ -87,6 +87,36 @@ export class UiUtils {
         element?.addEventListener("mousedown",downListener);    
     }
 
+    static HandleVerticalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>void){
+        let initialMousePositionY  = {value:-1};
+        let currentMousePositionY = {value:-1};        
+
+        const moveListener =(e:MouseEvent)=>{     
+            currentMousePositionY.value = e.clientY;
+            listener(initialMousePositionY.value,currentMousePositionY.value);
+        }
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
+
+        const downListener = (e:MouseEvent)=>{
+            initialMousePositionY.value = e.clientY;
+            document.addEventListener("mousemove",moveListener);
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
+        }
+        const upListener = ()=>{
+            document.removeEventListener("mousemove",moveListener);
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
+            listener(initialMousePositionY.value, currentMousePositionY.value,true);
+            currentMousePositionY.value = -1;
+        }        
+        
+        element.addEventListener("mousedown",downListener);    
+    }
+
     static JsxToHtml(jsx:JSX.Element){
         return ReactDOMServer.renderToStaticMarkup(jsx);
     }
