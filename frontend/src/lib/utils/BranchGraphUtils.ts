@@ -211,9 +211,9 @@ export class BranchGraphUtils{
         }        
     }
     static handleHozontalScroll2=(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>{     
-        const panelWidth = BranchGraphUtils.state.panelWidth.value;
+        const movableWidth = BranchGraphUtils.state.panelWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
         const positionDiff = currentPosition - initialPosition;
-        const ratioDiff = positionDiff / panelWidth;
+        const ratioDiff = positionDiff / movableWidth;
         let newRatio = BranchGraphUtils.initialHorizontalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);
         BranchGraphUtils.state.horizontalScrollRatio2.publish(newRatio);
@@ -222,9 +222,9 @@ export class BranchGraphUtils{
     }
 
     static handleVerticalScroll2=(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>{     
-        const panelHeight = BranchGraphUtils.state.panelHeight.value;
+        const movableHeight = BranchGraphUtils.state.panelHeight.value-BranchGraphUtils.state.verticalScrollHeight.value;
         const positionDiff = currentPosition - initialPosition;
-        const ratioDiff = positionDiff / panelHeight;
+        const ratioDiff = positionDiff / movableHeight;
         let newRatio = BranchGraphUtils.initialVerticalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);        
         BranchGraphUtils.state.verticalScrollRatio2.publish(newRatio);

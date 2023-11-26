@@ -8,11 +8,11 @@ export class PbVerticalScrollHeight extends DerivedState<number>{
         BranchGraphUtils.state.panelHeight.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
     }
-    applyChange(): void {
+    protected applyChange(): void {
         const elem = BranchGraphUtils.verticalScrollBarElement;
         elem.style.height = `${this._val}px`;        
     }
-    getDerivedValue(): number {
+    protected getDerivedValue(): number {
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;        
         const panelHeight = BranchGraphUtils.state.panelHeight.value;
         const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;

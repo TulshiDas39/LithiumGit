@@ -9,7 +9,7 @@ export class PbHorizontalScrollWidth extends DerivedState<number>{
         BranchGraphUtils.state.panelWidth.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
     }
-    applyChange(): void {        
+    protected applyChange(): void {        
         const elem = BranchGraphUtils.svgContainer.parentElement!.
             parentElement!.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLElement;
         elem.style.width = `${this._val}px`;        
