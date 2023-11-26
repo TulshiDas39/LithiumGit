@@ -8,7 +8,7 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight } from "./branchGraphPublishers";
+import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
 
 
@@ -29,6 +29,7 @@ interface IState{
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
+    verticalScrollTop2:PbVerticalScrollTop;
     horizontalScrollLeft:number;
     horizontalScrollLeft2:PbHorizontalScrollLeft; 
     viewBoxX:PbViewBoxX;
@@ -98,6 +99,7 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
         BranchGraphUtils.state.verticalScrollHeight = new PbVerticalScrollHeight(0);
         BranchGraphUtils.state.horizontalScrollLeft2 = new PbHorizontalScrollLeft(0);
+        BranchGraphUtils.state.verticalScrollTop2 = new PbVerticalScrollTop(0);
         BranchGraphUtils.state.viewBoxWidth = new PbViewBoxWidth(0);
         BranchGraphUtils.state.viewBoxHeight = new PbViewBoxHeight(0);
         BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
