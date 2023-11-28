@@ -14,9 +14,9 @@ export class PbViewBoxY extends DerivedState<number>{
         const totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;
         const panelHeight = BranchGraphUtils.state.panelHeight.value;
-        const effectiveHeight = Math.max( totalHeight * zoomLabel,panelHeight);
-        const scrollableHeight = effectiveHeight - panelHeight;
-        return scrollRatio * scrollableHeight;        
+        const effectivePanelHeight =  panelHeight / zoomLabel;
+        const scrollableHeight = Math.max(totalHeight - effectivePanelHeight,0);
+        return scrollRatio * scrollableHeight;      
     }
     protected applyChange(): void {
         const svgElem = BranchGraphUtils.svgElement;
