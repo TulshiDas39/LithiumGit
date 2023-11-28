@@ -16,10 +16,10 @@ export class PbHorizontalScrollWidth extends DerivedState<number>{
     }
     protected getDerivedValue(): number {
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        if(totalWidth < BranchGraphUtils.state.panelWidth.value) totalWidth = BranchGraphUtils.state.panelWidth.value;
         const panelWidth = BranchGraphUtils.state.panelWidth.value;
         const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;
         const effectiveWidth = totalWidth * zoomLabel;
-        return (panelWidth * panelWidth)/ effectiveWidth;        
+        const width = (panelWidth * panelWidth)/ effectiveWidth;        
+        return Math.min(width,panelWidth);
     }
 }

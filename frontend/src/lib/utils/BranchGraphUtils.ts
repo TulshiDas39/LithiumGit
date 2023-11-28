@@ -528,15 +528,15 @@ export class BranchGraphUtils{
         if(!diifValue) diifValue = 0.1;
         let newValue = BranchGraphUtils.state.zoomLabel2.value;
         if(action === "zoomIn"){
-            newValue += diifValue             
+            newValue +=  newValue*diifValue             
         }
 
         else if(action === "zoomOut"){            
-            newValue -= diifValue;
+            newValue -= newValue*diifValue;
         }
         else newValue = 1;
 
-        newValue = NumUtils.between(0,2,newValue);
+        newValue = NumUtils.between(0,5,newValue);
         BranchGraphUtils.state.zoomLabel2.publish(newValue);        
     }
 
