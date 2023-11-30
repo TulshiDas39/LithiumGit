@@ -6,4 +6,12 @@ export class NumUtils{
     static between(min:number,max:number,value:number){
         return Math.max(min,Math.min(max,value));        
     }
+
+    static isBetween(min:number,max:number,value:number){
+        if(value < min)
+            return false;
+        if(value > max)
+            return false;
+        return true;
+    }
 }

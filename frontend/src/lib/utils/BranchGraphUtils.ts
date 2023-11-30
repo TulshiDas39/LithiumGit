@@ -8,7 +8,7 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop } from "./branchGraphPublishers";
+import { PbBranchPanelWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop, PbViewBox } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 
@@ -27,6 +27,7 @@ interface IState{
     verticalScrollRatio:number;
     verticalScrollRatio2:Publisher<number>;
     viewBox:IViewBox;
+    viewBox2:PbViewBox;
     notScrolledHorizontallyYet:boolean;
     notScrolledVerticallyYet:boolean;
     verticalScrollTop:number;
@@ -106,6 +107,7 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.viewBoxHeight = new PbViewBoxHeight(0);
         BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
         BranchGraphUtils.state.viewBoxY = new PbViewBoxY(0);
+        BranchGraphUtils.state.viewBox2 = new PbViewBox({x:0,y:0,width:0,height:0});
 
         window.addEventListener("resize",()=>{
             BranchGraphUtils.state.panelWidth.update();

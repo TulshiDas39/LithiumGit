@@ -19,8 +19,7 @@ export class PbViewBoxY extends DerivedState<number>{
         return scrollRatio * scrollableHeight;      
     }
     protected applyChange(): void {
-        const svgElem = BranchGraphUtils.svgElement;
-        svgElem.setAttribute("viewBox",BranchGraphUtils.getViewBoxStr());
+        
     }
 
 }

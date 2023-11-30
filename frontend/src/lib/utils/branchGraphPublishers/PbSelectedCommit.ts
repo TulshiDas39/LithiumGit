@@ -8,7 +8,9 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     protected applyChange(): void {   
         this.resetPrevious();
         this.highlight();
-        this.focus();
+        if(!BranchGraphUtils.state.viewBox2.isVisible(this.value.x,this.value.ownerBranch.y)){
+            this.focus();
+        }
     }
 
     private resetPrevious(){

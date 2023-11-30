@@ -11,3 +11,4 @@ export * from './PbMergeCommit';
 export * from './PbViewBoxY';
 export * from './PbVerticalScrollHeight';
 export * from './PbVerticalScrollTop';
+export * from './PbViewBox';
