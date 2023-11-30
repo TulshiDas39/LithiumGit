@@ -2,10 +2,31 @@ import { ICommitInfo } from "common_library";
 import { UiState } from "../../publishers";
 import { BranchUtils } from "../BranchUtils";
 import { BranchGraphUtils } from "../BranchGraphUtils";
+import { EnumIdPrefix } from "../../enums";
 
 export class PbSelectedCommit extends UiState<ICommitInfo>{
-    protected applyChange(): void {        
+    protected applyChange(): void {   
+        this.resetPrevious();
+        this.highlight();
         this.focus();
+    }
+
+    private resetPrevious(){
+        if(!this.prevValue)
+            return;
+        let existingSelectedCommitElem:Element | null ;
+        if(!this.prevValue.hash){
+            existingSelectedCommitElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
+        }
+        else {
+            existingSelectedCommitElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.prevValue.hash}`);
+        }
+        existingSelectedCommitElem?.setAttribute("fill",BranchGraphUtils.commitColor);
+    }
+
+    private highlight(){
+        var elem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.value.hash}`);        
+        elem?.setAttribute("fill",BranchGraphUtils.selectedCommitColor);        
     }
 
     focus(){

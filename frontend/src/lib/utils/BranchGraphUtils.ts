@@ -128,18 +128,8 @@ export class BranchGraphUtils{
     }
 
     static createBranchPanel(){
-        BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                        
-        //this.InitPublishers();
-        
-        // this.state.viewBox.width = this.publishers.state.panelWidth.value;
-        // this.state.viewBox.height = this.publishers.panelHeight.value;
-
-        // this.updateScrollWidthValues();
-
-        //this.setScrollPosition();
-        
+        BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
         BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
-
         BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             width:BranchGraphUtils.svgContainer.getBoundingClientRect().width,
             height:Math.floor(window.innerHeight * 0.65),
@@ -158,12 +148,8 @@ export class BranchGraphUtils{
         BranchGraphUtils.updateUi();
         //this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
         //this.updateUi();
-        UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
-            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
-        });
-        UiUtils.HandleVerticalDragging(BranchGraphUtils.verticalScrollBarElement,BranchGraphUtils.handleVerticalScroll2,()=>{
-            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
-        });
+        BranchGraphUtils.addEventListeners();
+        
         BranchGraphUtils.handleCommitSelect(BranchGraphUtils.selectedCommit);
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
@@ -345,19 +331,9 @@ export class BranchGraphUtils{
     static addEventListendersOnCommit(){
 
         const clickListener = (target:HTMLElement)=>{
-            let existingSelectedCommitElem:Element | null ;
-            if(!this.selectedCommit.hash){
-                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}merge`);
-            }
-            else {
-                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
-            }
-            existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_CIRCLE.length);
             const selectedCommit = BranchUtils.repositoryDetails.allCommits.find(x=>x.hash === commitId);
-            target.setAttribute("fill",this.selectedCommitColor);
-            this.handleCommitSelect(selectedCommit!);
-            this.selectedCommit = selectedCommit!;
+            BranchGraphUtils.state.selectedCommit.publish(selectedCommit!);
         }
         
         UiUtils.addEventListenderByClassName("commit","click",clickListener);
@@ -434,10 +410,13 @@ export class BranchGraphUtils{
     }
 
     static addEventListeners(){
-        // const horizontalScrollBar = this.branchPanelContainer.querySelector(`#${this.horizontalScrollBarId}`) as HTMLElement;
-        UiUtils.handleDrag(this.horizontalScrollBarElement,this.handleHozontalScroll);
-        UiUtils.handleDrag(this.verticalScrollBarElement,this.handleVerticalScroll);
-        UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
+        UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
+            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
+        });
+        UiUtils.HandleVerticalDragging(BranchGraphUtils.verticalScrollBarElement,BranchGraphUtils.handleVerticalScroll2,()=>{
+            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
+        });
+        //UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
         this.addEventListendersOnCommit();
         this.addWheelListender();
         this.addResizeListener();
