@@ -5,3 +5,4 @@ export * from './IViewBox';
 export * from './IPosition';
 export * from './IDimension';
 export * from './IPublisher';
+export * from './IPositionDiff';

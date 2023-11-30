@@ -1,5 +1,5 @@
 import { ICommitInfo } from "common_library";
-import { IPositition } from "../interfaces";
+import { IPositionDiff, IPositition } from "../interfaces";
 import * as ReactDOMServer from 'react-dom/server';
 
 
@@ -55,16 +55,16 @@ export class UiUtils {
 
     }
 
-    static HandleHorizontalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number)=>void,
+    static HandleHorizontalDragging(element:HTMLElement,listener:(dx:number)=>void,
         initialiser:()=>void){
         let initialMousePositionX  = {value:-1};
-        let currentMousePositionX = {value:-1};
+        let positionDX = {value:-1};
         if(!element)
             return;
 
         const moveListener =(e:MouseEvent)=>{     
-            currentMousePositionX.value = e.clientX;
-            listener(initialMousePositionX.value,currentMousePositionX.value);
+            positionDX.value = e.clientX - initialMousePositionX.value;
+            listener(positionDX.value);
         }
         const selectListener = (e:Event) => {
             e.preventDefault();
@@ -82,21 +82,20 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            listener(initialMousePositionX.value, currentMousePositionX.value);
-            currentMousePositionX.value = -1;
+            listener(positionDX.value);            
         }        
         
         element?.addEventListener("mousedown",downListener);    
     }
 
-    static HandleVerticalDragging(element:HTMLElement,listener:(initialPosition:number,currentPosition:number,mouseReleased?:boolean)=>void,
+    static HandleVerticalDragging(element:HTMLElement,listener:(dy:number)=>void,
         initialiser:()=>void){
-        let initialMousePositionY  = {value:-1};
-        let currentMousePositionY = {value:-1};        
+        let initialMousePositionY  = {value:0};
+        let positionDY = {value:0};        
 
         const moveListener =(e:MouseEvent)=>{     
-            currentMousePositionY.value = e.clientY;
-            listener(initialMousePositionY.value,currentMousePositionY.value);
+            positionDY.value = e.clientY - initialMousePositionY.value;
+            listener(positionDY.value);
         }
         const selectListener = (e:Event) => {
             e.preventDefault();
@@ -114,11 +113,43 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            listener(initialMousePositionY.value, currentMousePositionY.value,true);
-            currentMousePositionY.value = -1;
+            listener(positionDY.value);
         }        
         
         element.addEventListener("mousedown",downListener);    
+    }
+
+    static HandleDragging(element:HTMLElement,listener:(positionDiff:IPositionDiff)=>void,
+        initialiser:()=>void){
+            let initialMousePosition:IPositition  = {x:0,y:0};
+            let positionDiff:IPositionDiff = {dx:0,dy:0};        
+    
+            const moveListener =(e:MouseEvent)=>{     
+                positionDiff.dx = e.clientX - initialMousePosition.x;
+                positionDiff.dy = e.clientY - initialMousePosition.y;
+                listener(positionDiff);
+            }
+            const selectListener = (e:Event) => {
+                e.preventDefault();
+                return false
+            };
+    
+            const downListener = (e:MouseEvent)=>{
+                initialiser();
+                initialMousePosition.x = e.clientX;
+                initialMousePosition.y = e.clientY;
+                document.addEventListener("mousemove",moveListener);
+                document.addEventListener("mouseup",upListener);
+                document.addEventListener("selectstart",selectListener);
+            }
+            const upListener = ()=>{
+                document.removeEventListener("mousemove",moveListener);
+                document.removeEventListener("mouseup",upListener);
+                document.removeEventListener("selectstart",selectListener);
+                listener(positionDiff);                
+            }        
+            
+            element.addEventListener("mousedown",downListener);  
     }
 
     static JsxToHtml(jsx:JSX.Element){

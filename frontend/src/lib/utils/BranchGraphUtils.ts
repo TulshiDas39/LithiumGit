@@ -1,4 +1,4 @@
-import { IPositition, IViewBox } from "../interfaces";
+import { IPositionDiff, IPositition, IViewBox } from "../interfaces";
 import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
@@ -202,26 +202,31 @@ export class BranchGraphUtils{
             // this.horizontalScrollBarElement.style.left = `${this.state.horizontalScrollLeft}px`;
         }        
     }
-    static handleHozontalScroll2=(initialPosition:number,currentPosition:number)=>{     
+    static handleHozontalScroll2=(positionDiff:number)=>{             
         const movableWidth = BranchGraphUtils.state.panelWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
-        if(movableWidth <= 0)
+        if(movableWidth == 0)
             return;
-        const positionDiff = currentPosition - initialPosition;
         const ratioDiff = positionDiff / movableWidth;
         let newRatio = BranchGraphUtils.initialHorizontalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);
         BranchGraphUtils.state.horizontalScrollRatio2.publish(newRatio);        
     }
 
-    static handleVerticalScroll2=(initialPosition:number,currentPosition:number)=>{     
+    static handleVerticalScroll2=(positionDiff:number)=>{             
         const movableHeight = BranchGraphUtils.state.panelHeight.value-BranchGraphUtils.state.verticalScrollHeight.value;
-        if(movableHeight <= 0)
+        if(movableHeight == 0)
             return;
-        const positionDiff = currentPosition - initialPosition;
         const ratioDiff = positionDiff / movableHeight;
         let newRatio = BranchGraphUtils.initialVerticalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);        
         BranchGraphUtils.state.verticalScrollRatio2.publish(newRatio);        
+    }
+
+    static handleScroll2=(positionDiff:IPositionDiff)=>{        
+        const xRatio = BranchGraphUtils.state.horizontalScrollWidth.value/BranchGraphUtils.state.panelWidth.value;
+        BranchGraphUtils.handleHozontalScroll2(-positionDiff.dx*(xRatio));
+        const yRatio = BranchGraphUtils.state.verticalScrollHeight.value/BranchGraphUtils.state.panelHeight.value;
+        BranchGraphUtils.handleVerticalScroll2(-positionDiff.dy*(yRatio));
     }
 
     static handleVerticalScroll=(verticalScrollMousePosition?:IPositition)=>{
@@ -418,7 +423,10 @@ export class BranchGraphUtils{
         UiUtils.HandleVerticalDragging(BranchGraphUtils.verticalScrollBarElement,BranchGraphUtils.handleVerticalScroll2,()=>{
             BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
         });
-        //UiUtils.handleDrag(this.svgElement as any,this.handleSvgDragging);
+        UiUtils.HandleDragging(BranchGraphUtils.svgElement as any,BranchGraphUtils.handleScroll2,()=>{
+            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
+            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
+        });
         this.addEventListendersOnCommit();
         this.addWheelListender();
         this.addResizeListener();
