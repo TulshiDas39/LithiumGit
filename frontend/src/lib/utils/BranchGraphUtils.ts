@@ -478,13 +478,6 @@ export class BranchGraphUtils{
         this.updateViewBoxUi(); 
     }
 
-    static scrollToHeadCommit(){
-        if(!this.branchSvgHtml) return;
-        this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
-        this.setScrollPosition();
-        this.updateUIPositioning();                      
-    }
-
     static setScrollPosition () {       
         if(!this.focusedCommit) this.focusedCommit = BranchUtils.repositoryDetails?.headCommit;
         else {

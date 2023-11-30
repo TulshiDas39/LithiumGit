@@ -3,6 +3,7 @@ import { FaHome, FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { BranchUtils } from "../../../../lib";
 
 function BranchActionsComponent(){
     const dispatch = useDispatch();
@@ -24,7 +25,7 @@ function BranchActionsComponent(){
     </div>
 
     <div className="px-1">
-        <FaHome className="cur-point hover" onClick={_=> BranchGraphUtils.scrollToHeadCommit()} />
+        <FaHome className="cur-point hover" onClick={_=> BranchGraphUtils.state.selectedCommit.setHeadCommit()} />
 
     </div>
 
