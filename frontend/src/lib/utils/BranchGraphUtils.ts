@@ -342,7 +342,7 @@ export class BranchGraphUtils{
 
         const commitTextClickListener=(target:HTMLElement)=>{
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_TEXT.length);
-            const commitCircleElem = this.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
+            const commitCircleElem = BranchGraphUtils.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
             clickListener(commitCircleElem!);
         }
 
@@ -357,14 +357,14 @@ export class BranchGraphUtils{
                 y:event.clientY,
             }
 
-            this.openContextModal();
+            BranchGraphUtils.openContextModal();
         }
 
         UiUtils.addEventListenderByClassName("commit","contextmenu",contextEventListener)
 
         const commitTextContextClickListener=(target:HTMLElement,event:MouseEvent)=>{
             const commitId = target.id.substring(EnumIdPrefix.COMMIT_TEXT.length);
-            const commitCircleElem = this.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
+            const commitCircleElem = BranchGraphUtils.svgElement.querySelector<HTMLElement>(`#${EnumIdPrefix.COMMIT_CIRCLE}${commitId}`);
             contextEventListener(commitCircleElem!,event);
         }
 
