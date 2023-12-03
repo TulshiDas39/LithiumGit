@@ -6,7 +6,7 @@ import { BranchUtils } from "../BranchUtils";
 export class PbHorizontalScrollWidth extends DerivedState<number>{
     constructor(value:number){
         super(value);
-        BranchGraphUtils.state.panelWidth.subscribe(this.update.bind(this));
+        BranchGraphUtils.state.panelContainerWidth.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
     }
     protected applyChange(): void {        
@@ -16,7 +16,7 @@ export class PbHorizontalScrollWidth extends DerivedState<number>{
     }
     protected getDerivedValue(): number {
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        const panelWidth = BranchGraphUtils.state.panelWidth.value;
+        const panelWidth = BranchGraphUtils.state.panelContainerWidth.value;
         const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;
         const effectiveWidth = totalWidth * zoomLabel;
         const width = (panelWidth * panelWidth)/ effectiveWidth;        

@@ -2,9 +2,9 @@ import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
 import { BranchGraphUtils } from "../BranchGraphUtils";
 
-export class PbBranchPanelWidth extends DerivedState<number>{    
+export class PbPanelContainerWidth extends DerivedState<number>{    
     protected getDerivedValue() {
-        const elem = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`);
+        const elem = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`);
         if(!elem)
             return 0;
 
