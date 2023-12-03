@@ -72,7 +72,7 @@ export class BranchGraphUtils{
     static openContextModal=()=>{};
    
     static state:IState={
-        panelWidth: new PbBranchPanelWidth(),
+        panelWidth: new PbBranchPanelWidth(null!),
         headCommit:new PbHeadCommit(null!),
         mergingCommit:new PbMergeCommit(null!),
         panelHeight:new PbPanelHeight(window.innerHeight * 0.65),
