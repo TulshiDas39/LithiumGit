@@ -1,4 +1,4 @@
-export * from './PbPanelContainerWidth';
+export * from './PbSvgContainerWidth';
 export * from './PbHorizontalScrollWidth';
 export * from './PbHorizontalScrollLeft';
 export * from './PbHeadCommit';

@@ -7,13 +7,13 @@ export class PbViewBoxX extends DerivedState<number>{
         super(value);
         BranchGraphUtils.state.horizontalScrollRatio2.subscribe(this.update.bind(this));
         BranchGraphUtils.state.zoomLabel2.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.panelContainerWidth.subscribe(this.update.bind(this));
+        BranchGraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
     }
     protected getDerivedValue(): number {        
         const scrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
         const totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         const zoomLabel = BranchGraphUtils.state.zoomLabel2.value;
-        const panelWidth = BranchGraphUtils.state.panelContainerWidth.value-BranchGraphUtils.scrollBarSize;
+        const panelWidth = BranchGraphUtils.state.svgContainerWidth.value-BranchGraphUtils.scrollBarSize;
         const effectivePanelWidth =  panelWidth / zoomLabel;
         const scrollableWidth = Math.max(totalWidth - effectivePanelWidth,0);
         return scrollRatio * scrollableWidth;

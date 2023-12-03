@@ -8,13 +8,13 @@ import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositor
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
-import { PbPanelContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop, PbViewBox } from "./branchGraphPublishers";
+import { PbSvgContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop, PbViewBox } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 
 
 interface IState{
-    panelContainerWidth:PbPanelContainerWidth;
+    svgContainerWidth:PbSvgContainerWidth;
     panelHeight:PbPanelHeight;
     zoomLabel:Publisher<number>;
     mergingCommit:PbMergeCommit;
@@ -65,14 +65,14 @@ export class BranchGraphUtils{
     static readonly scrollBarSize = 10;
 
     static get horizontalScrollContainerWidth(){
-        return this.state.panelContainerWidth.value+10;
+        return this.state.svgContainerWidth.value+10;
     }
 
     static handleCommitSelect=(commit:ICommitInfo)=>{};
     static openContextModal=()=>{};
    
     static state:IState={
-        panelContainerWidth: new PbPanelContainerWidth(null!),
+        svgContainerWidth: new PbSvgContainerWidth(null!),
         headCommit:new PbHeadCommit(null!),
         mergingCommit:new PbMergeCommit(null!),
         panelHeight:new PbPanelHeight(window.innerHeight * 0.65),
@@ -110,7 +110,7 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.viewBox2 = new PbViewBox({x:0,y:0,width:0,height:0});
 
         window.addEventListener("resize",()=>{
-            BranchGraphUtils.state.panelContainerWidth.update();
+            BranchGraphUtils.state.svgContainerWidth.update();
         });
     }
 
@@ -179,18 +179,18 @@ export class BranchGraphUtils{
             }
         }
         else{
-            if(this.state.panelContainerWidth.value <= BranchGraphUtils.state.horizontalScrollWidth.value) return;
+            if(this.state.svgContainerWidth.value <= BranchGraphUtils.state.horizontalScrollWidth.value) return;
             let newLeft = this.dataRef.initialHorizontalScrollLeft+ horizontalScrollMousePosition!.x;
-            const maxLeft = this.state.panelContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
+            const maxLeft = this.state.svgContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
             if(newLeft < 0) newLeft = 0;
             else if(newLeft > maxLeft) newLeft = maxLeft;
             let newRatio = newLeft/maxLeft;            
 
             let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-            if(totalWidth <this.state.panelContainerWidth.value) totalWidth = this.state.panelContainerWidth.value;
+            if(totalWidth <this.state.svgContainerWidth.value) totalWidth = this.state.svgContainerWidth.value;
 
             const x = totalWidth *newRatio;
-            let viewBoxX = x - (this.state.panelContainerWidth.value/2);
+            let viewBoxX = x - (this.state.svgContainerWidth.value/2);
 
             
             this.state.horizontalScrollRatio= newRatio;
@@ -203,7 +203,7 @@ export class BranchGraphUtils{
         }        
     }
     static handleHozontalScroll2=(positionDiff:number)=>{             
-        const movableWidth = BranchGraphUtils.state.panelContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
+        const movableWidth = BranchGraphUtils.state.svgContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
         if(movableWidth == 0)
             return;
         const ratioDiff = positionDiff / movableWidth;
@@ -223,7 +223,7 @@ export class BranchGraphUtils{
     }
 
     static handleScroll2=(positionDiff:IPositionDiff)=>{        
-        const xRatio = BranchGraphUtils.state.horizontalScrollWidth.value/BranchGraphUtils.state.panelContainerWidth.value;
+        const xRatio = BranchGraphUtils.state.horizontalScrollWidth.value/BranchGraphUtils.state.svgContainerWidth.value;
         BranchGraphUtils.handleHozontalScroll2(-positionDiff.dx*(xRatio));
         const yRatio = BranchGraphUtils.state.verticalScrollHeight.value/BranchGraphUtils.state.panelHeight.value;
         BranchGraphUtils.handleVerticalScroll2(-positionDiff.dy*(yRatio));
@@ -297,19 +297,19 @@ export class BranchGraphUtils{
     
             }
             
-            if(!!svgScrollMousePosition?.x && this.state.panelContainerWidth.value > BranchGraphUtils.state.horizontalScrollWidth.value){
+            if(!!svgScrollMousePosition?.x && this.state.svgContainerWidth.value > BranchGraphUtils.state.horizontalScrollWidth.value){
                 let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-                if(totalWidth <this.state.panelContainerWidth.value) totalWidth = this.state.panelContainerWidth.value;
+                if(totalWidth <this.state.svgContainerWidth.value) totalWidth = this.state.svgContainerWidth.value;
     
-                const maxLeft = this.state.panelContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
-                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(this.state.viewBox.width/this.state.panelContainerWidth.value));            
+                const maxLeft = this.state.svgContainerWidth.value - BranchGraphUtils.state.horizontalScrollWidth.value;
+                const movedScrollBar = (svgScrollMousePosition.x * (maxLeft / totalWidth) *(this.state.viewBox.width/this.state.svgContainerWidth.value));            
                 newHorizontalScrollLeft = this.dataRef.initialHorizontalScrollLeft- movedScrollBar;
                 if(newHorizontalScrollLeft < 0) newHorizontalScrollLeft = 0;
                 else if(newHorizontalScrollLeft > maxLeft) newHorizontalScrollLeft = maxLeft;
                 newHorizontalRatio = newHorizontalScrollLeft/maxLeft;                        
     
                 const x = totalWidth *newHorizontalRatio;
-                let viewBoxX = x - (this.state.panelContainerWidth.value/2);   
+                let viewBoxX = x - (this.state.svgContainerWidth.value/2);   
                 newViewBox.x = viewBoxX;                         
             }
                 
@@ -477,7 +477,7 @@ export class BranchGraphUtils{
         let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
         let totalHeight = BranchUtils.repositoryDetails.branchPanelHeight;
         if(totalHeight < this.state.panelHeight.value) totalHeight = this.state.panelHeight.value;        
-        if(totalWidth < this.state.panelContainerWidth.value) totalHeight = this.state.panelContainerWidth.value;
+        if(totalWidth < this.state.svgContainerWidth.value) totalHeight = this.state.svgContainerWidth.value;
         const horizontalRatio = this.focusedCommit.x/totalWidth;
         const verticalRatio = this.focusedCommit.ownerBranch.y/totalHeight;
         let verticalScrollTop = (this.state.panelHeight.value-this.verticalScrollHeight)*verticalRatio;   
@@ -487,7 +487,7 @@ export class BranchGraphUtils{
 
         const x = totalWidth *horizontalRatio;
         let viewBoxX = 0;
-        if(totalWidth > this.state.panelContainerWidth.value) viewBoxX = x- (this.state.panelContainerWidth.value/2);
+        if(totalWidth > this.state.svgContainerWidth.value) viewBoxX = x- (this.state.svgContainerWidth.value/2);
 
         const y = totalHeight *verticalRatio;
         let viewBoxY = 0;
@@ -756,7 +756,7 @@ export class BranchGraphUtils{
     }    
 
     static updateUi(){
-        BranchGraphUtils.state.panelContainerWidth.update();
+        BranchGraphUtils.state.svgContainerWidth.update();
         BranchGraphUtils.state.panelHeight.update();
         BranchGraphUtils.state.horizontalScrollWidth.update();
         BranchGraphUtils.state.verticalScrollHeight.update();
@@ -794,7 +794,7 @@ export class BranchGraphUtils{
 
     private static updateSvgSizeUi(){
         this.svgElement.setAttribute("height",this.state.panelHeight.value+"");                   
-        this.svgElement.setAttribute("width",this.state.panelContainerWidth.value+"");                   
+        this.svgElement.setAttribute("width",this.state.svgContainerWidth.value+"");                   
     }
 
     static resizeGraph(width:number,height:number){

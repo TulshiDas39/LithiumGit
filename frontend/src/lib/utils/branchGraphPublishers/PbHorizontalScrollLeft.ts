@@ -6,7 +6,7 @@ export class PbHorizontalScrollLeft extends DerivedState<number>{
         super(value);
         BranchGraphUtils.state.horizontalScrollRatio2.subscribe(this.update.bind(this));
         BranchGraphUtils.state.horizontalScrollWidth.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.panelContainerWidth.subscribe(this.update.bind(this));
+        BranchGraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
     }
     protected applyChange(): void {
         var elem = BranchGraphUtils.horizontalScrollBarElement;
@@ -15,7 +15,7 @@ export class PbHorizontalScrollLeft extends DerivedState<number>{
     protected getDerivedValue(): number {
         const scrolRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
         const scrollWidth = BranchGraphUtils.state.horizontalScrollWidth.value; 
-        const movableWidth = BranchGraphUtils.state.panelContainerWidth.value-scrollWidth;
+        const movableWidth = BranchGraphUtils.state.svgContainerWidth.value-scrollWidth;
         return movableWidth * scrolRatio;
     }
 
