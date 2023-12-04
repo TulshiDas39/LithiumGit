@@ -399,23 +399,6 @@ export class BranchGraphUtils{
         })
     }
 
-    private static addResizeListener(){
-        const svgContainerElem = document.getElementById(EnumHtmlIds.branchSvgContainer);
-        const horizontalScrollBarContainer = this.horizontalScrollBarElement.parentElement!;
-        const handleResize = ()=>{
-            const width = this.svgContainer.offsetWidth;
-            const widthStr = width+"px";
-            if(svgContainerElem)
-                svgContainerElem.style.width = widthStr;
-            horizontalScrollBarContainer.style.width = widthStr;
-            horizontalScrollBarContainer.style.width = widthStr;
-            this.resizeGraph(width,this.state.panelHeight.value);
-
-        }
-        new ResizeObserver(handleResize).observe(this.svgContainer)
-
-    }
-
     static addEventListeners(){
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
             BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
@@ -429,7 +412,6 @@ export class BranchGraphUtils{
         });
         this.addEventListendersOnCommit();
         this.addWheelListender();
-        this.addResizeListener();
     }
 
     static getVerticalScrollHeight(){        

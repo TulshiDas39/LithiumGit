@@ -29,7 +29,7 @@ function BranchesViewComponent() {
         <div className="d-flex w-100 overflow-hidden">
             <div id={EnumHtmlIds.branchPanelContainer} className="w-75 invisible">
                 <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ overflow: 'hidden' }}>
-                    <div id={EnumHtmlIds.branchSvgContainer} className="flex-grow-1" style={{}}>
+                    <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width: `calc(100% - ${BranchGraphUtils.scrollBarSize}px)`}}>
                         {/* branch graph will be displayed here */}
                     </div>
                     <div className="d-flex bg-secondary position-relative" style={{width:`${BranchGraphUtils.scrollBarSize}px`}}>
