@@ -8,7 +8,7 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     protected applyChange(): void {   
         this.resetPrevious();
         this.highlight();
-        if(!BranchGraphUtils.state.viewBox2.isVisible(this.value.x,this.value.ownerBranch.y)){
+        if(!BranchGraphUtils.state.viewBox.isVisible(this.value.x,this.value.ownerBranch.y)){
             this.focus();
         }
     }
@@ -34,8 +34,8 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     focus(){
         const horizontalRatio = this.value.x/BranchUtils.repositoryDetails.branchPanelWidth;
         const verticalRatio = this.value.ownerBranch.y/BranchUtils.repositoryDetails.branchPanelHeight;
-        BranchGraphUtils.state.horizontalScrollRatio2.publish(horizontalRatio);
-        BranchGraphUtils.state.verticalScrollRatio2.publish(verticalRatio);
+        BranchGraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
+        BranchGraphUtils.state.verticalScrollRatio.publish(verticalRatio);
     }
 
     setHeadCommit(){

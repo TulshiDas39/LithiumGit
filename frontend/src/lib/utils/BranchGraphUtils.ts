@@ -1,4 +1,4 @@
-import { IPositionDiff, IPositition, IViewBox } from "../interfaces";
+import { IPositionDiff, IPositition } from "../interfaces";
 import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
@@ -20,23 +20,18 @@ interface IState{
     headCommit:PbHeadCommit;
     selectedCommit:PbSelectedCommit;
     horizontalScrollWidth:PbHorizontalScrollWidth;
-    horizontalScrollRatio2: Publisher<number>;
-    zoomLabel2: Publisher<number>;
-    verticalScrollRatio2:Publisher<number>;
-    viewBox2:PbViewBox;
-    notScrolledHorizontallyYet:boolean;
-    notScrolledVerticallyYet:boolean;
-    verticalScrollTop:number;
-    verticalScrollTop2:PbVerticalScrollTop;
-    horizontalScrollLeft:number;
-    horizontalScrollLeft2:PbHorizontalScrollLeft; 
+    horizontalScrollRatio: Publisher<number>;
+    zoomLabel: Publisher<number>;
+    verticalScrollRatio:Publisher<number>;
+    viewBox:PbViewBox;
+    verticalScrollTop:PbVerticalScrollTop;
+    horizontalScrollLeft:PbHorizontalScrollLeft; 
     viewBoxX:PbViewBoxX;
     viewBoxY:PbViewBoxY;
     viewBoxWidth:PbViewBoxWidth;
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
 }
-
 
 export class BranchGraphUtils{
     //static horizontalScrollBarId = "horizontalScrollBar";    
@@ -45,14 +40,9 @@ export class BranchGraphUtils{
     static svgElement:SVGSVGElement = null!;
     static horizontalScrollBarElement:HTMLDivElement = null!;
     static verticalScrollBarElement:HTMLDivElement = null!;
-    // static headElement:HTMLElement = null!;
     static branchSvgHtml='';
     static initialHorizontalScrollRatio = 1;
     static initialVerticalScrollRatio = 1;
-    static zoom = 0;
-    //static horizontalScrollWidth = 0;
-    static verticalScrollHeight = 0;
-    static selectedCommit:ICommitInfo;
     static focusedCommit:ICommitInfo=null!;
     static readonly selectedCommitColor = "blueviolet"
     static readonly commitColor = "cadetblue";
@@ -73,25 +63,21 @@ export class BranchGraphUtils{
         mergingCommit:new PbMergeCommit(null!),
         panelHeight:new PbPanelHeight(window.innerHeight * 0.65),
         selectedCommit: new PbSelectedCommit(null!),
-        zoomLabel2:new Publisher(1),
-        notScrolledHorizontallyYet:true,
-        notScrolledVerticallyYet:true,
-        verticalScrollTop:0,
-        horizontalScrollLeft:0,
-        horizontalScrollRatio2:new Publisher(0),
-        verticalScrollRatio2:new Publisher(0),
+        zoomLabel:new Publisher(1),
+        horizontalScrollRatio:new Publisher(0),
+        verticalScrollRatio:new Publisher(0),
     } as IState;    
 
     static init(){
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
         BranchGraphUtils.state.verticalScrollHeight = new PbVerticalScrollHeight(0);
-        BranchGraphUtils.state.horizontalScrollLeft2 = new PbHorizontalScrollLeft(0);
-        BranchGraphUtils.state.verticalScrollTop2 = new PbVerticalScrollTop(0);
+        BranchGraphUtils.state.horizontalScrollLeft = new PbHorizontalScrollLeft(0);
+        BranchGraphUtils.state.verticalScrollTop = new PbVerticalScrollTop(0);
         BranchGraphUtils.state.viewBoxWidth = new PbViewBoxWidth(0);
         BranchGraphUtils.state.viewBoxHeight = new PbViewBoxHeight(0);
         BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
         BranchGraphUtils.state.viewBoxY = new PbViewBoxY(0);
-        BranchGraphUtils.state.viewBox2 = new PbViewBox({x:0,y:0,width:0,height:0});
+        BranchGraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
 
         window.addEventListener("resize",()=>{
             BranchGraphUtils.state.svgContainerWidth.update();
@@ -100,7 +86,7 @@ export class BranchGraphUtils{
 
     static createBranchPanel(){
         BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
-        BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
+        //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
         BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             width:BranchGraphUtils.svgContainer.getBoundingClientRect().width,
             height:Math.floor(window.innerHeight * 0.65),
@@ -121,7 +107,7 @@ export class BranchGraphUtils{
         //this.updateUi();
         BranchGraphUtils.addEventListeners();
         
-        BranchGraphUtils.handleCommitSelect(BranchGraphUtils.selectedCommit);
+        BranchGraphUtils.handleCommitSelect(BranchGraphUtils.state.selectedCommit.value);
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
     }  
@@ -141,7 +127,7 @@ export class BranchGraphUtils{
         const ratioDiff = positionDiff / movableWidth;
         let newRatio = BranchGraphUtils.initialHorizontalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);
-        BranchGraphUtils.state.horizontalScrollRatio2.publish(newRatio);        
+        BranchGraphUtils.state.horizontalScrollRatio.publish(newRatio);        
     }
 
     static handleVerticalScroll2=(positionDiff:number)=>{             
@@ -151,7 +137,7 @@ export class BranchGraphUtils{
         const ratioDiff = positionDiff / movableHeight;
         let newRatio = BranchGraphUtils.initialVerticalScrollRatio + ratioDiff;
         newRatio = NumUtils.between1_0(newRatio);        
-        BranchGraphUtils.state.verticalScrollRatio2.publish(newRatio);        
+        BranchGraphUtils.state.verticalScrollRatio.publish(newRatio);        
     }
 
     static handleScroll2=(positionDiff:IPositionDiff)=>{        
@@ -223,14 +209,14 @@ export class BranchGraphUtils{
 
     static addEventListeners(){
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
-            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
+            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
         });
         UiUtils.HandleVerticalDragging(BranchGraphUtils.verticalScrollBarElement,BranchGraphUtils.handleVerticalScroll2,()=>{
-            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
+            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio.value;
         });
         UiUtils.HandleDragging(BranchGraphUtils.svgElement as any,BranchGraphUtils.handleScroll2,()=>{
-            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio2.value;
-            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio2.value;
+            BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
+            BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio.value;
         });
         this.addEventListendersOnCommit();
         this.addWheelListender();
@@ -249,7 +235,7 @@ export class BranchGraphUtils{
         if(!BranchGraphUtils.svgElement) return;
         if(!diifValue) diifValue = 0.1;
         console.log("diifValue",diifValue)
-        let newValue = BranchGraphUtils.state.zoomLabel2.value;
+        let newValue = BranchGraphUtils.state.zoomLabel.value;
         if(action === "zoomIn"){
             newValue +=  newValue*diifValue             
         }
@@ -260,7 +246,7 @@ export class BranchGraphUtils{
         else newValue = 1;
 
         newValue = NumUtils.between(0,5,newValue);
-        BranchGraphUtils.state.zoomLabel2.publish(newValue);        
+        BranchGraphUtils.state.zoomLabel.publish(newValue);        
     }
 
 
@@ -448,8 +434,8 @@ export class BranchGraphUtils{
 
         const clickListener = (_e:MouseEvent)=>{
             let existingSelectedCommitElem:HTMLElement|null;
-            if(this.selectedCommit.hash) {
-                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.selectedCommit.hash}`);
+            if(BranchGraphUtils.state.selectedCommit.value.hash) {
+                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${BranchGraphUtils.state.selectedCommit.value.hash}`);
                 existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
             }
 
@@ -460,8 +446,8 @@ export class BranchGraphUtils{
             dummyCommit.ownerBranch = head.ownerBranch;
             dummyCommit.previousCommit = head;
             dummyCommit.message = 'Commit is in merging state.';
-            this.selectedCommit = dummyCommit;
-            this.handleCommitSelect(this.selectedCommit);
+            BranchGraphUtils.state.selectedCommit.publish(dummyCommit);
+            BranchGraphUtils.handleCommitSelect(BranchGraphUtils.state.selectedCommit.value);
         }
 
         circleElem.addEventListener("click",clickListener);
