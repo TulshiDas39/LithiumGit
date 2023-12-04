@@ -380,19 +380,13 @@ export class BranchGraphUtils{
     static addWheelListender(){
         if(!this.svgElement) return;
         
-        this.svgElement.addEventListener("wheel",(e)=>{
+        BranchGraphUtils.svgElement.addEventListener("wheel",(e)=>{
             var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
-            if(e.deltaX > 0 || e.deltaY > 0) {
-                // dispatch(ActionUI.decreamentBranchPanelZoom(delta));
-                // this.zoom -= delta;
-                this.controlZoom("zoomOut",delta);
-
+            if(e.deltaX > 0 || e.deltaY > 0) {                
+                BranchGraphUtils.controlZoom("zoomOut",delta * 0.01);
             }
             else{
-                // dispatch(ActionUI.increamentBranchPanelZoom(delta));
-                // this.zoom += delta;
-                this.controlZoom("zoomIn",delta);
-
+                BranchGraphUtils.controlZoom("zoomIn",delta * 0.01);
             }
 
             
@@ -490,6 +484,7 @@ export class BranchGraphUtils{
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",diifValue:number|undefined){
         if(!BranchGraphUtils.svgElement) return;
         if(!diifValue) diifValue = 0.1;
+        console.log("diifValue",diifValue)
         let newValue = BranchGraphUtils.state.zoomLabel2.value;
         if(action === "zoomIn"){
             newValue +=  newValue*diifValue             
