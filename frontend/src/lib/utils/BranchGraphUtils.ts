@@ -502,6 +502,7 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.horizontalScrollWidth.update();
         BranchGraphUtils.state.verticalScrollHeight.update();
         BranchGraphUtils.state.selectedCommit.publish(BranchUtils.repositoryDetails.headCommit);        
+        BranchGraphUtils.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
     }
 
     static updateHeadIdentifier(){        
