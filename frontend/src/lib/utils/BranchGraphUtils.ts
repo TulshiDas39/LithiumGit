@@ -50,10 +50,6 @@ export class BranchGraphUtils{
     //static readonly scrollbarSize = 10;
     static readonly scrollBarSize = 10;
 
-    static get horizontalScrollContainerWidth(){
-        return this.state.svgContainerWidth.value+10;
-    }
-
     static handleCommitSelect=(commit:ICommitInfo)=>{};
     static openContextModal=()=>{};
    
@@ -61,7 +57,7 @@ export class BranchGraphUtils{
         svgContainerWidth: new PbSvgContainerWidth(null!),
         headCommit:new PbHeadCommit(null!),
         mergingCommit:new PbMergeCommit(null!),
-        panelHeight:new PbPanelHeight(window.innerHeight * 0.65),
+        panelHeight:new PbPanelHeight(null!),
         selectedCommit: new PbSelectedCommit(null!),
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
@@ -81,6 +77,7 @@ export class BranchGraphUtils{
 
         window.addEventListener("resize",()=>{
             BranchGraphUtils.state.svgContainerWidth.update();
+            BranchGraphUtils.state.panelHeight.update();
         });
     }    
 
@@ -89,7 +86,7 @@ export class BranchGraphUtils{
         //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
         BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
             width:BranchGraphUtils.svgContainer.getBoundingClientRect().width,
-            height:Math.floor(window.innerHeight * 0.65),
+            height:BranchGraphUtils.svgContainer.getBoundingClientRect().height,
             repoDetails:BranchUtils.repositoryDetails,
         }))
 

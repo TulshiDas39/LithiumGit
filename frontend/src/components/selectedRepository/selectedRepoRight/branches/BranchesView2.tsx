@@ -26,9 +26,9 @@ function BranchesViewComponent() {
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
         <BranchActions />
-        <div className="d-flex w-100 overflow-hidden">
-            <div id={EnumHtmlIds.branchPanelContainer} className="w-75 invisible">
-                <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ overflow: 'hidden' }}>
+        <div className="d-flex w-100 overflow-hidden" style={{height:`70%`}}>
+            <div id={EnumHtmlIds.branchPanelContainer} className="invisible" style={{width:`75%`}}>
+                <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ height:`calc(100% - ${BranchGraphUtils.scrollBarSize}px)`, overflow: 'hidden' }}>
                     <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width: `calc(100% - ${BranchGraphUtils.scrollBarSize}px)`}}>
                         {/* branch graph will be displayed here */}
                     </div>

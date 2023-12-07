@@ -1,10 +1,9 @@
-import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
 import { BranchGraphUtils } from "../BranchGraphUtils";
 
 export class PbPanelHeight extends DerivedState<number>{    
     protected getDerivedValue(): number {
-        const elem = document.querySelector(`#${EnumHtmlIds.branchPanel}`);
+        const elem = BranchGraphUtils.svgContainer;
         if(!elem)
             return 0;
 
