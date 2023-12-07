@@ -222,15 +222,6 @@ export class BranchGraphUtils{
         this.addWheelListender();
     }
 
-    static getHorizontalScrollWidth(){
-        // let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        // if(totalWidth < BranchGraphUtils.state.state.panelWidth.value) totalWidth = BranchGraphUtils.state.state.panelWidth.value;
-        // const widthRatio = BranchGraphUtils.state.viewBox.width / totalWidth;
-        // const horizontalScrollWidth = widthRatio*BranchGraphUtils.state.state.panelWidth.value;
-        // return horizontalScrollWidth;
-        return 0;
-    }
-
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",diifValue:number|undefined){
         if(!BranchGraphUtils.svgElement) return;
         if(!diifValue) diifValue = 0.1;

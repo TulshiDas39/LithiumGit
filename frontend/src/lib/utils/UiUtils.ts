@@ -17,43 +17,7 @@ export class UiUtils {
 
     static updateHeadCommit=(commit:ICommitInfo)=>{
 
-    }
-
-    static handleDrag(element:HTMLElement,listener:(position?:IPositition)=>void){
-        let initialMousePosition:IPositition | undefined = undefined;
-        let currentMousePosition:IPositition | undefined = undefined;
-        if(!element)
-            return;
-
-        const moveListener =(e:MouseEvent)=>{     
-            currentMousePosition={
-                x:e.clientX-initialMousePosition!.x,
-                y:e.clientY-initialMousePosition!.y
-            };
-            listener(currentMousePosition);
-        }
-        const selectListener = (e:Event) => {
-            e.preventDefault();
-            return false
-        };
-
-        const downListener = (e:MouseEvent)=>{
-            initialMousePosition = {x:e.clientX,y:e.clientY};
-            document.addEventListener("mousemove",moveListener);
-            document.addEventListener("mouseup",upListener);
-            document.addEventListener("selectstart",selectListener);
-        }
-        const upListener = ()=>{
-            document.removeEventListener("mousemove",moveListener);
-            document.removeEventListener("mouseup",upListener);
-            document.removeEventListener("selectstart",selectListener);
-            currentMousePosition = undefined;
-            listener(currentMousePosition);
-        }        
-        
-        element?.addEventListener("mousedown",downListener);    
-
-    }
+    }    
 
     static HandleHorizontalDragging(element:HTMLElement,listener:(dx:number)=>void,
         initialiser:()=>void){
@@ -82,7 +46,6 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            listener(positionDX.value);            
         }        
         
         element?.addEventListener("mousedown",downListener);    
@@ -113,7 +76,6 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            listener(positionDY.value);
         }        
         
         element.addEventListener("mousedown",downListener);    
@@ -146,7 +108,6 @@ export class UiUtils {
                 document.removeEventListener("mousemove",moveListener);
                 document.removeEventListener("mouseup",upListener);
                 document.removeEventListener("selectstart",selectListener);
-                listener(positionDiff);                
             }        
             
             element.addEventListener("mousedown",downListener);  
