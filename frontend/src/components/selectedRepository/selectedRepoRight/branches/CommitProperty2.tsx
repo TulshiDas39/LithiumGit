@@ -16,9 +16,13 @@ interface IState{
 function CommitPropertyComponent(){
     const [state,setState]=useMultiState({} as IState);
 
-    useEffect(()=>{
-        BranchGraphUtils.handleCommitSelect=(commit:ICommitInfo)=>{
+    useEffect(()=>{        
+        const selectListener = (commit:ICommitInfo)=>{
             setState({selectedCommit:commit});
+        }
+        BranchGraphUtils.state.selectedCommit.subscribe(selectListener);
+        return ()=>{
+            BranchGraphUtils.state.selectedCommit.unSubscribe(selectListener);
         }
     },[])
 

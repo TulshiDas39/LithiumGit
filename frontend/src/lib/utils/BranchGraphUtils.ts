@@ -50,7 +50,6 @@ export class BranchGraphUtils{
     //static readonly scrollbarSize = 10;
     static readonly scrollBarSize = 10;
 
-    static handleCommitSelect=(commit:ICommitInfo)=>{};
     static openContextModal=()=>{};
    
     static state:IState={
@@ -95,16 +94,9 @@ export class BranchGraphUtils{
         BranchGraphUtils.svgElement = BranchGraphUtils.svgContainer.querySelector('svg')!;
         BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
-        BranchGraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;
-        
-        //this.insertNewBranchGraph();
-//        this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
+        BranchGraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
         BranchGraphUtils.updateUi();
-        //this.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
-        //this.updateUi();
         BranchGraphUtils.addEventListeners();
-        
-        BranchGraphUtils.handleCommitSelect(BranchGraphUtils.state.selectedCommit.value);
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
     }  
@@ -435,7 +427,6 @@ export class BranchGraphUtils{
             dummyCommit.previousCommit = head;
             dummyCommit.message = 'Commit is in merging state.';
             BranchGraphUtils.state.selectedCommit.publish(dummyCommit);
-            BranchGraphUtils.handleCommitSelect(BranchGraphUtils.state.selectedCommit.value);
         }
 
         circleElem.addEventListener("click",clickListener);
