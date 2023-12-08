@@ -1,29 +1,43 @@
 import { ICommitInfo } from "common_library";
 import moment from "moment";
-import React from "react"
+import React, { useEffect } from "react"
+import { useMultiState } from "../../../../lib";
+import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { InputText } from "../../../common";
 
-interface ICommitProperty{
+interface IState{
     selectedCommit?:ICommitInfo;
 }
 
-function CommitPropertyComponent(props:ICommitProperty){
-    if(!props.selectedCommit) return null;
+function CommitPropertyComponent(){
+    const [state,setState]=useMultiState({} as IState);
+
+    useEffect(()=>{        
+        const selectListener = (commit:ICommitInfo)=>{
+            setState({selectedCommit:commit});
+        }
+        BranchGraphUtils.state.selectedCommit.subscribe(selectListener);
+        return ()=>{
+            BranchGraphUtils.state.selectedCommit.unSubscribe(selectListener);
+        }
+    },[])
+
+    if(!state.selectedCommit) return null;
     return <div id="commit_property" className="d-flex flex-column w-100 ps-1 overflow-hidden border">
         <h6>Commit properties</h6>
-        <span>Sha: {props.selectedCommit.avrebHash}</span>
-        <span>Date: {moment(props.selectedCommit.date).format("D MMM,YYYY") }</span>
-        <div className="w-100 overflow-hidden d-flex">
+        {!!state.selectedCommit.hash && <span>Sha: {state.selectedCommit.avrebHash}</span>}
+        <span>Date: {moment(state.selectedCommit.date).format("D MMM,YYYY") }</span>
+        {!!state.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">
             <span>Author: </span>
-            <div><InputText text={props.selectedCommit.author_name}/></div>
+            <div><InputText text={state.selectedCommit.author_name}/></div>
             <span>&lt;</span>            
-            <div><InputText text={props.selectedCommit.author_email} /></div>
+            <div><InputText text={state.selectedCommit.author_email} /></div>
             <span>&gt;</span>
-        </div>
+        </div>}
         {/* <span className="w-100 overflow-hidden d-flex">Author: <InputText text={props.selectedCommit.author_name}/> &lt;<InputText text={props.selectedCommit.author_email} />&gt;</span> */}
         <div className="">
             <textarea name="message" rows={8} className="no-resize w-75" 
-                value={props.selectedCommit.message} onChange={_=>{}} />            
+                value={state.selectedCommit.message} onChange={_=>{}} />            
         </div>
     </div>
 }

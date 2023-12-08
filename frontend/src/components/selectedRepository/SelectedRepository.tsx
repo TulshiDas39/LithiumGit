@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { BranchUtils, CacheUtils, ReduxUtils, useDrag, useMultiState } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
-import { SelectedRepoRight2 } from "./selectedRepoRight/SelectedRepoRight2";
+import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
 import { IRepositoryDetails, RendererEvents, RepositoryInfo } from "common_library";
 import { useSelectorTyped } from "../../store/rootReducer";
@@ -82,7 +82,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{ width: '3px' }} />
         <div style={{width:`calc(100% - ${leftWidth}px)`}} className="overflow-hidden">
-            <SelectedRepoRight2 height={props.height} />
+            <SelectedRepoRight height={props.height} />
         </div>
     </div>
 }

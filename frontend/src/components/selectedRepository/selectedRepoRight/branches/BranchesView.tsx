@@ -1,44 +1,50 @@
-import { ICommitInfo, IRepositoryDetails } from "common_library";
-import React, { useEffect, useRef } from "react"
-import { useMultiState } from "../../../../lib";
+import React, { useEffect } from "react"
+import { shallowEqual } from "react-redux";
+import { EnumHtmlIds, EnumSelectedRepoTab } from "../../../../lib";
+import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
-import { BranchPanel } from "./BranchPanel";
-import { BranchPanel2 } from "./BranchPanel2";
 import { CommitProperty } from "./CommitProperty";
 
-interface IBranchesViewProps{
-    repoDetails?:IRepositoryDetails;
-    selectedCommit?:ICommitInfo;
-    onCommitSelect:(commit:ICommitInfo)=>void;
-}
+function BranchesViewComponent() {
+    const store = useSelectorTyped(state => ({
+        selectedRepo: state.savedData.recentRepositories.find(x => x.isSelected),
+        branchPanelRefreshVersion: state.ui.versions.branchPanelRefresh,
+        show: state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
+    }), shallowEqual);
 
-interface IState{
-    branchPanelWidth:number;
-}
 
-function BranchesViewComponent(props:IBranchesViewProps){
-    const [state,setState]=useMultiState<IState>({
-        branchPanelWidth:-1,
-    })
-    const branchPanelRef = useRef<HTMLDivElement>();
-    useEffect(()=>{
-        if(branchPanelRef.current){
-            const width = Math.floor(branchPanelRef.current.getBoundingClientRect().width);
-            if(state.branchPanelWidth !== width)
-                setState({branchPanelWidth:width});
+    useEffect(() => {
+        if (!BranchGraphUtils.branchSvgHtml) {
+            BranchGraphUtils.createBranchPanel();
         }
-    },[branchPanelRef.current])
-    return <div id="selectedRepoRight" className="d-flex w-100 flex-column">
-    <BranchActions />
-    <div className="d-flex w-100 overflow-hidden">
-        <div ref={branchPanelRef as any} className="w-75">
-            {(!!props.repoDetails && state.branchPanelWidth !== -1) && <BranchPanel containerWidth={state.branchPanelWidth-10} repoDetails={props.repoDetails} selectedCommit={props.selectedCommit} onCommitSelect={props.onCommitSelect} />}
-        </div>
-        <div className="w-25 ps-2">
-            {!!props.selectedCommit && <CommitProperty selectedCommit={props.selectedCommit} />}
+        return () => {
+            BranchGraphUtils.focusedCommit = null!;
+        }
+    }, []);
+
+
+    return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
+        <BranchActions />
+        <div className="d-flex w-100 overflow-hidden" style={{height:`70%`}}>
+            <div id={EnumHtmlIds.branchPanelContainer} className="invisible" style={{width:`75%`}}>
+                <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ height:`calc(100% - ${BranchGraphUtils.scrollBarSize}px)`, overflow: 'hidden' }}>
+                    <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width: `calc(100% - ${BranchGraphUtils.scrollBarSize}px)`}}>
+                        {/* branch graph will be displayed here */}
+                    </div>
+                    <div className="d-flex bg-secondary position-relative" style={{width:`${BranchGraphUtils.scrollBarSize}px`}}>
+                        <div id={EnumHtmlIds.branchVerticalScrollBar} className="bg-danger position-absolute w-100" style={{height:`0px`,top:0,left:0}}> </div>
+                    </div>                    
+                </div>
+                <div className="d-flex bg-secondary w-100 position-relative" style={{height:`${BranchGraphUtils.scrollBarSize}px`}}>
+                    <div id={EnumHtmlIds.branchHorizontalScrollBar} className="position-absolute bg-danger h-100" style={{width:`0px`, left:0,top:0}}></div>
+                </div> 
+            </div>
+            <div className="w-25 ps-2">
+                <CommitProperty />
+            </div>
         </div>
     </div>
-</div>   
 }
 
 export const BranchesView = React.memo(BranchesViewComponent);

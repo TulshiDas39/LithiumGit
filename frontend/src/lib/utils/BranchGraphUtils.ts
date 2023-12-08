@@ -1,7 +1,7 @@
 import { IPositionDiff, IPositition } from "../interfaces";
 import { BranchUtils } from "./BranchUtils";
 import * as ReactDOMServer from 'react-dom/server';
-import { BranchPanel2 } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel2";
+import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";
 import { EnumHtmlIds, EnumIdPrefix } from "../enums";
 import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
@@ -83,7 +83,7 @@ export class BranchGraphUtils{
     static createBranchPanel(){
         BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
         //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
-        BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel2({
+        BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel({
             width:BranchGraphUtils.svgContainer.getBoundingClientRect().width,
             height:BranchGraphUtils.svgContainer.getBoundingClientRect().height,
             repoDetails:BranchUtils.repositoryDetails,
