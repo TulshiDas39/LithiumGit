@@ -173,7 +173,7 @@ export class GitManager{
     }
 
     private addRepoDetailsHandler(){
-        ipcMain.on(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
+        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
             const repoDetails = await this.repoDetails(repoInfo);
             return repoDetails;
         });

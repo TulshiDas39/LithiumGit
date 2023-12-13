@@ -171,7 +171,6 @@ function ChangesComponent(props:IChangesProps) {
     },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
       
 
-    // if(!props.repoInfo) return null;
 
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
