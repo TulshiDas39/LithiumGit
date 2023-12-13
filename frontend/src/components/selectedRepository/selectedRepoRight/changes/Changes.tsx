@@ -189,26 +189,13 @@ function ChangesComponent(props:IChangesProps) {
             onStatusChange={onStatusChange} repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangesType.CONFLICTED)}
             isExpanded={state.expandedTabs.includes(EnumChangesType.CONFLICTED)} />
         
-            <ModifiedChanges modifiedChanges={state.status?.not_added} repoInfoInfo={repoInfo} 
+            <ModifiedChanges status={state.status!} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileModel}
                 handleExpand={()=>handleExpand(EnumChangesType.MODIFIED)} 
                 height = {tabHeight}
-                handleMinHeightChange={(height)=> setState({minHeightOfEachTab:height})} />
-            
+                handleMinHeightChange={(height)=> setState({minHeightOfEachTab:height})} />                    
         
-            <UntrackedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.CREATED)} files={state.status?.created} 
-            onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
-            handleExpand={()=>handleExpand(EnumChangesType.CREATED)} 
-            height = {tabHeight} />        
-        
-            <DeletedFiles onFileSelect={(path)=>handleSelect(path,EnumChangesType.DELETED)} files={state.status?.deleted} 
-            onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
-            handleExpand={()=>handleExpand(EnumChangesType.DELETED)} 
-            isExpanded={state.expandedTabs.includes(EnumChangesType.DELETED)} 
-            height={tabHeight} />
-        
-
         </Fragment>
         }
         </div>

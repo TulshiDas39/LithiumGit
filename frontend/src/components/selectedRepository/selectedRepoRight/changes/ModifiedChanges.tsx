@@ -1,11 +1,15 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { useEffect, useRef } from "react"
+import React, { Fragment, useEffect, useMemo, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangesType, useMultiState } from "../../../../lib";
 
-
+interface IModifiedItem{
+    fileName:string;
+    path:string;
+    type:"M"|"U"|"D"
+}
 interface IModifiedChangesProps{
-    modifiedChanges?:IFile[];
+    status:IStatus;
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
@@ -28,7 +32,41 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         isHeadHover:false});
 
     const ref = useRef<HTMLDivElement>();
+    const modifiedItems = useMemo(()=>{
+        const items:IModifiedItem[]=[];
+        if(!props.status)
+        return items;
+        if(props.status.not_added?.length){
+           for(let item of props.status.not_added) {
+                items.push({
+                    fileName:item.fileName,
+                    path:item.path,
+                    type:"M",
+                });
+           }
+        }
+        if(props.status.created?.length){
+            for(let item of props.status.created) {
+                 items.push({
+                     fileName:item.fileName,
+                     path:item.path,
+                     type:"M",
+                 });
+            }
+         }
+         if(props.status.deleted?.length){
+            for(let item of props.status.deleted) {
+                items.push({
+                    fileName:item.fileName,
+                    path:item.path,
+                    type:"D",
+                });
+           }
+         }
 
+         return items;
+
+    },[props.status])
     useEffect(()=>{
         if(ref.current?.clientHeight)
             props.handleMinHeightChange(ref.current.clientHeight);
@@ -47,8 +85,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const stageAll=()=>{
-        if(!props.modifiedChanges?.length) return;
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.modifiedChanges?.map(x=>x.path),props.repoInfoInfo);        
+        if(!modifiedItems?.length) return;
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,modifiedItems?.map(x=>x.path),props.repoInfoInfo);        
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
@@ -56,8 +94,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const discardAll=()=>{
-        if(!props.modifiedChanges?.length) return;
-        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.modifiedChanges.map(x=>x.path),props.repoInfoInfo);
+        if(!modifiedItems?.length) return;
+        window.ipcRenderer.send(RendererEvents.discardItem().channel,modifiedItems.map(x=>x.path),props.repoInfoInfo);
     }
     
     return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>
@@ -67,7 +105,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             >
             <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Changes</span>
-            {!!props.modifiedChanges?.length && <span className="text-info">({props.modifiedChanges.length})</span>}
+            {!!modifiedItems?.length && <span className="text-info">({modifiedItems.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
@@ -78,7 +116,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
     {state.isExpanded && 
         <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-            {props.modifiedChanges?.map(f=>(
+            {modifiedItems?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}
                     >
@@ -89,12 +127,15 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         </span>
                     </div>
                     
-                    {state.hoveredFile?.path === f.path &&
+                    
                      <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
-                            <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
-                            <span className="px-1" />
-                            <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
-                    </div>}
+                            {state.hoveredFile?.path === f.path ? <Fragment>
+                                <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
+                                <span className="px-1" />
+                                <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
+                            </Fragment>:
+                            <span className="ps-1 text-info">{f.type}</span>}
+                    </div>
                 </div>
             ))}                                                
         </div>

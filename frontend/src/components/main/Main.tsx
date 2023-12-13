@@ -89,7 +89,6 @@ function MainComponent(props:IMainComponentProps){
         })
 
         return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.getRepositoryDetails().replyChannel]);
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
         }
 
