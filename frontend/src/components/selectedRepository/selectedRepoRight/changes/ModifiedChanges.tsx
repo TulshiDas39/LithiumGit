@@ -112,6 +112,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             <span className="px-1" />
             <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
         </div>}
+
     </div>
     
     {state.isExpanded && 
@@ -120,8 +121,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}
                     >
-                    <div className="col-auto overflow-hidden align-items-center flex-shrink-1" onClick={(_)=> props.onFileSelect(f.path)}>
-                        <span className="pe-1 flex-shrink-0">{f.fileName}</span>
+                    <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f.path)}
+                    style={{textOverflow:'ellipsis'}}>
+                        <span className={`pe-1 flex-shrink-0 ${f.type === "D"?"text-decoration-line-through":""}`}>{f.fileName}</span>
                         <span className="small text-secondary">
                             <span>{f.path}</span>
                         </span>
@@ -129,12 +131,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     
                     
                      <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
-                            {state.hoveredFile?.path === f.path ? <Fragment>
+                            {state.hoveredFile?.path === f.path && <Fragment>
                                 <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
                                 <span className="px-1" />
-                                <span className="hover" title="Stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
-                            </Fragment>:
-                            <span className="ps-1 text-info">{f.type}</span>}
+                                <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
+                            </Fragment>}
+                            <span>
+                                <span className="ps-1 text-success fw-bold">{f.type}</span>
+                            </span>
                     </div>
                 </div>
             ))}                                                

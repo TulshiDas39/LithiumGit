@@ -1,6 +1,5 @@
 import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { useEffect, useMemo, useRef } from "react";
-import { Fragment } from "react";
+import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
 import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
 
@@ -71,14 +70,19 @@ function StagedChangesComponent(props:IStagedChangesProps){
         {props.stagedChanges?.map(f=>(
             <div key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath?"selected":""}`} 
                 title={f.path} onMouseEnter={()=> setState({hoveredFile:f})} onClick={_=> props.handleSelect(f.path)}>
-                <div className="col-auto overflow-hidden">
+                <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
                     <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                     <span className="small text-secondary">{f.path}</span>
                 </div>
                 
-                {state.hoveredFile?.path === f.path && <div className="col bg-white ps-3 text-end" style={{ right: 0 }}>
-                    <span className="hover" title="Unstage" onClick={_=> handleUnstageItem(f)}><FaMinus /></span>                                    
-                </div>}
+                <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end pe-1">
+                    {state.hoveredFile?.path === f.path && <Fragment>
+                        <span className="hover" title="Unstage" onClick={_=> handleUnstageItem(f)}><FaMinus /></span>                                    
+                    </Fragment>}
+                    <span>
+                        <span className="ps-1 text-success fw-bold">{"M"}</span>
+                    </span>
+                </div>
             </div>
         ))}                        
     </div>
