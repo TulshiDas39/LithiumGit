@@ -39,6 +39,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         if(!res){
             res = await getRepoDetails();
             BranchUtils.getRepoDetails(res);
+            CacheUtils.setRepoDetails(res);
         }
         BranchUtils.repositoryDetails = res;
         ReduxUtils.setStatusCurrent(res.status);                        
@@ -54,7 +55,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
         // setState({repoDetails:undefined});
-        getRepoDetails();
+        getRepoDetails().then(res=>{
+            BranchUtils.repositoryDetails = res;
+            CacheUtils.setRepoDetails(res);
+            BranchGraphUtils.createBranchPanel();
+        });
     },[store.branchPanelRefreshVersion]); 
 
     const leftWidth = useMemo(()=>{

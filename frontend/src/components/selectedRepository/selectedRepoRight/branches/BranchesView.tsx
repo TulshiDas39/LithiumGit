@@ -15,12 +15,8 @@ function BranchesViewComponent() {
 
 
     useEffect(() => {
-        if (!BranchGraphUtils.branchSvgHtml) {
-            BranchGraphUtils.createBranchPanel();
-        }
-        return () => {
-            BranchGraphUtils.focusedCommit = null!;
-        }
+        BranchGraphUtils.createBranchPanel();
+        
     }, []);
 
 
