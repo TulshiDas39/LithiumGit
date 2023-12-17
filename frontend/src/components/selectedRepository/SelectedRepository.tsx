@@ -56,6 +56,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         if(!store.branchPanelRefreshVersion) return;
         // setState({repoDetails:undefined});
         getRepoDetails().then(res=>{
+            BranchUtils.getRepoDetails(res);
             BranchUtils.repositoryDetails = res;
             CacheUtils.setRepoDetails(res);
             BranchGraphUtils.createBranchPanel();
@@ -74,9 +75,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{
         if(refData.current.previousRepo != props.repo){
-            updateRepoData();
-            refData.current.previousRepo = props.repo;
-            BranchGraphUtils.createBranchPanel();
+            updateRepoData().then(_=>{
+                refData.current.previousRepo = props.repo;
+                BranchGraphUtils.createBranchPanel();
+            });
+            
         }
     },[props.repo]);
 
