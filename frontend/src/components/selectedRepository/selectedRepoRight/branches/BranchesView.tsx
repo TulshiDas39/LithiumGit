@@ -19,6 +19,11 @@ function BranchesViewComponent() {
         BranchGraphUtils.state.svgContainerWidth.publish(0);
     }
 
+    useEffect(()=>{
+        if(BranchGraphUtils.svgElement)
+            BranchGraphUtils.updateUi();
+    },[store.show])
+
     useEffect(() => {
         BranchGraphUtils.createBranchPanel();
         return ()=>{
