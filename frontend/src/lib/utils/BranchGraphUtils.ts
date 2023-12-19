@@ -214,7 +214,6 @@ export class BranchGraphUtils{
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",diifValue:number|undefined){
         if(!BranchGraphUtils.svgElement) return;
         if(!diifValue) diifValue = 0.1;
-        console.log("diifValue",diifValue)
         let newValue = BranchGraphUtils.state.zoomLabel.value;
         if(action === "zoomIn"){
             newValue +=  newValue*diifValue             

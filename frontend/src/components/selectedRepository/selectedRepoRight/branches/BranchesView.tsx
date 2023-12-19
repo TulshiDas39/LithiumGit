@@ -14,9 +14,16 @@ function BranchesViewComponent() {
     }), shallowEqual);
 
 
+    const resetGraphStates=()=>{
+        BranchGraphUtils.state.panelHeight.publish(0);
+        BranchGraphUtils.state.svgContainerWidth.publish(0);
+    }
+
     useEffect(() => {
         BranchGraphUtils.createBranchPanel();
-        
+        return ()=>{
+            resetGraphStates();
+        }
     }, []);
 
 
