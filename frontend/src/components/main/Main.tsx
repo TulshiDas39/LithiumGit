@@ -77,6 +77,7 @@ function MainComponent(props:IMainComponentProps){
         })
 
         window.ipcRenderer.on(RendererEvents.push().replyChannel,(_)=>{
+            console.log("push done.");
             dispatch(ActionUI.setLoader(undefined));
         })
 
@@ -85,6 +86,7 @@ function MainComponent(props:IMainComponentProps){
         })
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
+            dispatch(ActionUI.setLoader({text:"Refreshing..."}));
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         })
 

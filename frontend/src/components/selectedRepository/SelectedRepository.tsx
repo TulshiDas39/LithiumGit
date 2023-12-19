@@ -5,8 +5,9 @@ import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
 import { IRepositoryDetails, RendererEvents, RepositoryInfo } from "common_library";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { ActionUI } from "../../store/slices/UiSlice";
 
 
 interface ISelectedRepositoryProps{
@@ -26,7 +27,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const leftWidthRef = useRef(200);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
-
+    const dispatch = useDispatch();
     const refData = useRef({previousRepo:props.repo});
     
     const getRepoDetails = async ()=>{            
@@ -60,6 +61,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             BranchUtils.repositoryDetails = res;
             CacheUtils.setRepoDetails(res);
             BranchGraphUtils.createBranchPanel();
+            dispatch(ActionUI.setLoader(undefined));
         });
     },[store.branchPanelRefreshVersion]); 
 
