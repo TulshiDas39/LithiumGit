@@ -81,6 +81,7 @@ export class BranchGraphUtils{
     }    
 
     static createBranchPanel(){
+        BranchGraphUtils.resetGraphStates();
         BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
         //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
         BranchGraphUtils.branchSvgHtml = ReactDOMServer.renderToStaticMarkup(BranchPanel({
@@ -469,9 +470,12 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.headCommit.publish(BranchUtils.repositoryDetails.headCommit);
     }
 
-    static updateHeadIdentifier(){        
-        const headElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.value.hash}`)
-        headElem?.classList.remove("d-none");
+    static updateHeadIdentifier(){
+        const currentHead = BranchGraphUtils.state.headCommit.value;
+        if(currentHead != null){
+            const headElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${currentHead.hash}`)
+            headElem?.classList.remove("d-none");
+        }        
         if(!BranchGraphUtils.state.headCommit.prevValue)
             return;
         const prevHeadElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${BranchGraphUtils.state.headCommit.prevValue!.hash}`);
@@ -487,5 +491,11 @@ export class BranchGraphUtils{
         }
 
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-    }        
+    }
+    
+    static resetGraphStates=()=>{
+        BranchGraphUtils.state.panelHeight.publish(0);
+        BranchGraphUtils.state.svgContainerWidth.publish(0);
+        BranchGraphUtils.state.headCommit.publish(null!);
+    }
 }

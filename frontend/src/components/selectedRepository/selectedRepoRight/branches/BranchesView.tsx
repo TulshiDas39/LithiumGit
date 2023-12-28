@@ -27,7 +27,7 @@ function BranchesViewComponent() {
     useEffect(() => {
         BranchGraphUtils.createBranchPanel();
         return ()=>{
-            resetGraphStates();
+            //BranchGraphUtils.resetGraphStates();
         }
     }, []);
 
