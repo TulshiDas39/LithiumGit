@@ -36,8 +36,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         const items:IModifiedItem[]=[];
         if(!props.status)
         return items;
-        if(props.status.not_added?.length){
-           for(let item of props.status.not_added) {
+        if(props.status.not_staged?.length){
+           for(let item of props.status.not_staged) {
                 items.push({
                     fileName:item.fileName,
                     path:item.path,

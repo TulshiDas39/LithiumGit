@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -231,14 +231,27 @@ export class GitManager{
         const git = this.getGitRunner(repoInfo);
         const status = await git.status();
         const result = {} as IStatus;
-        
+        ///staged changes
+        const stagedChanges = {} as IChanges;
+        stagedChanges.deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map(x=> ({fileName:path.basename(x),path:x}));
+        stagedChanges.modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map(x=> ({fileName:path.basename(x),path:x}));
+        stagedChanges.created = status.created.filter(_=> status.staged.includes(_)).map(x=> ({fileName:path.basename(x),path:x}));
+
+        ///not staged changes
+        const unStagedChanges = {} as IChanges;
+        unStagedChanges.deleted = status.deleted.filter(_=>!status.staged.includes(_)).map(x=> ({fileName:path.basename(x),path:x}));
+        unStagedChanges.modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
+        unStagedChanges.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
+
+        result.stagedChanges = stagedChanges;
+        result.unstagedChanges = unStagedChanges;
         result.ahead = status.ahead;
         result.behind = status.behind;
         result.modified = status.modified?.map(x=> ({fileName:path.basename(x),path:x}));
         result.staged = status.staged?.map(x=> ({fileName:path.basename(x),path:x}));
         result.conflicted = status.conflicted?.map(x=> ({fileName:path.basename(x),path:x}));
         result.isClean = status?.isClean();
-        result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
+        result.not_staged = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
         result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
         result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
         result.current = status.current;

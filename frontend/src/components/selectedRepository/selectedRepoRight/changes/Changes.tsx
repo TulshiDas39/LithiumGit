@@ -74,7 +74,7 @@ function ChangesComponent(props:IChangesProps) {
     useEffect(()=>{
         if(!state.selectedFilePath) return;
         if(state.selectedFileModel === EnumChangesType.CONFLICTED &&  state.status?.conflicted?.some(x=> x.path === state.selectedFilePath)) return;
-        if(state.selectedFileModel === EnumChangesType.CREATED &&  state.status?.not_added?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileModel === EnumChangesType.CREATED &&  state.status?.not_staged?.some(x=> x.path === state.selectedFilePath)) return;
         if(state.selectedFileModel === EnumChangesType.DELETED &&  state.status?.deleted?.some(x=> x.path === state.selectedFilePath)) return;
         if(state.selectedFileModel === EnumChangesType.MODIFIED &&  state.status?.modified?.some(x=> x.path === state.selectedFilePath)) return;
         if(state.selectedFileModel === EnumChangesType.STAGED &&  state.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
@@ -153,7 +153,7 @@ function ChangesComponent(props:IChangesProps) {
                 count++;
         }
         if(state.expandedTabs.includes(EnumChangesType.MODIFIED)){
-            if(state.status?.not_added.length)
+            if(state.status?.not_staged?.length)
                 count++;
         }
         if(state.expandedTabs.includes(EnumChangesType.STAGED)){
@@ -179,7 +179,7 @@ function ChangesComponent(props:IChangesProps) {
             <CommitBox onHeightChange={height=> {setState({commitBoxHeight:height})}} />
             {!!state.commitBoxHeight && <Fragment>
     
-            {!!state.status?.staged?.length && <StagedChanges stagedChanges={state.status?.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
+            {!!state.status?.staged?.length && <StagedChanges changes={state.status?.stagedChanges} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
                 handleSelect={path=> handleSelect(path,EnumChangesType.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileModel}
                 isExpanded={state.expandedTabs.includes(EnumChangesType.STAGED)} 
                 hanldeExpand={()=> handleExpand(EnumChangesType.STAGED)}
