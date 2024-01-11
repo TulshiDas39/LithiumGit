@@ -147,7 +147,7 @@ export class GitManager{
 
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
-        await git.reset(paths);
+        await git.reset(['head', ...paths]);
         const updatedStatus = await this.getStatus(repoInfo);
         return updatedStatus;
     }
