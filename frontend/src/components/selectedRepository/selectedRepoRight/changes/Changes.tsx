@@ -171,7 +171,8 @@ function ChangesComponent(props:IChangesProps) {
     },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
       
 
-
+    if(!state.status)
+        return <div></div>
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
         <div className="" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
@@ -189,7 +190,7 @@ function ChangesComponent(props:IChangesProps) {
             onStatusChange={onStatusChange} repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangesType.CONFLICTED)}
             isExpanded={state.expandedTabs.includes(EnumChangesType.CONFLICTED)} />}
         
-            <ModifiedChanges status={state.status!} repoInfoInfo={repoInfo} 
+            <ModifiedChanges changes={state.status!.unstagedChanges} repoInfoInfo={repoInfo} 
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangesType.MODIFIED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileModel}
                 handleExpand={()=>handleExpand(EnumChangesType.MODIFIED)} 

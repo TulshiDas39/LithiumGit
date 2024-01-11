@@ -1,4 +1,4 @@
-import { IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { EnumChangesType, useMultiState } from "../../../../lib";
@@ -9,7 +9,7 @@ interface IModifiedItem{
     type:"M"|"U"|"D"
 }
 interface IModifiedChangesProps{
-    status:IStatus;
+    changes:IChanges;
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
     onFileSelect:(path:string)=>void;
@@ -34,10 +34,10 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     const ref = useRef<HTMLDivElement>();
     const modifiedItems = useMemo(()=>{
         const items:IModifiedItem[]=[];
-        if(!props.status)
-        return items;
-        if(props.status.not_staged?.length){
-           for(let item of props.status.not_staged) {
+        if(!props.changes)
+            return items;
+        if(props.changes.modified?.length){
+           for(let item of props.changes.modified) {
                 items.push({
                     fileName:item.fileName,
                     path:item.path,
@@ -45,8 +45,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 });
            }
         }
-        if(props.status.created?.length){
-            for(let item of props.status.created) {
+        if(props.changes.created?.length){
+            for(let item of props.changes.created) {
                  items.push({
                      fileName:item.fileName,
                      path:item.path,
@@ -54,8 +54,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                  });
             }
          }
-         if(props.status.deleted?.length){
-            for(let item of props.status.deleted) {
+         if(props.changes.deleted?.length){
+            for(let item of props.changes.deleted) {
                 items.push({
                     fileName:item.fileName,
                     path:item.path,
@@ -66,7 +66,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
          return items;
 
-    },[props.status])
+    },[props.changes])
     useEffect(()=>{
         if(ref.current?.clientHeight)
             props.handleMinHeightChange(ref.current.clientHeight);
