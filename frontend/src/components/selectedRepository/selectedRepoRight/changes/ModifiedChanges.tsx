@@ -50,7 +50,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                  items.push({
                      fileName:item.fileName,
                      path:item.path,
-                     type:"M",
+                     type:"U",
                  });
             }
          }
