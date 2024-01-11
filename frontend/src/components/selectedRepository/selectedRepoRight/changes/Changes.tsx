@@ -1,4 +1,4 @@
-import { IStatus, RendererEvents } from "common_library";
+import { IStatus, RendererEvents, Utility } from "common_library";
 import React, { Fragment, useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
@@ -144,20 +144,12 @@ function ChangesComponent(props:IChangesProps) {
             if(state.status?.conflicted.length)
                 count++;
         }
-        if(state.expandedTabs.includes(EnumChangesType.CREATED)){
-            if(state.status?.created.length)
-                count++;
-        }
-        if(state.expandedTabs.includes(EnumChangesType.DELETED)){
-            if(state.status?.deleted.length)
-                count++;
-        }
         if(state.expandedTabs.includes(EnumChangesType.MODIFIED)){
-            if(state.status?.not_staged?.length)
+            if(Utility.countChangedItem(state.status?.unstagedChanges!))
                 count++;
         }
         if(state.expandedTabs.includes(EnumChangesType.STAGED)){
-            if(state.status?.staged.length)
+            if(Utility.countChangedItem(state.status?.stagedChanges!))
                 count++;
         }
         return count;
@@ -166,7 +158,7 @@ function ChangesComponent(props:IChangesProps) {
     const tabHeight = useMemo(()=>{
         if(!expandedTabCountHavingFile)
             return state.minHeightOfEachTab;
-        const minHeightByTabs = (5 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
+        const minHeightByTabs = (3 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
         return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
     },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
       
