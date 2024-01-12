@@ -69,7 +69,7 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     const getDiff=()=>{
-        const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal", "HEAD",propsRef.current.path];
+        const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",propsRef.current.path];
         if(propsRef.current.mode === EnumChangesType.STAGED){
             options.splice(0,0,"--staged");
         }
