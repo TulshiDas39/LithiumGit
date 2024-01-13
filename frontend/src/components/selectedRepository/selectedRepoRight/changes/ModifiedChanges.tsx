@@ -1,20 +1,15 @@
-import { IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import React, { Fragment, useEffect, useMemo, useRef } from "react"
+import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import React, { Fragment, useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { EnumChangesType, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, useMultiState } from "../../../../lib";
 
-interface IModifiedItem{
-    fileName:string;
-    path:string;
-    type:"M"|"U"|"D"
-}
 interface IModifiedChangesProps{
-    changes:IChanges;
+    changes:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
-    onFileSelect:(path:string)=>void;
+    onFileSelect:(file:IFile)=>void;
     selectedFilePath?:string;
-    selectedMode:EnumChangesType;
+    selectedMode:EnumChangeGroup;
     handleExpand:(isExpanded:boolean)=>void;
     height:number;
     handleMinHeightChange:(height:number)=>void;
@@ -32,41 +27,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         isHeadHover:false});
 
     const ref = useRef<HTMLDivElement>();
-    const modifiedItems = useMemo(()=>{
-        const items:IModifiedItem[]=[];
-        if(!props.changes)
-            return items;
-        if(props.changes.modified?.length){
-           for(let item of props.changes.modified) {
-                items.push({
-                    fileName:item.fileName,
-                    path:item.path,
-                    type:"M",
-                });
-           }
-        }
-        if(props.changes.created?.length){
-            for(let item of props.changes.created) {
-                 items.push({
-                     fileName:item.fileName,
-                     path:item.path,
-                     type:"U",
-                 });
-            }
-         }
-         if(props.changes.deleted?.length){
-            for(let item of props.changes.deleted) {
-                items.push({
-                    fileName:item.fileName,
-                    path:item.path,
-                    type:"D",
-                });
-           }
-         }
+    const getStatusText = (changeType:EnumChangeType)=>{
+        if(changeType === EnumChangeType.MODIFIED)
+            return "M";
+        if(changeType === EnumChangeType.CREATED)
+            return "U";
+        return "D";
+    }
 
-         return items;
-
-    },[props.changes])
     useEffect(()=>{
         if(ref.current?.clientHeight)
             props.handleMinHeightChange(ref.current.clientHeight);
@@ -85,8 +53,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const stageAll=()=>{
-        if(!modifiedItems?.length) return;
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,modifiedItems?.map(x=>x.path),props.repoInfoInfo);        
+        if(!props.changes?.length) return;
+        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.changes.map(x=>x.path),props.repoInfoInfo);        
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
@@ -94,8 +62,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const discardAll=()=>{
-        if(!modifiedItems?.length) return;
-        window.ipcRenderer.send(RendererEvents.discardItem().channel,modifiedItems.map(x=>x.path),props.repoInfoInfo);
+        if(!props.changes?.length) return;
+        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.changes.map(x=>x.path),props.repoInfoInfo);
     }
     
     return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>
@@ -105,7 +73,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             >
             <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Changes</span>
-            {!!modifiedItems?.length && <span className="text-info">({modifiedItems.length})</span>}
+            {!!props.changes?.length && <span className="text-info">({props.changes.length})</span>}
         </div>
         {state.isHeadHover && <div className="d-flex">
             <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
@@ -117,13 +85,13 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
     {state.isExpanded && 
         <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-            {modifiedItems?.map(f=>(
+            {props.changes?.map(f=>(
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangesType.MODIFIED?"selected":""}`}
+                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangeGroup.UN_STAGED?"selected":""}`}
                     >
-                    <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f.path)}
+                    <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f)}
                     style={{textOverflow:'ellipsis'}}>
-                        <span className={`pe-1 flex-shrink-0 ${f.type === "D"?"text-decoration-line-through":""}`}>{f.fileName}</span>
+                        <span className={`pe-1 flex-shrink-0 ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
                         <span className="small text-secondary">
                             <span>{f.path}</span>
                         </span>
@@ -137,7 +105,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                                 <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
                             </Fragment>}
                             <span>
-                                <span className="ps-1 text-success fw-bold">{f.type}</span>
+                                <span className="ps-1 text-success fw-bold">{getStatusText(f.changeType)}</span>
                             </span>
                     </div>
                 </div>

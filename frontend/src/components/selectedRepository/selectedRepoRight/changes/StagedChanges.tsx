@@ -1,26 +1,31 @@
-import { IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { EnumChangesType, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, UiUtils, useMultiState } from "../../../../lib";
 
 interface ISingleFileProps{
-    fileName:string;
-    filePath:string;
+    item:IFile
     handleSelect:(path:string)=>void;
     isSelected:boolean;
     handleUnstage:()=>void;
-    changeType:"M"|"A"|"D";
 }
 
 function SingleFile(props:ISingleFileProps){
     const [state,setState]=useMultiState({isHovered:false})
+    const getStatusText = ()=>{
+        if(props.item.changeType === EnumChangeType.MODIFIED)
+            return "M";
+        if(props.item.changeType === EnumChangeType.CREATED)
+            return "A";
+        return "D";
+    }
     return (
-        <div key={props.filePath} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`} 
-        title={props.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
-            onClick={_=> props.handleSelect(props.filePath)}>
+        <div key={props.item.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`} 
+        title={props.item.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
+            onClick={_=> props.handleSelect(props.item.path)}>
         <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
-            <span className={`pe-1 flex-shrink-0 ${props.changeType === "D"?"text-decoration-line-through":""}`}>{props.fileName}</span>
-            <span className="small text-secondary">{props.filePath}</span>
+            <span className={`pe-1 flex-shrink-0 ${props.item.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{props.item.fileName}</span>
+            <span className="small text-secondary">{props.item.path}</span>
         </div>
         
         <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end pe-1">
@@ -28,7 +33,7 @@ function SingleFile(props:ISingleFileProps){
                 <span className="hover" title="Unstage" onClick={_=> props.handleUnstage()}><FaMinus /></span>                                    
             </Fragment>}
             <span>
-                <span className="ps-1 text-success fw-bold">{props.changeType}</span>
+                <span className="ps-1 text-success fw-bold">{getStatusText()}</span>
             </span>
         </div>
     </div>
@@ -36,11 +41,11 @@ function SingleFile(props:ISingleFileProps){
 }
 
 interface IStagedChangesProps{
-    changes:IChanges;    
+    changes:IFile[];
     repoInfoInfo?:RepositoryInfo;
     onStatusChange:(status:IStatus)=>void;
-    handleSelect:(path:string)=>void;
-    selectedMode:EnumChangesType;
+    handleSelect:(file:IFile)=>void;
+    selectedMode:EnumChangeGroup;
     selectedFilePath?:string;
     isExpanded:boolean;
     hanldeExpand:()=>void;
@@ -71,23 +76,15 @@ function StagedChangesComponent(props:IStagedChangesProps){
         if(!headerRef.current)
             return props.height - 30;
         return props.height -headerRef.current.clientHeight;    
-    },[headerRef.current?.clientHeight,props.height]);
-
-    const totalItemCount = useMemo(()=>{
-        const length = props.changes.created.length + props.changes.deleted.length
-        + props.changes.modified.length;
-        return length;
-    },[props.changes])
+    },[headerRef.current?.clientHeight,props.height]);    
 
     const handleUnstageItem = (item:IFile)=>{
         window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
     }
 
     const unStageAll=()=>{
-        if(!totalItemCount) return;
-        const paths = [...props.changes.created.map(_=>_.path),...props.changes.deleted.map(_=>_.path),
-        ...props.changes.modified.map(_=>_.path)];
-        window.ipcRenderer.send(RendererEvents.unStageItem().channel,paths,props.repoInfoInfo)
+        if(!props.changes.length) return;        
+        window.ipcRenderer.send(RendererEvents.unStageItem().channel,props.changes.map(_=>_.path),props.repoInfoInfo)
     }
 
     return <div style={{maxHeight:props.height}}>
@@ -96,7 +93,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
             <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
             <span>Staged Changes</span>
-            {!!totalItemCount && <span className="text-info">({totalItemCount})</span>}
+            {!!props.changes.length && <span className="text-info">({props.changes.length})</span>}
         </div>        
         {state.isHeadHover && <div className="d-flex">            
             <span className="hover" title="UnStage all" onClick={_=> unStageAll()}><FaMinus /></span>
@@ -106,27 +103,11 @@ function StagedChangesComponent(props:IStagedChangesProps){
     {props.isExpanded && 
     <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}
     style={{maxHeight:`${fileListPanelHeight}px`, overflowX:'hidden',overflowY:'auto'}}>
-        {props.changes?.modified?.map(f=>(
-            <SingleFile key={f.path} fileName={f.fileName} filePath={f.
-                path} handleSelect={_=> props.handleSelect(f.path)}
+        {props.changes.map(f=>(
+            <SingleFile key={f.path} item={f} handleSelect={_=> props.handleSelect(f)}
                 handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath}
-                changeType="M" />
-        ))}
-        {props.changes?.created?.map(f=>(
-            <SingleFile key={f.path} fileName={f.fileName} filePath={f.
-                path} handleSelect={_=> props.handleSelect(f.path)}
-                handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath}
-                changeType="A" />
-        ))}
-        {props.changes?.deleted?.map(f=>(
-            <SingleFile key={f.path} fileName={f.fileName} filePath={f.
-                path} handleSelect={_=> props.handleSelect(f.path)}
-                handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={props.selectedMode === EnumChangesType.STAGED && f.path === props.selectedFilePath} 
-                changeType="D"/>
-        ))}
+                isSelected ={props.selectedMode === EnumChangeGroup.STAGED && f.path === props.selectedFilePath}                />
+        ))}        
     </div>
     }
 </div>

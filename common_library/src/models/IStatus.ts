@@ -4,18 +4,13 @@ import { IFile } from "./IFile";
 export interface IStatus{
     ahead:number;
     behind:number;
-    stagedChanges:IChanges;
-    unstagedChanges:IChanges;
-    created:IFile[];
+    staged:IFile[];
+    unstaged:IFile[];
     conflicted:IFile[];
-    deleted:IFile[];
-    modified:IFile[];
     renamed:{
         from:string;
         to:string;
     }[];
-    staged:IFile[];
-    not_staged: IFile[];
     isClean:boolean;
     current:string | null;
     isDetached:boolean;

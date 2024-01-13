@@ -1,9 +1,9 @@
-import { RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, RendererEvents, RepositoryInfo } from "common_library";
 import { DeltaStatic} from "quill";
 import React, { useCallback, useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EditorColors, EnumChangesType, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { EditorColors, EnumChangeGroup, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { DiffUtils } from "../../../../lib/utils/DiffUtils";
 import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -13,7 +13,8 @@ interface IDifferenceProps {
     path:string;
     repoInfo:RepositoryInfo;
     refreshV:number;
-    mode:EnumChangesType;
+    changeGroup:EnumChangeGroup;
+    changeType:EnumChangeType;
 }
 
 
@@ -57,7 +58,7 @@ function DifferenceComponent(props:IDifferenceProps){
     const getFileContent=()=>{
         if(props.path) {    
             const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel,props.repoInfo.path,props.path);
-            if(props.mode === EnumChangesType.STAGED){
+            if(props.changeGroup === EnumChangeGroup.STAGED){
                 const options = [":"+props.path];
                 window.ipcRenderer.send(RendererEvents.gitShow().channel,props.repoInfo,options)
             }
@@ -70,7 +71,7 @@ function DifferenceComponent(props:IDifferenceProps){
 
     const getDiff=()=>{
         const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",propsRef.current.path];
-        if(propsRef.current.mode === EnumChangesType.STAGED){
+        if(propsRef.current.changeGroup === EnumChangeGroup.STAGED){
             options.splice(0,0,"--staged");
         }
         window.ipcRenderer.send(RendererEvents.diff().channel,options,propsRef.current.repoInfo);
@@ -84,12 +85,12 @@ function DifferenceComponent(props:IDifferenceProps){
     }
 
     useEffect(()=>{        
-        if(props.mode === EnumChangesType.DELETED) {
+        if(props.changeType === EnumChangeType.DELETED) {
             getShowResult();
         }
         else getFileContent();
 
-    },[props.path,props.mode,props.refreshV])
+    },[props.path,props.changeGroup,props.refreshV])
 
     const previousChangesEditorRef = useRef<ReactQuill>();
     const currentChangesEditorRef = useRef<ReactQuill>();
@@ -210,7 +211,7 @@ function DifferenceComponent(props:IDifferenceProps){
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            if(propsRef.current.mode === EnumChangesType.MODIFIED || propsRef.current.mode === EnumChangesType.CONFLICTED){
+            if(propsRef.current.changeGroup === EnumChangeGroup.UN_STAGED || propsRef.current.changeGroup === EnumChangeGroup.CONFLICTED){
                 getDiff();
             }
             else showContentOfNewFile(lines);
@@ -224,8 +225,8 @@ function DifferenceComponent(props:IDifferenceProps){
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;
-            if(propsRef.current.mode === EnumChangesType.DELETED) showContentOfDeletedFile(lines);            
-            else if(propsRef.current.mode === EnumChangesType.STAGED)  getDiff();//(lines);
+            if(propsRef.current.changeType === EnumChangeType.DELETED) showContentOfDeletedFile(lines);            
+            else if(propsRef.current.changeGroup === EnumChangeGroup.STAGED)  getDiff();//(lines);
             // get Diff();
         })
 
@@ -241,10 +242,10 @@ function DifferenceComponent(props:IDifferenceProps){
     },[state.currentLineDelta])
     
     return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
-        {(props.mode === EnumChangesType.DELETED || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.MODIFIED
-        || props.mode === EnumChangesType.STAGED) &&
+        {(props.changeType === EnumChangeType.DELETED || props.changeGroup ===  EnumChangeGroup.CONFLICTED || props.changeGroup === EnumChangeGroup.UN_STAGED
+        || props.changeGroup === EnumChangeGroup.STAGED) &&
             <div ref={previousScrollContainerRef as any} 
-            className={`d-flex gs-overflow-x-auto border-end ${props.mode === EnumChangesType.DELETED?'w-100':'w-50'}`} >
+            className={`d-flex gs-overflow-x-auto border-end ${props.changeType === EnumChangeType.DELETED?'w-100':'w-50'}`} >
             <div>
                 <ReactQuill value={state.previousLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={callbackForPreviousEditor} readOnly                    
@@ -258,8 +259,8 @@ function DifferenceComponent(props:IDifferenceProps){
                         />                
             </div>
         </div>}
-        {(props.mode ===  EnumChangesType.MODIFIED  || props.mode ===  EnumChangesType.CONFLICTED || props.mode === EnumChangesType.CREATED || props.mode ===  EnumChangesType.STAGED ) && 
-            <div ref={currentScrollContainerRef as any} className={`d-flex gs-overflow-x-auto ${props.mode === EnumChangesType.CREATED?'w-100':'w-50'}`} >
+        {(props.changeGroup ===  EnumChangeGroup.UN_STAGED  || props.changeGroup ===  EnumChangeGroup.CONFLICTED || props.changeType === EnumChangeType.CREATED || props.changeGroup ===  EnumChangeGroup.STAGED ) && 
+            <div ref={currentScrollContainerRef as any} className={`d-flex gs-overflow-x-auto ${props.changeType === EnumChangeType.CREATED?'w-100':'w-50'}`} >
             <div>
                 <ReactQuill value={state.currentLineNumberDelta} modules={{"toolbar":false}} 
                     onChange={callbackForCurrentEditor} readOnly                    
