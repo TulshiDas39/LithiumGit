@@ -2,10 +2,9 @@ import { ISavedData, IStatus, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { BranchUtils, EnumModals, ObjectUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
-import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { EnumModals, ObjectUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { ActionModals, ActionRepositoy, ActionSavedData } from "../../store/slices";
+import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
@@ -26,7 +25,7 @@ const initialState = {
 function MainComponent(props:IMainComponentProps){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
-        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
+        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),        
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
 
@@ -59,17 +58,8 @@ function MainComponent(props:IMainComponentProps){
         });
         setState({isLoading:false});
 
-        ReduxUtils.setStatusCurrent = (status:IStatus)=>{
-            let current = "";
-            if(status.isDetached) current = BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
-            else current = status.current!;
-            dispatch(ActionRepositoy.setBranchStatusCurrent(current));
-            dispatch(ActionRepositoy.setAheadBehindStatus({ahead:status.ahead,behind:status.behind}));
-
-            const requiredReload = BranchGraphUtils.isRequiredReload(status);
-            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
-            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
-            else BranchGraphUtils.checkForUiUpdate(status);
+        ReduxUtils.setStatusCurrent = (status:IStatus)=>{            
+            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));            
         }
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{

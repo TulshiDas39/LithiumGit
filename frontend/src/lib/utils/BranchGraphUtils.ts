@@ -352,6 +352,8 @@ export class BranchGraphUtils{
     }
 
     static isRequiredReload(newStatus:IStatus){
+        if(!newStatus)
+            return false;
         const existingStatus = BranchUtils.repositoryDetails?.status;
         if(!existingStatus?.headCommit) return false;
         if(newStatus.current !== existingStatus.current) return true;

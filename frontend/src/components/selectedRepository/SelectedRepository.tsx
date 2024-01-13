@@ -22,6 +22,7 @@ interface IState{
 function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const store = useSelectorTyped(state=>({
         branchPanelRefreshVersion:state.ui.versions.branchPanelRefresh,
+        status:state.ui.status,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({isLoading:true});
     const leftWidthRef = useRef(200);
@@ -52,6 +53,14 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{                       
        updateRepoData();
     },[]);
+
+    useEffect(()=>{
+        if(!store.status)
+            return;
+        const requiredReload = BranchGraphUtils.isRequiredReload(store.status);
+        if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        else BranchGraphUtils.checkForUiUpdate(store.status);
+    },[store.status]);
 
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
