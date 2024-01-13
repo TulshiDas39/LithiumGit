@@ -12,7 +12,6 @@ interface IModifiedChangesProps{
     selectedMode:EnumChangeGroup;
     handleExpand:(isExpanded:boolean)=>void;
     height:number;
-    handleMinHeightChange:(height:number)=>void;
 }
 
 interface IState{
@@ -34,11 +33,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             return "U";
         return "D";
     }
-
-    useEffect(()=>{
-        if(ref.current?.clientHeight)
-            props.handleMinHeightChange(ref.current.clientHeight);
-    },[ref.current?.clientHeight])
 
     useEffect(()=>{
         props.handleExpand(state.isExpanded);

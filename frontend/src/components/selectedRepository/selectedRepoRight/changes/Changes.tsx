@@ -186,8 +186,7 @@ function ChangesComponent(props:IChangesProps) {
                 onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangeGroup.UN_STAGED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileGroup}
                 handleExpand={()=>handleExpand(EnumChangeGroup.UN_STAGED)} 
-                height = {tabHeight}
-                handleMinHeightChange={(height)=> setState({minHeightOfEachTab:height})} />                    
+                height = {tabHeight}/>
         
         </Fragment>
         }
