@@ -66,11 +66,6 @@ function MainComponent(props:IMainComponentProps){
             dispatch(ActionUI.setLoader(undefined));
         })
 
-        window.ipcRenderer.on(RendererEvents.push().replyChannel,(_)=>{
-            console.log("push done.");
-            dispatch(ActionUI.setLoader(undefined));
-        })
-
         window.ipcRenderer.on(RendererEvents.fetch().replyChannel,(_)=>{
             dispatch(ActionUI.setLoader(undefined));
         })

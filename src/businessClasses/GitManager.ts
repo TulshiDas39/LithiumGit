@@ -180,9 +180,9 @@ export class GitManager{
     }
 
     private addStatusHandler(){
-        ipcMain.on(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
+        ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             const repoDetails = await this.getStatus(repoInfo);
-            e.reply(RendererEvents.getStatus().replyChannel,repoDetails);
+            return repoDetails;
         });
     }
 
@@ -339,8 +339,8 @@ export class GitManager{
     }
 
     private async addPushHandler(){
-        ipcMain.on(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.givePush(repoDetails,e);
+        ipcMain.handle(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
+            await this.givePush(repoDetails);
         });
     }
 
@@ -403,13 +403,12 @@ export class GitManager{
         return hasChange;
     }
 
-    private async givePush(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
+    private async givePush(repoDetails:IRepositoryDetails){
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
             const result = await git.push(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
-            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else e.reply(RendererEvents.push().replyChannel);
+            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }

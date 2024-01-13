@@ -1,17 +1,17 @@
-import { EnumChangeType, IFile, IStatus, RendererEvents, Utility } from "common_library";
+import { EnumChangeType, IFile, IStatus, RendererEvents } from "common_library";
 import React, { Fragment, useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
-import { shallowEqual } from "react-redux";
-import { EnumChangeGroup, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { shallowEqual, useDispatch } from "react-redux";
+import { EnumChangeGroup, EnumSelectedRepoTab, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { ConflictedFiles } from "./ConflictedFiles";
-import { DeletedFiles } from "./DeletedFiles";
 import { Difference } from "./Difference";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
-import { UntrackedFiles } from "./UntrackedFiles";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IChangesProps{
     height:number;
@@ -50,13 +50,17 @@ function ChangesComponent(props:IChangesProps) {
         status:state.ui.status,
     }),shallowEqual);
 
+    const dispatch = useDispatch()
+
     const dragData = useRef({ initialX: 0, currentX: 0 });
     const repoInfo = useMemo(()=>{
         return store.recentRepositories.find(x=>x.isSelected);
     },[store.recentRepositories])
 
     const getStatus=()=>{
-        if(repoInfo) window.ipcRenderer.send(RendererEvents.getStatus().channel,repoInfo);
+        IpcUtils.getRepoStatu().then((res)=>{                
+            dispatch(ActionUI.setStatus(res));
+        })
     }
 
     useEffect(()=>{
@@ -83,10 +87,6 @@ function ChangesComponent(props:IChangesProps) {
     },[state.status])
 
     useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,result:IStatus)=>{
-            setState({status:result});            
-            ReduxUtils.setStatusCurrent(result);
-        });
         window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
             setState({status:res});
         });
@@ -94,8 +94,7 @@ function ChangesComponent(props:IChangesProps) {
             setState({status:res});
         });
         return ()=>{
-            UiUtils.removeIpcListeners([
-                RendererEvents.getStatus().replyChannel,
+            UiUtils.removeIpcListeners([                
                 RendererEvents.discardItem().replyChannel,
                 RendererEvents.stageItem().replyChannel,
             ]);

@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { BranchUtils, CacheUtils, ReduxUtils, useDrag, useMultiState } from "../../lib";
+import { BranchUtils, CacheUtils, ReduxUtils, UiUtils, useDrag, useMultiState } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
-import { IRepositoryDetails, RendererEvents, RepositoryInfo } from "common_library";
+import { IRepositoryDetails, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
@@ -52,6 +52,15 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{                       
        updateRepoData();
+       window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
+            dispatch(ActionUI.setStatus(res));
+       })
+
+       return ()=>{
+        UiUtils.removeIpcListeners([                
+            RendererEvents.getStatus().replyChannel,            
+        ]);
+       }
     },[]);
 
     useEffect(()=>{

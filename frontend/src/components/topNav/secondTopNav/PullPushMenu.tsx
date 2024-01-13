@@ -6,6 +6,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
@@ -28,7 +29,13 @@ function PullPushMenuComponent(){
 
     const handlePush=()=>{
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
-        window.ipcRenderer.send(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+        IpcUtils.trigerPush().then(()=>{
+            dispatch(ActionUI.setLoader({text:"Checking status..."}));
+            IpcUtils.getRepoStatu().then(res=>{
+                dispatch(ActionUI.setStatus(res));
+                dispatch(ActionUI.setLoader(undefined));
+            })
+        })
     }
 
     const handleFetch=(isAll:boolean)=>{
