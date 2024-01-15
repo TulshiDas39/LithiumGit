@@ -13,12 +13,6 @@ function BranchesViewComponent() {
         show: state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
     }), shallowEqual);
 
-
-    const resetGraphStates=()=>{
-        BranchGraphUtils.state.panelHeight.publish(0);
-        BranchGraphUtils.state.svgContainerWidth.publish(0);
-    }
-
     useEffect(()=>{
         if(BranchGraphUtils.svgElement)
             BranchGraphUtils.updateUi();

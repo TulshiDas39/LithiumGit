@@ -43,7 +43,7 @@ function ChangesComponent(props:IChangesProps) {
         expandedTabs:[],
     });
 
-    const store = useSelectorTyped(state=>({
+    const store = useSelectorTyped(state=>({        
         focusVersion:state.ui.versions.appFocused,
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
@@ -57,19 +57,11 @@ function ChangesComponent(props:IChangesProps) {
         return store.recentRepositories.find(x=>x.isSelected);
     },[store.recentRepositories])
 
-    const getStatus=()=>{
-        IpcUtils.getRepoStatu().then((res)=>{                
-            dispatch(ActionUI.setStatus(res));
-        })
-    }
-
     useEffect(()=>{
-         getStatus();
          setState({selectedFilePath:null!});
     },[repoInfo?.path]);
 
     useEffect(()=>{
-        getStatus();
         setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
 

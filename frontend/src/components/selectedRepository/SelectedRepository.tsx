@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { BranchUtils, CacheUtils, ReduxUtils, UiUtils, useDrag, useMultiState } from "../../lib";
+import { BranchUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -8,6 +8,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 
 interface ISelectedRepositoryProps{
@@ -23,6 +24,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const store = useSelectorTyped(state=>({
         branchPanelRefreshVersion:state.ui.versions.branchPanelRefresh,
         status:state.ui.status,
+        focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({isLoading:true});
     const leftWidthRef = useRef(200);
@@ -36,24 +38,37 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         return res;
     }
 
+    const updateStatus = async ()=>{
+        dispatch(ActionUI.setLoader({text:"Updating status..."}));
+        try{
+            const res = await IpcUtils.getRepoStatu();
+            BranchUtils.repositoryDetails.status = res;
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(res)));
+        }catch(e){}
+        dispatch(ActionUI.setLoader(undefined));
+    }
+
     const updateRepoData = async ()=>{
-        let res = await CacheUtils.getRepoDetails(props.repo.path);
-        if(!res){
-            res = await getRepoDetails();
-            BranchUtils.getRepoDetails(res);
-            CacheUtils.setRepoDetails(res);
+        BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(props.repo.path))!;
+        if(!BranchUtils.repositoryDetails){
+            BranchUtils.repositoryDetails = await getRepoDetails();
+            BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
         }
-        BranchUtils.repositoryDetails = res;
-        ReduxUtils.setStatusCurrent(res.status);                        
+        else{
+            updateStatus();
+        }
         if(state.isLoading)
             setState({isLoading:false});        
-        
     }
 
     useEffect(()=>{                       
        updateRepoData();
        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
-            dispatch(ActionUI.setStatus(res));
+            BranchUtils.repositoryDetails.status = res;
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(res)));
        })
 
        return ()=>{
@@ -81,7 +96,12 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             BranchGraphUtils.createBranchPanel();
             dispatch(ActionUI.setLoader(undefined));
         });
-    },[store.branchPanelRefreshVersion]); 
+    },[store.branchPanelRefreshVersion]);
+    
+    useEffect(()=>{
+        if(store.focusVersion) 
+            updateStatus();
+    },[store.focusVersion]);
 
     const leftWidth = useMemo(()=>{
         if(!position){
