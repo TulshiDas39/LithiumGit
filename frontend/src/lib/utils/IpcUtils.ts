@@ -19,4 +19,8 @@ export class IpcUtils{
     static stageItems(paths:string[], repoInfo:RepositoryInfo){
         return window.ipcRenderer.invoke(RendererEvents.stageItem().channel,paths,repoInfo);
     }
+
+    static discardItems(paths:string[],repoInfo:RepositoryInfo){
+        return window.ipcRenderer.invoke(RendererEvents.discardItem().channel,paths,repoInfo);
+    }
 }

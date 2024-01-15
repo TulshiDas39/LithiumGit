@@ -54,12 +54,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
-        window.ipcRenderer.send(RendererEvents.discardItem().channel,[item.path],props.repoInfoInfo);
+        IpcUtils.discardItems([item.path],props.repoInfoInfo!);
     }
 
     const discardAll=()=>{
         if(!props.changes?.length) return;
-        window.ipcRenderer.send(RendererEvents.discardItem().channel,props.changes.map(x=>x.path),props.repoInfoInfo);
+        IpcUtils.discardItems(props.changes.map(x=>x.path),props.repoInfoInfo!);        
     }
     
     return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>

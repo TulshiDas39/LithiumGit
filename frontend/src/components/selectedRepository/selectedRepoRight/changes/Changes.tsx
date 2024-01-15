@@ -73,15 +73,6 @@ function ChangesComponent(props:IChangesProps) {
         setState({selectedFilePath:null!});
     },[store.status])
 
-    useEffect(()=>{        
-        return ()=>{
-            UiUtils.removeIpcListeners([                
-                RendererEvents.discardItem().replyChannel,                
-            ]);
-        }
-    },[])    
-
-
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
         return `- ${-adjustedX}px`;

@@ -120,9 +120,9 @@ export class GitManager{
     }
 
     private addDiscardUnStagedItemHandler() {
-        ipcMain.on(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.discardUnStageItem(paths,repoInfo);
-            e.reply(RendererEvents.discardItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.discardUnStageItem(paths,repoInfo);
+            await this.notifyStatus(repoInfo);
         })
     }
     private addUnStageItemHandler() {
@@ -141,8 +141,6 @@ export class GitManager{
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.checkout(['--',...paths]);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
     }
 
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
