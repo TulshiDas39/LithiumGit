@@ -1,4 +1,4 @@
-import { IStatus, RendererEvents } from "common_library";
+import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
@@ -10,5 +10,13 @@ export class IpcUtils{
 
     static trigerPush(){
         return window.ipcRenderer.invoke(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    }
+
+    static unstageItem(paths:string[],repoInfo:RepositoryInfo){
+        return window.ipcRenderer.invoke(RendererEvents.unStageItem().channel,paths,repoInfo);
+    }
+
+    static stageItems(paths:string[], repoInfo:RepositoryInfo){
+        return window.ipcRenderer.invoke(RendererEvents.stageItem().channel,paths,repoInfo);
     }
 }

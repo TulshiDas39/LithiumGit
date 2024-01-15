@@ -126,15 +126,15 @@ export class GitManager{
         })
     }
     private addUnStageItemHandler() {
-        ipcMain.on(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.unStageItem(paths,repoInfo);
-            e.reply(RendererEvents.unStageItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.unStageItem(paths,repoInfo);
+            await this.notifyStatus(repoInfo);            
         })
     }
     private addStageItemHandler() {
-        ipcMain.on(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.stageItem(paths,repoInfo);
-            e.reply(RendererEvents.stageItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.stageItem(paths,repoInfo);
+            await this.notifyStatus(repoInfo);
         })
     }
 
@@ -148,15 +148,11 @@ export class GitManager{
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.reset(['head', ...paths]);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
     }
 
     private async stageItem(path:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.add(path);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
     }
 
     private addValidGitPathHandler(){
@@ -225,6 +221,11 @@ export class GitManager{
         this.setActiveOrigin(repoDetails);
         
         return repoDetails;
+    }
+
+    private async notifyStatus(repoInfo:RepositoryInfo){
+        const status = await this.getStatus(repoInfo);
+        AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
     }
 
     private async getStatus(repoInfo:RepositoryInfo){

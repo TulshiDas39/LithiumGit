@@ -1,12 +1,11 @@
 import { IFile, RepositoryInfo, IStatus, RendererEvents } from "common_library";
-import React, { Fragment, useEffect } from "react"
+import React, { Fragment } from "react"
 import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
 interface IConflictedFilesProps{
     files?:IFile[];
     repoInfoInfo?:RepositoryInfo;
-    onStatusChange:(status:IStatus)=>void;
     onFileSelect:(file:IFile)=>void;
     selectedFilePath?:string;
     handleExpand:()=>void;

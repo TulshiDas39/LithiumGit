@@ -2,6 +2,7 @@ import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInf
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
 import { EnumChangeGroup, UiUtils, useMultiState } from "../../../../lib";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -42,8 +43,7 @@ function SingleFile(props:ISingleFileProps){
 
 interface IStagedChangesProps{
     changes:IFile[];
-    repoInfoInfo?:RepositoryInfo;
-    onStatusChange:(status:IStatus)=>void;
+    repoInfoInfo?:RepositoryInfo;    
     handleSelect:(file:IFile)=>void;
     selectedMode:EnumChangeGroup;
     selectedFilePath?:string;
@@ -61,15 +61,6 @@ interface IState{
 function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({isHeadHover:false});
 
-
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.unStageItem().replyChannel,(_,res:IStatus)=>{
-            props.onStatusChange(res);
-        });
-        return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.unStageItem().replyChannel]);
-        }
-    },[]);
     const headerRef = useRef<HTMLDivElement>();
 
     const fileListPanelHeight = useMemo(()=>{
@@ -79,12 +70,12 @@ function StagedChangesComponent(props:IStagedChangesProps){
     },[headerRef.current?.clientHeight,props.height]);    
 
     const handleUnstageItem = (item:IFile)=>{
-        window.ipcRenderer.send(RendererEvents.unStageItem().channel,[item.path],props.repoInfoInfo)
+        IpcUtils.unstageItem([item.path],props.repoInfoInfo!);        
     }
 
     const unStageAll=()=>{
-        if(!props.changes.length) return;        
-        window.ipcRenderer.send(RendererEvents.unStageItem().channel,props.changes.map(_=>_.path),props.repoInfoInfo)
+        if(!props.changes.length) return;
+        IpcUtils.unstageItem(props.changes.map(_=>_.path),props.repoInfoInfo!);        
     }
 
     return <div style={{maxHeight:props.height}}>

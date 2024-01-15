@@ -2,11 +2,11 @@ import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { EnumChangeGroup, useMultiState } from "../../../../lib";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface IModifiedChangesProps{
     changes:IFile[];
-    repoInfoInfo?:RepositoryInfo;
-    onStatusChange:(status:IStatus)=>void;
+    repoInfoInfo?:RepositoryInfo;    
     onFileSelect:(file:IFile)=>void;
     selectedFilePath?:string;
     selectedMode:EnumChangeGroup;
@@ -43,12 +43,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,[file.path],props.repoInfoInfo);
+        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(res=>{
+            console.log("done");
+        });        
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
-        window.ipcRenderer.send(RendererEvents.stageItem().channel,props.changes.map(x=>x.path),props.repoInfoInfo);        
+        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!);        
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{

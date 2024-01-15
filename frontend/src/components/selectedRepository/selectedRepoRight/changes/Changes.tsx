@@ -19,7 +19,6 @@ interface IChangesProps{
 
 interface IState {
     adjustedX: number;
-    status?:IStatus;
     selectedFilePath?:string;
     differenceRefreshKey:number;
     selectedFileGroup:EnumChangeGroup;
@@ -66,29 +65,18 @@ function ChangesComponent(props:IChangesProps) {
     },[store.focusVersion])
 
     useEffect(()=>{
-        setState({status:store.status});
-    },[store.status])
-
-    useEffect(()=>{
         if(!state.selectedFilePath) return;
-        if(state.selectedFileGroup === EnumChangeGroup.CONFLICTED &&  state.status?.conflicted?.some(x=> x.path === state.selectedFilePath)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.UN_STAGED &&  state.status?.unstaged?.some(x=> x.path === state.selectedFilePath)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.STAGED &&  state.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === state.selectedFilePath)) return;
+        if(state.selectedFileGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
 
         setState({selectedFilePath:null!});
-    },[state.status])
+    },[store.status])
 
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.stageItem().replyChannel,(_,res:IStatus)=>{
-            setState({status:res});
-        });
-        window.ipcRenderer.on(RendererEvents.discardItem().replyChannel,(_,res:IStatus)=>{
-            setState({status:res});
-        });
+    useEffect(()=>{        
         return ()=>{
             UiUtils.removeIpcListeners([                
-                RendererEvents.discardItem().replyChannel,
-                RendererEvents.stageItem().replyChannel,
+                RendererEvents.discardItem().replyChannel,                
             ]);
         }
     },[])    
@@ -98,10 +86,6 @@ function ChangesComponent(props:IChangesProps) {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
         return `- ${-adjustedX}px`;
     }
-
-    const onStatusChange = useCallback((status:IStatus)=>{
-        setState({status})
-    },[])
 
     const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
         setState({selectedFilePath:changedFile.path,selectedFileGroup:changeGroup,selectedFileChangeType:changedFile.changeType});
@@ -132,19 +116,19 @@ function ChangesComponent(props:IChangesProps) {
     const expandedTabCountHavingFile = useMemo(()=>{
         let count = 0;
         if(state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)){
-            if(state.status?.conflicted.length)
+            if(store.status?.conflicted.length)
                 count++;
         }
         if(state.expandedTabs.includes(EnumChangeGroup.UN_STAGED)){
-            if(state.status?.unstaged.length)
+            if(store.status?.unstaged.length)
                 count++;
         }
         if(state.expandedTabs.includes(EnumChangeGroup.STAGED)){
-            if(state.status?.staged.length)
+            if(store.status?.staged.length)
                 count++;
         }
         return count;
-    },[state.expandedTabs,state.status])
+    },[state.expandedTabs,store.status])
 
     const tabHeight = useMemo(()=>{
         if(!expandedTabCountHavingFile)
@@ -154,7 +138,7 @@ function ChangesComponent(props:IChangesProps) {
     },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
       
 
-    if(!state.status)
+    if(!store.status)
         return <div></div>
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
@@ -163,18 +147,18 @@ function ChangesComponent(props:IChangesProps) {
             <CommitBox onHeightChange={height=> {setState({commitBoxHeight:height})}} />
             {!!state.commitBoxHeight && <Fragment>
     
-            {!!state.status?.staged.length && <StagedChanges changes={state.status.staged} onStatusChange={onStatusChange} repoInfoInfo={repoInfo}
+            {!!store.status?.staged.length && <StagedChanges changes={store.status.staged} repoInfoInfo={repoInfo}
                 handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileGroup}
                 isExpanded={state.expandedTabs.includes(EnumChangeGroup.STAGED)} 
                 hanldeExpand={()=> handleExpand(EnumChangeGroup.STAGED)}
                 height = {tabHeight}/>}
     
-           {!!state.status?.conflicted?.length && <ConflictedFiles onFileSelect={(file)=>handleSelect(file,EnumChangeGroup.CONFLICTED)} files={state.status?.conflicted} 
-            onStatusChange={onStatusChange} repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangeGroup.CONFLICTED)}
+           {!!store.status?.conflicted?.length && <ConflictedFiles onFileSelect={(file)=>handleSelect(file,EnumChangeGroup.CONFLICTED)} files={store.status?.conflicted}
+            repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangeGroup.CONFLICTED)}
             isExpanded={state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)} />}
         
-            <ModifiedChanges changes={state.status!.unstaged} repoInfoInfo={repoInfo} 
-                onStatusChange={onStatusChange} onFileSelect={(path)=> handleSelect(path, EnumChangeGroup.UN_STAGED)} selectedFilePath={state.selectedFilePath}
+            <ModifiedChanges changes={store.status!.unstaged} repoInfoInfo={repoInfo} 
+                onFileSelect={(path)=> handleSelect(path, EnumChangeGroup.UN_STAGED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileGroup}
                 handleExpand={()=>handleExpand(EnumChangeGroup.UN_STAGED)} 
                 height = {tabHeight}/>
