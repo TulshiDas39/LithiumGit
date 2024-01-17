@@ -40,13 +40,9 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     const updateStatus = async ()=>{
         dispatch(ActionUI.setLoader({text:"Updating status..."}));
-        try{
-            const res = await IpcUtils.getRepoStatu();
-            BranchUtils.repositoryDetails.status = res;
-            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(res)));
-        }catch(e){}
-        dispatch(ActionUI.setLoader(undefined));
+        IpcUtils.getRepoStatus().finally(()=>{
+            dispatch(ActionUI.setLoader(undefined));
+        });
     }
 
     const updateRepoData = async ()=>{
@@ -63,15 +59,19 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             setState({isLoading:false});        
     }
 
-    useEffect(()=>{                       
+    useEffect(()=>{       
+        ReduxUtils.setStatusCurrent = (status:IStatus)=>{            
+            BranchUtils.repositoryDetails.status = status;
+            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
+        }                
        updateRepoData();
        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
-            BranchUtils.repositoryDetails.status = res;
-            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(res)));
+            ReduxUtils.setStatusCurrent(res);
        })
 
        return ()=>{
+        ReduxUtils.setStatusCurrent = ()=>{};
         UiUtils.removeIpcListeners([                
             RendererEvents.getStatus().replyChannel,            
         ]);

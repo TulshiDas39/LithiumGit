@@ -56,11 +56,7 @@ function MainComponent(props:IMainComponentProps){
             dispatch(ActionSavedData.setRecentRepositories(sortedRepos));
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
         });
-        setState({isLoading:false});
-
-        ReduxUtils.setStatusCurrent = (status:IStatus)=>{            
-            dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));            
-        }
+        setState({isLoading:false});        
 
         window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
             dispatch(ActionUI.setLoader(undefined));

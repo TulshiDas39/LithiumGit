@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -28,6 +28,7 @@ export class GitManager{
         this.addCommitHandler();
         this.addGitShowHandler();
         this.addMergeHandler();
+        this.addCleanhHandler();
     }
 
 
@@ -121,20 +122,17 @@ export class GitManager{
 
     private addDiscardUnStagedItemHandler() {
         ipcMain.handle(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.discardUnStageItem(paths,repoInfo);
-            await this.notifyStatus(repoInfo);
+            await this.discardUnStageItem(paths,repoInfo);            
         })
     }
     private addUnStageItemHandler() {
         ipcMain.handle(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.unStageItem(paths,repoInfo);
-            await this.notifyStatus(repoInfo);            
+            await this.unStageItem(paths,repoInfo);            
         })
     }
     private addStageItemHandler() {
         ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             await this.stageItem(paths,repoInfo);
-            await this.notifyStatus(repoInfo);
         })
     }
 
@@ -175,8 +173,7 @@ export class GitManager{
 
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const repoDetails = await this.getStatus(repoInfo);
-            return repoDetails;
+            await this.notifyStatus(repoInfo);
         });
     }
 
@@ -347,6 +344,17 @@ export class GitManager{
         ipcMain.on(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
             await this.takeFetch(repoDetails,all,e);
         });
+    }
+
+    private async addCleanhHandler(){
+        ipcMain.handle(RendererEvents.gitClean().channel,async (e,repoInfo:RepositoryInfo,files:string[])=>{
+            await this.cleanFiles(repoInfo,files);
+        });
+    }
+
+    private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
+        const git = this.getGitRunner(repoInfo);
+        await git.clean(CleanOptions.FORCE,files);
     }
     
     private hasChangesInPull(result:PullResult){

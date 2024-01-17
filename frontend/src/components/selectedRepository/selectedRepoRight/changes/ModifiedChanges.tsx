@@ -43,23 +43,39 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(res=>{
-            console.log("done");
-        });        
+        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(_=>{
+            IpcUtils.getRepoStatus();
+        });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
-        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!);        
+        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!).then(_=>{
+            IpcUtils.getRepoStatus();
+        });        
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
-        IpcUtils.discardItems([item.path],props.repoInfoInfo!);
+        if(item.changeType === EnumChangeType.CREATED){
+            IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
+                IpcUtils.getRepoStatus();
+            });
+        }
+        else if(item.changeType === EnumChangeType.MODIFIED){
+            IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
+                IpcUtils.getRepoStatus();
+            });
+        }            
     }
 
     const discardAll=()=>{
         if(!props.changes?.length) return;
-        IpcUtils.discardItems(props.changes.map(x=>x.path),props.repoInfoInfo!);        
+        IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
+            IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+                IpcUtils.getRepoStatus();
+            });
+        });
+        
     }
     
     return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>

@@ -31,7 +31,7 @@ function PullPushMenuComponent(){
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         IpcUtils.trigerPush().then(()=>{
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
-            IpcUtils.getRepoStatu().then(res=>{
+            IpcUtils.getRepoStatus().then(res=>{
                 dispatch(ActionUI.setStatus(res));
                 dispatch(ActionUI.setLoader(undefined));
             })

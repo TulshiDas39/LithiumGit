@@ -70,7 +70,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
     },[headerRef.current?.clientHeight,props.height]);    
 
     const handleUnstageItem = (item:IFile)=>{
-        IpcUtils.unstageItem([item.path],props.repoInfoInfo!);        
+        IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
+            IpcUtils.getRepoStatus();
+        });
     }
 
     const unStageAll=()=>{
