@@ -31,7 +31,7 @@ function SingleFile(props:ISingleFileProps){
         
         <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end pe-1">
             {state.isHovered && <Fragment>
-                <span className="hover" title="Unstage" onClick={_=> props.handleUnstage()}><FaMinus /></span>                                    
+                <span className="hover" title="Unstage" onClick={_=> {_.stopPropagation(); props.handleUnstage()}}><FaMinus /></span>                                    
             </Fragment>}
             <span>
                 <span className="ps-1 text-success fw-bold">{getStatusText()}</span>
