@@ -3,5 +3,5 @@ export enum EnumHtmlIds{
     branchSvgContainer="branchSvgContainer",
     branchPanelContainer="branchPanelContainer",
     branchVerticalScrollBar="branchVerticalScrollBar",
-    branchHorizontalScrollBar="horizontalScrollBar",
+    branchHorizontalScrollBar="horizontalScrollBar",    
 }

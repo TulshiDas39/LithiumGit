@@ -37,8 +37,8 @@ function CommitBoxComponent(props:ICommitBoxProps){
     const ref = useRef<HTMLDivElement>();
 
     useEffect(()=>{
-        if(ref.current?.clientHeight)
-            props.onHeightChange(ref.current.clientHeight);
+        // if(ref.current?.clientHeight)
+        //     props.onHeightChange(ref.current.clientHeight);
 
     },[ref.current?.clientHeight])
 

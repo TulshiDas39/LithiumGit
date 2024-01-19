@@ -1,7 +1,7 @@
 import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { EnumChangeGroup, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface IModifiedChangesProps{
@@ -9,21 +9,16 @@ interface IModifiedChangesProps{
     repoInfoInfo?:RepositoryInfo;    
     onFileSelect:(file:IFile)=>void;
     selectedFilePath?:string;
-    selectedMode:EnumChangeGroup;
-    handleExpand:(isExpanded:boolean)=>void;
-    height:number;
+    selectedMode:EnumChangeGroup;    
 }
 
 interface IState{
-    isExpanded:boolean;
     hoveredFile?:IFile;
-    isHeadHover:boolean;
+    firstPaneHeight?:number;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
-    const [state,setState] = useMultiState<IState>({
-        isExpanded:true,
-        isHeadHover:false});
+    const [state,setState] = useMultiState<IState>({});
 
     const ref = useRef<HTMLDivElement>();
     const getStatusText = (changeType:EnumChangeType)=>{
@@ -32,14 +27,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(changeType === EnumChangeType.CREATED)
             return "U";
         return "D";
-    }
-
-    useEffect(()=>{
-        props.handleExpand(state.isExpanded);
-    },[state.isExpanded])    
-
-    const handleChangesCollapse = () => {
-        setState({ isExpanded: !state.isExpanded });
     }
 
     const handleStage=(file:IFile)=>{
@@ -76,54 +63,52 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             });
         });
         
-    }
+    }   
+    useEffect(()=>{
+        UiUtils.resolveHeight("stage_unstage_all").then(height=>{
+            setState({firstPaneHeight:height});
+        })
+    },[])
+    console.log("height", state.firstPaneHeight);
     
-    return <div ref={ref as any} className="overflow-auto" style={{maxHeight:props.height}}>
-    <div className="d-flex" onMouseEnter={_=> setState({isHeadHover:true})} 
-        onMouseLeave={_=> setState({isHeadHover:false})}>
-        <div className="d-flex flex-grow-1 hover" onClick={handleChangesCollapse}
-            >
-            <span>{state.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-            <span>Changes</span>
-            {!!props.changes?.length && <span className="text-info">({props.changes.length})</span>}
-        </div>
-        {state.isHeadHover && <div className="d-flex">
-            <span className="hover" title="Discard all" onClick={_=>discardAll()}><FaUndo /></span>
-            <span className="px-1" />
-            <span className="hover" title="Stage all" onClick={_=> stageAll()}><FaPlus /></span>
-        </div>}
-
-    </div>
-    
-    {state.isExpanded && 
-        <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}>
-            {props.changes?.map(f=>(
-                <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                    className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangeGroup.UN_STAGED?"selected":""}`}
-                    >
-                    <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f)}
-                    style={{textOverflow:'ellipsis'}}>
-                        <span className={`pe-1 flex-shrink-0 ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
-                        <span className="small text-secondary">
-                            <span>{f.path}</span>
-                        </span>
-                    </div>
-                    
-                    
-                     <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
-                            {state.hoveredFile?.path === f.path && <Fragment>
-                                <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
-                                <span className="px-1" />
-                                <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
-                            </Fragment>}
-                            <span>
-                                <span className="ps-1 text-success fw-bold">{getStatusText(f.changeType)}</span>
-                            </span>
-                    </div>
-                </div>
-            ))}                                                
-        </div>
-    }
+    return <div className="h-100">
+            <div id="stage_unstage_all" className="d-flex justify-content-center align-items-center pt-2">
+                <span className="h4 hover-brighter bg-danger py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+                    <FaUndo />
+                </span>
+                <span className="px-2" />
+                <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
+                    <FaPlus />
+                </span>
+            </div>        
+            {!!state.firstPaneHeight &&
+                <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - ${state.firstPaneHeight}px)`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
+                    {props.changes?.map(f=>(
+                        <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
+                            className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path && props.selectedMode === EnumChangeGroup.UN_STAGED?"selected":""}`}
+                            >
+                            <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f)}
+                            style={{textOverflow:'ellipsis'}}>
+                                <span className={`pe-1 flex-shrink-0 ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
+                                <span className="small text-secondary">
+                                    <span>{f.path}</span>
+                                </span>
+                            </div>
+                            
+                            
+                                <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
+                                    {state.hoveredFile?.path === f.path && <Fragment>
+                                        <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
+                                        <span className="px-1" />
+                                        <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
+                                    </Fragment>}
+                                    <span>
+                                        <span className="ps-1 text-success fw-bold">{getStatusText(f.changeType)}</span>
+                                    </span>
+                            </div>
+                        </div>
+                    ))}                                                                
+            </div>}
     </div>
 }
 

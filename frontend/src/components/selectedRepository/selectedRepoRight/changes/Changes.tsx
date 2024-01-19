@@ -12,6 +12,7 @@ import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ChangesTabPane } from "./ChangesTabPane";
 
 interface IChangesProps{
     height:number;
@@ -133,29 +134,28 @@ function ChangesComponent(props:IChangesProps) {
         return <div></div>
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
-        <div className="" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
+        <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
             <CommitBox onHeightChange={height=> {setState({commitBoxHeight:height})}} />
-            {!!state.commitBoxHeight && <Fragment>
     
-            {!!store.status?.staged.length && <StagedChanges changes={store.status.staged} repoInfoInfo={repoInfo}
+            {/* {!!store.status?.staged.length && <StagedChanges changes={store.status.staged} repoInfoInfo={repoInfo}
                 handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileGroup}
                 isExpanded={state.expandedTabs.includes(EnumChangeGroup.STAGED)} 
                 hanldeExpand={()=> handleExpand(EnumChangeGroup.STAGED)}
-                height = {tabHeight}/>}
+                height = {tabHeight}/>} */}
     
-           {!!store.status?.conflicted?.length && <ConflictedFiles onFileSelect={(file)=>handleSelect(file,EnumChangeGroup.CONFLICTED)} files={store.status?.conflicted}
+           {/* {!!store.status?.conflicted?.length && <ConflictedFiles onFileSelect={(file)=>handleSelect(file,EnumChangeGroup.CONFLICTED)} files={store.status?.conflicted}
             repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangeGroup.CONFLICTED)}
-            isExpanded={state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)} />}
+            isExpanded={state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)} />} */}
         
-            <ModifiedChanges changes={store.status!.unstaged} repoInfoInfo={repoInfo} 
+            {/* <ModifiedChanges changes={store.status!.unstaged} repoInfoInfo={repoInfo} 
                 onFileSelect={(path)=> handleSelect(path, EnumChangeGroup.UN_STAGED)} selectedFilePath={state.selectedFilePath}
                 selectedMode={state.selectedFileGroup}
                 handleExpand={()=>handleExpand(EnumChangeGroup.UN_STAGED)} 
-                height = {tabHeight}/>
-        
-        </Fragment>
-        }
+                height = {tabHeight}/> */}
+
+            <ChangesTabPane />
+
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 

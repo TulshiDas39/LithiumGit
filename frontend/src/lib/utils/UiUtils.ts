@@ -136,4 +136,20 @@ export class UiUtils {
 
         return false;
     }
+
+    static resolveHeight(id:string){
+        return new Promise<number>((res)=>{
+            const timer = setInterval(() => {
+                const elem = document.querySelector("#"+id);
+                if(!elem)
+                    return;
+                const height = elem.getBoundingClientRect().height;
+                if(!height)
+                    return;
+                clearInterval(timer);
+                res(height);
+            }, 200);
+        })
+        
+    }
 }
