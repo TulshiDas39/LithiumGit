@@ -1,21 +1,16 @@
-import { EnumChangeType, IFile, IStatus, RendererEvents } from "common_library";
-import React, { Fragment, useMemo, useRef } from "react"
+import { EnumChangeType, IFile } from "common_library";
+import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumChangeGroup, EnumSelectedRepoTab, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
-import { ConflictedFiles } from "./ConflictedFiles";
 import { Difference } from "./Difference";
-import { ModifiedChanges } from "./ModifiedChanges";
-import { StagedChanges } from "./StagedChanges";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ChangesTabPane } from "./ChangesTabPane";
 
 interface IChangesProps{
-    height:number;
+    //height:number;
 }
 
 interface IState {
@@ -31,7 +26,7 @@ interface IState {
     // document:Descendant[],
 }
 
-function ChangesComponent(props:IChangesProps) {
+function ChangesComponent() {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,
         differenceRefreshKey: Date.now(),
@@ -122,12 +117,12 @@ function ChangesComponent(props:IChangesProps) {
         return count;
     },[state.expandedTabs,store.status])
 
-    const tabHeight = useMemo(()=>{
-        if(!expandedTabCountHavingFile)
-            return state.minHeightOfEachTab;
-        const minHeightByTabs = (3 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
-        return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
-    },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
+    // const tabHeight = useMemo(()=>{
+    //     if(!expandedTabCountHavingFile)
+    //         return state.minHeightOfEachTab;
+    //     const minHeightByTabs = (3 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
+    //     return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
+    // },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
       
 
     if(!store.status)
@@ -136,7 +131,7 @@ function ChangesComponent(props:IChangesProps) {
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             
-            <CommitBox onHeightChange={height=> {setState({commitBoxHeight:height})}} />
+            <CommitBox />
     
             {/* {!!store.status?.staged.length && <StagedChanges changes={store.status.staged} repoInfoInfo={repoInfo}
                 handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileGroup}

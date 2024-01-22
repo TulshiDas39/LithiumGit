@@ -39,7 +39,7 @@ function LayoutComponent(props:ILayoutProps) {
                 </div>
                 <div className="" style={{height:`${mainPanelHeight}px`}}>
                     <Switch>
-                        <Route path={UiRoutes.Root} render={()=><Main height={mainPanelHeight} />} />
+                        <Route path={UiRoutes.Root} render={()=><Main />} />
                     </Switch>
                 </div>
                 <div style={{height:`${footerHeight}px`}}>

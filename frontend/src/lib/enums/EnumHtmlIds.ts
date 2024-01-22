@@ -4,4 +4,5 @@ export enum EnumHtmlIds{
     branchPanelContainer="branchPanelContainer",
     branchVerticalScrollBar="branchVerticalScrollBar",
     branchHorizontalScrollBar="horizontalScrollBar",    
+    modifiedChangesPanel="modifiedChangesPanel",
 }

@@ -10,11 +10,7 @@ export interface ISelectedRepoTabItem{
     text:"Changes"|"Branches"|"Commits"|"Remotes";
 }
 
-interface ISelectedRepoLeftProps{
-    height:number;
-}
-
-function SelectedRepoLeftComponent(props:ISelectedRepoLeftProps){
+function SelectedRepoLeftComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
         tab:state.ui.selectedRepoTab,        

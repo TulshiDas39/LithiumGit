@@ -8,7 +8,7 @@ import { ActionSavedData } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 
 interface ICommitBoxProps{
-    onHeightChange:(height:number)=>void;
+    //onHeightChange:(height:number)=>void;
 }
 
 interface IState{

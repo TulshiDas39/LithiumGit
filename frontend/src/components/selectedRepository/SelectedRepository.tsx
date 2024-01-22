@@ -12,7 +12,6 @@ import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 
 interface ISelectedRepositoryProps{
-    height:number;
     repo:RepositoryInfo
 }
 
@@ -126,11 +125,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     if(state.isLoading) return <p className="text-center">Loading...</p>;
     return <div id="SelectedRepository" className="d-flex h-100">
         <div style={{width:`${leftWidth - 3}px`}}>
-            <SelectedRepoLeft height={props.height}  />
+            <SelectedRepoLeft  />
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{ width: '3px' }} />
         <div style={{width:`calc(100% - ${leftWidth}px)`}} className="overflow-hidden">
-            <SelectedRepoRight height={props.height} />
+            <SelectedRepoRight />
         </div>
     </div>
 }

@@ -11,7 +11,7 @@ import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
 
 interface IMainComponentProps{
-    height:number;
+
 }
 
 interface IState{
@@ -78,7 +78,7 @@ function MainComponent(props:IMainComponentProps){
     },[]);
     if(state.isLoading) return null;
     return <div className="h-100">
-        {store.selectedRepo ? <SelectedRepository repo={store.selectedRepo} height={props.height} />:<RepositorySelection />}
+        {store.selectedRepo ? <SelectedRepository repo={store.selectedRepo} />:<RepositorySelection />}
     </div>
 }
 
