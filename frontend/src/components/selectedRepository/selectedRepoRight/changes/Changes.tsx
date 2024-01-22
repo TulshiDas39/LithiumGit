@@ -15,14 +15,10 @@ interface IChangesProps{
 
 interface IState {
     adjustedX: number;
-    selectedFilePath?:string;
+    selectedFile?:IFile;
     differenceRefreshKey:number;
-    selectedFileGroup:EnumChangeGroup;
-    selectedFileChangeType:EnumChangeType;
+    selectedFileGroup:EnumChangeGroup;    
     // expandedTabCount:number;
-    expandedTabs:EnumChangeGroup[];
-    commitBoxHeight:number;
-    minHeightOfEachTab:number;
     // document:Descendant[],
 }
 
@@ -31,11 +27,6 @@ function ChangesComponent() {
         adjustedX: 0,
         differenceRefreshKey: Date.now(),
         selectedFileGroup:EnumChangeGroup.UN_STAGED,
-        selectedFileChangeType:EnumChangeType.MODIFIED,
-        // expandedTabCount:0,
-        commitBoxHeight:113,
-        minHeightOfEachTab:20,
-        expandedTabs:[],
     });
 
     const store = useSelectorTyped(state=>({        
@@ -53,7 +44,7 @@ function ChangesComponent() {
     },[store.recentRepositories])
 
     useEffect(()=>{
-         setState({selectedFilePath:null!});
+         setState({selectedFile:null!});
     },[repoInfo?.path]);
 
     useEffect(()=>{
@@ -61,12 +52,12 @@ function ChangesComponent() {
     },[store.focusVersion])
 
     useEffect(()=>{
-        if(!state.selectedFilePath) return;
-        if(state.selectedFileGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === state.selectedFilePath)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === state.selectedFilePath)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === state.selectedFilePath)) return;
+        if(!state.selectedFile) return;
+        if(state.selectedFileGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === state.selectedFile?.path)) return;
+        if(state.selectedFileGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === state.selectedFile?.path)) return;
+        if(state.selectedFileGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === state.selectedFile?.path)) return;
 
-        setState({selectedFilePath:null!});
+        setState({selectedFile:null!});
     },[store.status])
 
     const getAdjustedSize = (adjustedX: number) => {
@@ -75,7 +66,7 @@ function ChangesComponent() {
     }
 
     const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
-        setState({selectedFilePath:changedFile.path,selectedFileGroup:changeGroup,selectedFileChangeType:changedFile.changeType});
+        setState({selectedFile:changedFile,selectedFileGroup:changeGroup});
     },[])
     const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         e.preventDefault();
@@ -90,75 +81,21 @@ function ChangesComponent() {
         window.addEventListener('mousemove', resize);        
         window.addEventListener('mouseup', stopResize);
 
-    }
+    }      
 
-    const handleExpand=(tab:EnumChangeGroup)=>{
-        //if(!fileCount) return;
-        //const adjustment = state.expandedTabss.has(tab) ?1:-1;
-        const expandedTabs = state.expandedTabs.includes(tab)? state.expandedTabs.filter(x=> x!= tab)
-        :[...state.expandedTabs,tab]
-        setState({expandedTabs:expandedTabs});
-    }
-
-    const expandedTabCountHavingFile = useMemo(()=>{
-        let count = 0;
-        if(state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)){
-            if(store.status?.conflicted.length)
-                count++;
-        }
-        if(state.expandedTabs.includes(EnumChangeGroup.UN_STAGED)){
-            if(store.status?.unstaged.length)
-                count++;
-        }
-        if(state.expandedTabs.includes(EnumChangeGroup.STAGED)){
-            if(store.status?.staged.length)
-                count++;
-        }
-        return count;
-    },[state.expandedTabs,store.status])
-
-    // const tabHeight = useMemo(()=>{
-    //     if(!expandedTabCountHavingFile)
-    //         return state.minHeightOfEachTab;
-    //     const minHeightByTabs = (3 - expandedTabCountHavingFile)* state.minHeightOfEachTab;
-    //     return ((props.height - state.commitBoxHeight-minHeightByTabs)/expandedTabCountHavingFile);
-    // },[state.commitBoxHeight,state.minHeightOfEachTab,expandedTabCountHavingFile])
-      
-
-    if(!store.status)
-        return <div></div>
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
-            
             <CommitBox />
-    
-            {/* {!!store.status?.staged.length && <StagedChanges changes={store.status.staged} repoInfoInfo={repoInfo}
-                handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} selectedFilePath={state.selectedFilePath} selectedMode={state.selectedFileGroup}
-                isExpanded={state.expandedTabs.includes(EnumChangeGroup.STAGED)} 
-                hanldeExpand={()=> handleExpand(EnumChangeGroup.STAGED)}
-                height = {tabHeight}/>} */}
-    
-           {/* {!!store.status?.conflicted?.length && <ConflictedFiles onFileSelect={(file)=>handleSelect(file,EnumChangeGroup.CONFLICTED)} files={store.status?.conflicted}
-            repoInfoInfo={repoInfo} handleExpand={()=>handleExpand(EnumChangeGroup.CONFLICTED)}
-            isExpanded={state.expandedTabs.includes(EnumChangeGroup.CONFLICTED)} />} */}
-        
-            {/* <ModifiedChanges changes={store.status!.unstaged} repoInfoInfo={repoInfo} 
-                onFileSelect={(path)=> handleSelect(path, EnumChangeGroup.UN_STAGED)} selectedFilePath={state.selectedFilePath}
-                selectedMode={state.selectedFileGroup}
-                handleExpand={()=>handleExpand(EnumChangeGroup.UN_STAGED)} 
-                height = {tabHeight}/> */}
-
-            <ChangesTabPane />
-
+            <ChangesTabPane handleSelectFile={handleSelect} selectedFile={state.selectedFile} group={state.selectedFileGroup}  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFilePath && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
-                path={state.selectedFilePath} repoInfo={repoInfo} 
+            {!!state.selectedFile && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
+                path={state.selectedFile.path} repoInfo={repoInfo} 
                 changeGroup={state.selectedFileGroup} 
-                changeType={state.selectedFileChangeType}/>}
+                changeType={state.selectedFile.changeType}/>}
             {/* <Editor document={state.document} onChange={onChange} /> */}
         </div>
     </div>

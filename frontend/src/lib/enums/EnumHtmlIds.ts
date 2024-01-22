@@ -8,4 +8,5 @@ export enum EnumHtmlIds{
     stagedChangesPanel="stagedChangesPanel",
     stage_unstage_allPanel="unstage_unstage_allPanel",
     unstage_unstage_allPanel="unstage_unstage_allPanel",
+    
 }
