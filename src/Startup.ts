@@ -62,16 +62,17 @@ export class Startup{
 
     private async loadSavedData(){
         await this.loadDatabases();
-        this.loadRecentRepositories();
+        await this.loadRecentRepositories();
         await this.loadConfigInfo();
     }
 
-    private loadRecentRepositories(){                        
-        SavedData.data.recentRepositories = DB.repository.getAll();                
+    private async loadRecentRepositories(){                        
+        SavedData.data.recentRepositories = await DB.repository.getAll();
+        console.log(SavedData.data.recentRepositories.length);
     }
 
     private async loadConfigInfo(){      
-      SavedData.data.configInfo = DB.config.getAll()[0];
+      SavedData.data.configInfo = (await DB.config.getAll())[0];
       if(!SavedData.data.configInfo){
         const record={
           portNumber:54523,

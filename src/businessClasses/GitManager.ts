@@ -1,7 +1,7 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -28,6 +28,7 @@ export class GitManager{
         this.addCommitHandler();
         this.addGitShowHandler();
         this.addMergeHandler();
+        this.addCleanhHandler();
     }
 
 
@@ -120,43 +121,34 @@ export class GitManager{
     }
 
     private addDiscardUnStagedItemHandler() {
-        ipcMain.on(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.discardUnStageItem(paths,repoInfo);
-            e.reply(RendererEvents.discardItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.discardUnStageItem(paths,repoInfo);            
         })
     }
     private addUnStageItemHandler() {
-        ipcMain.on(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.unStageItem(paths,repoInfo);
-            e.reply(RendererEvents.unStageItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.unStageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.unStageItem(paths,repoInfo);            
         })
     }
     private addStageItemHandler() {
-        ipcMain.on(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            const res = await this.stageItem(paths,repoInfo);
-            e.reply(RendererEvents.stageItem().replyChannel, res);
+        ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
+            await this.stageItem(paths,repoInfo);
         })
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.checkout(['--',...paths]);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
     }
 
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
-        await git.reset(paths);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
+        await git.reset(['head', ...paths]);
     }
 
     private async stageItem(path:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.add(path);
-        const updatedStatus = await this.getStatus(repoInfo);
-        return updatedStatus;
     }
 
     private addValidGitPathHandler(){
@@ -173,16 +165,15 @@ export class GitManager{
     }
 
     private addRepoDetailsHandler(){
-        ipcMain.on(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
+        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
             const repoDetails = await this.repoDetails(repoInfo);
-            e.reply(RendererEvents.getRepositoryDetails().replyChannel,repoDetails);
+            return repoDetails;
         });
     }
 
     private addStatusHandler(){
-        ipcMain.on(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const repoDetails = await this.getStatus(repoInfo);
-            e.reply(RendererEvents.getStatus().replyChannel,repoDetails);
+        ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
+            await this.notifyStatus(repoInfo);
         });
     }
 
@@ -227,20 +218,35 @@ export class GitManager{
         return repoDetails;
     }
 
+    private async notifyStatus(repoInfo:RepositoryInfo){
+        const status = await this.getStatus(repoInfo);
+        AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+    }
+
     private async getStatus(repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         const status = await git.status();
-        const result = {} as IStatus;
-        
+        const result = {
+            staged:[],
+            unstaged:[],
+            conflicted:[]
+        } as IStatus;
+        ///staged changes
+        let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED}));
+        let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED}));
+        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED}));
+        result.staged = [...modified,...created,...deleted];
+
+        ///not staged changes
+        deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED}));
+        modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED}));
+        created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED}));
+        result.unstaged = [...modified,...created,...deleted]
+
         result.ahead = status.ahead;
-        result.behind = status.behind;
-        result.modified = status.modified?.map(x=> ({fileName:path.basename(x),path:x}));
-        result.staged = status.staged?.map(x=> ({fileName:path.basename(x),path:x}));
-        result.conflicted = status.conflicted?.map(x=> ({fileName:path.basename(x),path:x}));
+        result.behind = status.behind;        
+        result.conflicted = status.conflicted?.map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED}));
         result.isClean = status?.isClean();
-        result.not_added = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));
-        result.deleted = status.deleted?.map(x=> ({fileName:path.basename(x),path:x}));
-        result.created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map(x=> ({fileName:path.basename(x.path),path:x.path}));        
         result.current = status.current;
         result.isDetached = status.detached;
         result.headCommit = await this.getCommitInfo(git,undefined);
@@ -329,8 +335,8 @@ export class GitManager{
     }
 
     private async addPushHandler(){
-        ipcMain.on(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.givePush(repoDetails,e);
+        ipcMain.handle(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
+            await this.givePush(repoDetails);
         });
     }
 
@@ -338,6 +344,17 @@ export class GitManager{
         ipcMain.on(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
             await this.takeFetch(repoDetails,all,e);
         });
+    }
+
+    private async addCleanhHandler(){
+        ipcMain.handle(RendererEvents.gitClean().channel,async (e,repoInfo:RepositoryInfo,files:string[])=>{
+            await this.cleanFiles(repoInfo,files);
+        });
+    }
+
+    private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
+        const git = this.getGitRunner(repoInfo);
+        await git.clean(CleanOptions.FORCE,files);
     }
     
     private hasChangesInPull(result:PullResult){
@@ -393,13 +410,12 @@ export class GitManager{
         return hasChange;
     }
 
-    private async givePush(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
+    private async givePush(repoDetails:IRepositoryDetails){
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
             const result = await git.push(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
-            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else e.reply(RendererEvents.push().replyChannel);
+            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }

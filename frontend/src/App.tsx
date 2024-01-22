@@ -37,7 +37,7 @@ function App() {
 
   return (
     <BrowserRouter>
-        <Layout height={UiConstants.screenHeight} width={UiConstants.screenWidth} />
+        <Layout height={UiConstants.screenHeight} />
     </BrowserRouter>
   );
 }

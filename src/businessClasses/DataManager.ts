@@ -23,14 +23,20 @@ export class DataManager{
     }
 
     private handleRecentRepositoriesRequest(){
-        ipcMain.on(RendererEvents.getRecentRepositoires, (event, arg) => {            
-            event.returnValue = DB.repository.getAll();            
+        ipcMain.handle(RendererEvents.getRecentRepositoires, async() => {            
+            return await DB.repository.getAll();            
         });
     }
 
     private handleUpdateRepositories(){
         ipcMain.on(RendererEvents.updateRepositories,(_,data:RepositoryInfo[])=>{            
             DB.repository.updateOrCreateMany(data);
+            for(let repo of data){
+                var index = SavedData.data.recentRepositories.findIndex(_=>_.path == repo.path);
+                if(index > -1){
+                    SavedData.data.recentRepositories[index] = repo;
+                }
+            }
         });
     }
     private handleUpdateAutoStaging(){

@@ -220,5 +220,13 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static gitClean(){
+        const channel = "gitClean";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
 }
 

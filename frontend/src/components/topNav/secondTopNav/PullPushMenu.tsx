@@ -1,22 +1,27 @@
 import { RendererEvents } from "common_library";
-import React from "react"
+import React, { useMemo } from "react"
 import { Dropdown } from "react-bootstrap";
 import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils } from "../../../lib";
-import { BranchGraphUtils } from "../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
-        current:state.repository.statusCurrent,
-        ahead:state.repository.aheadCount,
-        behind:state.repository.behindCount,
+        current:state.ui.status?.current,
+        ahead:state.ui.status?.ahead,
+        behind:state.ui.status?.behind,
+        isDetached:!!state.ui.status?.isDetached
     }),shallowEqual);
 
     const dispatch = useDispatch();
-
+    const currentText = useMemo(()=>{
+        if(store.isDetached)
+            return BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
+        return store.current;
+    },[store.isDetached,store.current])
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
@@ -24,7 +29,12 @@ function PullPushMenuComponent(){
 
     const handlePush=()=>{
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
-        window.ipcRenderer.send(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+        IpcUtils.trigerPush().then(()=>{
+            dispatch(ActionUI.setLoader({text:"Checking status..."}));
+            IpcUtils.getRepoStatus().finally(()=>{                
+                dispatch(ActionUI.setLoader(undefined));
+            })
+        })
     }
 
     const handleFetch=(isAll:boolean)=>{
@@ -36,7 +46,7 @@ function PullPushMenuComponent(){
         <div className="col-auto border px-1">
             <div className="row g-0 align-items-center h-100">
                 <div className="col-auto">
-                    {store.current}
+                    {currentText}
                 </div>
                 <div className="col-auto ps-1">
                     <div className="row g-0 bg-info px-1 rounded">

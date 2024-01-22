@@ -1,13 +1,12 @@
 import { IFile, RepositoryInfo, IStatus, RendererEvents } from "common_library";
-import React, { Fragment, useEffect } from "react"
+import React, { Fragment } from "react"
 import { FaAngleDown, FaAngleRight, FaUndo, FaPlus } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 
 interface IConflictedFilesProps{
     files?:IFile[];
     repoInfoInfo?:RepositoryInfo;
-    onStatusChange:(status:IStatus)=>void;
-    onFileSelect:(path:string)=>void;
+    onFileSelect:(file:IFile)=>void;
     selectedFilePath?:string;
     handleExpand:()=>void;
     isExpanded:boolean;
@@ -66,7 +65,7 @@ function ConflictedFilesComponent(props:IConflictedFilesProps){
                 <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                     className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFilePath === f.path?"selected":""}`}
                     >
-                    <div className="col-auto overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f.path)}>
+                    <div className="col-auto overflow-hidden align-items-center" onClick={(_)=> props.onFileSelect(f)}>
                         <span className="pe-1 flex-shrink-0">{f.fileName}</span>
                         <span className="small text-secondary">
                             <span>{f.path}</span>

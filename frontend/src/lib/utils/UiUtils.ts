@@ -1,5 +1,5 @@
 import { ICommitInfo } from "common_library";
-import { IPositition } from "../interfaces";
+import { IPositionDiff, IPositition } from "../interfaces";
 import * as ReactDOMServer from 'react-dom/server';
 
 
@@ -15,55 +15,20 @@ export class UiUtils {
         })
     }
 
-    static test(x:number) {
-        const panelWidth = 864;
-        const viewBoxWidth = 1144;
-        const horizontalScrollBarWidth = 54.85105438401776;
-        const totalWidth = 18020;
-
-        const scrollableWidth =809.14894561598;// panelWidth - horizontalScrollBarWidth;
-
-        let initialX = 1000;
-
-        const mouseMoveX = x;//100;
-
-        // 864px scroll move korle svg move hoi 1144px
-        //100px scroll move korle svg move hoi 100*(1144/864)px // equation x*(viewBoxWidth/panelWidth)
-
-        //totalWidth svg move e scroll move hoi scrollableWidth px
-        //
-
-        const expectedMovedScrollBar = 100 * (viewBoxWidth / panelWidth) * (scrollableWidth / totalWidth);
-        const realMovedScrollBar = 5.945466930935044;
-
-        //864 px mouse move korle horizontal scroll move hoi 51.36883428328// from experiment
-
-        ///18020 px svg move korle scroll move hoi 809.14894561598 px 
-        //1144 px svg move korle scroll move hoi 1144 * (809.14894561598/18020)
-        
-        
-        
-        // initial x =17430.435185185182
-        // final x= 16290.407407407405
-
-    }
-
     static updateHeadCommit=(commit:ICommitInfo)=>{
 
-    }
+    }    
 
-    static handleDrag(element:HTMLElement,listener:(position?:IPositition)=>void){
-        let initialMousePosition:IPositition | undefined = undefined;
-        let currentMousePosition:IPositition | undefined = undefined;
+    static HandleHorizontalDragging(element:HTMLElement,listener:(dx:number)=>void,
+        initialiser:()=>void){
+        let initialMousePositionX  = {value:-1};
+        let positionDX = {value:-1};
         if(!element)
             return;
 
         const moveListener =(e:MouseEvent)=>{     
-            currentMousePosition={
-                x:e.clientX-initialMousePosition!.x,
-                y:e.clientY-initialMousePosition!.y
-            };
-            listener(currentMousePosition);
+            positionDX.value = e.clientX - initialMousePositionX.value;
+            listener(positionDX.value);
         }
         const selectListener = (e:Event) => {
             e.preventDefault();
@@ -71,7 +36,8 @@ export class UiUtils {
         };
 
         const downListener = (e:MouseEvent)=>{
-            initialMousePosition = {x:e.clientX,y:e.clientY};
+            initialiser();
+            initialMousePositionX.value = e.clientX;
             document.addEventListener("mousemove",moveListener);
             document.addEventListener("mouseup",upListener);
             document.addEventListener("selectstart",selectListener);
@@ -80,12 +46,71 @@ export class UiUtils {
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            currentMousePosition = undefined;
-            listener(currentMousePosition);
         }        
         
         element?.addEventListener("mousedown",downListener);    
+    }
 
+    static HandleVerticalDragging(element:HTMLElement,listener:(dy:number)=>void,
+        initialiser:()=>void){
+        let initialMousePositionY  = {value:0};
+        let positionDY = {value:0};        
+
+        const moveListener =(e:MouseEvent)=>{     
+            positionDY.value = e.clientY - initialMousePositionY.value;
+            listener(positionDY.value);
+        }
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
+
+        const downListener = (e:MouseEvent)=>{
+            initialiser();
+            initialMousePositionY.value = e.clientY;
+            document.addEventListener("mousemove",moveListener);
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
+        }
+        const upListener = ()=>{
+            document.removeEventListener("mousemove",moveListener);
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
+        }        
+        
+        element.addEventListener("mousedown",downListener);    
+    }
+
+    static HandleDragging(element:HTMLElement,listener:(positionDiff:IPositionDiff)=>void,
+        initialiser:()=>void){
+            let initialMousePosition:IPositition  = {x:0,y:0};
+            let positionDiff:IPositionDiff = {dx:0,dy:0};        
+    
+            const moveListener =(e:MouseEvent)=>{     
+                positionDiff.dx = e.clientX - initialMousePosition.x;
+                positionDiff.dy = e.clientY - initialMousePosition.y;
+                listener(positionDiff);
+            }
+            const selectListener = (e:Event) => {
+                e.preventDefault();
+                return false
+            };
+    
+            const downListener = (e:MouseEvent)=>{
+                initialiser();
+                initialMousePosition.x = e.clientX;
+                initialMousePosition.y = e.clientY;
+                document.addEventListener("mousemove",moveListener);
+                document.addEventListener("mouseup",upListener);
+                document.addEventListener("selectstart",selectListener);
+            }
+            const upListener = ()=>{
+                document.removeEventListener("mousemove",moveListener);
+                document.removeEventListener("mouseup",upListener);
+                document.removeEventListener("selectstart",selectListener);
+            }        
+            
+            element.addEventListener("mousedown",downListener);  
     }
 
     static JsxToHtml(jsx:JSX.Element){
@@ -110,5 +135,21 @@ export class UiUtils {
         }
 
         return false;
+    }
+
+    static resolveHeight(id:string){
+        return new Promise<number>((res)=>{
+            const timer = setInterval(() => {
+                const elem = document.querySelector("#"+id);
+                if(!elem)
+                    return;
+                const height = elem.getBoundingClientRect().height;
+                if(!height)
+                    return;
+                clearInterval(timer);
+                res(height);
+            }, 200);
+        })
+        
     }
 }

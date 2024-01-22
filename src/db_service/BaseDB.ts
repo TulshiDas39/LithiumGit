@@ -6,8 +6,7 @@ export class BaseDB<T extends BaseSchema>{
     dataStore:DataStore<T>;
     filePath:string;
     constructor(dataFilePath:string){
-        this.dataStore = new DataStore<T>({filename:dataFilePath,autoload:true});
-        this.dataStore.loadDatabase()
+        this.dataStore = new DataStore<T>({filename:dataFilePath,autoload:false});
     }
 
     load(){
@@ -22,8 +21,14 @@ export class BaseDB<T extends BaseSchema>{
     }
 
     getAll(){
-        const all:T[] = this.dataStore.getAllData();
-        return all;
+        return new Promise<T[]>((res)=>{
+            this.dataStore.find({},{},(err,r)=>{
+                if(err)
+                    res([]);
+                else
+                    res(r);
+            });
+        })         
     }
 
     getById(id:string,callback: (err: Error, document: T) => void){
