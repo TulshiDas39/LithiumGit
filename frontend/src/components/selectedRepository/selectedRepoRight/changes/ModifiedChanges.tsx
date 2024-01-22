@@ -83,14 +83,13 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         if(!state.containerHeight)
             return;
-        UiUtils.resolveHeight("stage_unstage_all").then(height=>{
+        UiUtils.resolveHeight(EnumHtmlIds.stage_unstage_allPanel).then(height=>{
             setState({firstPaneHeight:height});
         })
     },[state.containerHeight]);
-    console.log("height", state.firstPaneHeight);
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
-            <div id="stage_unstage_all" className="d-flex justify-content-center align-items-center pt-2">
+            <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex justify-content-center align-items-center pt-2">
                 <span className="h4 hover-brighter bg-danger py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>

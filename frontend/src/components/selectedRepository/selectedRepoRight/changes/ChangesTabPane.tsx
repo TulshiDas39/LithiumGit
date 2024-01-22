@@ -4,6 +4,7 @@ import { shallowEqual } from "react-redux";
 import { EnumChangeGroup, useMultiState } from "../../../../lib";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { EnumChangeType, IFile } from "common_library";
+import { StagedChanges } from "./StagedChanges";
 
 interface IState{
     selectedTab:EnumChangeGroup;
@@ -49,7 +50,10 @@ function ChangesTabPaneComponent(){
         </div>
         <div className="flex-grow-1">
             {state.selectedTab === EnumChangeGroup.UN_STAGED &&
-            <ModifiedChanges changes={store.status?.unstaged!} onFileSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} 
+            <ModifiedChanges changes={store.status?.unstaged!} onFileSelect={file=> handleSelect(file, EnumChangeGroup.UN_STAGED)} 
+            selectedMode={state.selectedTab} repoInfoInfo={repoInfo} />}
+            {state.selectedTab === EnumChangeGroup.STAGED &&
+            <StagedChanges changes={store.status?.staged!} handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} 
             selectedMode={state.selectedTab} repoInfoInfo={repoInfo} />}
         </div>
     </div>

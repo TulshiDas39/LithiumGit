@@ -1,7 +1,7 @@
 import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { EnumChangeGroup, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface ISingleFileProps{
@@ -47,27 +47,18 @@ interface IStagedChangesProps{
     handleSelect:(file:IFile)=>void;
     selectedMode:EnumChangeGroup;
     selectedFilePath?:string;
-    isExpanded:boolean;
-    hanldeExpand:()=>void;
-    height:number;
 }
 
 interface IState{
     // isStagedChangesExpanded:boolean;
-    hoveredFile?:IFile;
-    isHeadHover:boolean;
+    containerHeight?:number;
+    firstPaneHeight?:number;
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({isHeadHover:false});
+    const [state,setState] = useMultiState<IState>({});
 
     const headerRef = useRef<HTMLDivElement>();
-
-    const fileListPanelHeight = useMemo(()=>{
-        if(!headerRef.current)
-            return props.height - 30;
-        return props.height -headerRef.current.clientHeight;    
-    },[headerRef.current?.clientHeight,props.height]);    
 
     const handleUnstageItem = (item:IFile)=>{
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
@@ -77,29 +68,48 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
-        IpcUtils.unstageItem(props.changes.map(_=>_.path),props.repoInfoInfo!);        
+        IpcUtils.unstageItem(props.changes.map(_=>_.path),props.repoInfoInfo!).then(_=>{
+            IpcUtils.getRepoStatus();
+        });        
     }
 
-    return <div style={{maxHeight:props.height}}>
-    <div ref={headerRef as any} className="d-flex hover overflow-auto" onMouseEnter={_=> setState({isHeadHover:true})} onMouseLeave={_=> setState({isHeadHover:false})}
+    useEffect(()=>{
+        const setContainerHeight=()=>{
+            UiUtils.resolveHeight(EnumHtmlIds.stagedChangesPanel).then(height=>{
+                setState({containerHeight:height});
+            })
+        }
+        setContainerHeight();
+
+        window.addEventListener("resize",setContainerHeight);
+        return ()=>{
+            window.removeEventListener("resize",setContainerHeight);
+        }
+    },[])
+    
+    useEffect(()=>{
+        if(!state.containerHeight)
+            return;
+        UiUtils.resolveHeight(EnumHtmlIds.unstage_unstage_allPanel).then(height=>{
+            setState({firstPaneHeight:height});
+        })
+    },[state.containerHeight]);
+
+    return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>
+    <div ref={headerRef as any} className="d-flex hover overflow-auto"
      >
-        <div className="d-flex flex-grow-1" onClick={props.hanldeExpand}>
-            <span>{props.isExpanded ? <FaAngleDown /> : <FaAngleRight />} </span>
-            <span>Staged Changes</span>
-            {!!props.changes.length && <span className="text-info">({props.changes.length})</span>}
+        <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center align-items-center pt-2 ps-1">
+            <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Discard all" onClick={_=>unStageAll()}>
+                <FaMinus />
+            </span>
         </div>        
-        {state.isHeadHover && <div className="d-flex">            
-            <span className="hover" title="UnStage all" onClick={_=> unStageAll()}><FaMinus /></span>
-        </div>}
-        
     </div>
-    {props.isExpanded && 
-    <div className="container ps-2 border" onMouseLeave={_=> setState({hoveredFile:undefined})}
-    style={{maxHeight:`${fileListPanelHeight}px`, overflowX:'hidden',overflowY:'auto'}}>
+    { state.firstPaneHeight &&
+    <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}}>
         {props.changes.map(f=>(
             <SingleFile key={f.path} item={f} handleSelect={_=> props.handleSelect(f)}
                 handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={props.selectedMode === EnumChangeGroup.STAGED && f.path === props.selectedFilePath}                />
+                isSelected ={props.selectedMode === EnumChangeGroup.STAGED && f.path === props.selectedFilePath} />
         ))}        
     </div>
     }
