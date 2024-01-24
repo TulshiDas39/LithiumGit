@@ -1,6 +1,5 @@
-import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
-import { ReduxUtils } from "./ReduxUtils";
 
 export class IpcUtils{
     static getRepoStatus(){
@@ -25,5 +24,9 @@ export class IpcUtils{
 
     static cleanItems(paths:string[],repoInfo:RepositoryInfo){
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
+    }
+
+    static doCommit(message:string){
+        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,message);
     }
 }

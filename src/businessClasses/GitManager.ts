@@ -71,22 +71,15 @@ export class GitManager{
     }
 
     addCommitHandler(){
-        ipcMain.on(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,message:string)=>{
-            await this.giveCommit(e,repository,message);
-            // e.reply(RendererEvents.createBranch().replyChannel,sourceCommit,newBranchName,status,checkout);
+        ipcMain.handle(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,message:string)=>{
+            await this.giveCommit(repository,message);            
         })
     }
 
-    async giveCommit(e: Electron.IpcMainEvent,repository:RepositoryInfo,message:string){
+    async giveCommit(repository:RepositoryInfo,message:string){
         try {
-            const git = this.getGitRunner(repository);
-            if(SavedData.data.configInfo.autoStage){
-                await git.add(["."]);
-            }
-            await git.commit(message);
-            const status = await this.getStatus(repository);
-            e.reply(RendererEvents.commit().replyChannel,true);
-            AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status)
+            const git = this.getGitRunner(repository);            
+            await git.commit(message);            
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
