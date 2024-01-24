@@ -35,6 +35,7 @@ function CommitBoxComponent(){
 
     const handleCommit=()=>{
         IpcUtils.doCommit(state.value).finally(()=>{
+            setState({value:""});
             IpcUtils.getRepoStatus();
         })
         window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);
