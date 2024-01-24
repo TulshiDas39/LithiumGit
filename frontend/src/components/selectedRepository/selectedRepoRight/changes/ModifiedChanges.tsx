@@ -81,15 +81,15 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[])
 
     useEffect(()=>{
-        if(!state.containerHeight)
-            return;
+        if(!state.containerHeight || props.changes?.length === 0)
+            return;                
         UiUtils.resolveHeight(EnumHtmlIds.stage_unstage_allPanel).then(height=>{
             setState({firstPaneHeight:height});
         })
-    },[state.containerHeight]);
+    },[state.containerHeight,props.changes?.length === 0]);
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
-            <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex justify-content-center align-items-center pt-2">
+            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex align-items-center pt-2 ps-2">
                 <span className="h4 hover-brighter bg-danger py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>
@@ -97,7 +97,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
                     <FaPlus />
                 </span>
-            </div>        
+            </div>}        
             {!!state.firstPaneHeight &&
                 <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
                     {props.changes?.map(f=>(
