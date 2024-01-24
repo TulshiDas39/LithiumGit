@@ -132,6 +132,10 @@ html {
     filter: brightness(150%);
   }
 
+  .hover-shadow:hover{
+    box-shadow: 0 0 2px rgb(104, 104, 237);
+  }
+
   .no-resize{
     resize: none;
   }

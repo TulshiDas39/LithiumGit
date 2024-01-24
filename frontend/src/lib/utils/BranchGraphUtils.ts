@@ -351,19 +351,13 @@ export class BranchGraphUtils{
         this.refreshBranchPanelUi();
     }
 
-    static isRequiredReload(newStatus:IStatus){
-        if(!newStatus)
-            return false;
-        const existingStatus = BranchUtils.repositoryDetails?.status;
-        if(!existingStatus?.headCommit) return false;
-        if(newStatus.current !== existingStatus.current) return true;
-        if(newStatus.ahead !== existingStatus.ahead) return true;
-        if(newStatus.behind !== existingStatus.behind) return true;
-        if(newStatus.isDetached !== existingStatus.isDetached) return true;
-        if(newStatus.headCommit.hash !== existingStatus.headCommit.hash) return true;
-        const existingRefs = existingStatus.headCommit.refValues;
+    static isRequiredReload(){
+        const newStatus = BranchUtils.repositoryDetails?.status;
+        if(!newStatus?.headCommit) return false;
+        if(newStatus.headCommit.hash !== BranchGraphUtils.state.headCommit.value.hash) return true;
+        const uiRefs = BranchGraphUtils.state.headCommit.value.refValues;
         const newRefs = newStatus.headCommit.refValues;        
-        if(newRefs.some(ref=> !existingRefs.includes(ref)) || newRefs.length !== existingRefs.length) return true;
+        if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
         return false;        
     }
 

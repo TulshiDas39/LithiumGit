@@ -5,6 +5,7 @@ import { FaCheck } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface IState{
     value:string;
@@ -33,6 +34,10 @@ function CommitBoxComponent(){
     const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
 
     const handleCommit=()=>{
+        IpcUtils.doCommit(state.value).finally(()=>{
+            setState({value:""});
+            IpcUtils.getRepoStatus();
+        })
         window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);
     }
 
