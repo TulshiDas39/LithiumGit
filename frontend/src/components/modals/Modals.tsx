@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 import { CommitContextModal } from "./CommitContextModal";
 import { CreateBranchModal } from "./CreateBranchModal";
 import { ErrorModal } from "./ErrorModal";
+import { ConfirmationModal } from "./ConfirmationModal";
 
 function ModalsComponent(){
     return(
@@ -9,6 +10,7 @@ function ModalsComponent(){
             <CommitContextModal />
             <CreateBranchModal />
             <ErrorModal />
+            <ConfirmationModal />
         </Fragment>
     )
 }

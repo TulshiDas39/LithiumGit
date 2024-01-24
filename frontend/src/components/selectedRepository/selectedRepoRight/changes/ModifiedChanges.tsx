@@ -1,8 +1,11 @@
 import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { EnumChangeGroup, EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ModalData } from "../../../modals/ModalData";
+import { useDispatch } from "react-redux";
+import { ActionModals } from "../../../../store";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -20,7 +23,7 @@ interface IState{
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({});
-
+    const dispatch = useDispatch();
     const ref = useRef<HTMLDivElement>();
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
@@ -44,26 +47,43 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const discardUnstagedChangesOfItem=(item:IFile)=>{
+        let yesHandler:()=>void = ()=>{};
+        let text = "";
         if(item.changeType === EnumChangeType.CREATED){
-            IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
-                IpcUtils.getRepoStatus();
-            });
+            text = `Delete ${item.fileName}?`;
+            yesHandler= ()=>{
+                IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
+                    IpcUtils.getRepoStatus();
+                });
+            }
         }
         else if(item.changeType === EnumChangeType.MODIFIED){
-            IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
-                IpcUtils.getRepoStatus();
-            });
-        }            
+            text = `Discard the changes of ${item.fileName}?`;
+            yesHandler = () =>{
+                IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
+                    IpcUtils.getRepoStatus();
+                });
+            }            
+        }
+        
+        ModalData.confirmationModal.message = text;
+        ModalData.confirmationModal.YesHandler = yesHandler;
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }
 
     const discardAll=()=>{
-        if(!props.changes?.length) return;
-        IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
-            IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
-                IpcUtils.getRepoStatus();
+        if(!props.changes?.length) return;        
+        let text = "Discard all?";
+        const yesHandler = ()=>{
+            IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
+                IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+                    IpcUtils.getRepoStatus();
+                });
             });
-        });
-        
+        }
+        ModalData.confirmationModal.message = text;
+        ModalData.confirmationModal.YesHandler = yesHandler;
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }    
     
     useEffect(()=>{
