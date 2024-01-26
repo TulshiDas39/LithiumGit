@@ -37,7 +37,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         return res;
     }
 
-    const updateStatus = async ()=>{
+    const updateStatus = ()=>{
         dispatch(ActionUI.setLoader({text:"Updating status..."}));
         IpcUtils.getRepoStatus().finally(()=>{
             dispatch(ActionUI.setLoader(undefined));
@@ -51,29 +51,27 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
             CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
         }
-        else{
-            updateStatus();
-        }
         if(state.isLoading)
             setState({isLoading:false});        
     }
 
     useEffect(()=>{       
-        ReduxUtils.setStatusCurrent = (status:IStatus)=>{            
+        ReduxUtils.setStatus = (status:IStatus)=>{            
             BranchUtils.repositoryDetails.status = status;
             CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
             dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
-        }                
-       updateRepoData();
-       window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
-            ReduxUtils.setStatusCurrent(res);
-       })
-
+        }
+        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
+            ReduxUtils.setStatus(res);
+        })                
+        updateRepoData();
+       
        return ()=>{
-        ReduxUtils.setStatusCurrent = ()=>{};
+        ReduxUtils.setStatus = ()=>{};
         UiUtils.removeIpcListeners([                
             RendererEvents.getStatus().replyChannel,            
         ]);
+        dispatch(ActionUI.setStatus(undefined!));
        }
     },[]);
 
@@ -121,8 +119,13 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             
         }
     },[props.repo]);
+    useEffect(()=>{
+        if(state.isLoading)
+            return;
+        updateStatus();
+    },[state.isLoading])
 
-    if(state.isLoading) return <p className="text-center">Loading...</p>;
+    if(state.isLoading && !store.status) return <p className="text-center">Loading...</p>;
     return <div id="SelectedRepository" className="d-flex h-100">
         <div style={{width:`${leftWidth - 3}px`}}>
             <SelectedRepoLeft  />

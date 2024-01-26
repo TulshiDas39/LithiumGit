@@ -79,7 +79,7 @@ function CommitContextModalComponent(){
             dispatch(ActionUI.setLoader())
             dispatch(ActionUI.setMergerCommitMessage(refData.current.mergerCommitMessage));
             if(status) {
-                ReduxUtils.setStatusCurrent(status);
+                ReduxUtils.setStatus(status);
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
             }
         }

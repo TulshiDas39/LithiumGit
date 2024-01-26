@@ -103,7 +103,7 @@ export class BranchGraphUtils{
     }  
 
     static setReduxData(){
-        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+        ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
     }
 
     static getViewBoxStr(){
@@ -261,7 +261,7 @@ export class BranchGraphUtils{
         const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
         HTextElem?.classList.remove("d-none");
-        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+        ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
     }
     
 
