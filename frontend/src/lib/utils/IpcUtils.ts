@@ -2,8 +2,10 @@ import { RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
-    static getRepoStatus(){
-        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,BranchUtils.repositoryDetails.repoInfo);
+    static getRepoStatus(repoInfo?:RepositoryInfo){
+        if(!repoInfo)
+            repoInfo = BranchUtils.repositoryDetails.repoInfo;
+        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
     }
 
     static trigerPush(){

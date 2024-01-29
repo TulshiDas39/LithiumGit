@@ -45,26 +45,26 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     }
 
     const updateRepoData = async ()=>{
-        BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(props.repo.path))!;
-        if(!BranchUtils.repositoryDetails){
+        BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(props.repo.path))!;        
+        if(!BranchUtils.repositoryDetails || store.status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
             BranchUtils.repositoryDetails = await getRepoDetails();
             BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
             CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
-        }
-        if(state.isLoading)
-            setState({isLoading:false});        
+        }                
     }
 
     useEffect(()=>{       
         ReduxUtils.setStatus = (status:IStatus)=>{            
-            BranchUtils.repositoryDetails.status = status;
-            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            if(BranchUtils.repositoryDetails){
+                BranchUtils.repositoryDetails.status = status;
+                CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            }            
             dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
         }
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
             ReduxUtils.setStatus(res);
-        })                
-        updateRepoData();
+        })
+        IpcUtils.getRepoStatus(props.repo);
        
        return ()=>{
         ReduxUtils.setStatus = ()=>{};
@@ -75,13 +75,19 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
        }
     },[]);
 
-    useEffect(()=>{
+    useEffect(()=>{        
         if(!store.status)
             return;
+        if(state.isLoading){
+            updateRepoData().then(()=>{                
+                setState({isLoading:false});
+            });
+            return;
+        }
         const requiredReload = BranchGraphUtils.isRequiredReload();
         if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         else BranchGraphUtils.checkForUiUpdate(store.status);
-    },[store.status]);
+    },[store.status,state.isLoading]);
 
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
@@ -111,21 +117,21 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[position?.x])
 
     useEffect(()=>{
-        if(refData.current.previousRepo != props.repo){
+        if(!state.isLoading){
             updateRepoData().then(_=>{
                 refData.current.previousRepo = props.repo;
                 BranchGraphUtils.createBranchPanel();
-            });
-            
+                IpcUtils.getRepoStatus();
+            });            
         }
-    },[props.repo]);
+    },[props.repo,state.isLoading]);
     useEffect(()=>{
         if(state.isLoading)
             return;
         updateStatus();
     },[state.isLoading])
 
-    if(state.isLoading && !store.status) return <p className="text-center">Loading...</p>;
+    if(state.isLoading) return <p className="text-center">Loading...</p>;
     return <div id="SelectedRepository" className="d-flex h-100">
         <div style={{width:`${leftWidth - 3}px`}}>
             <SelectedRepoLeft  />
