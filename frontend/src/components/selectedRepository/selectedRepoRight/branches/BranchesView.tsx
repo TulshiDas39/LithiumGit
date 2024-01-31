@@ -8,8 +8,6 @@ import { CommitProperty } from "./CommitProperty";
 
 function BranchesViewComponent() {
     const store = useSelectorTyped(state => ({
-        selectedRepo: state.savedData.recentRepositories.find(x => x.isSelected),
-        branchPanelRefreshVersion: state.ui.versions.branchPanelRefresh,
         show: state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
     }), shallowEqual);
 
@@ -17,14 +15,6 @@ function BranchesViewComponent() {
         if(BranchGraphUtils.svgElement)
             BranchGraphUtils.updateUi();
     },[store.show])
-
-    useEffect(() => {
-        BranchGraphUtils.createBranchPanel();
-        return ()=>{
-            //BranchGraphUtils.resetGraphStates();
-        }
-    }, []);
-
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
         <BranchActions />

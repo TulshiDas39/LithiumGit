@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo } from "common_library";
+import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
@@ -6,6 +6,13 @@ export class IpcUtils{
         if(!repoInfo)
             repoInfo = BranchUtils.repositoryDetails.repoInfo;
         return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
+    }
+
+    static async getRepoStatusSync(repoInfo?:RepositoryInfo){
+        if(!repoInfo)
+            repoInfo = BranchUtils.repositoryDetails.repoInfo;
+        const status:IStatus = await window.ipcRenderer.invoke(RendererEvents.getStatusSync().channel,repoInfo);
+        return status;
     }
 
     static trigerPush(){

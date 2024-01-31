@@ -16,6 +16,7 @@ export class GitManager{
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
         this.addStatusHandler();
+        this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
         this.addDiscardUnStagedItemHandler();
@@ -167,6 +168,13 @@ export class GitManager{
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             await this.notifyStatus(repoInfo);
+        });
+    }
+
+    private addStatusSyncHandler(){
+        ipcMain.handle(RendererEvents.getStatusSync().channel, async (e,repoInfo:RepositoryInfo)=>{
+            const status = await this.getStatus(repoInfo);
+            return status;
         });
     }
 
