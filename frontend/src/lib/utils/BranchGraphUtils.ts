@@ -225,7 +225,7 @@ export class BranchGraphUtils{
         }
         else newValue = 1;
 
-        newValue = NumUtils.between(0,5,newValue);
+        newValue = NumUtils.between(0,50,newValue);
         BranchGraphUtils.state.zoomLabel.publish(newValue);        
     }
 
