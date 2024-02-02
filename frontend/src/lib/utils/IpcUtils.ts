@@ -42,4 +42,8 @@ export class IpcUtils{
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
         return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,BranchUtils.repositoryDetails,branchName,checkout);
     }
+
+    static fetch(isAll:boolean){
+        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
+    }
 }

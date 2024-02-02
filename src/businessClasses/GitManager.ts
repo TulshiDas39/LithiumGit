@@ -342,8 +342,8 @@ export class GitManager{
     }
 
     private async addFetchHandler(){
-        ipcMain.on(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
-            await this.takeFetch(repoDetails,all,e);
+        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
+            await this.takeFetch(repoDetails,all);
         });
     }
 
@@ -380,7 +380,7 @@ export class GitManager{
         }
     }
 
-    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean,e:Electron.IpcMainEvent){
+    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean){
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
@@ -391,16 +391,7 @@ export class GitManager{
             else{
                 options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
             }
-
-            await git.fetch(options);
-            if(all) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else {
-                const status = await this.getStatus(repoDetails.repoInfo);
-                if(repoDetails.status.behind !== status.behind ||repoDetails.status.ahead !== status.ahead){
-                        AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel);    
-                }
-                else e.reply(RendererEvents.fetch().replyChannel);
-            }
+            await git.fetch(options);                        
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
