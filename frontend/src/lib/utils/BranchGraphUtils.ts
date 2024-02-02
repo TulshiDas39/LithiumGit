@@ -371,7 +371,7 @@ export class BranchGraphUtils{
 
     static getBranchLinePathData(branchDetails:IBranchDetails){
         const parentCommit = branchDetails.parentCommit;
-        const startX = parentCommit?.x || 20;
+        const startX = parentCommit?.x || branchDetails.commits[0]?.x || 150;
         const startY = parentCommit?.ownerBranch.y || branchDetails.y;
         const endX = branchDetails.commits[branchDetails.commits.length - 1].x;
         const hLineLength = endX - startX;

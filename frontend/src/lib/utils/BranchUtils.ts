@@ -148,7 +148,7 @@ export class BranchUtils{
           return newOwnerBranch;
         };
 
-        let x = 20;
+        let x = 150;
         
         for(let i = 0; i < repoDetails.allCommits.length; i++){
             const currentCommit = repoDetails.allCommits[i];            
