@@ -98,6 +98,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[store.branchPanelRefreshVersion]);
     
     useEffect(()=>{
+        if(!BranchUtils.repositoryDetails)
+            return;
         if(store.focusVersion) 
             updateStatus();
     },[store.focusVersion]);
