@@ -1,4 +1,4 @@
-import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
@@ -37,5 +37,9 @@ export class IpcUtils{
 
     static doCommit(message:string){
         return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,message);
+    }
+
+    static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
+        return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,BranchUtils.repositoryDetails,branchName,checkout);
     }
 }

@@ -8,6 +8,7 @@ import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 interface IState{
     branchName:string;
@@ -42,7 +43,9 @@ function CreateBranchModalComponent(){
     const handleBranchCreateClick=()=>{
         const branchNames = BranchUtils.getAllBranchNames();
         if(branchNames.includes(state.branchName)) return;
-        window.ipcRenderer.send(RendererEvents.createBranch().channel,Data.sourceCommit,BranchUtils.repositoryDetails,state.branchName,state.checkout);
+        IpcUtils.createBranch(state.branchName,Data.sourceCommit,state.checkout).then(_=>{
+            IpcUtils.getRepoStatus();
+        });        
         dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
     }
 
