@@ -16,6 +16,7 @@ export interface IStatus{
     isDetached:boolean;
     headCommit:ICommitInfo;
     mergingCommitHash?:string;
+    trackingBranch?:string;
 }
 
 export interface IChanges{

@@ -249,6 +249,10 @@ export class GitManager{
         result.isClean = status?.isClean();
         result.current = status.current;
         result.isDetached = status.detached;
+        if(status.tracking){
+            result.trackingBranch = status.tracking.substring(status.tracking.indexOf("/")+1);
+        }
+        
         result.headCommit = await this.getCommitInfo(git,undefined);
         result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
@@ -411,7 +415,10 @@ export class GitManager{
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
-            const result = await git.push(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
+            const options:string[] = [repoDetails.remotes[0].name];
+            if(!repoDetails.status.trackingBranch)
+                options.push("-u",repoDetails.headCommit.ownerBranch.name);            
+            const result = await git.push(options);
             if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());

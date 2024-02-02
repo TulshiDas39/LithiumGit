@@ -79,7 +79,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{        
         if(!store.status)
-            return;
+            return;        
         const requiredReload = BranchGraphUtils.isRequiredReload();
         if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         else BranchGraphUtils.checkForUiUpdate(store.status);
