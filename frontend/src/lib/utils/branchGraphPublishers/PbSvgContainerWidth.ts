@@ -12,6 +12,6 @@ export class PbSvgContainerWidth extends DerivedState<number>{
     }
 
     protected applyChange(): void {
-        BranchGraphUtils.svgElement.setAttribute("width",this.value+"");
+        BranchGraphUtils.svgElement?.setAttribute("width",this.value+"");
     }
 }
