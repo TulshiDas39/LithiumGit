@@ -2,6 +2,9 @@ import { ILineHighlight } from "../editor";
 import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
+import { RendererEvents } from "common_library";
+import { BranchUtils } from "./BranchUtils";
+import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
 
 export class DiffUtils{
@@ -395,5 +398,13 @@ export class DiffUtils{
                 
         });
         return lineNumbers;
+    }
+
+    static async getDiff(filePath:string, isSgated?:boolean){
+        const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",filePath];
+        if(isSgated){
+            options.splice(0,0,"--staged");
+        }
+        return await IpcUtils.getDiff(options);
     }
 }

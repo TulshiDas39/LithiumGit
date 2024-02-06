@@ -101,9 +101,9 @@ export class GitManager{
     }
 
     addDiffHandler() {
-        ipcMain.on(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
+        ipcMain.handle(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.getDiff(options,repoInfo);
-            e.reply(RendererEvents.diff().replyChannel, res);
+            return res;
         })
     }
     async getDiff(options: string[], repoInfo: RepositoryInfo) {

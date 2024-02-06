@@ -46,4 +46,12 @@ export class IpcUtils{
     static fetch(isAll:boolean){
         return window.ipcRenderer.invoke(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
     }
+
+    static async getFileContent(path:string){
+        return await window.ipcRenderer.invoke(RendererEvents.getFileContent().channel,path) as string[];
+    }
+
+    static async getDiff(options:string[]){
+        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
+    }
 }

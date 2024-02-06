@@ -1,7 +1,11 @@
+import ReactDOMServer from "react-dom/server";
 import { EditorColors } from "../editor";
 import { ILine } from "../interfaces";
 import { DiffUtils } from "./DiffUtils";
 import { DeltaStatic,Quill} from "quill";
+import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
+import { BranchGraphUtils } from "./BranchGraphUtils";
+import { BranchUtils } from "./BranchUtils";
 
 export class ChangeUtils{
     static containerId = "";
@@ -23,15 +27,12 @@ export class ChangeUtils{
     }
 
     static showChanges(){
-        if(ChangeUtils.previousLines){
-            ChangeUtils.previousDelta = DiffUtils.getDeltaFromLineConfig(ChangeUtils.previousLines,EditorColors.line.previous,ChangeUtils.previousLineMaxWidth);
-            ChangeUtils.previousLineDelta = DiffUtils.getDeltaForLineNumber(ChangeUtils.previousLines);
-        }
+        const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
-        if(ChangeUtils.currentLines){
-            ChangeUtils.currentDelta = DiffUtils.getDeltaFromLineConfig(ChangeUtils.previousLines,EditorColors.line.previous,ChangeUtils.previousLineMaxWidth);
-            ChangeUtils.currentLineDelta = DiffUtils.getDeltaForLineNumber(ChangeUtils.previousLines);
-        }
-        
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference2({
+            linesAfterChange:ChangeUtils.currentLines,
+            linesBeforeChange:ChangeUtils.previousLines
+        }));
+        container.innerHTML = innerHtml;        
     }
 }
