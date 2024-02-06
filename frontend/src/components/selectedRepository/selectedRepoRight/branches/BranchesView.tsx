@@ -16,6 +16,13 @@ function BranchesViewComponent() {
             BranchGraphUtils.updateUi();
     },[store.show])
 
+    useEffect(()=>{
+        window.addEventListener("resize",BranchGraphUtils.resizeHandler);
+        return ()=>{
+            window.removeEventListener("resize",BranchGraphUtils.resizeHandler);    
+        }
+    },[])
+
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
         <BranchActions />
         <div className="d-flex w-100 overflow-hidden" style={{height:`70%`}}>

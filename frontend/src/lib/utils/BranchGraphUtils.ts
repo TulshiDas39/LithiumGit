@@ -61,7 +61,12 @@ export class BranchGraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
-    } as IState;    
+    } as IState;
+    
+    static resizeHandler = ()=>{
+        BranchGraphUtils.state.svgContainerWidth.update();
+        BranchGraphUtils.state.panelHeight.update();
+    }
 
     static init(){
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
@@ -73,11 +78,6 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
         BranchGraphUtils.state.viewBoxY = new PbViewBoxY(0);
         BranchGraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
-
-        window.addEventListener("resize",()=>{
-            BranchGraphUtils.state.svgContainerWidth.update();
-            BranchGraphUtils.state.panelHeight.update();
-        });
     }    
 
     static createBranchPanel(){
@@ -197,7 +197,7 @@ export class BranchGraphUtils{
         })
     }
 
-    static addEventListeners(){
+    static addEventListeners(){        
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
             BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
         });
