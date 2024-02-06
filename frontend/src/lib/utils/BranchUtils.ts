@@ -158,7 +158,7 @@ export class BranchUtils{
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
             
             if(!!previousCommit){
-            	currentCommit.previousCommit = previousCommit;            	
+            	currentCommit.previousCommit = previousCommit;
                 if(previousCommit.nextCommit || previousCommit.ownerBranch.name){            
                   ownerBranch = createNewBranch(previousCommit);
                   previousCommit.branchesFromThis.push(ownerBranch);

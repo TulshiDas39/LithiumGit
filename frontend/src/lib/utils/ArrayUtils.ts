@@ -1,0 +1,11 @@
+export class ArrayUtils{
+    static findInReverse<T>(array:T[],key:keyof(T),value:T[keyof(T)]){
+        for(let i = array.length-1; i>=0; i--){
+            const item = array[i];
+            if(item[key] === value){
+                return item;
+            }
+        }
+        return null;
+    }
+}

@@ -6,3 +6,4 @@ export * from './ReduxUtils';
 export * from './ObjectUtils';
 export * from './BranchGraphUtils';
 export * from './NumUtils';
+export * from './ArrayUtils';
