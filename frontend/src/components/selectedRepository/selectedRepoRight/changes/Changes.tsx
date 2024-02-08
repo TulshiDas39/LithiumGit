@@ -103,7 +103,7 @@ function ChangesComponent() {
                 changeGroup={state.selectedFileGroup} 
                 changeType={state.selectedFile.changeType}/>} */}
 
-            <div id={EnumHtmlIds.diffview_container}>
+            <div id={EnumHtmlIds.diffview_container} className="h-100">
 
             </div>
         </div>

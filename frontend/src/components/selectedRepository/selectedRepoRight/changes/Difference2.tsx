@@ -7,11 +7,12 @@ interface IProps{
 }
 
 export function Difference2(props:IProps){
-    return <div className="d-flex w-100 h-100 gs-overflow-y-auto">
-        {!!props.linesBeforeChange && <div>
+    console.log(props.linesBeforeChange);
+    return <div className="d-flex w-100 h-100 gs-overflow-y-auto difference">
+        {!!props.linesBeforeChange && <div className="w-50 h-100 overflow-auto">
             <DiffView color={EditorColors.line.previous} lines={props.linesBeforeChange} />
         </div>}
-        <div>
+        <div className="w-50 h-100 overflow-auto">
             <DiffView color={EditorColors.line.current} lines={props.linesAfterChange} />
         </div>
     </div>
