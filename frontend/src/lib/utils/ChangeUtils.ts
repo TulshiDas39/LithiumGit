@@ -33,6 +33,31 @@ export class ChangeUtils{
             linesAfterChange:ChangeUtils.currentLines,
             linesBeforeChange:ChangeUtils.previousLines
         }));
-        container.innerHTML = innerHtml;        
+        container.innerHTML = innerHtml;
+        ChangeUtils.HandleScrolling();
+    }
+
+    private static HandleScrolling(){
+        if(ChangeUtils.previousLines !== null && ChangeUtils.currentLines !== null){
+            const previousChangeScroll = document.querySelector(".difference .previous .content");
+            const currentChangeScroll = document.querySelector(".difference .current .content");        
+        
+            let handler1 = (e:Event)=>{
+                currentChangeScroll?.scrollTo({
+                    left:previousChangeScroll?.scrollLeft,
+                });
+            }
+
+            let handler2 = (e:Event)=>{
+                previousChangeScroll?.scrollTo({                    
+                    left:currentChangeScroll?.scrollLeft,
+                });
+            }
+
+            if(previousChangeScroll && currentChangeScroll){
+                previousChangeScroll.addEventListener("scroll",handler1)
+                currentChangeScroll.addEventListener("scroll",handler2);
+            }
+        }
     }
 }

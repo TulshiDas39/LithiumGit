@@ -6,9 +6,14 @@ interface ISingleDiffProps{
     maxLineWidth:number;
 }
 
-function SingleDiff(props:ISingleDiffProps){    
+function SingleDiff(props:ISingleDiffProps){
+    const paragraphStyle:React.CSSProperties = {
+        whiteSpace:'nowrap', 
+        minWidth:props.maxLineWidth+"ch",
+    }
+
     if(props.line.transparent){
-        return <p className="bg-dark">
+        return <p className="bg-dark" style={{...paragraphStyle}}>
             <span className="py-1">{Array(props.maxLineWidth).fill(" ").join("")}</span>            
         </p>
     }
@@ -34,10 +39,10 @@ function SingleDiff(props:ISingleDiffProps){
         else{
             childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
         }
-        return <p className="" style={{background:props.color.background}}>{childElems}</p>
+        return <p className="" style={{...paragraphStyle, background:props.color.background}}>{childElems}</p>
     }
 
-    return <p className="transparent-background noselect"> <br /> </p>
+    return <p className="transparent-background noselect" style={{...paragraphStyle}}> <br /> </p>
 }
 
 interface IProps{
@@ -67,7 +72,7 @@ export function DiffView(props:IProps){
         <div className="noselect" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="ps-1" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
+        <div className="ps-1 content" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
             {props.lines.map((l, i)=>(
                 <SingleDiff key={i} line={l} color={props.color} maxLineWidth={editorWidth}  />
             ))}

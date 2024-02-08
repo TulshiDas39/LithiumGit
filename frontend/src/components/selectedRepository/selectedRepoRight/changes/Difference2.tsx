@@ -9,10 +9,10 @@ interface IProps{
 export function Difference2(props:IProps){
     console.log(props.linesBeforeChange);
     return <div className="d-flex w-100 h-100 difference" style={{overflowY:'auto'}}>
-        {!!props.linesBeforeChange && <div className="w-50">
+        {!!props.linesBeforeChange && <div className="w-50 previous">
             <DiffView color={EditorColors.line.previous} lines={props.linesBeforeChange} />
         </div>}
-        <div className="w-50 ps-2">
+        <div className="w-50 ps-2 current">
             <DiffView color={EditorColors.line.current} lines={props.linesAfterChange} />
         </div>
     </div>
