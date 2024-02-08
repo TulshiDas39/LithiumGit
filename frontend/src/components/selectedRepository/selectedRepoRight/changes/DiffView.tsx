@@ -17,27 +17,27 @@ function SingleDiff(props:ISingleDiffProps){
         const heightLightCount = props.line.textHightlightIndex.length;
         if(heightLightCount){
             let insertedUptoIndex = -1;
-            props.line.textHightlightIndex.forEach((range)=>{                        
+            props.line.textHightlightIndex.forEach((range,i)=>{                        
                 if(range.fromIndex > insertedUptoIndex+1 ){
-                    const elem = <span className="py-1" style={{background:props.color.background}}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
+                    const elem = <span key={i} className="py-1" style={{background:props.color.background}}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
                     childElems.push(elem);                    
                 }
-                const elem = <span className="py-1" style={{background:props.color.forground}}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
+                const elem = <span key={i} className="py-1" style={{background:props.color.forground}}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
                 childElems.push(elem);
                 insertedUptoIndex = range.fromIndex+range.count-1;
             });
             if(insertedUptoIndex < props.line.text.length-1){
-                const elem = <span className="py-1" style={{background:props.color.background}}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
+                const elem = <span key={props.line.textHightlightIndex.length} className="py-1" style={{background:props.color.background}}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
                 childElems.push(elem);
             }
         }
         else{
-            childElems.push(<span className="py-1">{props.line.text}</span>)
+            childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
         }
         return <p style={{background:props.color.background}}>{childElems}</p>
     }
 
-    return <p>{Array(props.maxLineWidth).fill("\\").join("")}</p>
+    return <p className="transparent-background noselect"> <br /> </p>
 }
 
 interface IProps{
@@ -63,7 +63,7 @@ export function DiffView(props:IProps){
         return elems;
     }
     return <div className="d-flex w-100">
-        <div>
+        <div className="noselect">
             {getLineElems()}
         </div>
         <div className="ps-1">
