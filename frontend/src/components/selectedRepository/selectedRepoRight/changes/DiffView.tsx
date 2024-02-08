@@ -8,7 +8,7 @@ interface ISingleDiffProps{
 
 function SingleDiff(props:ISingleDiffProps){    
     if(props.line.transparent){
-        return <p className="w-100 bg-dark">
+        return <p className="bg-dark">
             <span className="py-1">{Array(props.maxLineWidth).fill(" ").join("")}</span>            
         </p>
     }
@@ -34,7 +34,7 @@ function SingleDiff(props:ISingleDiffProps){
         else{
             childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
         }
-        return <p style={{background:props.color.background}}>{childElems}</p>
+        return <p className="" style={{background:props.color.background}}>{childElems}</p>
     }
 
     return <p className="transparent-background noselect"> <br /> </p>
@@ -51,8 +51,8 @@ export function DiffView(props:IProps){
         let lineNo = 1;
         let i = 0;
         for(let line of props.lines){
-            if(line.transparent){
-                elems.push(<p key={i}></p>)
+            if(line.transparent || line.text === undefined){
+                elems.push(<p key={i}> <br /> </p>)
             }
             else{
                 elems.push(<p key={i}>{lineNo}</p>);
@@ -62,11 +62,12 @@ export function DiffView(props:IProps){
         }
         return elems;
     }
+    const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
     return <div className="d-flex w-100">
-        <div className="noselect">
+        <div className="noselect" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="ps-1">
+        <div className="ps-1" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
             {props.lines.map((l, i)=>(
                 <SingleDiff key={i} line={l} color={props.color} maxLineWidth={editorWidth}  />
             ))}
