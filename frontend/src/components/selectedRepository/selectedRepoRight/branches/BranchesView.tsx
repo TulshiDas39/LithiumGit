@@ -16,8 +16,7 @@ function BranchesViewComponent() {
             BranchGraphUtils.updateUi();
     },[store.show])
 
-    useEffect(()=>{
-        window.addEventListener("resize",BranchGraphUtils.resizeHandler);
+    useEffect(()=>{        
         return ()=>{
             window.removeEventListener("resize",BranchGraphUtils.resizeHandler);    
         }

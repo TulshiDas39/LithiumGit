@@ -96,8 +96,8 @@ export class BranchGraphUtils{
         BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
-        BranchGraphUtils.updateUi();
         BranchGraphUtils.addEventListeners();
+        BranchGraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
     }  
@@ -197,7 +197,8 @@ export class BranchGraphUtils{
         })
     }
 
-    static addEventListeners(){        
+    static addEventListeners(){
+        window.addEventListener("resize",BranchGraphUtils.resizeHandler);
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
             BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
         });
