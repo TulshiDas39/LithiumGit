@@ -12,7 +12,7 @@ export function Difference2(props:IProps){
         {!!props.linesBeforeChange && <div className="w-50 previous">
             <DiffView color={EditorColors.line.previous} lines={props.linesBeforeChange} />
         </div>}
-        <div className="w-50 ps-2 current">
+        <div className={`w-${!!props.linesBeforeChange?"50":"100"} ps-2 current`}>
             <DiffView color={EditorColors.line.current} lines={props.linesAfterChange} />
         </div>
     </div>

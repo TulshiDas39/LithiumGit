@@ -1,7 +1,7 @@
 import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
+import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";
@@ -125,7 +125,13 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangeUtils.showChanges();
 
                 });
-            }        
+            }
+            if(props.selectedFile?.changeType === EnumChangeType.CREATED){            
+                const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                ChangeUtils.currentLines = lineConfigs;
+                ChangeUtils.previousLines = null!;
+                ChangeUtils.showChanges();
+            }
         })        
     },[props.selectedFile])
     
