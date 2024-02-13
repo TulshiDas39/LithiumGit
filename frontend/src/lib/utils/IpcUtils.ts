@@ -54,4 +54,9 @@ export class IpcUtils{
     static async getDiff(options:string[]){
         return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
     }
+
+    static async getGitShowResult(path:string){
+        const options =  [`HEAD:${path}`];
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+    }
 }

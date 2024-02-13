@@ -55,9 +55,9 @@ export class GitManager{
     }
 
     addGitShowHandler(){
-        ipcMain.on(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
+        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
             const result = await this.getShowResult(repository,options);
-            e.reply(RendererEvents.gitShow().replyChannel,result);
+            return result;
         })
     }
 

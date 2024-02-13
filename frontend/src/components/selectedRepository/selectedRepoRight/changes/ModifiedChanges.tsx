@@ -7,6 +7,7 @@ import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
+import { StringUtils } from "../../../../lib/utils/StringUtils";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -113,26 +114,38 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!props.selectedFile)
             return ;
         const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,props.selectedFile.path);
-        IpcUtils.getFileContent(joinedPath).then(lines=>{
-            const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
-            if(!hasChanges) return;
-            refData.current.selectedFileContent = lines;
-            if(props.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                DiffUtils.getDiff(props.selectedFile.path).then(str=>{
-                    let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                    ChangeUtils.currentLines = lineConfigs.currentLines;
-                    ChangeUtils.previousLines = lineConfigs.previousLines;
+        if(props.selectedFile?.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getFileContent(joinedPath).then(lines=>{
+                const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
+                if(!hasChanges) return;
+                refData.current.selectedFileContent = lines;
+                if(props.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    DiffUtils.getDiff(props.selectedFile.path).then(str=>{
+                        let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+    
+                    });
+                }
+                if(props.selectedFile?.changeType === EnumChangeType.CREATED){            
+                    const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                    ChangeUtils.currentLines = lineConfigs;
+                    ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-
-                });
-            }
-            if(props.selectedFile?.changeType === EnumChangeType.CREATED){            
+                }
+            })
+        }
+        else{            
+            IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
+                const lines = new StringUtils().getLines(content);
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = lineConfigs;
-                ChangeUtils.previousLines = null!;
+                ChangeUtils.currentLines = null!;
+                ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
-            }
-        })        
+            })
+        }
+                
     },[props.selectedFile])
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
