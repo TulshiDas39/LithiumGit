@@ -59,4 +59,9 @@ export class IpcUtils{
         const options =  [`HEAD:${path}`];
         return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
     }
+
+    static async getGitShowResultOfStagedFile(path:string){
+        const options = [":"+path];
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+    }
 }

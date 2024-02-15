@@ -11,14 +11,6 @@ export class ChangeUtils{
     static containerId = "";
     static currentLines:ILine[];
     static previousLines:ILine[];
-    static previousLineMaxWidth = 300;
-
-    private static currentDelta:DeltaStatic;
-    private static currentLineDelta:DeltaStatic;
-
-    private static previousDelta:DeltaStatic;
-    private static previousLineDelta:DeltaStatic;
-
 
     static init(){
         var quill = new Quill('#editor', {
