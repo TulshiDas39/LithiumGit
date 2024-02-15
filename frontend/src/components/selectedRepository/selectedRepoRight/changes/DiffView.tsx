@@ -8,7 +8,7 @@ interface ISingleDiffProps{
 
 function SingleDiff(props:ISingleDiffProps){
     const paragraphStyle:React.CSSProperties = {
-        whiteSpace:'nowrap', 
+        whiteSpace:'pre', 
         minWidth:props.maxLineWidth+"ch",
     }
 
@@ -35,14 +35,15 @@ function SingleDiff(props:ISingleDiffProps){
                 const elem = <span key={props.line.textHightlightIndex.length} className="py-1" style={{background:props.color.background}}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
                 childElems.push(elem);
             }
-        }
+        }        
         else{
-            childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
+            if(props.line.text) childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
+            else childElems.push(<br key={1}/>);
         }
-        return <p className="" style={{...paragraphStyle, background:props.color.background}}>{childElems}</p>
+        return <p className="" style={{...paragraphStyle, background:props.line.hightLightBackground? props.color.background:undefined}}>{childElems}</p>
     }
 
-    return <p className="transparent-background noselect" style={{...paragraphStyle}}> <br /> </p>
+    return <p className="transparent-background noselect" style={{...paragraphStyle}}> </p>
 }
 
 interface IProps{
