@@ -1,8 +1,10 @@
 import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { EnumChangeGroup, EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { StringUtils } from "../../../../lib/utils/StringUtils";
+import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -45,8 +47,7 @@ interface IStagedChangesProps{
     changes:IFile[];
     repoInfoInfo?:RepositoryInfo;    
     handleSelect:(file:IFile)=>void;
-    selectedMode:EnumChangeGroup;
-    selectedFilePath?:string;
+    selectedFile?:IFile;
 }
 
 interface IState{
@@ -59,6 +60,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
 
     const headerRef = useRef<HTMLDivElement>();
+    const refData = useRef({fileContentAfterChange:[] as string[]});
 
     const handleUnstageItem = (item:IFile)=>{
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
@@ -86,6 +88,38 @@ function StagedChangesComponent(props:IStagedChangesProps){
             window.removeEventListener("resize",setContainerHeight);
         }
     },[])
+
+    useEffect(()=>{
+        if(!props.selectedFile)
+            return ;
+        if(props.selectedFile.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getGitShowResultOfStagedFile(props.selectedFile.path).then(content=>{
+                const lines = new StringUtils().getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                if(!hasChanges) return;
+                refData.current.fileContentAfterChange = lines;
+                const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.selectedFile!.path];            
+                IpcUtils.getDiff(options).then(res=>{
+                    let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                    ChangeUtils.currentLines = lineConfigs.currentLines;
+                    ChangeUtils.previousLines = lineConfigs.previousLines;
+                    ChangeUtils.showChanges();
+                })                    
+            })
+        }
+        else{
+            IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
+                const lines = new StringUtils().getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                if(!hasChanges) return;
+                refData.current.fileContentAfterChange = lines;
+                const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                ChangeUtils.currentLines = null!;
+                ChangeUtils.previousLines = lineConfigs!;
+                ChangeUtils.showChanges();
+            })
+        }
+    },[props.selectedFile])
     
     useEffect(()=>{
         if(!state.containerHeight)
@@ -107,9 +141,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
     { state.firstPaneHeight &&
     <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}}>
         {props.changes.map(f=>(
-            <SingleFile key={f.path} item={f} handleSelect={_=> props.handleSelect(f)}
+            <SingleFile key={f.path} item={f} handleSelect={_ => props.handleSelect(f)}
                 handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={props.selectedMode === EnumChangeGroup.STAGED && f.path === props.selectedFilePath} />
+                isSelected ={f.path === props.selectedFile?.path} />
         ))}        
     </div>
     }

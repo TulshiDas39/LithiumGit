@@ -3,11 +3,13 @@ import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumChangeGroup, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { Difference } from "./Difference";
 import { ChangesTabPane } from "./ChangesTabPane";
+import { Difference2 } from "./Difference2";
+import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 
 interface IChangesProps{
     //height:number;
@@ -81,7 +83,11 @@ function ChangesComponent() {
         window.addEventListener('mousemove', resize);        
         window.addEventListener('mouseup', stopResize);
 
-    }      
+    }
+    
+    useEffect(()=>{
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+    },[])
 
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
@@ -92,11 +98,14 @@ function ChangesComponent() {
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {!!state.selectedFile && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
+            {/* {!!state.selectedFile && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
                 path={state.selectedFile.path} repoInfo={repoInfo} 
                 changeGroup={state.selectedFileGroup} 
-                changeType={state.selectedFile.changeType}/>}
-            {/* <Editor document={state.document} onChange={onChange} /> */}
+                changeType={state.selectedFile.changeType}/>} */}
+
+            <div id={EnumHtmlIds.diffview_container} className="h-100">
+
+            </div>
         </div>
     </div>
 }

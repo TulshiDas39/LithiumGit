@@ -16,7 +16,6 @@ interface ISelectedRepositoryProps{
 }
 
 interface IState{
-    isLoading:boolean;
 }
 
 function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
@@ -25,7 +24,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         status:state.ui.status,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
-    const[state,setState]=useMultiState<IState>({isLoading:true});
+    const[state,setState]=useMultiState<IState>({});
     const leftWidthRef = useRef(200);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
@@ -37,7 +36,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         return res;
     }
 
-    const updateStatus = async ()=>{
+    const updateStatus = ()=>{
         dispatch(ActionUI.setLoader({text:"Updating status..."}));
         IpcUtils.getRepoStatus().finally(()=>{
             dispatch(ActionUI.setLoader(undefined));
@@ -46,39 +45,40 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     const updateRepoData = async ()=>{
         BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(props.repo.path))!;
-        if(!BranchUtils.repositoryDetails){
+        const status = await IpcUtils.getRepoStatusSync(props.repo);
+        if(!BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
             BranchUtils.repositoryDetails = await getRepoDetails();
             BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
-            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
         }
         else{
-            updateStatus();
+            BranchUtils.repositoryDetails.status = status;            
         }
-        if(state.isLoading)
-            setState({isLoading:false});        
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);        
     }
 
     useEffect(()=>{       
-        ReduxUtils.setStatusCurrent = (status:IStatus)=>{            
-            BranchUtils.repositoryDetails.status = status;
-            CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+        ReduxUtils.setStatus = (status:IStatus)=>{            
+            if(BranchUtils.repositoryDetails){
+                BranchUtils.repositoryDetails.status = status;
+                CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
+            }            
             dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
-        }                
-       updateRepoData();
-       window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
-            ReduxUtils.setStatusCurrent(res);
-       })
-
+        }
+        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
+            ReduxUtils.setStatus(res);
+        })
+       
        return ()=>{
-        ReduxUtils.setStatusCurrent = ()=>{};
+        ReduxUtils.setStatus = ()=>{};
         UiUtils.removeIpcListeners([                
             RendererEvents.getStatus().replyChannel,            
         ]);
+        dispatch(ActionUI.setStatus(undefined!));
        }
     },[]);
 
-    useEffect(()=>{
-        if(!store.status)
+    useEffect(()=>{        
+        if(!store.status || !BranchUtils.repositoryDetails)
             return;
         const requiredReload = BranchGraphUtils.isRequiredReload();
         if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
@@ -98,6 +98,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[store.branchPanelRefreshVersion]);
     
     useEffect(()=>{
+        if(!BranchUtils.repositoryDetails)
+            return;
         if(store.focusVersion) 
             updateStatus();
     },[store.focusVersion]);
@@ -113,16 +115,13 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[position?.x])
 
     useEffect(()=>{
-        if(refData.current.previousRepo != props.repo){
-            updateRepoData().then(_=>{
-                refData.current.previousRepo = props.repo;
-                BranchGraphUtils.createBranchPanel();
-            });
-            
-        }
+        updateRepoData().then(_=>{
+            refData.current.previousRepo = props.repo;
+            BranchGraphUtils.createBranchPanel();
+            ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
+        });            
     },[props.repo]);
 
-    if(state.isLoading) return <p className="text-center">Loading...</p>;
     return <div id="SelectedRepository" className="d-flex h-100">
         <div style={{width:`${leftWidth - 3}px`}}>
             <SelectedRepoLeft  />

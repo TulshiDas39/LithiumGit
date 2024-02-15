@@ -61,7 +61,12 @@ export class BranchGraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
-    } as IState;    
+    } as IState;
+    
+    static resizeHandler = ()=>{
+        BranchGraphUtils.state.svgContainerWidth.update();
+        BranchGraphUtils.state.panelHeight.update();
+    }
 
     static init(){
         BranchGraphUtils.state.horizontalScrollWidth = new PbHorizontalScrollWidth(0);
@@ -73,11 +78,6 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.viewBoxX = new PbViewBoxX(0);
         BranchGraphUtils.state.viewBoxY = new PbViewBoxY(0);
         BranchGraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
-
-        window.addEventListener("resize",()=>{
-            BranchGraphUtils.state.svgContainerWidth.update();
-            BranchGraphUtils.state.panelHeight.update();
-        });
     }    
 
     static createBranchPanel(){
@@ -96,14 +96,14 @@ export class BranchGraphUtils{
         BranchGraphUtils.horizontalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchHorizontalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         BranchGraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
-        BranchGraphUtils.updateUi();
         BranchGraphUtils.addEventListeners();
+        BranchGraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
     }  
 
     static setReduxData(){
-        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+        ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
     }
 
     static getViewBoxStr(){
@@ -198,6 +198,7 @@ export class BranchGraphUtils{
     }
 
     static addEventListeners(){
+        window.addEventListener("resize",BranchGraphUtils.resizeHandler);
         UiUtils.HandleHorizontalDragging(BranchGraphUtils.horizontalScrollBarElement,BranchGraphUtils.handleHozontalScroll2,()=>{
             BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
         });
@@ -225,7 +226,7 @@ export class BranchGraphUtils{
         }
         else newValue = 1;
 
-        newValue = NumUtils.between(0,5,newValue);
+        newValue = NumUtils.between(0,50,newValue);
         BranchGraphUtils.state.zoomLabel.publish(newValue);        
     }
 
@@ -261,7 +262,7 @@ export class BranchGraphUtils{
         const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
         HTextElem?.classList.remove("d-none");
-        ReduxUtils.setStatusCurrent(BranchUtils.repositoryDetails.status);
+        ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
     }
     
 
@@ -371,7 +372,7 @@ export class BranchGraphUtils{
 
     static getBranchLinePathData(branchDetails:IBranchDetails){
         const parentCommit = branchDetails.parentCommit;
-        const startX = parentCommit?.x || 20;
+        const startX = parentCommit?.x || branchDetails.commits[0]?.x || 150;
         const startY = parentCommit?.ownerBranch.y || branchDetails.y;
         const endX = branchDetails.commits[branchDetails.commits.length - 1].x;
         const hLineLength = endX - startX;

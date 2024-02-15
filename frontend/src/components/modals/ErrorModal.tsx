@@ -32,7 +32,7 @@ function ErrorModalComponent(){
                 </div>
                 <hr />
                 <div className="row g-0">
-                    <div className="col-12">
+                    <div className="col-12 text-break overflow-auto" style={{maxWidth:600,maxHeight:500}}>
                         {Data.message}
                     </div>
                 </div>

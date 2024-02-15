@@ -15,9 +15,9 @@ export class FileManager{
         this.handlePathJoin();
     }
     handleGetFileContent() {
-        ipcMain.on(RendererEvents.getFileContent().channel,async (e,path:string)=>{
+        ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
             const lines = await this.getFileContent(path);
-            e.reply(RendererEvents.getFileContent().replyChannel,lines);
+            return lines;
         });
     }
 

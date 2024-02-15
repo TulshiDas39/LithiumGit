@@ -39,7 +39,10 @@ function PullPushMenuComponent(){
 
     const handleFetch=(isAll:boolean)=>{
         dispatch(ActionUI.setLoader({text:"Fetching..."}));
-        window.ipcRenderer.send(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
+        IpcUtils.fetch(isAll).then(_=>{
+            dispatch(ActionUI.setLoader(undefined));
+            IpcUtils.getRepoStatus();
+        })
     }
 
     return <div className="row g-0 align-items-stretch ps-2">

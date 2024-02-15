@@ -16,6 +16,7 @@ interface IState{
     selectedTab:EnumChangeGroup;
 }
 
+
 function ChangesTabPaneComponent(props:IProps){
     const store = useSelectorTyped(state=>({
        status:state.ui.status,
@@ -62,10 +63,10 @@ function ChangesTabPaneComponent(props:IProps){
         </div>
         <div className="flex-grow-1">            
             {state.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} onFileSelect={file=> handleSelect(file, EnumChangeGroup.UN_STAGED)} 
-            selectedMode={state.selectedTab} repoInfoInfo={repoInfo} />}
+             repoInfoInfo={repoInfo} selectedFile={props.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED? props.selectedFile:undefined} />}
             {state.selectedTab === EnumChangeGroup.STAGED &&
             <StagedChanges changes={store.status?.staged!} handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} 
-            selectedMode={state.selectedTab} repoInfoInfo={repoInfo} />}
+             repoInfoInfo={repoInfo} selectedFile={props.selectedFile?.changeGroup === EnumChangeGroup.STAGED ? props.selectedFile:undefined } />}
         </div>
     </div>
 }

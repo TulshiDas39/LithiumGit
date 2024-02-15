@@ -10,6 +10,8 @@ export class PbVerticalScrollHeight extends DerivedState<number>{
     }
     protected applyChange(): void {
         const elem = BranchGraphUtils.verticalScrollBarElement;
+        if(!elem)
+            return;
         elem.style.height = `${this._val}px`;        
     }
     protected getDerivedValue(): number {

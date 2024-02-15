@@ -38,6 +38,15 @@ export class RendererEvents{
         return result;
     };
 
+    static getStatusSync(){
+        const channel = "getStatusSync";
+        const result:IChannelModel={
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        }
+        return result;
+    };
+
     static stageItem(){
         const channel = "stageItem";
         const result:IChannelModel={

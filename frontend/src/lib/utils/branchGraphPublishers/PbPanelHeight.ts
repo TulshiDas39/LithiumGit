@@ -11,7 +11,7 @@ export class PbPanelHeight extends DerivedState<number>{
     }
 
     protected applyChange(): void {
-        BranchGraphUtils.svgElement.setAttribute("height",this.value+"");
+        BranchGraphUtils.svgElement?.setAttribute("height",this.value+"");
     }
 
 }

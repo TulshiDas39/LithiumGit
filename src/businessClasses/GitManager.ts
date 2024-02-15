@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -16,6 +16,7 @@ export class GitManager{
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
         this.addStatusHandler();
+        this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
         this.addDiscardUnStagedItemHandler();
@@ -54,9 +55,9 @@ export class GitManager{
     }
 
     addGitShowHandler(){
-        ipcMain.on(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
+        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
             const result = await this.getShowResult(repository,options);
-            e.reply(RendererEvents.gitShow().replyChannel,result);
+            return result;
         })
     }
 
@@ -87,9 +88,8 @@ export class GitManager{
     }
 
     addCreateBranchHandler(){
-        ipcMain.on(RendererEvents.createBranch().channel, async (e,sourceCommit:ICommitInfo,repository:IRepositoryDetails,newBranchName,checkout:boolean)=>{
-            const status = await this.createBranch(sourceCommit,repository,newBranchName,checkout);
-            e.reply(RendererEvents.createBranch().replyChannel,sourceCommit,newBranchName,status,checkout);
+        ipcMain.handle(RendererEvents.createBranch().channel, async (e,sourceCommit:ICommitInfo,repository:IRepositoryDetails,newBranchName,checkout:boolean)=>{
+            await this.createBranch(sourceCommit,repository,newBranchName,checkout);            
         })
     }
     addCheckOutCommitHandlder(){
@@ -101,9 +101,9 @@ export class GitManager{
     }
 
     addDiffHandler() {
-        ipcMain.on(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
+        ipcMain.handle(RendererEvents.diff().channel, async(e,options:string[],repoInfo:RepositoryInfo)=>{
             const res = await this.getDiff(options,repoInfo);
-            e.reply(RendererEvents.diff().replyChannel, res);
+            return res;
         })
     }
     async getDiff(options: string[], repoInfo: RepositoryInfo) {
@@ -170,6 +170,13 @@ export class GitManager{
         });
     }
 
+    private addStatusSyncHandler(){
+        ipcMain.handle(RendererEvents.getStatusSync().channel, async (e,repoInfo:RepositoryInfo)=>{
+            const status = await this.getStatus(repoInfo);
+            return status;
+        });
+    }
+
     private setActiveOrigin(repoDetails:IRepositoryDetails){
         const defaultOrigin = repoDetails.repoInfo.activeOrigin;
         let origin = repoDetails.remotes.find(x => x.name === defaultOrigin);
@@ -225,23 +232,27 @@ export class GitManager{
             conflicted:[]
         } as IStatus;
         ///staged changes
-        let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED}));
-        let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED}));
-        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED}));
+        let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
+        let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.STAGED}));
+        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));
         result.staged = [...modified,...created,...deleted];
 
         ///not staged changes
-        deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED}));
-        modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED}));
-        created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED}));
+        deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.UN_STAGED}));
+        modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.UN_STAGED}));
+        created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.UN_STAGED}));
         result.unstaged = [...modified,...created,...deleted]
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
-        result.conflicted = status.conflicted?.map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED}));
+        result.conflicted = status.conflicted?.map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
         result.isClean = status?.isClean();
         result.current = status.current;
         result.isDetached = status.detached;
+        if(status.tracking){
+            result.trackingBranch = status.tracking.substring(status.tracking.indexOf("/")+1);
+        }
+        
         result.headCommit = await this.getCommitInfo(git,undefined);
         result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
@@ -260,7 +271,7 @@ export class GitManager{
         const commitLimit=500;
         //const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
-            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict", this.LogFormat]);
+            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
             const commits = CommitParser.parse(res);
             return commits;
         }catch(e){
@@ -311,10 +322,7 @@ export class GitManager{
             if(checkout) await git.checkout(["-b", newBranchName,sourceCommit.hash]);
             else{
                 await git.branch([newBranchName,sourceCommit.hash]);
-            }
-            const status = await this.getStatus(repoDetails.repoInfo);
-            return status;
-            // AppData.mainWindow.webContents.send(RendererEvents.refreshBranchPanel().channel);
+            }            
         }catch(e){
             const errorStr = e+"";
             AppData.mainWindow.webContents.send(RendererEvents.showError().channel,errorStr);
@@ -334,8 +342,8 @@ export class GitManager{
     }
 
     private async addFetchHandler(){
-        ipcMain.on(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
-            await this.takeFetch(repoDetails,all,e);
+        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
+            await this.takeFetch(repoDetails,all);
         });
     }
 
@@ -372,7 +380,7 @@ export class GitManager{
         }
     }
 
-    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean,e:Electron.IpcMainEvent){
+    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean){
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
@@ -383,16 +391,7 @@ export class GitManager{
             else{
                 options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
             }
-
-            await git.fetch(options);
-            if(all) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else {
-                const status = await this.getStatus(repoDetails.repoInfo);
-                if(repoDetails.status.behind !== status.behind ||repoDetails.status.ahead !== status.ahead){
-                        AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel);    
-                }
-                else e.reply(RendererEvents.fetch().replyChannel);
-            }
+            await git.fetch(options);                        
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
@@ -407,7 +406,10 @@ export class GitManager{
         const git = this.getGitRunner(repoDetails.repoInfo);
         
         try {
-            const result = await git.push(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
+            const options:string[] = [repoDetails.remotes[0].name];
+            if(!repoDetails.status.trackingBranch)
+                options.push("-u",repoDetails.headCommit.ownerBranch.name);            
+            const result = await git.push(options);
             if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());

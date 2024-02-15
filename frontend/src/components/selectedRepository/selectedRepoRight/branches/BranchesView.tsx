@@ -8,8 +8,6 @@ import { CommitProperty } from "./CommitProperty";
 
 function BranchesViewComponent() {
     const store = useSelectorTyped(state => ({
-        selectedRepo: state.savedData.recentRepositories.find(x => x.isSelected),
-        branchPanelRefreshVersion: state.ui.versions.branchPanelRefresh,
         show: state.ui.selectedRepoTab === EnumSelectedRepoTab.BRANCHES,
     }), shallowEqual);
 
@@ -18,20 +16,19 @@ function BranchesViewComponent() {
             BranchGraphUtils.updateUi();
     },[store.show])
 
-    useEffect(() => {
-        BranchGraphUtils.createBranchPanel();
+    useEffect(()=>{        
         return ()=>{
-            //BranchGraphUtils.resetGraphStates();
+            window.removeEventListener("resize",BranchGraphUtils.resizeHandler);    
         }
-    }, []);
-
+    },[])
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
         <BranchActions />
         <div className="d-flex w-100 overflow-hidden" style={{height:`70%`}}>
-            <div id={EnumHtmlIds.branchPanelContainer} className="invisible" style={{width:`75%`}}>
+            <div id={EnumHtmlIds.branchPanelContainer} className="" style={{width:`75%`}}>
                 <div id={EnumHtmlIds.branchPanel} className="w-100 d-flex align-items-stretch" style={{ height:`calc(100% - ${BranchGraphUtils.scrollBarSize}px)`, overflow: 'hidden' }}>
                     <div id={EnumHtmlIds.branchSvgContainer} className="" style={{width: `calc(100% - ${BranchGraphUtils.scrollBarSize}px)`}}>
+                        <p className="text-center">Loading...</p>
                         {/* branch graph will be displayed here */}
                     </div>
                     <div className="d-flex bg-secondary position-relative" style={{width:`${BranchGraphUtils.scrollBarSize}px`}}>
