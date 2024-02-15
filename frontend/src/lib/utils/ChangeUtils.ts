@@ -19,6 +19,7 @@ export class ChangeUtils{
     }
 
     static showChanges(){
+        console.log("showing changes.");
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference2({

@@ -110,6 +110,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
         else{
             IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
                 const lines = new StringUtils().getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                if(!hasChanges) return;
+                refData.current.fileContentAfterChange = lines;
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
