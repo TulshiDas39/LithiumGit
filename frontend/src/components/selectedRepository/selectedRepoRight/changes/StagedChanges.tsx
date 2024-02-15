@@ -1,7 +1,7 @@
 import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { DiffUtils, EnumChangeGroup, EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
@@ -91,20 +91,31 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     useEffect(()=>{
         if(!props.selectedFile)
-            return ;        
-        IpcUtils.getGitShowResultOfStagedFile(props.selectedFile.path).then(content=>{
-            const lines = new StringUtils().getLines(content);
-            const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
-            if(!hasChanges) return;
-            refData.current.fileContentAfterChange = lines;
-            const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.selectedFile!.path];            
-            IpcUtils.getDiff(options).then(res=>{
-                let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                ChangeUtils.currentLines = lineConfigs.currentLines;
-                ChangeUtils.previousLines = lineConfigs.previousLines;
+            return ;
+        if(props.selectedFile.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getGitShowResultOfStagedFile(props.selectedFile.path).then(content=>{
+                const lines = new StringUtils().getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                if(!hasChanges) return;
+                refData.current.fileContentAfterChange = lines;
+                const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.selectedFile!.path];            
+                IpcUtils.getDiff(options).then(res=>{
+                    let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                    ChangeUtils.currentLines = lineConfigs.currentLines;
+                    ChangeUtils.previousLines = lineConfigs.previousLines;
+                    ChangeUtils.showChanges();
+                })                    
+            })
+        }
+        else{
+            IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
+                const lines = new StringUtils().getLines(content);
+                const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                ChangeUtils.currentLines = null!;
+                ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
-            })                    
-        })
+            })
+        }
     },[props.selectedFile])
     
     useEffect(()=>{
