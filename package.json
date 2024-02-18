@@ -1,6 +1,6 @@
 {
   "name": "gitstudio",
-  "version": "0.0.1-alpha.18",
+  "version": "0.0.1-alpha.19",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -46,7 +46,7 @@
     "simple-git": "^3.10.0"
   },
   "build": {
-    "productName": "Git_Studio",
+    "productName": "Git Studio",
     "appId": "org.gitstudio.electron",
     "asar": false,
     "asarUnpack": "**\\*.{node,dll}",
