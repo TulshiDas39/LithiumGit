@@ -68,7 +68,6 @@ export class Startup{
 
     private async loadRecentRepositories(){                        
         SavedData.data.recentRepositories = await DB.repository.getAll();
-        console.log(SavedData.data.recentRepositories.length);
     }
 
     private async loadConfigInfo(){      
