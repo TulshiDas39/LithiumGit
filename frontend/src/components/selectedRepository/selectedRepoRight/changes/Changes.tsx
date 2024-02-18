@@ -90,7 +90,8 @@ function ChangesComponent() {
         ChangeUtils.containerId = EnumHtmlIds.diffview_container;
         ReduxUtils.resetChangeNavigation = ()=>{
             dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
-            dispatch(ActionUI.setComparableStep(1));
+            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));
+            else dispatch(ActionUI.setComparableStep(0));
             ChangeUtils.FocusHightlightedLine(1);
         }
 
