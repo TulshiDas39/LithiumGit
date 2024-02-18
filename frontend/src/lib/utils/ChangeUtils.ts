@@ -6,11 +6,13 @@ import { DeltaStatic,Quill} from "quill";
 import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
 import { BranchGraphUtils } from "./BranchGraphUtils";
 import { BranchUtils } from "./BranchUtils";
+import { ReduxUtils } from "./ReduxUtils";
 
 export class ChangeUtils{
     static containerId = "";
     static currentLines:ILine[];
     static previousLines:ILine[];
+    private static heighlightedLineIndexes:number[]=[];
 
     static init(){
         var quill = new Quill('#editor', {
@@ -27,7 +29,34 @@ export class ChangeUtils{
         }));
         container.innerHTML = innerHtml;
         ChangeUtils.HandleScrolling();
+        ChangeUtils.SetHeighlightedLines();
     }
+
+    static FocusHightlightedLine(step:number){
+        const container = document.querySelector("#"+ChangeUtils.containerId);
+        const focusElem = container?.querySelector('.line_numbers')?.children[ChangeUtils.heighlightedLineIndexes[step-1]];
+        focusElem?.scrollIntoView({block:"center"});
+    }
+
+    private static SetHeighlightedLines(){
+        ChangeUtils.heighlightedLineIndexes = [];
+        let lastItemHightlighted = false;
+        for(let i = 0;i < ChangeUtils.currentLines.length; i++){
+            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.previousLines?.[i].hightLightBackground){
+                if(!lastItemHightlighted) {
+                    ChangeUtils.heighlightedLineIndexes.push(i);
+                    lastItemHightlighted = true;
+                }
+            }
+            else
+                lastItemHightlighted = false;
+        }
+        ReduxUtils.resetChangeNavigation();
+    }
+
+    static get totalChangeCount(){
+        return ChangeUtils.heighlightedLineIndexes.length;
+    } 
 
     private static HandleScrolling(){
         if(ChangeUtils.previousLines !== null && ChangeUtils.currentLines !== null){

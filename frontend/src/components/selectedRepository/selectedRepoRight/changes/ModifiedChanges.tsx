@@ -179,7 +179,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                                     <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
                                 </Fragment>}
                                 <span>
-                                    <span className="ps-1 text-success fw-bold">{getStatusText(f.changeType)}</span>
+                                    <span className="ps-1 text-success fw-bold" title={StringUtils.getStatusText(f.changeType)}>{getStatusText(f.changeType)}</span>
                                 </span>
                             </div>
                         </div>

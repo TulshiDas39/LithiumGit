@@ -3,13 +3,14 @@ import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, ReduxUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { Difference } from "./Difference";
 import { ChangesTabPane } from "./ChangesTabPane";
 import { Difference2 } from "./Difference2";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IChangesProps{
     //height:number;
@@ -87,6 +88,16 @@ function ChangesComponent() {
     
     useEffect(()=>{
         ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+        ReduxUtils.resetChangeNavigation = ()=>{
+            dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
+            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));
+            else dispatch(ActionUI.setComparableStep(0));
+            ChangeUtils.FocusHightlightedLine(1);
+        }
+
+        return ()=>{
+            dispatch(ActionUI.setComparableStep(0));
+        }
     },[])
 
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>

@@ -31,7 +31,7 @@ export class FileManager{
     getFileContent(path: string) {
         return new Promise<string[]>((resolve,reject)=>{
             fs.readFile(path,{encoding:"utf8"},(err,data)=>{
-                if(data){
+                if(!err){
                     const lines = data.split(/\r\n|\r|\n/g);
                     resolve(lines);
                 }
