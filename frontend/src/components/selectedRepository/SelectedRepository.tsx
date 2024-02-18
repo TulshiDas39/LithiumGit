@@ -121,7 +121,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             refData.current.previousRepo = props.repo;
             BranchGraphUtils.createBranchPanel();
             ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
-        });            
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+        });
     },[props.repo]);
 
     return <div id="SelectedRepository" className="d-flex h-100">
