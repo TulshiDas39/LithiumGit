@@ -49,7 +49,7 @@ const initialState:IUIState={
     },    
     selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
     changes:{
-        currentStep:1,
+        currentStep:0,
         totalStep:1,
     }
 }

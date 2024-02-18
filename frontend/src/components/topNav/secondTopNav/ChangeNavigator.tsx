@@ -1,12 +1,18 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
+import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
 
 function ChangeNavigatorComponent(){
     const store = useSelectorTyped(state=> state.ui.changes,shallowEqual);
     const dispatch = useDispatch();
+    useEffect(()=>{
+        if(!store?.currentStep)
+            return;
+        ChangeUtils.FocusHightlightedLine(store.currentStep);
+    },[store?.currentStep])
 
     if(!store) return null;
     const handleUp=()=>{

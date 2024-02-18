@@ -70,7 +70,7 @@ export function DiffView(props:IProps){
     }
     const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
     return <div className="d-flex w-100">
-        <div className="noselect" style={{width:lineDivWidth+"ch"}}>
+        <div className="noselect line_numbers" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
         <div className="ps-1 content" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
