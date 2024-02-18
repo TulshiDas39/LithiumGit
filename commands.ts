@@ -59,14 +59,11 @@ function removeDeletedFiles(){
 function runCommand(command:string,handler:(output:string)=>void){
     exec(command, (error, stdout, stderr) => {
         if (error) {
-            console.error(`error: ${error.message}`);
             return;
         }
         if (stderr) {
-            console.error(`stderr: ${stderr}`);
             return;
         }
-        console.log(`stdout: ${stdout}`);
         handler(stdout);
     });
     
@@ -75,9 +72,7 @@ function runCommand(command:string,handler:(output:string)=>void){
 
 function copyCommonFiles(files:string){
     let fileList = resolveFiles(files);
-    console.log("files",fileList.join(","));
     if(!fileList.length)return;
-    console.log('file exist');
 
     fileList.forEach(file=>{  
         let frontendPath = path.join(frontendProjectName,'node_modules',file);      
@@ -90,7 +85,6 @@ function copyCommonFiles(files:string){
         let dir = path.dirname(dest);
         if(!fs.existsSync(src)) return;
         if(!fs.existsSync(dir) ){
-            console.log('creating dir',dir);
             fs.mkdirSync(dir, { recursive: true });
         }
         fs.copyFile(src, dest, (err) => {
@@ -101,7 +95,6 @@ function copyCommonFiles(files:string){
 
 function handleDelete(files:string){
     let fileList = resolveFiles(files);
-    console.log("files to delete:",fileList.join(","));
     if(!fileList.length)return;          
     for (let file of fileList) {
         file = file.substring(file.indexOf('/')+1);

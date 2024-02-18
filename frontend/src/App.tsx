@@ -18,7 +18,6 @@ function App() {
   useEffect(()=>{
     if(!window.ipcRenderer) return;
     window.ipcRenderer.on(RendererEvents.logger,(e,data:any)=>{
-      console.log("logger", data);
     })
     window.ipcRenderer.on(MainEvents.AppFocused,(_)=>{      
       dispatch(ActionUI.increamentVersion("appFocused"));
