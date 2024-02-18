@@ -1,4 +1,4 @@
-import { ICommitInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
@@ -63,5 +63,9 @@ export class IpcUtils{
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];
         return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+    }
+
+    static async addRemote(remote:IRemoteInfo){
+        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,BranchUtils.repositoryDetails.repoInfo,remote);
     }
 }
