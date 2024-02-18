@@ -104,13 +104,22 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;
-                const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
-                IpcUtils.getDiff(options).then(res=>{
-                    let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                    ChangeUtils.currentLines = lineConfigs.currentLines;
-                    ChangeUtils.previousLines = lineConfigs.previousLines;
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
+                    IpcUtils.getDiff(options).then(res=>{
+                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+                    })
+                }
+                else{
+                    const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                    ChangeUtils.currentLines = lineConfigs;
+                    ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-                })                    
+                }
+                                    
             })
         }
         else{
