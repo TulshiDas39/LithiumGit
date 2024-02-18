@@ -18,6 +18,7 @@ export interface ICommitInfo{
     author_email:string;
     x:number;
     isHead:boolean;
+    inMergingState?:boolean;
     // SingleCommit UiObj;
 }
 
