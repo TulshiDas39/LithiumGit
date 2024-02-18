@@ -7,9 +7,11 @@ import { Difference2 } from "../../components/selectedRepository/selectedRepoRig
 import { BranchGraphUtils } from "./BranchGraphUtils";
 import { BranchUtils } from "./BranchUtils";
 import { ReduxUtils } from "./ReduxUtils";
+import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
 export class ChangeUtils{
     static containerId = "";
+    static file?:IFile;
     static currentLines:ILine[];
     static previousLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
@@ -30,6 +32,7 @@ export class ChangeUtils{
         container.innerHTML = innerHtml;
         ChangeUtils.HandleScrolling();
         ChangeUtils.SetHeighlightedLines();
+        ReduxUtils.resetChangeNavigation();
     }
 
     static FocusHightlightedLine(step:number){
@@ -51,7 +54,6 @@ export class ChangeUtils{
             else
                 lastItemHightlighted = false;
         }
-        ReduxUtils.resetChangeNavigation();
     }
 
     static get totalChangeCount(){
@@ -79,6 +81,27 @@ export class ChangeUtils{
                 previousChangeScroll.addEventListener("scroll",handler1)
                 currentChangeScroll.addEventListener("scroll",handler2);
             }
+        }
+    }
+
+    static ClearView(){
+        const container = document.getElementById(`${ChangeUtils.containerId}`)!;
+        if(container)
+            container.innerHTML = "";
+        ChangeUtils.file = undefined;
+        ReduxUtils.resetChangeNavigation();
+    }
+
+    static handleStatusChange(status:IStatus){
+        const file = ChangeUtils.file!;
+        if(!file || !ChangeUtils.containerId)
+            return;
+
+        if(file.changeGroup === EnumChangeGroup.UN_STAGED && !status.unstaged.some(_=>_.path === file.path)){
+            ChangeUtils.ClearView();
+        }
+        else if(file.changeGroup === EnumChangeGroup.STAGED && !status.staged.some(_=>_.path === file.path)){
+            ChangeUtils.ClearView();
         }
     }
 }

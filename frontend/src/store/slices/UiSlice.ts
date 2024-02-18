@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IStatus } from "common_library";
+import { IFile, IStatus } from "common_library";
 import { BranchGraphUtils, EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -36,6 +36,7 @@ interface IUIState{
     loader?:ILoaderInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
+    selectedFile?:IFile;
 }
 
 const initialState:IUIState={
@@ -99,6 +100,9 @@ const UISlice = createSlice({
         },
         setStatus(state,action:PayloadAction<IStatus>){
             state.status = action.payload;
+        },
+        setSelectedFile(state,action:PayloadAction<IFile|undefined>){
+            state.selectedFile = action.payload;
         }
     }
 });

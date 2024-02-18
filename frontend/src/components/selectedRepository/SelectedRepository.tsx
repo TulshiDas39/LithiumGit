@@ -9,6 +9,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { ChangeUtils } from "../../lib/utils/ChangeUtils";
 
 
 interface ISelectedRepositoryProps{
@@ -83,6 +84,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         const requiredReload = BranchGraphUtils.isRequiredReload();
         if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         else BranchGraphUtils.checkForUiUpdate(store.status);
+        ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 
     useEffect(()=>{
