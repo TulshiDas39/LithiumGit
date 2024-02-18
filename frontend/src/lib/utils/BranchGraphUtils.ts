@@ -481,10 +481,13 @@ export class BranchGraphUtils{
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = BranchUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
+        if(newStatus.mergingCommitHash !== BranchGraphUtils.state.mergingCommit.value?.hash){
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
-            // if(existingStatus.mergingCommitHash) this.createMerginStategUi();
-            // else this.removeMergingStateUi();
+            if(newStatus.mergingCommitHash)
+                BranchGraphUtils.state.mergingCommit.publish({hash:newStatus.mergingCommitHash} as ICommitInfo);
+            else{
+                BranchGraphUtils.state.mergingCommit.publish(null!);
+            }
         }
 
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
