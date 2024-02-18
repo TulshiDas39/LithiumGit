@@ -5,10 +5,13 @@ import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState 
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { shallowEqual, useDispatch } from "react-redux";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface ISingleFileProps{
     item:IFile
-    handleSelect:(path:string)=>void;
+    handleSelect:(file:IFile)=>void;
     isSelected:boolean;
     handleUnstage:()=>void;
 }
@@ -25,7 +28,7 @@ function SingleFile(props:ISingleFileProps){
     return (
         <div key={props.item.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`} 
         title={props.item.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
-            onClick={_=> props.handleSelect(props.item.path)}>
+            onClick={_=> props.handleSelect(props.item)}>
         <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
             <span className={`pe-1 flex-shrink-0 ${props.item.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{props.item.fileName}</span>
             <span className="small text-secondary">{props.item.path}</span>
@@ -46,8 +49,6 @@ function SingleFile(props:ISingleFileProps){
 interface IStagedChangesProps{
     changes:IFile[];
     repoInfoInfo?:RepositoryInfo;    
-    handleSelect:(file:IFile)=>void;
-    selectedFile?:IFile;
 }
 
 interface IState{
@@ -58,6 +59,11 @@ interface IState{
 
 function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
+    const store = useSelectorTyped(state => ({
+        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.ui.selectedFile:undefined,
+    }),shallowEqual);
+
+    const dispatch = useDispatch();
 
     const headerRef = useRef<HTMLDivElement>();
     const refData = useRef({fileContentAfterChange:[] as string[]});
@@ -90,25 +96,34 @@ function StagedChangesComponent(props:IStagedChangesProps){
     },[])
 
     useEffect(()=>{
-        if(!props.selectedFile)
+        if(!store.selectedFile)
             return ;
-        if(props.selectedFile.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getGitShowResultOfStagedFile(props.selectedFile.path).then(content=>{
+        if(store.selectedFile.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(content=>{
                 const lines = new StringUtils().getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;
-                const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.selectedFile!.path];            
-                IpcUtils.getDiff(options).then(res=>{
-                    let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                    ChangeUtils.currentLines = lineConfigs.currentLines;
-                    ChangeUtils.previousLines = lineConfigs.previousLines;
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
+                    IpcUtils.getDiff(options).then(res=>{
+                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+                    })
+                }
+                else{
+                    const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                    ChangeUtils.currentLines = lineConfigs;
+                    ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-                })                    
+                }
+                                    
             })
         }
         else{
-            IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
+            IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
                 const lines = new StringUtils().getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
@@ -119,7 +134,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 ChangeUtils.showChanges();
             })
         }
-    },[props.selectedFile])
+        ChangeUtils.file = store.selectedFile;
+    },[store.selectedFile])
     
     useEffect(()=>{
         if(!state.containerHeight)
@@ -128,6 +144,10 @@ function StagedChangesComponent(props:IStagedChangesProps){
             setState({firstPaneHeight:height});
         })
     },[state.containerHeight]);
+
+    const handleSelect = (file?:IFile)=>{
+        dispatch(ActionUI.setSelectedFile(file));
+    }
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>
     <div ref={headerRef as any} className="d-flex hover overflow-auto"
@@ -141,9 +161,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
     { state.firstPaneHeight &&
     <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}}>
         {props.changes.map(f=>(
-            <SingleFile key={f.path} item={f} handleSelect={_ => props.handleSelect(f)}
+            <SingleFile key={f.path} item={f} handleSelect={handleSelect}
                 handleUnstage={() => handleUnstageItem(f)}
-                isSelected ={f.path === props.selectedFile?.path} />
+                isSelected ={f.path === store.selectedFile?.path} />
         ))}        
     </div>
     }

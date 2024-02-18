@@ -7,9 +7,6 @@ import { IFile } from "common_library";
 import { StagedChanges } from "./StagedChanges";
 
 interface IProps{
-    handleSelectFile:(file:IFile,group:EnumChangeGroup)=>void;
-    selectedFile?:IFile;
-    group:EnumChangeGroup;
 }
 
 interface IState{
@@ -27,10 +24,6 @@ function ChangesTabPaneComponent(props:IProps){
         selectedTab:EnumChangeGroup.UN_STAGED
     } as IState)
     
-    const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
-        props.handleSelectFile(changedFile,changeGroup);
-    },[])
-
     useEffect(()=>{
         if(!store.status?.staged.length && state.selectedTab === EnumChangeGroup.STAGED){
             setState({selectedTab:EnumChangeGroup.UN_STAGED});
@@ -62,11 +55,11 @@ function ChangesTabPaneComponent(props:IProps){
             </div>}
         </div>
         <div className="flex-grow-1">            
-            {state.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} onFileSelect={file=> handleSelect(file, EnumChangeGroup.UN_STAGED)} 
-             repoInfoInfo={repoInfo} selectedFile={props.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED? props.selectedFile:undefined} />}
+            {state.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} 
+             repoInfoInfo={repoInfo} />}
             {state.selectedTab === EnumChangeGroup.STAGED &&
-            <StagedChanges changes={store.status?.staged!} handleSelect={file=> handleSelect(file, EnumChangeGroup.STAGED)} 
-             repoInfoInfo={repoInfo} selectedFile={props.selectedFile?.changeGroup === EnumChangeGroup.STAGED ? props.selectedFile:undefined } />}
+            <StagedChanges changes={store.status?.staged!} 
+             repoInfoInfo={repoInfo} />}
         </div>
     </div>
 }

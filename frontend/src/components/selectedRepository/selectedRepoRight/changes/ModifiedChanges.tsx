@@ -4,16 +4,16 @@ import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
 import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
-import { useDispatch } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { StringUtils } from "../../../../lib/utils/StringUtils";
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IModifiedChangesProps{
     changes:IFile[];
-    repoInfoInfo?:RepositoryInfo;    
-    onFileSelect:(file:IFile)=>void;
-    selectedFile?:IFile;   
+    repoInfoInfo?:RepositoryInfo;
 }
 
 interface IState{
@@ -24,6 +24,10 @@ interface IState{
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({});
+    const store = useSelectorTyped(state => ({
+        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.ui.selectedFile:undefined,
+    }),shallowEqual);
+
     const dispatch = useDispatch();
     const ref = useRef<HTMLDivElement>();
     const refData = useRef({selectedFileContent:[] as string[]});
@@ -111,16 +115,16 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[state.containerHeight,props.changes?.length === 0]);
 
     useEffect(()=>{
-        if(!props.selectedFile)
+        if(!store.selectedFile)
             return ;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,props.selectedFile.path);
-        if(props.selectedFile?.changeType !== EnumChangeType.DELETED){
+        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContent(joinedPath).then(lines=>{
                 const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
                 if(!hasChanges) return;
                 refData.current.selectedFileContent = lines;
-                if(props.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                    DiffUtils.getDiff(props.selectedFile.path).then(str=>{
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    DiffUtils.getDiff(store.selectedFile.path).then(str=>{
                         let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
@@ -128,7 +132,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
                     });
                 }
-                if(props.selectedFile?.changeType === EnumChangeType.CREATED){            
+                if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
@@ -137,7 +141,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             })
         }
         else{            
-            IpcUtils.getGitShowResult(props.selectedFile.path).then(content=>{                
+            IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
                 const lines = new StringUtils().getLines(content);
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 ChangeUtils.currentLines = null!;
@@ -145,8 +149,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 ChangeUtils.showChanges();
             })
         }
+
+        ChangeUtils.file = store.selectedFile;
                 
-    },[props.selectedFile])
+    },[store.selectedFile])
+
+    const handleFileSelect = (file:IFile)=>{
+        dispatch(ActionUI.setSelectedFile(file));
+    }
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
             {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex align-items-center pt-2 ps-2">
@@ -162,9 +172,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
                     {props.changes?.map(f=>(
                         <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                            className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.selectedFile?.path === f.path ?"selected":""}`}
+                            className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
                             >
-                            <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> props.onFileSelect(f)}
+                            <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
                             style={{textOverflow:'ellipsis'}}>
                                 <span className={`pe-1 flex-shrink-0 ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
                                 <span className="small text-secondary">

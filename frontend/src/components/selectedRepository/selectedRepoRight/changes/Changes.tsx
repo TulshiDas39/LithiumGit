@@ -17,10 +17,8 @@ interface IChangesProps{
 }
 
 interface IState {
-    adjustedX: number;
-    selectedFile?:IFile;
+    adjustedX: number;    
     differenceRefreshKey:number;
-    selectedFileGroup:EnumChangeGroup;    
     // expandedTabCount:number;
     // document:Descendant[],
 }
@@ -29,7 +27,6 @@ function ChangesComponent() {
     const [state, setState] = useMultiState<IState>({
         adjustedX: 0,
         differenceRefreshKey: Date.now(),
-        selectedFileGroup:EnumChangeGroup.UN_STAGED,
     });
 
     const store = useSelectorTyped(state=>({        
@@ -37,6 +34,7 @@ function ChangesComponent() {
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
+        selectedFile:state.ui.selectedFile,
     }),shallowEqual);
 
     const dispatch = useDispatch()
@@ -47,7 +45,7 @@ function ChangesComponent() {
     },[store.recentRepositories])
 
     useEffect(()=>{
-         setState({selectedFile:null!});
+         dispatch(ActionUI.setSelectedFile(undefined));
     },[repoInfo?.path]);
 
     useEffect(()=>{
@@ -55,12 +53,11 @@ function ChangesComponent() {
     },[store.focusVersion])
 
     useEffect(()=>{
-        if(!state.selectedFile) return;
-        if(state.selectedFileGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === state.selectedFile?.path)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === state.selectedFile?.path)) return;
-        if(state.selectedFileGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === state.selectedFile?.path)) return;
-
-        setState({selectedFile:null!});
+        if(!store.selectedFile) return;
+        if(store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === store.selectedFile?.path)) return;
+        if(store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === store.selectedFile?.path)) return;
+        if(store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === store.selectedFile?.path)) return;
+        dispatch(ActionUI.setSelectedFile(undefined));
     },[store.status])
 
     const getAdjustedSize = (adjustedX: number) => {
@@ -69,7 +66,7 @@ function ChangesComponent() {
     }
 
     const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
-        setState({selectedFile:changedFile,selectedFileGroup:changeGroup});
+        dispatch(ActionUI.setSelectedFile(changedFile));
     },[])
     const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         e.preventDefault();
@@ -104,7 +101,7 @@ function ChangesComponent() {
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             <CommitBox />
-            <ChangesTabPane handleSelectFile={handleSelect} selectedFile={state.selectedFile} group={state.selectedFileGroup}  />
+            <ChangesTabPane  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 

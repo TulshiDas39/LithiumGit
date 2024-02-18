@@ -8,13 +8,14 @@ import { RepoSelectionDropdown } from "./RepoSelectionDropdown";
 
 function ActionBarComponent(){
     const store = useSelectorTyped(state=>({
-        tab:state.ui.selectedRepoTab
+        tab:state.ui.selectedRepoTab,
+        selectedFile:state.ui.selectedFile,
     }),shallowEqual);
 
     return <div className="d-flex">
             <RepoSelectionDropdown />
             <PullPushMenu />
-            {store.tab === EnumSelectedRepoTab.CHANGES && <ChangeNavigator /> }
+            {!!store.selectedFile && <ChangeNavigator /> }
     </div>;
 }
 
