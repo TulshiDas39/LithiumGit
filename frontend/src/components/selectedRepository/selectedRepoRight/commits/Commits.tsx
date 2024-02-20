@@ -1,6 +1,7 @@
 import React, { useMemo } from "react"
 import { BranchUtils, ICommitFlatInfo, ObjectUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
+import { Paginator } from "../../../common";
 
 
 interface ISingleCommitProps{
@@ -8,7 +9,7 @@ interface ISingleCommitProps{
 }
 
 function SingleCommit(props:ISingleCommitProps){
-    return <div className="py-1 w-75 overflow-auto">
+    return <div className="py-1 w-100 overflow-auto">
      <div className="border border-primary ps-2">
         <div>
             <span>Sha: </span>
@@ -52,12 +53,29 @@ function CommitsComponent(){
         return flatList;
     },[state.pageIndex,state.pageSize])
 
-    return <div className="h-100 w-100 overflow-auto">
-        {
-            commitList.map(commit=>(
-                <SingleCommit key={commit.avrebHash} commit={commit} />
-            ))
-        }
+    const paginateToLast=()=>{
+        const index = Math.floor(state.total/state.pageSize);
+        setState({pageIndex:index});        
+    }
+
+    return <div className="h-100 w-100">
+        <div className="w-100" style={{height:'10%'}}>
+
+        </div>
+        <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
+            <div className="w-100 px-2">
+                {
+                    commitList.map(commit=>(
+                        <SingleCommit key={commit.avrebHash} commit={commit} />
+                    ))
+                }
+            </div>            
+        </div>
+        <div className="pt-2 d-flex justify-content-center align-items-start" style={{height:'10%'}}>
+            <Paginator total={state.total} pageIndex={state.pageIndex} pageSize={state.pageSize}
+                onPageChange={(pageIndex) => setState({pageIndex})} />
+        </div>
+        
     </div>
 }
 
