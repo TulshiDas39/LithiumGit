@@ -68,4 +68,9 @@ export class IpcUtils{
     static async addRemote(remote:IRemoteInfo){
         await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,BranchUtils.repositoryDetails.repoInfo,remote);
     }
+
+    static async getRemoteList(){
+        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,BranchUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
+    }
+    
 }

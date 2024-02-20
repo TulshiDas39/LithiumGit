@@ -26,9 +26,9 @@ function AddRemoteComponent(){
         if(store.remotes.some(_=>_.name === state.name))
             return;
         const newRemote:IRemoteInfo = {name:state.name,url:state.url,actionTyps:["fetch","push"]};
-        dispatch(ActionUI.setRemotes([...store.remotes,newRemote]));
-        IpcUtils.addRemote(newRemote).catch(_=>{
-            dispatch(ActionUI.setRemotes(store.remotes.filter(_=>_.name === newRemote.name)));
+        IpcUtils.addRemote(newRemote).then(_=>{
+            dispatch(ActionUI.increamentVersion("remoteList"));
+            setState({adding:false});
         });
     }
     return <div className="w-100">

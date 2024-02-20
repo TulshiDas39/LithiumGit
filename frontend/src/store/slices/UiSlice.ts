@@ -17,6 +17,7 @@ interface EventVersions{
     appFocused:number;
     branchPanelHome:number;
     repoDetails:number;
+    remoteList:number;
 }
 
 interface IChangesState{
@@ -48,6 +49,7 @@ const initialState:IUIState={
         appFocused:0,
         branchPanelHome:0,
         repoDetails:0,
+        remoteList:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
     changes:{
