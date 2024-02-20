@@ -253,5 +253,7 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static readonly gitRemoveRemote = "gitRemoveRemote";
 }
 

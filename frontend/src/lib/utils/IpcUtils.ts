@@ -69,6 +69,10 @@ export class IpcUtils{
         await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,BranchUtils.repositoryDetails.repoInfo,remote);
     }
 
+    static async removeRemote(remoteName:string){
+        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,BranchUtils.repositoryDetails.repoInfo,remoteName);
+    }
+
     static async getRemoteList(){
         return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,BranchUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
     }
