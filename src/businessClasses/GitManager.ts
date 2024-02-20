@@ -232,7 +232,8 @@ export class GitManager{
         const result = {
             staged:[],
             unstaged:[],
-            conflicted:[]
+            conflicted:[],
+            totalChangedItem:0,
         } as IStatus;
         ///staged changes
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
@@ -255,6 +256,8 @@ export class GitManager{
         if(status.tracking){
             result.trackingBranch = status.tracking.substring(status.tracking.indexOf("/")+1);
         }
+
+        result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
         result.headCommit = await this.getCommitInfo(git,undefined);
         result.mergingCommitHash = await this.getMergingInfo(git);

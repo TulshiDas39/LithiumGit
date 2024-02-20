@@ -17,6 +17,7 @@ export interface IStatus{
     headCommit:ICommitInfo;
     mergingCommitHash?:string;
     trackingBranch?:string;
+    totalChangedItem:number;
 }
 
 export interface IChanges{

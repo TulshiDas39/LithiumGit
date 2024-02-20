@@ -7,31 +7,36 @@ import { ActionUI } from "../../store/slices/UiSlice";
 
 export interface ISelectedRepoTabItem{
     type:EnumSelectedRepoTab;
-    text:"Changes"|"Branches"|"Commits"|"Remotes";
+    text:string;
+    marked?:boolean;
 }
 
 function SelectedRepoLeftComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
-        tab:state.ui.selectedRepoTab,        
+        tab:state.ui.selectedRepoTab,
+        hasChanges:!!state.ui.status?.totalChangedItem,
     }),shallowEqual);
 
     const tabs = useMemo(()=>{
         const items:ISelectedRepoTabItem[]=[
-            {text:"Changes",type:EnumSelectedRepoTab.CHANGES},
+            {text:"Changes",type:EnumSelectedRepoTab.CHANGES,marked:store.hasChanges},
             {text:"Branches",type:EnumSelectedRepoTab.BRANCHES},
             {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
             {text:"Remotes",type: EnumSelectedRepoTab.REMOTES}
         ];
         return items;
-    },[]);
+    },[store.hasChanges]);
 
     return <div id="SelectedRepoLeft" className="d-flex w-100 flex-column bg-second-color h-100">  
             {
                 tabs.map(t=>(
                     <span key={t.type} 
                         className={`tabItem w-100 py-2 border-bottom hover ${store.tab === t.type?"bg-select-color":""}`}
-                        onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>{t.text}</span>
+                        onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>
+                            <span>{t.text}</span>
+                            {!!t.marked && <span className="text-primary">*</span>}
+                    </span>
                 ))
             }            
     </div>
