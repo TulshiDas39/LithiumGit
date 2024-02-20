@@ -384,7 +384,7 @@ export class BranchGraphUtils{
         return {startX,startY,endX,hLineLength,vLinePath}
     }
 
-    static createMergeCommit(head: ICommitInfo, x:number,srcCommit:ICommitInfo){
+    static createMergeCommit(head: ICommitInfo, x:number,mergeCommit:ICommitInfo){
         // <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={BranchUtils.commitRadius} stroke="black" 
         //                 strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?BranchGraphUtils.selectedCommitColor:BranchGraphUtils.commitColor}`}/>    
         const circleElem = document.createElementNS(this.svgLnk, "circle");
@@ -412,18 +412,13 @@ export class BranchGraphUtils{
         const clickListener = (_e:MouseEvent)=>{
             let existingSelectedCommitElem:HTMLElement|null;
             if(BranchGraphUtils.state.selectedCommit.value.hash) {
-                existingSelectedCommitElem = this.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${BranchGraphUtils.state.selectedCommit.value.hash}`);
-                existingSelectedCommitElem?.setAttribute("fill",this.commitColor);
+                existingSelectedCommitElem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${BranchGraphUtils.state.selectedCommit.value.hash}`);
+                existingSelectedCommitElem?.setAttribute("fill",BranchGraphUtils.commitColor);
             }
 
-            circleElem.setAttribute("fill",this.selectedCommitColor);
-            const dummyCommit = CreateCommitInfoObj();
-            dummyCommit.hash = null!;
-            dummyCommit.date = new Date().toISOString();
-            dummyCommit.ownerBranch = head.ownerBranch;
-            dummyCommit.previousCommit = head;
-            dummyCommit.message = 'Commit is in merging state.';
-            BranchGraphUtils.state.selectedCommit.publish(dummyCommit);
+            circleElem.setAttribute("fill",BranchGraphUtils.selectedCommitColor);
+
+            BranchGraphUtils.state.selectedCommit.publish(mergeCommit);
         }
 
         circleElem.addEventListener("click",clickListener);
@@ -481,10 +476,25 @@ export class BranchGraphUtils{
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = BranchUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== existingStatus.mergingCommitHash){
+        if(newStatus.mergingCommitHash !== BranchGraphUtils.state.mergingCommit.value?.hash){            
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
-            // if(existingStatus.mergingCommitHash) this.createMerginStategUi();
-            // else this.removeMergingStateUi();
+            if(newStatus.mergingCommitHash){
+                const head = BranchUtils.repositoryDetails.headCommit;
+                const dummyCommit = CreateCommitInfoObj();
+                dummyCommit.hash = null!;                
+                dummyCommit.date = new Date().toISOString();
+                dummyCommit.ownerBranch = head.ownerBranch;
+                dummyCommit.previousCommit = head;
+                dummyCommit.message = 'Commit is in merging state.';
+                const allCommits = BranchUtils.repositoryDetails.allCommits;
+                const latestCommit = allCommits[allCommits.length-1];
+                dummyCommit.x = latestCommit.x + BranchUtils.distanceBetweenCommits; 
+                dummyCommit.inMergingState = true;               
+                BranchGraphUtils.state.mergingCommit.publish(dummyCommit);
+            }
+            else{
+                BranchGraphUtils.state.mergingCommit.publish(null!);
+            }
         }
 
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);

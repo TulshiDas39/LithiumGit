@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IFile, IStatus } from "common_library";
+import { IFile, IRemoteInfo, IStatus } from "common_library";
 import { BranchGraphUtils, EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -17,6 +17,7 @@ interface EventVersions{
     appFocused:number;
     branchPanelHome:number;
     repoDetails:number;
+    remoteList:number;
 }
 
 interface IChangesState{
@@ -37,6 +38,7 @@ interface IUIState{
     mergerCommitMessage?:string;
     status?:IStatus;
     selectedFile?:IFile;
+    remotes:IRemoteInfo[];
 }
 
 const initialState:IUIState={
@@ -47,12 +49,14 @@ const initialState:IUIState={
         appFocused:0,
         branchPanelHome:0,
         repoDetails:0,
+        remoteList:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
     changes:{
         currentStep:0,
         totalStep:1,
-    }
+    },
+    remotes:[],
 }
 
 const UISlice = createSlice({
@@ -103,6 +107,9 @@ const UISlice = createSlice({
         },
         setSelectedFile(state,action:PayloadAction<IFile|undefined>){
             state.selectedFile = action.payload;
+        },
+        setRemotes(state,action:PayloadAction<IRemoteInfo[]>){
+            state.remotes = action.payload;
         }
     }
 });

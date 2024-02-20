@@ -24,6 +24,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         branchPanelRefreshVersion:state.ui.versions.branchPanelRefresh,
         status:state.ui.status,
         focusVersion:state.ui.versions.appFocused,
+        remoteListRefreshVersion:state.ui.versions.remoteList,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
     const leftWidthRef = useRef(200);
@@ -98,6 +99,14 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             dispatch(ActionUI.setLoader(undefined));
         });
     },[store.branchPanelRefreshVersion]);
+
+    useEffect(()=>{
+        if(!store.remoteListRefreshVersion) return;
+        IpcUtils.getRemoteList().then(list=>{
+            BranchUtils.repositoryDetails.remotes = list;
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(list)));
+        })
+    },[store.remoteListRefreshVersion]);
     
     useEffect(()=>{
         if(!BranchUtils.repositoryDetails)
@@ -121,7 +130,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             refData.current.previousRepo = props.repo;
             BranchGraphUtils.createBranchPanel();
             ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
-        });            
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+        });
     },[props.repo]);
 
     return <div id="SelectedRepository" className="d-flex h-100">

@@ -30,6 +30,9 @@ export class GitManager{
         this.addGitShowHandler();
         this.addMergeHandler();
         this.addCleanhHandler();
+        this.addRemoteAddHandler();
+        this.addRemoteRemoveHandler();
+        this.addRemoteListHandler();
     }
 
 
@@ -229,7 +232,8 @@ export class GitManager{
         const result = {
             staged:[],
             unstaged:[],
-            conflicted:[]
+            conflicted:[],
+            totalChangedItem:0,
         } as IStatus;
         ///staged changes
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
@@ -252,6 +256,8 @@ export class GitManager{
         if(status.tracking){
             result.trackingBranch = status.tracking.substring(status.tracking.indexOf("/")+1);
         }
+
+        result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
         result.headCommit = await this.getCommitInfo(git,undefined);
         result.mergingCommitHash = await this.getMergingInfo(git);
@@ -335,27 +341,73 @@ export class GitManager{
         });
     }
 
-    private async addPushHandler(){
+    private addPushHandler(){
         ipcMain.handle(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
             await this.givePush(repoDetails);
         });
     }
 
-    private async addFetchHandler(){
+    private  addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
             await this.takeFetch(repoDetails,all);
         });
     }
 
-    private async addCleanhHandler(){
+    private addCleanhHandler(){
         ipcMain.handle(RendererEvents.gitClean().channel,async (e,repoInfo:RepositoryInfo,files:string[])=>{
             await this.cleanFiles(repoInfo,files);
         });
     }
 
+    private addRemoteAddHandler(){
+        ipcMain.handle(RendererEvents.gitAddRemote().channel,async (e,repoInfo:RepositoryInfo,remote:IRemoteInfo)=>{
+            await this.addRemote(repoInfo, remote);
+        })
+    }
+
+    private addRemoteRemoveHandler(){
+        ipcMain.handle(RendererEvents.gitRemoveRemote,async (e,repoInfo:RepositoryInfo,remoteName:string)=>{
+            await this.removeRemote(repoInfo, remoteName);
+        })
+    }
+
+    private addRemoteListHandler(){
+        ipcMain.handle(RendererEvents.gitGetRemoteList().channel,async (e,repoInfo:RepositoryInfo)=>{
+            return await this.getRemotes(repoInfo);
+        })
+    }
+
     private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
         const git = this.getGitRunner(repoInfo);
         await git.clean(CleanOptions.FORCE,files);
+    }
+
+    private async addRemote(repoInfo:RepositoryInfo, remote:IRemoteInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.addRemote(remote.name,remote.url);
+    }
+
+    private async removeRemote(repoInfo:RepositoryInfo, remoteName:string){
+        const git = this.getGitRunner(repoInfo);
+        await git.removeRemote(remoteName);
+    }
+
+    private async getRemotes(repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        const remotes:IRemoteInfo[] = [];
+        const result = await git.getRemotes(true);        
+        result.forEach(r=>{
+            const remote:IRemoteInfo = {
+                name:r.name,
+                url:r.refs.fetch || r.refs.push,
+                actionTyps:[]
+            };
+            if(!!r.refs.fetch) remote.actionTyps.push("fetch");
+            if(!!r.refs.push) remote.actionTyps.push("push");
+            remotes.push(remote);
+        });
+
+        return remotes;
     }
     
     private hasChangesInPull(result:PullResult){

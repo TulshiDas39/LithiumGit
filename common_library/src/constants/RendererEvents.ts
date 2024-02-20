@@ -237,5 +237,23 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static gitAddRemote(){
+        const channel = "gitAddRemote";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static gitGetRemoteList(){
+        const channel = "getRemoteList";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static readonly gitRemoveRemote = "gitRemoveRemote";
 }
 

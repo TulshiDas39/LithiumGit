@@ -27,9 +27,8 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         if(!BranchGraphUtils.state.mergingCommit.value)return;
         const head = BranchUtils.repositoryDetails.headCommit;
         const allCommits = BranchUtils.repositoryDetails.allCommits;
-        const latestCommit = allCommits[allCommits.length-1];
-        const endX = latestCommit.x + BranchUtils.distanceBetweenCommits;
-        const y = head.ownerBranch.y;
+        const endX = this.value!.x;
+        const y = this.value!.ownerBranch.y;
 
         const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
         //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
@@ -45,7 +44,7 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         const pointFromCircle = BranchGraphUtils.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
         const line = BranchGraphUtils.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
         gElem.appendChild(line);
-        const commitBox = BranchGraphUtils.createMergeCommit(head, endX,srcCommit);
+        const commitBox = BranchGraphUtils.createMergeCommit(head, endX,this.value!);
         gElem.appendChild(commitBox);
 
     }

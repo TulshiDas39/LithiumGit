@@ -36,6 +36,9 @@ export class DataManager{
                 if(index > -1){
                     SavedData.data.recentRepositories[index] = repo;
                 }
+                else{
+                    SavedData.data.recentRepositories.push(repo);
+                }
             }
         });
     }
