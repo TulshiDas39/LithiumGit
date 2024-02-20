@@ -5,6 +5,7 @@ import { useSelectorTyped } from "../../../store/rootReducer"
 import { shallowEqual } from "react-redux"
 import { EnumSelectedRepoTab } from "../../../lib"
 import { RemoteList } from "./remotes"
+import { Commits } from "./commits"
 
 function SelectedRepoRightComponent(){
     const store = useSelectorTyped(state=>({
@@ -16,6 +17,8 @@ function SelectedRepoRightComponent(){
         <BranchesView />
         {store.tab === EnumSelectedRepoTab.REMOTES && 
             <RemoteList />}
+        {store.tab === EnumSelectedRepoTab.COMMITS &&
+            <Commits />}
     </div>    
 }
 
