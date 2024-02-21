@@ -504,5 +504,6 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.panelHeight.publish(0);
         BranchGraphUtils.state.svgContainerWidth.publish(0);
         BranchGraphUtils.state.headCommit.publish(null!);
+        BranchGraphUtils.state.mergingCommit.publish(null!);
     }
 }
