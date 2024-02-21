@@ -48,6 +48,7 @@ interface IState{
     commits:ICommitInfo[];
     loading:boolean;
     searchText:string;
+    selectedBranch?:string;
 }
 
 function CommitsComponent(){
@@ -67,12 +68,16 @@ function CommitsComponent(){
         if(state.searchText){
             filterOptions.message = state.searchText;
         }
+        if(state.selectedBranch){
+            filterOptions.branchName = state.selectedBranch;
+        }
         
         IpcUtils.getCommitList(filterOptions).then(result=>{
+            console.log(result.count);
             setState({commits:result.list.reverse(),total:result.count,loading:false});
         });
         
-    },[state.pageIndex,state.pageSize,state.searchText]);
+    },[state.pageIndex,state.pageSize,state.searchText,state.selectedBranch]);
 
     const handleSearch = (text:string)=>{
         setState({searchText:text});
@@ -80,7 +85,7 @@ function CommitsComponent(){
 
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
-            <CommitFilter onSearch={handleSearch} />
+            <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
             {state.loading && <div className="w-100 d-flex justify-content-center">

@@ -14,4 +14,8 @@ export class CacheUtils{
         const res = await localforage.getItem<IRepositoryDetails>(CacheKey.repoDetails+path);
         return res;
     }
+
+    static async clearRepoDetails(path:string){
+        await localforage.removeItem(CacheKey.repoDetails+path);
+    }
 }

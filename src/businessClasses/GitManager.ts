@@ -296,7 +296,7 @@ export class GitManager{
 
     private async getFilteredCommits(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
         const git = this.getGitRunner(repoInfo);
-        const options = ["log","--exclude=refs/stash", "--all","--date=iso-strict"];
+        const options = ["log","--exclude=refs/stash","--date=iso-strict"];
         if(filterOption.pageSize){
             options.push(`--max-count=${filterOption.pageSize}`);
             if(filterOption.pageIndex){
@@ -305,6 +305,12 @@ export class GitManager{
         }
         if(filterOption.message){
             options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
+        }
+        else{
+            options.push("--all");
         }
 
         options.push(this.LogFormat);
@@ -326,9 +332,15 @@ export class GitManager{
 
     private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
         const git = this.getGitRunner(repoInfo);
-        const options = ["rev-list","--count","--exclude=refs/stash", "--all"];
+        const options = ["rev-list","--count","--exclude=refs/stash"];
         if(filterOption.message){
             options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`,"--no-merges");
+        }
+        else{
+            options.push("--all");
         }
         try{
             let res = await git.raw(options);
