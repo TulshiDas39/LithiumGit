@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo } from "react"
-import { BranchUtils, ICommitFlatInfo, ObjectUtils, useMultiState } from "../../../../lib";
+import React, { useEffect } from "react"
+import { useMultiState } from "../../../../lib";
 import moment from "moment";
 import { Paginator } from "../../../common";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ICommitInfo } from "common_library";
+import { ICommitInfo, ILogFilterOptions } from "common_library";
+import { CommitFilter } from "./CommitFilter";
 
 
 interface ISingleCommitProps{
@@ -46,6 +47,7 @@ interface IState{
     pageSize:number;
     commits:ICommitInfo[];
     loading:boolean;
+    searchText:string;
 }
 
 function CommitsComponent(){
@@ -54,18 +56,31 @@ function CommitsComponent(){
         total:0,
         commits:[],
         loading:true,
+        searchText:"",
     });
 
     useEffect(()=>{
-        IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(result=>{
+        const filterOptions:ILogFilterOptions = {
+            pageIndex:state.pageIndex,
+            pageSize:state.pageSize,            
+        }
+        if(state.searchText){
+            filterOptions.message = state.searchText;
+        }
+        
+        IpcUtils.getCommitList(filterOptions).then(result=>{
             setState({commits:result.list.reverse(),total:result.count,loading:false});
         });
         
-    },[state.pageIndex,state.pageSize])
+    },[state.pageIndex,state.pageSize,state.searchText]);
+
+    const handleSearch = (text:string)=>{
+        setState({searchText:text});
+    }
 
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
-
+            <CommitFilter onSearch={handleSearch} />
         </div>
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
             {state.loading && <div className="w-100 d-flex justify-content-center">

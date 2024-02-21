@@ -5,4 +5,5 @@ export interface ILogFilterOptions{
     pageSize:number;
     branchName?:string;
     searchKey?:string;
+    message?:string;
 }

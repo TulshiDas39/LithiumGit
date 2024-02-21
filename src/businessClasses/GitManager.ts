@@ -303,6 +303,9 @@ export class GitManager{
                 options.push(`--skip=${filterOption.pageIndex*filterOption.pageSize}`);
             }
         }
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
 
         options.push(this.LogFormat);
 
@@ -324,7 +327,9 @@ export class GitManager{
     private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
         const git = this.getGitRunner(repoInfo);
         const options = ["rev-list","--count","--exclude=refs/stash", "--all"];
-
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
         try{
             let res = await git.raw(options);
             return Number(res);
