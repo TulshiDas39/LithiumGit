@@ -53,7 +53,7 @@ function CommitsComponent(){
 
     useEffect(()=>{
         IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(result=>{
-            setState({commits:result.list,total:result.count,loading:false});
+            setState({commits:result.list.reverse(),total:result.count,loading:false});
         });
         
     },[state.pageIndex,state.pageSize])
