@@ -1,11 +1,13 @@
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { BranchUtils, ICommitFlatInfo, ObjectUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
 import { Paginator } from "../../../common";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ICommitInfo } from "common_library";
 
 
 interface ISingleCommitProps{
-    commit:ICommitFlatInfo;
+    commit:ICommitInfo;
 }
 
 function SingleCommit(props:ISingleCommitProps){
@@ -36,27 +38,25 @@ function SingleCommit(props:ISingleCommitProps){
 interface IState{
     total:number;
     pageIndex:number;
-    pageSize:number
+    pageSize:number;
+    commits:ICommitInfo[];
 }
 
 function CommitsComponent(){
     const [state,setState]=useMultiState<IState>({pageIndex:0,
         pageSize:500,
-        total:BranchUtils.repositoryDetails.allCommits.length
+        total:BranchUtils.repositoryDetails.allCommits.length,
+        commits:[],
     });
 
-    const commitList = useMemo(()=>{
-        const startIndex = state.pageIndex*state.pageSize;
-        const list = BranchUtils.repositoryDetails.allCommits.slice().reverse().slice(startIndex,startIndex+state.pageSize);
-        const objUtils = new ObjectUtils();
-        const flatList = list.map(c => objUtils.mapToFlatObject(c));
-        return flatList;
+    useEffect(()=>{
+        IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(list=>{
+            console.log("list", list);
+            setState({commits:list});
+        });
+        // BranchUtils.repositoryDetails.allCommits.slice().reverse().slice(startIndex,startIndex+state.pageSize);
+        
     },[state.pageIndex,state.pageSize])
-
-    const paginateToLast=()=>{
-        const index = Math.floor(state.total/state.pageSize);
-        setState({pageIndex:index});        
-    }
 
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
@@ -65,7 +65,7 @@ function CommitsComponent(){
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
             <div className="w-100 px-2">
                 {
-                    commitList.map(commit=>(
+                    state.commits.map(commit=>(
                         <SingleCommit key={commit.avrebHash} commit={commit} />
                     ))
                 }

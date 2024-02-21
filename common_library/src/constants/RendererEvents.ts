@@ -255,5 +255,6 @@ export class RendererEvents{
     }
 
     static readonly gitRemoveRemote = "gitRemoveRemote";
+    static readonly gitLog = "gitLog";
 }
 

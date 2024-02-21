@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -15,6 +15,7 @@ export class GitManager{
     private addEventHandlers(){
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
+        this.addLogHandler();
         this.addStatusHandler();
         this.addStatusSyncHandler();
         this.addStageItemHandler();
@@ -167,6 +168,13 @@ export class GitManager{
         });
     }
 
+    private addLogHandler(){
+        ipcMain.handle(RendererEvents.gitLog, async (e,repoInfo:RepositoryInfo,filterOptions:ILogFilterOptions)=>{
+            const repoDetails = await this.getFilteredCommits(repoInfo,filterOptions);
+            return repoDetails;
+        });
+    }
+
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             await this.notifyStatus(repoInfo);
@@ -278,6 +286,28 @@ export class GitManager{
         //const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
             let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
+            const commits = CommitParser.parse(res);
+            return commits;
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+    
+    }
+
+    private async getFilteredCommits(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["log","--exclude=refs/stash", "--all","--date=iso-strict"];
+        if(filterOption.pageSize){
+            options.push(`--max-count=${filterOption.pageSize}`);
+            if(filterOption.pageIndex){
+                options.push(`--skip=${filterOption.pageIndex*filterOption.pageSize}`);
+            }
+        }
+
+        options.push(this.LogFormat);
+
+        try{
+            let res = await git.raw(options);
             const commits = CommitParser.parse(res);
             return commits;
         }catch(e){
