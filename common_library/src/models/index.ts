@@ -10,3 +10,5 @@ export * from './IFile';
 export * from './IStatus';
 export * from './IConfigInfo';
 export * from './ISavedData';
+export * from './ILogFilterOptions';
+export * from './IPaginated';

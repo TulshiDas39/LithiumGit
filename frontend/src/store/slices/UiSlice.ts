@@ -39,6 +39,7 @@ interface IUIState{
     status?:IStatus;
     selectedFile?:IFile;
     remotes:IRemoteInfo[];
+    branchList:string[];
 }
 
 const initialState:IUIState={
@@ -57,6 +58,7 @@ const initialState:IUIState={
         totalStep:1,
     },
     remotes:[],
+    branchList:[],
 }
 
 const UISlice = createSlice({
@@ -110,6 +112,9 @@ const UISlice = createSlice({
         },
         setRemotes(state,action:PayloadAction<IRemoteInfo[]>){
             state.remotes = action.payload;
+        },
+        setBranchList(state,action:PayloadAction<string[]>){
+            state.branchList = action.payload;
         }
     }
 });

@@ -81,6 +81,7 @@ export class BranchGraphUtils{
     }    
 
     static createBranchPanel(){
+        console.log("creating branch graph.");
         BranchGraphUtils.resetGraphStates();
         BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
         //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
@@ -355,7 +356,7 @@ export class BranchGraphUtils{
     static isRequiredReload(){
         const newStatus = BranchUtils.repositoryDetails?.status;
         if(!newStatus?.headCommit) return false;
-        if(newStatus.headCommit.hash !== BranchGraphUtils.state.headCommit.value.hash) return true;
+        if(newStatus.headCommit.hash !== BranchGraphUtils.state.headCommit.value?.hash) return true;
         const uiRefs = BranchGraphUtils.state.headCommit.value.refValues;
         const newRefs = newStatus.headCommit.refValues;        
         if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
@@ -504,5 +505,6 @@ export class BranchGraphUtils{
         BranchGraphUtils.state.panelHeight.publish(0);
         BranchGraphUtils.state.svgContainerWidth.publish(0);
         BranchGraphUtils.state.headCommit.publish(null!);
+        BranchGraphUtils.state.mergingCommit.publish(null!);
     }
 }

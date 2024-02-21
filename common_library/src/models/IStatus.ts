@@ -18,6 +18,9 @@ export interface IStatus{
     mergingCommitHash?:string;
     trackingBranch?:string;
     totalChangedItem:number;
+    totalStagedItem:number;
+    totalUnStagedItem:number;
+    totalConflictedItem:number;
 }
 
 export interface IChanges{

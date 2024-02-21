@@ -36,6 +36,7 @@ interface IProps{
     text:string;
     borderSize?:number;
     borderColor?:string;
+    disabled?:boolean;
 }
 
 
@@ -48,7 +49,7 @@ function AppButtonComponent(props:IProps){
             return 1;
         return 0;
     }
-    return <div className={`${config.bgColor} hover-brighter text-center cur-default hover-shadow p-1`} onClick={props.onClick}
+    return <div className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} text-center cur-default p-1`} onClick={props.disabled?undefined:props.onClick}
         style={{borderStyle:"solid", borderWidth:getBorderSize(),borderColor:props.borderColor || "rgba(0,0,0,.2)", minWidth:50}}>
         {props.text}
     </div>

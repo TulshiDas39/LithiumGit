@@ -42,16 +42,16 @@ function ChangesTabPaneComponent(props:IProps){
             <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.UN_STAGED ?"bg-select-color":""}`}
             onClick={_=> setState({selectedTab:EnumChangeGroup.UN_STAGED})}>
                 <span>Modified</span><br/>
-                <span>({store.status?.unstaged.length || 0})</span>
+                <span>({store.status?.totalUnStagedItem || 0})</span>
             </div>
             {!!store.status?.staged?.length && <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.STAGED ?"bg-select-color":""}`} 
             onClick={_=> setState({selectedTab:EnumChangeGroup.STAGED})}>
                 <span>Staged</span><br/>
-                <span>({store.status?.staged.length || 0})</span>
+                <span>({store.status?.totalStagedItem || 0})</span>
             </div>}
             {!!store.status?.conflicted?.length && <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.CONFLICTED ?"bg-select-color":""}`} onClick={_=> setState({selectedTab:EnumChangeGroup.CONFLICTED})}>
                 <span>Clonflicted</span><br/>
-                <span>({store.status?.conflicted.length || 0})</span>
+                <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>
         <div className="flex-grow-1">            

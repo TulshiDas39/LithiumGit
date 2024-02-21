@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -15,6 +15,7 @@ export class GitManager{
     private addEventHandlers(){
         this.addValidGitPathHandler();
         this.addRepoDetailsHandler();
+        this.addLogHandler();
         this.addStatusHandler();
         this.addStatusSyncHandler();
         this.addStageItemHandler();
@@ -167,6 +168,13 @@ export class GitManager{
         });
     }
 
+    private addLogHandler(){
+        ipcMain.handle(RendererEvents.gitLog, async (e,repoInfo:RepositoryInfo,filterOptions:ILogFilterOptions)=>{
+            const repoDetails = await this.getFilteredCommits(repoInfo,filterOptions);
+            return repoDetails;
+        });
+    }
+
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             await this.notifyStatus(repoInfo);
@@ -235,21 +243,27 @@ export class GitManager{
             conflicted:[],
             totalChangedItem:0,
         } as IStatus;
-        ///staged changes
+        const limit = 500;
+        ///staged changes        
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
         let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.STAGED}));
-        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));
+        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));        
         result.staged = [...modified,...created,...deleted];
+        result.totalStagedItem = result.staged.length;
+        result.staged = result.staged.slice(0,limit);
 
         ///not staged changes
         deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.UN_STAGED}));
         modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.UN_STAGED}));
         created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.UN_STAGED}));
-        result.unstaged = [...modified,...created,...deleted]
+        result.unstaged = [...modified,...created,...deleted];
+        result.totalUnStagedItem = result.unstaged.length;
+        result.unstaged = result.unstaged.slice(0,limit);
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
-        result.conflicted = status.conflicted?.map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.totalConflictedItem = status.conflicted?.length || 0;
         result.isClean = status?.isClean();
         result.current = status.current;
         result.isDetached = status.detached;
@@ -284,6 +298,63 @@ export class GitManager{
             console.error("error on get logs:", e);
         }
     
+    }
+
+    private async getFilteredCommits(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["log","--exclude=refs/stash","--date=iso-strict"];
+        if(filterOption.pageSize){
+            options.push(`--max-count=${filterOption.pageSize}`);
+            if(filterOption.pageIndex){
+                options.push(`--skip=${filterOption.pageIndex*filterOption.pageSize}`);
+            }
+        }
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
+        }
+        else{
+            options.push("--all");
+        }
+
+        options.push(this.LogFormat);
+
+        try{
+            let res = await git.raw(options);
+            const commits = CommitParser.parse(res);
+            const count = await this.getTotalCommitCount(repoInfo,filterOption);
+            const result:IPaginated<ICommitInfo>={
+                count,
+                list:commits
+            };
+            return result;
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+    
+    }
+
+    private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["rev-list","--count","--exclude=refs/stash"];
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`,"--no-merges");
+        }
+        else{
+            options.push("--all");
+        }
+        try{
+            let res = await git.raw(options);
+            return Number(res);
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+
     }
 
     private async getAllBranches(git:SimpleGit){
