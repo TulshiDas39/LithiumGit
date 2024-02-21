@@ -40,6 +40,7 @@ interface IState{
     pageIndex:number;
     pageSize:number;
     commits:ICommitInfo[];
+    loading:boolean;
 }
 
 function CommitsComponent(){
@@ -47,11 +48,12 @@ function CommitsComponent(){
         pageSize:500,
         total:0,
         commits:[],
+        loading:true,
     });
 
     useEffect(()=>{
         IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(result=>{
-            setState({commits:result.list,total:result.count});
+            setState({commits:result.list,total:result.count,loading:false});
         });
         
     },[state.pageIndex,state.pageSize])
@@ -61,13 +63,17 @@ function CommitsComponent(){
 
         </div>
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
-            <div className="w-100 px-2">
+            {state.loading && <div className="w-100 d-flex justify-content-center">
+                <span>Loading...</span> 
+            </div>
+            }
+            {!state.loading && <div className="w-100 px-2">
                 {
                     state.commits.map(commit=>(
                         <SingleCommit key={commit.avrebHash} commit={commit} />
                     ))
                 }
-            </div>            
+            </div> }           
         </div>
         <div className="pt-2 d-flex justify-content-center align-items-start" style={{height:'10%'}}>
             <Paginator total={state.total} pageIndex={state.pageIndex} pageSize={state.pageSize}
