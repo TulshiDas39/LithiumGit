@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -309,11 +309,29 @@ export class GitManager{
         try{
             let res = await git.raw(options);
             const commits = CommitParser.parse(res);
-            return commits;
+            const count = await this.getTotalCommitCount(repoInfo,filterOption);
+            const result:IPaginated<ICommitInfo>={
+                count,
+                list:commits
+            };
+            return result;
         }catch(e){
             console.error("error on get logs:", e);
         }
     
+    }
+
+    private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["rev-list","--count","--exclude=refs/stash", "--all"];
+
+        try{
+            let res = await git.raw(options);
+            return Number(res);
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+
     }
 
     private async getAllBranches(git:SimpleGit){

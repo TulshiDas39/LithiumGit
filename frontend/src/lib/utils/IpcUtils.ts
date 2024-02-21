@@ -1,4 +1,4 @@
-import { ICommitInfo, ILogFilterOptions, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
 
 export class IpcUtils{
@@ -78,7 +78,7 @@ export class IpcUtils{
     }
 
     static async getCommitList(filterOptions:ILogFilterOptions){
-        return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as ICommitInfo[];
+        return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
     }
     
 }

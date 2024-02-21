@@ -19,7 +19,7 @@ function PaginatorComponent(props:IProps){
         props.onPageChange(0);
     }
     const handleLast = ()=>{        
-        props.onPageChange(totalPage);
+        props.onPageChange(totalPage-1);
     }
     const handleNext = ()=>{
         props.onPageChange(props.pageIndex+1);

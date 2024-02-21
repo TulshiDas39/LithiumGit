@@ -45,16 +45,14 @@ interface IState{
 function CommitsComponent(){
     const [state,setState]=useMultiState<IState>({pageIndex:0,
         pageSize:500,
-        total:BranchUtils.repositoryDetails.allCommits.length,
+        total:0,
         commits:[],
     });
 
     useEffect(()=>{
-        IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(list=>{
-            console.log("list", list);
-            setState({commits:list});
+        IpcUtils.getCommitList({pageIndex:state.pageIndex,pageSize:state.pageSize}).then(result=>{
+            setState({commits:result.list,total:result.count});
         });
-        // BranchUtils.repositoryDetails.allCommits.slice().reverse().slice(startIndex,startIndex+state.pageSize);
         
     },[state.pageIndex,state.pageSize])
 
