@@ -244,21 +244,26 @@ export class GitManager{
             totalChangedItem:0,
         } as IStatus;
         const limit = 500;
-        ///staged changes
+        ///staged changes        
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
         let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.STAGED}));
-        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));
-        result.staged = [...modified,...created,...deleted].slice(0,limit);
+        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));        
+        result.staged = [...modified,...created,...deleted];
+        result.totalStagedItem = result.staged.length;
+        result.staged = result.staged.slice(0,limit);
 
         ///not staged changes
         deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.UN_STAGED}));
         modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.UN_STAGED}));
         created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.UN_STAGED}));
-        result.unstaged = [...modified,...created,...deleted].slice(0,limit);
+        result.unstaged = [...modified,...created,...deleted];
+        result.totalUnStagedItem = result.unstaged.length;
+        result.unstaged = result.unstaged.slice(0,limit);
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
         result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.totalConflictedItem = status.conflicted?.length || 0;
         result.isClean = status?.isClean();
         result.current = status.current;
         result.isDetached = status.detached;
