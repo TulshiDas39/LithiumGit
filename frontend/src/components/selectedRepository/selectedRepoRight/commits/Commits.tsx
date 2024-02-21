@@ -11,6 +11,11 @@ interface ISingleCommitProps{
 }
 
 function SingleCommit(props:ISingleCommitProps){
+    const getTimeZonOffsetStr = ()=>{
+        const offset = - new Date().getTimezoneOffset()/60;
+        const sign = offset < 0?"-" : "+";
+        return `UTC ${sign} ${offset}`;
+    }
     return <div className="py-1 w-100 overflow-auto">
      <div className="border border-primary ps-2">
         <div>
@@ -21,7 +26,7 @@ function SingleCommit(props:ISingleCommitProps){
         </div>
         <div>
             <span>Date: </span>
-            <span>{moment(props.commit.date).format("MMMM Do YYYY, h:mm:ss a") }</span>
+            <span title={getTimeZonOffsetStr()}>{moment(props.commit.date).format("MMMM Do YYYY, h:mm:ss a") }</span>
         </div>
         <div>
             <span>Author: </span>
