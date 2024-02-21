@@ -30,7 +30,7 @@ function PaginatorComponent(props:IProps){
 
     return <div className="d-flex align-items-center w-100 px-2">
         <div className="flex-grow-1">
-            <span>Showing {props.pageIndex*props.pageSize +1} to {Math.min((props.pageIndex+1)*props.pageSize,props.total)}</span>
+            <span>Showing {props.pageIndex*props.pageSize +1} to {Math.min((props.pageIndex+1)*props.pageSize,props.total)} of {props.total}</span>
         </div>
         <div className="d-flex align-items-center">
             <AppButton text="<<-First" type="default" onClick={handleFirst} disabled={props.pageIndex === 0} />
