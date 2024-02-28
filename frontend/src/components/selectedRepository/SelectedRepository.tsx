@@ -46,7 +46,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     }
 
     const updateRepoData = async ()=>{
-        const repo = refData.current.repo;
+        const repo = props.repo;
         BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(repo.path))!;
         const status = await IpcUtils.getRepoStatusSync(repo);
         if(!BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
@@ -57,8 +57,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             BranchUtils.repositoryDetails.status = status;            
         }
         CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);        
-        dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
-        dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
     }
 
     useEffect(()=>{       
@@ -98,6 +96,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
                 BranchGraphUtils.createBranchPanel();                
                 dispatch(ActionUI.setLoader(undefined));
                 ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
+                dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+                dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
             });
         })
     },[store.branchPanelRefreshVersion]);
@@ -132,6 +132,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         updateRepoData().then(_=>{     
             BranchGraphUtils.createBranchPanel();
             ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+            dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
         });
     },[props.repo]);
 
