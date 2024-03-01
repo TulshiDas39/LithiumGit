@@ -28,6 +28,9 @@ function PullPushMenuComponent(){
     }
 
     const handlePush=()=>{
+        if(!BranchUtils.repositoryDetails){
+            debugger;
+        }
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         IpcUtils.trigerPush().then(()=>{
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
