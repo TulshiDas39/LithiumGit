@@ -49,7 +49,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         const repo = props.repo;
         BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(repo.path))!;
         const status = await IpcUtils.getRepoStatusSync(repo);
-        if(refresh && !BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
+        if(refresh || !BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
             BranchUtils.repositoryDetails = await getRepoDetails();
             BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
         }
