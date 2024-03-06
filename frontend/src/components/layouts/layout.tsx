@@ -32,17 +32,17 @@ function LayoutComponent(props:ILayoutProps) {
     },[topNavHeight,footerHeight])
 
     return (
-        <div className="" style={{height:props.height+"px"}}>
-            <div id="layout" className="d-flex flex-column overflow-auto">
-                <div className="d-flex" style={{height:`${topNavHeight}px`}}>
+        <div className="h-100" style={{height:props.height+"px"}}>
+            <div id="layout" className="d-flex flex-column overflow-auto h-100">
+                <div className="d-flex" style={{height:`7%`}}>
                     <TopNav />
                 </div>
-                <div className="" style={{height:`${mainPanelHeight}px`}}>
+                <div className="" style={{height:`90%`}}>
                     <Switch>
                         <Route path={UiRoutes.Root} render={()=><Main />} />
                     </Switch>
                 </div>
-                <div style={{height:`${footerHeight}px`}}>
+                <div style={{height:`3%`}}>
                     <FooterNav />
                 </div>
                 <Modals/>

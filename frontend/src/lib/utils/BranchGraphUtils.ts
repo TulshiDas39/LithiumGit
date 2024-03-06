@@ -185,15 +185,15 @@ export class BranchGraphUtils{
     }
 
     static addWheelListender(){
-        if(!this.svgElement) return;
+        if(!BranchGraphUtils.svgElement) return;
         
         BranchGraphUtils.svgElement.addEventListener("wheel",(e)=>{
             var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
             if(e.deltaX > 0 || e.deltaY > 0) {                
-                BranchGraphUtils.controlZoom("zoomOut",delta * 0.01);
+                BranchGraphUtils.controlZoom("zoomOut", 0.1);
             }
             else{
-                BranchGraphUtils.controlZoom("zoomIn",delta * 0.01);
+                BranchGraphUtils.controlZoom("zoomIn", 0.1);
             }
         })
     }
@@ -210,8 +210,8 @@ export class BranchGraphUtils{
             BranchGraphUtils.initialHorizontalScrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
             BranchGraphUtils.initialVerticalScrollRatio = BranchGraphUtils.state.verticalScrollRatio.value;
         });
-        this.addEventListendersOnCommit();
-        this.addWheelListender();
+        BranchGraphUtils.addEventListendersOnCommit();
+        BranchGraphUtils.addWheelListender();
     }
 
     static controlZoom(action:"zoomIn"|"zoomOut"|"reset",diifValue:number|undefined){
@@ -227,7 +227,7 @@ export class BranchGraphUtils{
         }
         else newValue = 1;
 
-        newValue = NumUtils.between(0,50,newValue);
+        newValue = NumUtils.between(0.01,50,newValue);
         BranchGraphUtils.state.zoomLabel.publish(newValue);        
     }
 

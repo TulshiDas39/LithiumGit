@@ -76,7 +76,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
-        IpcUtils.unstageItem(props.changes.map(_=>_.path),props.repoInfoInfo!).then(_=>{
+        IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
             IpcUtils.getRepoStatus();
         });        
     }

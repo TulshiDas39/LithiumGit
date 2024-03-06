@@ -45,20 +45,18 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         });
     }
 
-    const updateRepoData = async ()=>{
-        const repo = refData.current.repo;
+    const updateRepoData = async (refresh = false)=>{
+        const repo = props.repo;
         BranchUtils.repositoryDetails = (await CacheUtils.getRepoDetails(repo.path))!;
         const status = await IpcUtils.getRepoStatusSync(repo);
-        if(!BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
+        if(refresh || !BranchUtils.repositoryDetails || status?.headCommit.hash !== BranchUtils.repositoryDetails.status.headCommit.hash){
             BranchUtils.repositoryDetails = await getRepoDetails();
             BranchUtils.getRepoDetails(BranchUtils.repositoryDetails);
         }
         else{
             BranchUtils.repositoryDetails.status = status;            
         }
-        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);        
-        dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
-        dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
+        CacheUtils.setRepoDetails(BranchUtils.repositoryDetails);
     }
 
     useEffect(()=>{       
@@ -93,13 +91,13 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
-        CacheUtils.clearRepoDetails(BranchUtils.repositoryDetails.repoInfo.path).then(()=>{
-            updateRepoData().then(()=>{
-                BranchGraphUtils.createBranchPanel();                
-                dispatch(ActionUI.setLoader(undefined));
-                ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
-            });
-        })
+        updateRepoData(true).then(()=>{
+            BranchGraphUtils.createBranchPanel();                
+            dispatch(ActionUI.setLoader(undefined));
+            ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+            dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
+        });
     },[store.branchPanelRefreshVersion]);
 
     useEffect(()=>{
@@ -132,6 +130,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         updateRepoData().then(_=>{     
             BranchGraphUtils.createBranchPanel();
             ReduxUtils.setStatus(BranchUtils.repositoryDetails.status);
+            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(BranchUtils.repositoryDetails.remotes)));
+            dispatch(ActionUI.setBranchList(BranchUtils.repositoryDetails.branchList.slice()));
         });
     },[props.repo]);
 

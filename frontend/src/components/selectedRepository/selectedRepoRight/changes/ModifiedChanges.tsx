@@ -143,6 +143,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         else{            
             IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
                 const lines = new StringUtils().getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
+                if(!hasChanges) return;
+                refData.current.selectedFileContent = lines;
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;

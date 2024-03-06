@@ -189,6 +189,8 @@ export class GitManager{
     }
 
     private setActiveOrigin(repoDetails:IRepositoryDetails){
+        if(!repoDetails.remotes.length)
+            return ;
         const defaultOrigin = repoDetails.repoInfo.activeOrigin;
         let origin = repoDetails.remotes.find(x => x.name === defaultOrigin);
         if(!origin) origin = repoDetails.remotes[0];
