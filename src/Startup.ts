@@ -104,17 +104,17 @@ export class Startup{
         this.uiPort = Config.FRONTEND_PORT;
         return;
       }
-      await this.setAvailablePort();
+      // await this.setAvailablePort();
       
-      const app = express();
+      // const app = express();
 
-      app.use(express.static(__dirname + '/frontend'));
+      // app.use(express.static(__dirname + '/frontend'));
 
-      app.get('*', function (request, response) {
-        response.sendFile(path.resolve(__dirname,"frontend", 'index.html'));
-      });
+      // app.get('*', function (request, response) {
+      //   response.sendFile(path.resolve(__dirname,"frontend", 'index.html'));
+      // });
 
-      app.listen(this.uiPort);
+      // app.listen(this.uiPort);
        
     }
 
@@ -131,7 +131,12 @@ export class Startup{
         });
         mainWindow.maximize();
         AppData.mainWindow = mainWindow;
-        mainWindow.loadURL(`http://localhost:${this.uiPort}`);
+        if(Config.env === 'development')          
+          mainWindow.loadURL(`http://localhost:${this.uiPort}`);
+        else{
+          const htmlFile =   path.resolve(__dirname,"frontend", 'index.html');
+          mainWindow.loadFile(htmlFile);
+        }
         
         if(Config.env === 'development')
           mainWindow.webContents.openDevTools();
