@@ -18,8 +18,8 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     }
 
     private updateMergingStateUi(){
-        if(this.prevValue)
-            this.removeMergingStateUi();
+        // if(this.prevValue)
+        //     this.removeMergingStateUi();
         this.createMerginStategUi();
     }
 
@@ -64,7 +64,7 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         const lineData = BranchGraphUtils.getBranchLinePathData(branchDetails);
         const hLineLength = endX - lineData.startX;
         const linePath = BranchGraphUtils.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);
-        branchLineElem.setAttribute("d",linePath);
+        branchLineElem?.setAttribute("d",linePath);
 
         const elems = document.querySelectorAll(".mergingState");
         elems.forEach(elem=> elem.remove());
