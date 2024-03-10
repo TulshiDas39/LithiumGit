@@ -1,5 +1,5 @@
 {
-  "name": "gitstudio",
+  "name": "opengit",
   "version": "0.0.1-beta.2",
   "description": "A git gui application",
   "scripts": {
@@ -46,8 +46,8 @@
     "simple-git": "^3.10.0"
   },
   "build": {
-    "productName": "Git Studio",
-    "appId": "org.gitstudio.electron",
+    "productName": "OpenGit",
+    "appId": "org.opengit.electron",
     "asar": false,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -114,12 +114,12 @@
     "publish": {
       "provider": "github",
       "owner": "tulshidas39",
-      "repo": "gitstudio"
+      "repo": "opengit"
     },
-    "artifactName": "Git-Studio-Setup-${os}-${arch}-${version}.${ext}"
+    "artifactName": "OpenGit-Setup-${os}-${arch}-${version}.${ext}"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tulshidas39/gitstudio.git"
+    "url": "git+https://github.com/tulshidas39/opengit.git"
   }
 }
