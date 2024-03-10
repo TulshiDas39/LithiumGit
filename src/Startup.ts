@@ -1,8 +1,6 @@
 import { IConfigInfo, MainEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import { autoUpdater } from "electron-updater";
-import express = require("express");
-import getPort = require("get-port");
 import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
@@ -14,13 +12,12 @@ import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
 
 export class Startup{
-    private uiPort = 54523;
+    private readonly uiPort = Config.FRONTEND_PORT;
 
     async initilise(){
       //this.initAppData();
       this.checkForUpdate();
       await this.loadSavedData();      
-      await this.hostFrontend();
       this.startIpcManagers();
     }
 
@@ -79,43 +76,6 @@ export class Startup{
         } as IConfigInfo;
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
       }
-    }
-
-    private async setAvailablePort(){        
-        
-        let portNumber = SavedData.data.configInfo.portNumber || 54523;
-        try{          
-          let availablePort = await getPort({port:portNumber});
-
-          if(SavedData.data.configInfo.portNumber !== availablePort){
-            SavedData.data.configInfo.portNumber = availablePort;
-            DB.config.updateOne(SavedData.data.configInfo);
-          }
-          this.uiPort = availablePort;
-          return availablePort;
-        }catch(e){
-          console.error(e);
-          this.uiPort = 54522;
-        }
-    }
-
-    private async hostFrontend(){
-      if(Config.env === 'development'){
-        this.uiPort = Config.FRONTEND_PORT;
-        return;
-      }
-      // await this.setAvailablePort();
-      
-      // const app = express();
-
-      // app.use(express.static(__dirname + '/frontend'));
-
-      // app.get('*', function (request, response) {
-      //   response.sendFile(path.resolve(__dirname,"frontend", 'index.html'));
-      // });
-
-      // app.listen(this.uiPort);
-       
     }
 
     private async  createWindow() {
