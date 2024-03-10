@@ -2,7 +2,10 @@ import { RepositoryInfo } from "common_library";
 import React from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { ActionSavedData } from "../../../../store/slices";
+import { ActionModals, ActionSavedData } from "../../../../store/slices";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ModalData } from "../../../modals/ModalData";
+import { EnumModals } from "../../../../lib";
 
 export interface IRecentRepositoryListProps{
     onSelectItem:(item:RepositoryInfo)=>void;
@@ -20,8 +23,18 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
         props.onSelectItem(item);
     }
     const handleDoubleClick = (item:RepositoryInfo)=>{
-        props.onSelectItem(item);
-        dispatch(ActionSavedData.setSelectedRepository(item));
+        const isValidPath = IpcUtils.isValidPath(item.path);
+        if(!isValidPath){
+            ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
+            ModalData.confirmationModal.YesHandler = ()=>{
+                dispatch(ActionSavedData.removeRepositoryFromRecentList(item));
+            }
+            dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        }
+        else{
+            props.onSelectItem(item);
+            dispatch(ActionSavedData.setSelectedRepository(item));
+        }
     }
     return <div id="recentRepoList" className="w-75 h-100 d-flex flex-column">
         <h4 className="px-1 py-2 m-0">Recent Repositories</h4>

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RendererEvents, RepositoryInfo } from "common_library";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
@@ -17,6 +18,10 @@ const SavedDataSlice = createSlice({
     reducers:{
         setRecentRepositories(state,action:PayloadAction<RepositoryInfo[]>){
             state.recentRepositories = action.payload;
+        },
+        removeRepositoryFromRecentList(state,action:PayloadAction<RepositoryInfo>){
+            IpcUtils.removeRecentRepo(action.payload._id);
+            state.recentRepositories = state.recentRepositories.filter(_=> _._id !== action.payload._id);
         },
         setSelectedRepository(state,action:PayloadAction<RepositoryInfo>){
             const updatedList:RepositoryInfo[]=[];            
