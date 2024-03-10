@@ -1,6 +1,6 @@
-# Git Studio
+# OpenGit
 
-**Download and install latest version from [releases](https://github.com/TulshiDas39/GitStudio/releases)..**
+**Download and install latest version from [releases](https://github.com/TulshiDas39/OpenGit/releases)..**
 
 This is a cross platform Git GUI application.
 
