@@ -127,7 +127,10 @@ export class BranchGraphUtils{
             return;
         const ratioDiff = positionDiff / movableHeight;
         let newRatio = BranchGraphUtils.initialVerticalScrollRatio + ratioDiff;
-        newRatio = NumUtils.between1_0(newRatio);        
+        newRatio = NumUtils.between1_0(newRatio);
+        if(Number.isNaN(newRatio)){
+            debugger;
+        }
         BranchGraphUtils.state.verticalScrollRatio.publish(newRatio);        
     }
 

@@ -1,6 +1,8 @@
 import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
 import { ReduxStore } from "../../store";
 import { IViewBox } from "../interfaces";
+import { ArrayUtils } from "./ArrayUtils";
+import { BranchGraphUtils } from "./BranchGraphUtils";
 
 export class BranchUtils{
     static repositoryDetails:IRepositoryDetails = null!;    
@@ -16,8 +18,9 @@ export class BranchUtils{
         BranchUtils.enListSourceCommits(repoDetails);
         BranchUtils.finaliseSourceCommits(repoDetails);
         BranchUtils.specifySerialsOfBranch(repoDetails);
+        BranchUtils.setBranchVerticalOffset(repoDetails);
         BranchUtils.sortBranches(repoDetails);
-        BranchUtils.setBranchHeights(repoDetails);
+        BranchUtils.setBranchHeights2(repoDetails);
         BranchUtils.reversBranches(repoDetails);
         BranchUtils.createMergeLines(repoDetails);
 
@@ -52,6 +55,97 @@ export class BranchUtils{
             y = branch.y + BranchUtils.distanceBetweenBranchLine;
         });
         repoDetails.branchPanelHeight = y;
+    }
+
+    private static setBranchHeights2(repoDetails:IRepositoryDetails){
+        debugger;
+        const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
+        let y = 30;
+        for(let branch of branchesWithoutParent){
+            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
+            y = branch.y + BranchUtils.distanceBetweenBranchLine;
+        }
+
+        const setHeight = (branch:IBranchDetails)=>{
+            if(branch.name === 't2222'){
+                debugger;
+            }
+            const upperOffset = branch.verticalOffset - 1;
+            const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
+            const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
+            upperBranchesWithoutHeight.forEach(_ => setHeight(_));
+            const y = ArrayUtils.findMax(upperBranches.map(_=>_.y)) + BranchUtils.distanceBetweenBranchLine;
+            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
+        }
+
+        const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
+
+        const maxOffset = ArrayUtils.findMax(branches.map(_=>_.verticalOffset));
+
+        for(let offset = 2; offset < maxOffset ; offset++){
+            const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
+            branchesOfThisOffset.forEach(_ => setHeight(_));
+        }
+     
+        repoDetails.branchPanelHeight = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.y));
+    }
+
+    private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
+        const adjustment = 10;
+        const start1 = (branch1.parentCommit?.x || branch1.commits[0]?.x || 0)  - BranchUtils.commitRadius - adjustment;
+        const end1 = (branch1.commits[branch1.commits.length-1]?.x || branch1.parentCommit?.x || 0)  + BranchUtils.commitRadius + adjustment;
+
+        const start2 = (branch2.parentCommit?.x || branch1.commits[0]?.x || 0)  - BranchUtils.commitRadius - adjustment;
+        const end2 = (branch2.commits[branch2.commits.length-1]?.x || branch2.parentCommit?.x || 0)  - BranchUtils.commitRadius + adjustment;
+
+        if(start1 > start2 && start1 < end2)
+            return true;
+        if(end1 > start2 && end1 < end2)
+            return true;
+
+        return false;
+    }
+
+    private static setBranchVerticalOffset(repoDetails:IRepositoryDetails){
+
+        const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
+        for(let i = 0; i < branchesWithoutParent.length; i++){
+            const branch = branchesWithoutParent[i];
+            branch.verticalOffset = i + 1;
+            i++;
+        }
+
+        const setOffset = (branch:IBranchDetails)=>{
+            const parentBranch = branch.parentCommit?.ownerBranch!;
+            if(!parentBranch.verticalOffset){
+                setOffset(parentBranch);
+            }
+            const offsetOfParentBranch = parentBranch.verticalOffset;
+
+            const branchesBelowParent = repoDetails.resolvedBranches.filter(_=> _.verticalOffset > offsetOfParentBranch);
+            let offset = offsetOfParentBranch + 1;
+            for(let i = 0; i < branchesBelowParent.length; i++ ){
+                const branchesHavingOffset = branchesBelowParent.filter(_=> _.verticalOffset == offset);
+                if(!branchesHavingOffset.length){
+                    break;
+                }
+                else{
+                    const hasOverlapping = branchesHavingOffset.some(_=> BranchUtils.isOverlappingBranches(branch,_));
+                    if(!hasOverlapping){
+                        break;
+                    }
+                }
+                offset++;
+            }
+            branch.verticalOffset = offset;
+        }
+
+        const branches = repoDetails.resolvedBranches.filter(_ => !!_.parentCommit);
+
+        for(let branch of branches){
+            if(!branch.verticalOffset)
+                setOffset(branch);
+        }
     }
 
     private static sortBranches(repoDetails:IRepositoryDetails){        

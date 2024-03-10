@@ -13,6 +13,7 @@ export interface IBranchDetails{
     // commitWithMaxRefCount:ICommitInfo;
     maxRefCount:number;
     increasedHeightForDetached:number;
+    verticalOffset:number;
     // Group uiObj;
 }
 
@@ -27,6 +28,7 @@ export function createBranchDetailsObj(){
         y:0,        
         maxRefCount:0,
         increasedHeightForDetached:0,
+        verticalOffset:0,
     }
     return branchDetails;
 }
