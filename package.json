@@ -1,6 +1,6 @@
 {
   "name": "opengit",
-  "version": "0.0.1-beta.2",
+  "version": "0.0.1-beta.3",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
