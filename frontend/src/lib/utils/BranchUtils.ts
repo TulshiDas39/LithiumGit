@@ -87,18 +87,17 @@ export class BranchUtils{
     }
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
-        const adjustment = 10;
-        const start1 = branch1.parentCommit!.x  - BranchUtils.commitRadius - adjustment;
-        const end1 = branch1.commits[branch1.commits.length-1].x  + BranchUtils.commitRadius + adjustment;
+        const start1 = branch1.parentCommit!.x  - BranchUtils.commitRadius;
+        const end1 = branch1.commits[branch1.commits.length-1].x  + BranchUtils.commitRadius;
 
-        const start2 = branch2.parentCommit!.x - BranchUtils.commitRadius - adjustment;
-        const end2 = branch2.commits[branch2.commits.length-1].x - BranchUtils.commitRadius + adjustment;
+        const start2 = branch2.parentCommit!.x - BranchUtils.commitRadius;
+        const end2 = branch2.commits[branch2.commits.length-1].x - BranchUtils.commitRadius;
 
-        if(start1 > start2 && start1 < end2)
+        if(start1 >= start2 && start1 <= end2)
             return true;
-        if(end1 > start2 && end1 < end2)
+        if(end1 >= start2 && end1 <= end2)
             return true;        
-        if(start1 < start2 && end1 > end2)
+        if(start1 <= start2 && end1 >= end2)
             return true;
 
         return false;
