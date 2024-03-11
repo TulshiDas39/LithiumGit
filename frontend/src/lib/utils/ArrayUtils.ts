@@ -8,4 +8,8 @@ export class ArrayUtils{
         }
         return null;
     }
+
+    static findMax(array:number[]){
+        return array.reduce((acc,current) => Math.max(acc,current))
+    }
 }

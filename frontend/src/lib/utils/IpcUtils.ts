@@ -80,5 +80,12 @@ export class IpcUtils{
     static async getCommitList(filterOptions:ILogFilterOptions){
         return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
     }
+
+    static isValidPath(path:string){
+        return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
+    }
     
+    static async removeRecentRepo(repoId:string){
+        await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
+    }
 }

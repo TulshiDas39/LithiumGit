@@ -3,7 +3,10 @@ import moment from "moment";
 import React from "react"
 import { Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";
-import { ActionSavedData } from "../../../../store/slices";
+import { ActionModals, ActionSavedData } from "../../../../store/slices";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ModalData } from "../../../modals/ModalData";
+import { EnumModals } from "../../../../lib";
 
 interface ISelectedRecentRepoPropertiesProps{
     selectedItem?:RepositoryInfo;
@@ -11,11 +14,32 @@ interface ISelectedRecentRepoPropertiesProps{
 
 function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoPropertiesProps){
     const dispatch = useDispatch();
+
+    const validatePath = ()=>{
+        const item = props.selectedItem!;
+        const isValidPath = IpcUtils.isValidPath(item!.path);
+        if(!isValidPath){
+            ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
+            ModalData.confirmationModal.YesHandler = ()=>{
+                dispatch(ActionSavedData.removeRepositoryFromRecentList(item));
+            }
+            dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+            return false;
+        }
+
+        return true;
+    }
     const handleOpen = ()=>{
-        dispatch(ActionSavedData.setSelectedRepository(props.selectedItem!));
+        const isValid = validatePath();
+        if(isValid){
+            dispatch(ActionSavedData.setSelectedRepository(props.selectedItem!));
+        }
     }
     const handleOpenInExplorer=()=>{
-        window.ipcRenderer.send(RendererEvents.openFileExplorer,props.selectedItem?.path);
+        const isValid = validatePath();
+        if(isValid){
+            window.ipcRenderer.send(RendererEvents.openFileExplorer,props.selectedItem?.path);
+        }
     }
     if(!props.selectedItem) return null;
     return <div className="w-25 d-flex flex-column ps-2">

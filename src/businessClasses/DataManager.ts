@@ -11,6 +11,7 @@ export class DataManager{
     private addIpcHandlers(){
         this.handleRecentRepositoriesRequest();
         this.handleUpdateRepositories();
+        this.handleRemoveRepository();
         this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
 
@@ -42,6 +43,14 @@ export class DataManager{
             }
         });
     }
+
+    private handleRemoveRepository(){
+        ipcMain.handle(RendererEvents.removeRecentRepo, async(_, repoId:string)=>{
+            await DB.repository.deleteAsync({_id:repoId});
+            SavedData.data.recentRepositories = SavedData.data.recentRepositories.filter(_ => _._id !== repoId);
+        });
+    }
+
     private handleUpdateAutoStaging(){
         ipcMain.on(RendererEvents.updateAutoStaging().channel,(e,value:boolean)=>{            
             SavedData.data.configInfo.autoStage = value;
