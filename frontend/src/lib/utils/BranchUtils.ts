@@ -58,7 +58,6 @@ export class BranchUtils{
     }
 
     private static setBranchHeights2(repoDetails:IRepositoryDetails){
-        debugger;
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
         let y = 30;
         for(let branch of branchesWithoutParent){
@@ -67,9 +66,6 @@ export class BranchUtils{
         }
 
         const setHeight = (branch:IBranchDetails)=>{
-            if(branch.name === 't2222'){
-                debugger;
-            }
             const upperOffset = branch.verticalOffset - 1;
             const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
             const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
@@ -82,7 +78,7 @@ export class BranchUtils{
 
         const maxOffset = ArrayUtils.findMax(branches.map(_=>_.verticalOffset));
 
-        for(let offset = 2; offset < maxOffset ; offset++){
+        for(let offset = 2; offset <= maxOffset ; offset++){
             const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
             branchesOfThisOffset.forEach(_ => setHeight(_));
         }
@@ -92,15 +88,17 @@ export class BranchUtils{
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
         const adjustment = 10;
-        const start1 = (branch1.parentCommit?.x || branch1.commits[0]?.x || 0)  - BranchUtils.commitRadius - adjustment;
-        const end1 = (branch1.commits[branch1.commits.length-1]?.x || branch1.parentCommit?.x || 0)  + BranchUtils.commitRadius + adjustment;
+        const start1 = branch1.parentCommit!.x  - BranchUtils.commitRadius - adjustment;
+        const end1 = branch1.commits[branch1.commits.length-1].x  + BranchUtils.commitRadius + adjustment;
 
-        const start2 = (branch2.parentCommit?.x || branch1.commits[0]?.x || 0)  - BranchUtils.commitRadius - adjustment;
-        const end2 = (branch2.commits[branch2.commits.length-1]?.x || branch2.parentCommit?.x || 0)  - BranchUtils.commitRadius + adjustment;
+        const start2 = branch2.parentCommit!.x - BranchUtils.commitRadius - adjustment;
+        const end2 = branch2.commits[branch2.commits.length-1].x - BranchUtils.commitRadius + adjustment;
 
         if(start1 > start2 && start1 < end2)
             return true;
         if(end1 > start2 && end1 < end2)
+            return true;        
+        if(start1 < start2 && end1 > end2)
             return true;
 
         return false;
@@ -112,16 +110,14 @@ export class BranchUtils{
         for(let i = 0; i < branchesWithoutParent.length; i++){
             const branch = branchesWithoutParent[i];
             branch.verticalOffset = i + 1;
-            i++;
         }
 
         const setOffset = (branch:IBranchDetails)=>{
-            const parentBranch = branch.parentCommit?.ownerBranch!;
+            const parentBranch = branch.parentCommit!.ownerBranch!;            
             if(!parentBranch.verticalOffset){
                 setOffset(parentBranch);
             }
             const offsetOfParentBranch = parentBranch.verticalOffset;
-
             const branchesBelowParent = repoDetails.resolvedBranches.filter(_=> _.verticalOffset > offsetOfParentBranch);
             let offset = offsetOfParentBranch + 1;
             for(let i = 0; i < branchesBelowParent.length; i++ ){

@@ -35,9 +35,6 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
         const horizontalRatio = this.value.x/BranchUtils.repositoryDetails.branchPanelWidth;
         const verticalRatio = this.value.ownerBranch.y/BranchUtils.repositoryDetails.branchPanelHeight;
         BranchGraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
-        if(Number.isNaN(verticalRatio)){
-            debugger;
-        }
         BranchGraphUtils.state.verticalScrollRatio.publish(verticalRatio);
     }
 
