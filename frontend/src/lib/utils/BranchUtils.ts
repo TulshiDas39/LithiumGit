@@ -90,7 +90,7 @@ export class BranchUtils{
         const start1 = branch1.parentCommit!.x  - BranchUtils.commitRadius;
         const end1 = branch1.commits[branch1.commits.length-1].x  + BranchUtils.commitRadius;
 
-        const start2 = branch2.parentCommit!.x - BranchUtils.commitRadius;
+        const start2 = (branch2.parentCommit?.x || branch2.commits[0]?.x)  - BranchUtils.commitRadius;
         const end2 = branch2.commits[branch2.commits.length-1].x - BranchUtils.commitRadius;
 
         if(start1 >= start2 && start1 <= end2)
