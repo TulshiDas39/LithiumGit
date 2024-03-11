@@ -46,16 +46,7 @@ export class BranchUtils{
 
     private static reversBranches(repoDetails:IRepositoryDetails){
         repoDetails.resolvedBranches.reverse();
-    }
-    
-    private static setBranchHeights(repoDetails:IRepositoryDetails){
-        let y = 30;
-        repoDetails.resolvedBranches.forEach(branch=>{
-            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
-            y = branch.y + BranchUtils.distanceBetweenBranchLine;
-        });
-        repoDetails.branchPanelHeight = y;
-    }
+    }        
 
     private static setBranchHeights2(repoDetails:IRepositoryDetails){
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
@@ -83,7 +74,7 @@ export class BranchUtils{
             branchesOfThisOffset.forEach(_ => setHeight(_));
         }
      
-        repoDetails.branchPanelHeight = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.y));
+        repoDetails.branchPanelHeight = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.y)) + 50;
     }
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
