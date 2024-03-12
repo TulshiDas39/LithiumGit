@@ -293,12 +293,43 @@ export class BranchUtils{
 
     private static setX(commit:ICommitInfo,x:number){
         
-        if(!!commit.previousCommit?.refs && !!commit.refs){
-            const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
-            commit.x = x + BranchUtils.branchPanelFontSize * maxRefSize;
+        if(!commit.refValues.length){
+            commit.x = x;
+            return;
         }
-        else commit.x = x;
-        
+
+        let extraSpace = BranchUtils.getExtraSpaceForRefs(commit);
+        commit.x = x + extraSpace;
+    }
+
+    private static getExtraSpaceForRefs(commit:ICommitInfo){
+        const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
+        const spaceForRef = (BranchUtils.branchPanelFontSize * 0.8) * maxRefSize;
+        const previousCommit = commit.previousCommit;
+        let extraSpace = 0;
+        if(previousCommit){
+            if(previousCommit.ownerBranch !== commit.ownerBranch){
+                if(spaceForRef > BranchUtils.distanceBetweenCommits){
+                    extraSpace = spaceForRef - BranchUtils.distanceBetweenCommits;
+                }          
+            }        
+            else {
+                let availableSpace = BranchUtils.distanceBetweenCommits;
+                let iCommit = previousCommit;
+                while(!iCommit.refValues.length && availableSpace < spaceForRef){
+                    availableSpace += BranchUtils.distanceBetweenCommits;                    
+                    iCommit = iCommit.previousCommit;
+                }
+                if(availableSpace > spaceForRef){
+                    availableSpace = spaceForRef;
+                }
+                extraSpace =  spaceForRef - availableSpace;                
+            }
+        }
+        else            
+            extraSpace = spaceForRef - BranchUtils.distanceBetweenCommits;
+
+        return extraSpace;
     }
 
     private static isBranch(str:string,repoDetails:IRepositoryDetails){
