@@ -469,4 +469,16 @@ export class BranchUtils{
         return mergerCommitMessage;
         
     }
+
+    static isOriginBranch(str:string){
+        str = "remotes/"+str;
+        if(BranchUtils.repositoryDetails.branchList.includes(str))
+            return true;
+    }
+
+    static hasLocalBranch(str:string){
+        if(!BranchUtils.isOriginBranch(str))
+            return false;
+        
+    }
 }

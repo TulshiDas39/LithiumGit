@@ -1,5 +1,5 @@
 import { ICommitInfo, IStatus, RendererEvents } from "common_library";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils } from "../../lib";
@@ -94,11 +94,28 @@ function CommitContextModalComponent(){
         }
 
     },[])
+    
+    const branchNames = useMemo(()=>{
+        if(!store.show && !Data.selectedCommit || !Data.selectedCommit.refValues.length)
+            return [];
+        console.log(BranchUtils.repositoryDetails);
+        const branchList = BranchUtils.repositoryDetails.branchList;
+        const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
+        return referredBranches;
+    },[store.show])
 
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
                 <div className="container">
+                    {
+                        branchNames.map(branchName=>(
+                            <div key={branchName} className="row g-0 border-bottom">
+                                <div className="col-12 hover cur-default " onClick={checkOutCommit}>Checkout branch '{branchName}'</div> 
+                            </div>
+                        ))
+                    }
+
                     <div className="row g-0 border-bottom">
                         <div className="col-12 hover cur-default " onClick={checkOutCommit}>Checkout this commit</div> 
                     </div>
