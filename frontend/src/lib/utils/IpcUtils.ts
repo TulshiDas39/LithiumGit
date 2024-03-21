@@ -35,8 +35,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
     }
 
-    static doCommit(message:string){
-        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,message);
+    static doCommit(messages:string[]){
+        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,messages);
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){

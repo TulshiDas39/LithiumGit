@@ -6,6 +6,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { StringUtils } from "../../../../lib/utils/StringUtils";
 
 interface IState{
     value:string;
@@ -34,7 +35,8 @@ function CommitBoxComponent(){
     const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
 
     const handleCommit=()=>{
-        IpcUtils.doCommit(state.value).finally(()=>{
+        const messages = new StringUtils().getLines(state.value);
+        IpcUtils.doCommit(messages).finally(()=>{
             setState({value:""});
             IpcUtils.getRepoStatus();
         })

@@ -7,7 +7,8 @@ import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 
 export class GitManager{
-    private readonly LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
+    private readonly logFields = LogFields.Fields();    
+    private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
     }
@@ -76,15 +77,15 @@ export class GitManager{
     }
 
     addCommitHandler(){
-        ipcMain.handle(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,message:string)=>{
-            await this.giveCommit(repository,message);            
+        ipcMain.handle(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,messages:string[])=>{
+            await this.giveCommit(repository,messages);            
         })
     }
 
-    async giveCommit(repository:RepositoryInfo,message:string){
+    async giveCommit(repository:RepositoryInfo,messages:string[]){
         try {
             const git = this.getGitRunner(repository);            
-            await git.commit(message);            
+            await git.commit(messages);            
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
@@ -291,7 +292,7 @@ export class GitManager{
 
     private async getCommits(git: SimpleGit){
         const commitLimit=500;
-        //const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
+        //const LogFormat = "--pretty="+logFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
             let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
             const commits = CommitParser.parse(res);
@@ -304,7 +305,7 @@ export class GitManager{
 
     private async getFilteredCommits(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
         const git = this.getGitRunner(repoInfo);
-        const options = ["log","--exclude=refs/stash","--date=iso-strict"];
+        const options = ["log","--exclude=refs/stash","--date=iso-strict","--no-notes"];
         if(filterOption.pageSize){
             options.push(`--max-count=${filterOption.pageSize}`);
             if(filterOption.pageIndex){

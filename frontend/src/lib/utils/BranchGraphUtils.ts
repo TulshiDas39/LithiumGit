@@ -81,7 +81,7 @@ export class BranchGraphUtils{
     }    
 
     static createBranchPanel(){
-        console.log("creating branch graph.");
+        console.log("creating graph");
         BranchGraphUtils.resetGraphStates();
         BranchGraphUtils.svgContainer = document.querySelector(`#${EnumHtmlIds.branchSvgContainer}`) as HTMLDivElement;                
         //BranchGraphUtils.selectedCommit = BranchUtils.repositoryDetails.headCommit;
