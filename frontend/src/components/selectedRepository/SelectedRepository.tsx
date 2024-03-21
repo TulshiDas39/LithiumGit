@@ -126,6 +126,12 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[position?.x])
 
     useEffect(()=>{
+        if(!BranchGraphUtils.svgContainer)
+            return;
+        BranchGraphUtils.resizeHandler();
+    },[leftWidth])
+
+    useEffect(()=>{
         refData.current.repo = props.repo;
         updateRepoData().then(_=>{     
             BranchGraphUtils.createBranchPanel();
