@@ -34,11 +34,10 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
     }
 
-    const checkOutCommit=()=>{
-        const options:string[]=[];
-        const canCheckoutBranch = BranchUtils.canCheckoutBranch(Data.selectedCommit);
-        if(canCheckoutBranch) options.push(Data.selectedCommit.ownerBranch.name);
-        else options.push(Data.selectedCommit.hash);
+    const checkOutCommit=(destination:string)=>{
+        const options:string[]=[destination];
+        //const canCheckoutBranch = BranchUtils.canCheckoutBranch(Data.selectedCommit);
+        //if(canCheckoutBranch) options.push(Data.selectedCommit.ownerBranch.name);        
         window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,BranchUtils.repositoryDetails.repoInfo,options)
         hideModal();
     }
@@ -96,11 +95,18 @@ function CommitContextModalComponent(){
     },[])
     
     const branchNames = useMemo(()=>{
-        if(!store.show && !Data.selectedCommit || !Data.selectedCommit.refValues.length)
+        if(!store.show || !Data.selectedCommit || !Data.selectedCommit.refValues.length)
             return [];
         console.log(BranchUtils.repositoryDetails);
         const branchList = BranchUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
+        for(let ref of Data.selectedCommit.refValues){
+            if(!BranchUtils.isOriginBranch(ref) || BranchUtils.hasLocalBranch(ref))
+                continue;
+            const localBranch = BranchUtils.getLocalBranch(ref);
+            if(localBranch)
+                referredBranches.push(localBranch);
+        }
         return referredBranches;
     },[store.show])
 
@@ -111,13 +117,13 @@ function CommitContextModalComponent(){
                     {
                         branchNames.map(branchName=>(
                             <div key={branchName} className="row g-0 border-bottom">
-                                <div className="col-12 hover cur-default " onClick={checkOutCommit}>Checkout branch '{branchName}'</div> 
+                                <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchName)}>Checkout branch '{branchName}'</div> 
                             </div>
                         ))
                     }
 
                     <div className="row g-0 border-bottom">
-                        <div className="col-12 hover cur-default " onClick={checkOutCommit}>Checkout this commit</div> 
+                        <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
                     </div>
                     <div className="row g-0 border-bottom">
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>

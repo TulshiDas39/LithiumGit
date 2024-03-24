@@ -471,14 +471,33 @@ export class BranchUtils{
     }
 
     static isOriginBranch(str:string){
-        str = "remotes/"+str;
+        if(!str.startsWith("remotes/"))
+            str = "remotes/"+str;
         if(BranchUtils.repositoryDetails.branchList.includes(str))
             return true;
     }
 
-    static hasLocalBranch(str:string){
-        if(!BranchUtils.isOriginBranch(str))
+    static hasLocalBranch(originBranch:string){
+        if(!BranchUtils.isOriginBranch(originBranch))
             return false;
+        const localBranch = BranchUtils.getLocalBranch(originBranch);
+        if(BranchUtils.repositoryDetails.branchList.includes(localBranch))
+            return true;
+        return false;
+    }
+
+    static getLocalBranch(originBranch:string){
+        let localBranch = originBranch;
+        if(originBranch.startsWith("remotes/")){
+            localBranch = localBranch.substring("remotes/".length);            
+        }
+        const remotes = BranchUtils.repositoryDetails.remotes;
+        const remote = remotes.find(_ => localBranch.startsWith(`${_.name}/`))
+        if(remote){
+            localBranch = localBranch.substring(`${remote.name}/`.length);
+        }
+
+        return localBranch;
         
     }
 }
