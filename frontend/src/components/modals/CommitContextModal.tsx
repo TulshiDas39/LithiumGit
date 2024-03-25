@@ -2,12 +2,23 @@ import { ICommitInfo, IStatus, RendererEvents } from "common_library";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils } from "../../lib";
+import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
+
+enum Option{
+    Checkout,
+    Merge,
+    Rebase,
+    CherryPick,
+}
+
+interface IState{
+    mouseOver?:Option;
+}
 
 function CommitContextModalComponent(){
     const Data = ModalData.commitContextModal;
@@ -16,6 +27,8 @@ function CommitContextModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
+    
+    const [state, setState] = useMultiState({} as IState);
 
     const refData = useRef({mergerCommitMessage:""});
 
@@ -113,16 +126,34 @@ function CommitContextModalComponent(){
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
-                <div className="container">
+                <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     {
-                        branchNames.map(branchName=>(
-                            <div key={branchName} className="row g-0 border-bottom">
-                                <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchName)}>Checkout branch '{branchName}'</div> 
+                        branchNames.length > 0 && <div>
+                            <div className="row g-0 border-bottom">
+                                {
+                                    branchNames.length > 1 ? <div className="col-12 cur-default position-relative">
+                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Checkout}))}>
+                                            <span className="flex-grow-1">Checkout branch</span>
+                                            <span>&gt;</span>
+                                        </div>
+                                        
+                                        {(state.mouseOver === Option.Checkout) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                            {
+                                                branchNames.map((br=>(
+                                                    <div key={br} className="border-bottom py-1 px-3">
+                                                        <span className="hover" onClick={() => checkOutCommit(br)}>{br}</span>
+                                                    </div>
+                                                )))
+                                            }
+                                        </div>}
+                                    </div>:
+                                    <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchNames[0])}>Checkout branch '{branchNames[0]}'</div>
+                                }                                
                             </div>
-                        ))
+                        </div>
                     }
 
-                    <div className="row g-0 border-bottom">
+                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
                     </div>
                     <div className="row g-0 border-bottom">
