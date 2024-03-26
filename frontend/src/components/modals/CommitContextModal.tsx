@@ -8,6 +8,7 @@ import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 enum Option{
     Checkout,
@@ -72,6 +73,16 @@ function CommitContextModalComponent(){
         refData.current.mergerCommitMessage = BranchUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
         window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+    }
+
+    const rebaseBranch=(branch:string)=>{
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
+        IpcUtils.rebaseBranch(branch).then(_=>{
+            IpcUtils.getRepoStatus();
+        }).catch(e=>{
+            ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+        })        
     }
 
     useEffect(()=>{
@@ -169,7 +180,7 @@ function CommitContextModalComponent(){
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
                     </div>
                     {
-                        !Data.selectedCommit?.isHead && branchNamesForCheckout.length > 0 && <div>
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
                             <div className="row g-0 border-bottom">
                                 {
                                     referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
@@ -196,6 +207,32 @@ function CommitContextModalComponent(){
                     {!Data.selectedCommit?.isHead && <div onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>mergeCommit(Data.selectedCommit?.hash)}>Merge this commit</div>
                     </div>}
+
+                    {
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
+                            <div className="row g-0 border-bottom">
+                                {
+                                    referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
+                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
+                                            <span className="flex-grow-1">Rebase branch</span>
+                                            <span>&gt;</span>
+                                        </div>
+                                        
+                                        {(state.mouseOver === Option.Rebase) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                            {
+                                                referredLocalBranches.map((br=>(
+                                                    <div key={br} className="border-bottom py-1 px-3">
+                                                        <span className="hover" onClick={() => rebaseBranch(br)}>{br}</span>
+                                                    </div>
+                                                )))
+                                            }
+                                        </div>}
+                                    </div>:
+                                    <div className="col-12 hover cur-default " onClick={() => rebaseBranch(referredLocalBranches[0])}>Rebase branch '{referredLocalBranches[0]}'</div>
+                                }                                
+                            </div>
+                        </div>
+                    }
                 </div>
             </Modal.Body>
         </Modal>

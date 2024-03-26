@@ -88,4 +88,8 @@ export class IpcUtils{
     static async removeRecentRepo(repoId:string){
         await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
     }
+
+    static async rebaseBranch(branch:string){
+        await window.ipcRenderer.invoke(RendererEvents.rebase,BranchUtils.repositoryDetails.repoInfo,branch);
+    }
 }

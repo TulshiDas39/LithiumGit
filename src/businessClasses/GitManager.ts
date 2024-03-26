@@ -35,6 +35,7 @@ export class GitManager{
         this.addRemoteAddHandler();
         this.addRemoteRemoveHandler();
         this.addRemoteListHandler();
+        this.addRebaseHandler();
     }
 
 
@@ -97,6 +98,11 @@ export class GitManager{
             await this.createBranch(sourceCommit,repository,newBranchName,checkout);            
         })
     }
+    private addRebaseHandler(){
+        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,branch:string)=>{
+            await this.rebaseBranch(repository,branch);
+        })
+    }
     addCheckOutCommitHandlder(){
         // RendererEvents.checkoutCommit
         ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,repoInfo:RepositoryInfo,options:string[])=>{
@@ -132,6 +138,11 @@ export class GitManager{
         ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             await this.stageItem(paths,repoInfo);
         })
+    }
+
+    private async rebaseBranch(repoInfo:RepositoryInfo,branch:string){
+        const git = this.getGitRunner(repoInfo);        
+        await git.rebase([branch]);        
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
