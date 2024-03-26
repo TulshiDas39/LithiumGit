@@ -73,6 +73,10 @@ function CommitContextModalComponent(){
         const options = [Data.selectedCommit.hash];
         IpcUtils.cherryPick(options).then(r=>{
             IpcUtils.getRepoStatus();
+        }).catch(e=>{
+            const message = e?.toString() || "Failed to perform cherry-pick.";
+            ModalData.errorModal.message = message;
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
         });
     }
 
