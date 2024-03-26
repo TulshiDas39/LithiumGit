@@ -470,6 +470,18 @@ export class BranchUtils{
         
     }
 
+    static generateMergeCommitMessage(hash:string){
+        const sourceCommit = BranchUtils.repositoryDetails.allCommits.find(x=> x.hash === hash);
+        if(!sourceCommit) return;
+        let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
+        return mergerCommitMessage;
+    }
+
+    static generateMergeBranchMessage(branch:string){
+        let mergerCommitMessage = `Merge branch '${branch}'`;
+        return mergerCommitMessage;
+    }
+
     static isOriginBranch(str:string){
         if(!str.startsWith("remotes/"))
             str = "remotes/"+str;

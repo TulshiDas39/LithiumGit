@@ -60,17 +60,20 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
     }
 
-    const handleMerge=()=>{
+    const mergeCommit=(hash:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        const sourceCommit = Data.selectedCommit;
-        let source = sourceCommit.hash;
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommit()!;
-        if(BranchUtils.HasBranchNameRef(sourceCommit)){
-            source = sourceCommit.ownerBranch.name;
-        }
-        const options = [source,"--no-commit","--no-ff"];
+        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommitMessage(hash)!;      
+        const options = [hash,"--no-commit","--no-ff"];
         window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
     }
+
+    const mergeBranch=(branch:string)=>{
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
+        refData.current.mergerCommitMessage = BranchUtils.generateMergeBranchMessage(branch)!;      
+        const options = [branch,"--no-commit","--no-ff"];
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+    }
+
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
@@ -106,32 +109,38 @@ function CommitContextModalComponent(){
         }
 
     },[])
-    
-    const branchNames = useMemo(()=>{
-        if(!store.show || !Data.selectedCommit || !Data.selectedCommit.refValues.length)
-            return [];
-        console.log(BranchUtils.repositoryDetails);
+
+    const referredLocalBranches = useMemo(()=>{
+        if(!store.show || !Data.selectedCommit?.refValues.length)
+            return [];        
         const branchList = BranchUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
+        return referredBranches;
+    },[store.show])
+    
+    const branchNamesForCheckout = useMemo(()=>{
+        if(!store.show || !Data.selectedCommit?.refValues.length)
+            return [];
+        const branches = referredLocalBranches.slice();
         for(let ref of Data.selectedCommit.refValues){
             if(!BranchUtils.isOriginBranch(ref) || BranchUtils.hasLocalBranch(ref))
                 continue;
             const localBranch = BranchUtils.getLocalBranch(ref);
             if(localBranch)
-                referredBranches.push(localBranch);
+                branches.push(localBranch);
         }
-        return referredBranches;
-    },[store.show])
+        return branches;
+    },[referredLocalBranches,store.show])
 
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     {
-                        branchNames.length > 0 && <div>
+                        branchNamesForCheckout.length > 0 && <div>
                             <div className="row g-0 border-bottom">
                                 {
-                                    branchNames.length > 1 ? <div className="col-12 cur-default position-relative">
+                                    branchNamesForCheckout.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Checkout}))}>
                                             <span className="flex-grow-1">Checkout branch</span>
                                             <span>&gt;</span>
@@ -139,7 +148,7 @@ function CommitContextModalComponent(){
                                         
                                         {(state.mouseOver === Option.Checkout) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
                                             {
-                                                branchNames.map((br=>(
+                                                branchNamesForCheckout.map((br=>(
                                                     <div key={br} className="border-bottom py-1 px-3">
                                                         <span className="hover" onClick={() => checkOutCommit(br)}>{br}</span>
                                                     </div>
@@ -147,7 +156,7 @@ function CommitContextModalComponent(){
                                             }
                                         </div>}
                                     </div>:
-                                    <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchNames[0])}>Checkout branch '{branchNames[0]}'</div>
+                                    <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchNamesForCheckout[0])}>Checkout branch '{branchNamesForCheckout[0]}'</div>
                                 }                                
                             </div>
                         </div>
@@ -156,12 +165,37 @@ function CommitContextModalComponent(){
                     <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
                     </div>
-                    <div className="row g-0 border-bottom">
+                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
                     </div>
-                    <div>
-                        <div className="col-12 hover cur-default " onClick={handleMerge}>Merge from this commit</div>
-                    </div>
+                    {
+                        !Data.selectedCommit?.isHead && branchNamesForCheckout.length > 0 && <div>
+                            <div className="row g-0 border-bottom">
+                                {
+                                    referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
+                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
+                                            <span className="flex-grow-1">Merge branch</span>
+                                            <span>&gt;</span>
+                                        </div>
+                                        
+                                        {(state.mouseOver === Option.Merge) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                            {
+                                                referredLocalBranches.map((br=>(
+                                                    <div key={br} className="border-bottom py-1 px-3">
+                                                        <span className="hover" onClick={() => mergeBranch(br)}>{br}</span>
+                                                    </div>
+                                                )))
+                                            }
+                                        </div>}
+                                    </div>:
+                                    <div className="col-12 hover cur-default " onClick={() => mergeBranch(referredLocalBranches[0])}>Merge branch '{referredLocalBranches[0]}'</div>
+                                }                                
+                            </div>
+                        </div>
+                    }
+                    {!Data.selectedCommit?.isHead && <div onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={()=>mergeCommit(Data.selectedCommit?.hash)}>Merge this commit</div>
+                    </div>}
                 </div>
             </Modal.Body>
         </Modal>
