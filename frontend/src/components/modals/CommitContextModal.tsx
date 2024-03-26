@@ -68,6 +68,14 @@ function CommitContextModalComponent(){
         window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
     }
 
+    const cherryPick=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));        
+        const options = [Data.selectedCommit.hash];
+        IpcUtils.cherryPick(options).then(r=>{
+            IpcUtils.getRepoStatus();
+        });
+    }
+
     const mergeBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         refData.current.mergerCommitMessage = BranchUtils.generateMergeBranchMessage(branch)!;      
@@ -204,7 +212,7 @@ function CommitContextModalComponent(){
                             </div>
                         </div>
                     }
-                    {!Data.selectedCommit?.isHead && <div onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                    {!Data.selectedCommit?.isHead && <div className="border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>mergeCommit(Data.selectedCommit?.hash)}>Merge this commit</div>
                     </div>}
 
@@ -233,6 +241,10 @@ function CommitContextModalComponent(){
                             </div>
                         </div>
                     }
+
+                    {!Data.selectedCommit?.isHead && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={cherryPick}>Cherry-Pick this commit</div>
+                    </div>}
                 </div>
             </Modal.Body>
         </Modal>

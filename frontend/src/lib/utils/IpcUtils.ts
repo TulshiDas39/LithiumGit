@@ -92,4 +92,8 @@ export class IpcUtils{
     static async rebaseBranch(branch:string){
         await window.ipcRenderer.invoke(RendererEvents.rebase,BranchUtils.repositoryDetails.repoInfo,branch);
     }
+
+    static async cherryPick(options:string[]){
+        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,BranchUtils.repositoryDetails.repoInfo,options);
+    }
 }

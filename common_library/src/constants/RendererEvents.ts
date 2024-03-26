@@ -258,5 +258,6 @@ export class RendererEvents{
     static readonly gitLog = "gitLog";
     static readonly removeRecentRepo = "removeRecentRepo";
     static readonly rebase = "rebase";
+    static readonly cherry_pick = "cherry_pick";
 }
 

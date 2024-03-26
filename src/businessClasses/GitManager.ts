@@ -36,6 +36,7 @@ export class GitManager{
         this.addRemoteRemoveHandler();
         this.addRemoteListHandler();
         this.addRebaseHandler();
+        this.addCherryPickHandler();
     }
 
 
@@ -193,6 +194,12 @@ export class GitManager{
         });
     }
 
+    private addCherryPickHandler(){
+        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoInfo:RepositoryInfo,options:string[] )=>{
+            await this.cherryPick(repoInfo,options);
+        });
+    }
+
     private addStatusSyncHandler(){
         ipcMain.handle(RendererEvents.getStatusSync().channel, async (e,repoInfo:RepositoryInfo)=>{
             const status = await this.getStatus(repoInfo);
@@ -292,6 +299,11 @@ export class GitManager{
         return result;
     }
 
+    private async cherryPick(repoInfo:RepositoryInfo,options:string[]){
+        const git = this.getGitRunner(repoInfo);
+        await git.raw(["cherry-pick",...options]);
+    }
+    
     private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
