@@ -40,7 +40,6 @@ function CommitBoxComponent(){
             setState({value:""});
             IpcUtils.getRepoStatus();
         })
-        window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);
     }
 
     useEffect(()=>{

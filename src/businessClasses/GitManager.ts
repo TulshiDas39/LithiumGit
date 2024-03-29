@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
@@ -79,15 +79,15 @@ export class GitManager{
     }
 
     addCommitHandler(){
-        ipcMain.handle(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,messages:string[])=>{
-            await this.giveCommit(repository,messages);            
+        ipcMain.handle(RendererEvents.commit().channel, async (e,repoPath:string, messages:string[],options:string[])=>{
+            await this.giveCommit(repoPath, messages,options);            
         })
     }
 
-    async giveCommit(repository:RepositoryInfo,messages:string[]){
+    async giveCommit(repoPath:string, messages:string[],options:string[]){
         try {
-            const git = this.getGitRunner(repository);            
-            await git.commit(messages);            
+            const git = this.getGitRunner(repoPath);            
+            await git.commit(messages,options);
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
@@ -566,9 +566,16 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo){
+    private getGitRunner(repoInfo:RepositoryInfo | string){
+        let repoPath = "";
+        if(typeof(repoInfo) === 'string'){
+            repoPath = repoInfo as string;
+        }
+        else{
+            repoPath = (repoInfo as RepositoryInfo).path;
+        }
         const options: Partial<SimpleGitOptions> = {
-            baseDir: repoInfo.path,
+            baseDir: repoPath,
             binary: 'git',
             maxConcurrentProcesses: 6,
          };

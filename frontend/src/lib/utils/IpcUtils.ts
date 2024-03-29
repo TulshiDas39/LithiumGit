@@ -1,5 +1,11 @@
-import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, IGitCommandInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
+// import { ReduxUtils } from "./ReduxUtils";
+import { IpcParams } from "../interfaces";
+import { ModalData } from "../../components/modals/ModalData";
+import { ActionModals } from "../../store";
+import { EnumModals } from "../enums";
+import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
     static getRepoStatus(repoInfo?:RepositoryInfo){
@@ -35,8 +41,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
     }
 
-    static doCommit(messages:string[]){
-        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,messages);
+    static doCommit(messages:string[]){        
+        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages]);
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
@@ -95,5 +101,27 @@ export class IpcUtils{
 
     static async cherryPick(options:string[]){
         await window.ipcRenderer.invoke(RendererEvents.cherry_pick,BranchUtils.repositoryDetails.repoInfo,options);
+    }
+
+    private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{
+        const result = {} as IpcResult<T>;
+        return window.ipcRenderer.invoke(channel,...args).then(r=>{
+            result.response = r;
+            return result;
+        }).catch((e)=>{
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                ModalData.errorModal.message = err;
+                //ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));                
+            }
+            result.error = err;
+            return result;
+        });
+    }
+
+    static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string,){      
+        if(!repositoryPath)
+            repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
+        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
     }
 }
