@@ -45,6 +45,10 @@ export class IpcUtils{
         return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages]);
     }
 
+    static ammend(messages:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages,"--amend"]);
+    }
+
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
         return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,BranchUtils.repositoryDetails,branchName,checkout);
     }

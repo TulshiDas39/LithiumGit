@@ -10,6 +10,7 @@ import { StringUtils } from "../../../../lib/utils/StringUtils";
 
 interface IState{
     value:string;
+    amend:boolean;
 }
 
 function CommitBoxComponent(){
@@ -32,14 +33,23 @@ function CommitBoxComponent(){
 
     const ref = useRef<HTMLDivElement>();
 
-    const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
+    const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled,amend:false} as IState);
 
     const handleCommit=()=>{
         const messages = new StringUtils().getLines(state.value);
-        IpcUtils.doCommit(messages).finally(()=>{
-            setState({value:""});
-            IpcUtils.getRepoStatus();
-        })
+        if(state.amend){
+            IpcUtils.ammend(messages).finally(()=>{
+                setState({value:""});
+                IpcUtils.getRepoStatus();
+            })
+        }
+        else{
+            IpcUtils.doCommit(messages).finally(()=>{
+                setState({value:""});
+                IpcUtils.getRepoStatus();
+            })
+        }
+        
     }
 
     useEffect(()=>{
@@ -66,6 +76,10 @@ function CommitBoxComponent(){
                     </div>
                 </div>
                 <div className="col-3"></div>
+            </div>
+            <div className="d-flex align-items-center justify-content-center pt-1">
+                <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
+                <label htmlFor="amend" className="ps-1">Amend</label>
             </div>
     </div>
 }
