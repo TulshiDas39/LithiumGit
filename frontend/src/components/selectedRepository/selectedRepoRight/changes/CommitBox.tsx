@@ -36,19 +36,14 @@ function CommitBoxComponent(){
     const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled,amend:false} as IState);
 
     const handleCommit=()=>{
-        const messages = new StringUtils().getLines(state.value);
-        if(state.amend){
-            IpcUtils.ammend(messages).finally(()=>{
-                setState({value:""});
-                IpcUtils.getRepoStatus();
-            })
-        }
-        else{
-            IpcUtils.doCommit(messages).finally(()=>{
-                setState({value:""});
-                IpcUtils.getRepoStatus();
-            })
-        }
+        const options:string[] = [];
+        if(state.amend)
+            options.push("--amend");
+        const messages = new StringUtils().getLines(state.value);        
+        IpcUtils.doCommit(messages,options).finally(()=>{
+            setState({value:""});
+            IpcUtils.getRepoStatus();
+        })
         
     }
 
@@ -57,6 +52,13 @@ function CommitBoxComponent(){
             setState({value:BranchUtils.generateMergeCommit()});
         }        
     },[store.isMergingState])
+
+    useEffect(()=>{
+        if(!state.amend || !!state.value)
+            return;
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        setState({value:headCommit.message});
+    },[state.amend])
 
     
 

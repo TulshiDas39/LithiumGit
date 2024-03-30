@@ -41,12 +41,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
     }
 
-    static doCommit(messages:string[]){        
-        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages]);
-    }
-
-    static ammend(messages:string[]){
-        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages,"--amend"]);
+    static doCommit(messages:string[],options:string[]){        
+        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages,options]);
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
@@ -123,7 +119,7 @@ export class IpcUtils{
         });
     }
 
-    static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string,){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string,){      
         if(!repositoryPath)
             repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
