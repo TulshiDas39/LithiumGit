@@ -512,4 +512,14 @@ export class BranchUtils{
         return localBranch;
         
     }
+
+    static get activeOriginName(){
+        if(!BranchUtils.repositoryDetails.remotes.length)
+            return "";
+        const orignName = BranchUtils.repositoryDetails.repoInfo.activeOrigin;
+        if(!BranchUtils.repositoryDetails.remotes.some(_=> _.name === orignName)){
+            return BranchUtils.repositoryDetails.remotes[0].name;
+        }
+        return orignName;
+    }
 }

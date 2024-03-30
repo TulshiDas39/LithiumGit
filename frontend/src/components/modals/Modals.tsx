@@ -3,6 +3,7 @@ import { CommitContextModal } from "./CommitContextModal";
 import { CreateBranchModal } from "./CreateBranchModal";
 import { ErrorModal } from "./ErrorModal";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { PushToModal } from "./PushToModal";
 
 function ModalsComponent(){
     return(
@@ -11,6 +12,7 @@ function ModalsComponent(){
             <CreateBranchModal />
             <ErrorModal />
             <ConfirmationModal />
+            <PushToModal />
         </Fragment>
     )
 }

@@ -3,4 +3,5 @@ export enum EnumModals{
     CREATE_BRANCH="CREATE_BRANCH",
     ERROR="ERROR",
     CONFIRMATION="CONFIRMATION",
+    PUSH_TO="PUSH_TO",
 }

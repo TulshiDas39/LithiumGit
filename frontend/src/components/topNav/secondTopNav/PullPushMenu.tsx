@@ -3,10 +3,11 @@ import React, { useEffect, useMemo } from "react"
 import { Dropdown } from "react-bootstrap";
 import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaCaretDown } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, useMultiState } from "../../../lib";
+import { BranchUtils, EnumModals, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { ActionModals } from "../../../store";
 
 interface IStatus{
     showPushTo:boolean;    
@@ -62,7 +63,7 @@ function PullPushMenuComponent(){
             setState({showPushTo:false})
         }
         document.addEventListener("click",handler);
-        
+
         return ()=>{
             document.removeEventListener("click",handler);
         }
@@ -105,7 +106,8 @@ function PullPushMenuComponent(){
                 </div>
                 <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
                     <FaCaretDown onClick={handlePushCaretClick} />
-                    {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}>
+                    {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PUSH_TO))}>
                         <span className="text-nowrap text-light">Push To &gt;</span>
                     </div>}
                 </div>
