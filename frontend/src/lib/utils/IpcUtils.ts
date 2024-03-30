@@ -21,8 +21,13 @@ export class IpcUtils{
         return status;
     }
 
-    static trigerPush(){
-        return window.ipcRenderer.invoke(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    static trigerPush(options?:string[]){
+        if(!options){
+            options = [BranchUtils.repositoryDetails.remotes[0].name];
+            if(!BranchUtils.repositoryDetails.status.trackingBranch)
+                options.push("-u",BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
     }
 
     static unstageItem(paths:string[],repoInfo:RepositoryInfo){
@@ -119,7 +124,7 @@ export class IpcUtils{
         });
     }
 
-    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string,){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
         if(!repositoryPath)
             repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);

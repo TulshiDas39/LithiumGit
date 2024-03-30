@@ -439,8 +439,8 @@ export class GitManager{
     }
 
     private addPushHandler(){
-        ipcMain.handle(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.givePush(repoDetails);
+        ipcMain.handle(RendererEvents.push().channel,async (e,repoPath:string,options:string[])=>{
+            await this.givePush(repoPath ,options);
         });
     }
 
@@ -551,13 +551,10 @@ export class GitManager{
         return hasChange;
     }
 
-    private async givePush(repoDetails:IRepositoryDetails){
-        const git = this.getGitRunner(repoDetails.repoInfo);
+    private async givePush(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
         
-        try {
-            const options:string[] = [repoDetails.remotes[0].name];
-            if(!repoDetails.status.trackingBranch)
-                options.push("-u",repoDetails.headCommit.ownerBranch.name);            
+        try {                       
             const result = await git.push(options);
             if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
