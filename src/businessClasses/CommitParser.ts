@@ -155,7 +155,8 @@ export class CommitParser{
         CommitParser.removeGurbageLines(lines);
         while(indexObj.index < lines.length){
             let commit = CommitParser.getCommit(lines,indexObj);
-            commits = [commit,...commits];
+            if(!commit.refValues.some(_=> _.startsWith('refs/notes/')))
+                commits = [commit,...commits];
             indexObj.index++;
         }
         return commits;
