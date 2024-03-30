@@ -1,12 +1,16 @@
 import { RendererEvents } from "common_library";
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { Dropdown } from "react-bootstrap";
-import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaCaretDown } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils } from "../../../lib";
+import { BranchUtils, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
+
+interface IStatus{
+    showPushTo:boolean;    
+}
 
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
@@ -15,6 +19,8 @@ function PullPushMenuComponent(){
         behind:state.ui.status?.behind,
         isDetached:!!state.ui.status?.isDetached
     }),shallowEqual);
+
+    const [state,setState] = useMultiState<IStatus>({showPushTo:false});
 
     const dispatch = useDispatch();
     const currentText = useMemo(()=>{
@@ -44,6 +50,23 @@ function PullPushMenuComponent(){
             IpcUtils.getRepoStatus();
         })
     }
+
+    const handlePushCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        setState({showPushTo:!state.showPushTo});
+    }
+
+    useEffect(()=>{
+        const handler = ()=>{
+            setState({showPushTo:false})
+        }
+        document.addEventListener("click",handler);
+        
+        return ()=>{
+            document.removeEventListener("click",handler);
+        }
+    },[])
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
@@ -75,13 +98,16 @@ function PullPushMenuComponent(){
             </div>
 
         </div>
-        <div className="col-auto ps-1 pe-1 hover hover-bg-secondary" onClick={handlePush}>
-            <div className="row g-0 align-items-center h-100">
-                <div className="col-auto">
-                    <FaArrowUp />
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-stretch h-100 bg-success">
+                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePush}>
+                    <span className="px-2 text-light">Push</span> 
                 </div>
-                <div className="col-auto">
-                    Push
+                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
+                    <FaCaretDown onClick={handlePushCaretClick} />
+                    {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}>
+                        <span className="text-nowrap text-light">Push To &gt;</span>
+                    </div>}
                 </div>
             </div>
         </div>
