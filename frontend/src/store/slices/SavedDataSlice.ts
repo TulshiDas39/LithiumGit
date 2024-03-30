@@ -55,6 +55,11 @@ const SavedDataSlice = createSlice({
                 window.ipcRenderer.send(RendererEvents.updateRepositories,selectedRepos.map(rep=>({...rep})));
             }
         },
+        updateRepository(state,action:PayloadAction<RepositoryInfo>){
+            const index = state.recentRepositories.findIndex(_=> _.path === action.payload.path);
+            state.recentRepositories[index] = action.payload;
+            IpcUtils.updateRepository(action.payload);
+        },
         updateAutoStaging(state,action:PayloadAction<boolean>){
             state.autoStagingEnabled = action.payload;
         }

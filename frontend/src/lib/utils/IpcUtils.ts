@@ -129,4 +129,8 @@ export class IpcUtils{
             repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
     }
+
+    static updateRepository(repo:RepositoryInfo){
+        return IpcUtils.execute(RendererEvents.updateRepository,[repo]);
+    }
 }
