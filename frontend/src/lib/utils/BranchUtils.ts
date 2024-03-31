@@ -299,35 +299,40 @@ export class BranchUtils{
         }
 
         let extraSpace = BranchUtils.getExtraSpaceForRefs(commit);
-        commit.x = x + extraSpace;
+        if(extraSpace > BranchUtils.distanceBetweenCommits) {
+            commit.x = x + extraSpace - BranchUtils.distanceBetweenCommits;
+        }
+        else commit.x = x;
     }
 
     private static getExtraSpaceForRefs(commit:ICommitInfo){
         const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
         const spaceForRef = (BranchUtils.branchPanelFontSize * 0.8) * maxRefSize;
-        const previousCommit = commit.previousCommit;
+        let previousCommit = commit.previousCommit;
         let extraSpace = 0;
-        if(previousCommit){
+        let availableSpace = 0;
+        while(previousCommit){
             if(previousCommit.ownerBranch !== commit.ownerBranch){
-                if(spaceForRef > BranchUtils.distanceBetweenCommits){
-                    extraSpace = spaceForRef - BranchUtils.distanceBetweenCommits;
-                }          
-            }        
-            else {
-                let availableSpace = BranchUtils.distanceBetweenCommits;
-                let iCommit = previousCommit;
-                while(!iCommit.refValues.length && availableSpace < spaceForRef){
-                    availableSpace += BranchUtils.distanceBetweenCommits;                    
-                    iCommit = iCommit.previousCommit;
-                }
-                if(availableSpace > spaceForRef){
-                    availableSpace = spaceForRef;
-                }
-                extraSpace =  spaceForRef - availableSpace;                
+                break;
             }
+            if(!previousCommit.refValues.length){
+                availableSpace += BranchUtils.distanceBetweenCommits;                                
+            }
+            else{
+                break;
+            }
+
+            if(availableSpace >= spaceForRef){
+                break;
+            }
+            previousCommit = previousCommit.previousCommit;
         }
-        else            
-            extraSpace = spaceForRef - BranchUtils.distanceBetweenCommits;
+
+        if(availableSpace > spaceForRef){
+            availableSpace = spaceForRef;
+        }
+        
+        extraSpace = spaceForRef - availableSpace;
 
         return extraSpace;
     }
