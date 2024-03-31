@@ -12,3 +12,4 @@ export * from './IConfigInfo';
 export * from './ISavedData';
 export * from './ILogFilterOptions';
 export * from './IPaginated';
+export * from './IGitCommandInfo';

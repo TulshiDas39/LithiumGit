@@ -1,6 +1,6 @@
 {
-  "name": "opengit",
-  "version": "0.0.1-beta.3",
+  "name": "lithiumgit",
+  "version": "0.0.2-alpha.1",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -44,8 +44,8 @@
     "simple-git": "^3.10.0"
   },
   "build": {
-    "productName": "OpenGit",
-    "appId": "org.opengit.electron",
+    "productName": "LithiumGit",
+    "appId": "org.lithiumgit.electron",
     "asar": false,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -112,12 +112,12 @@
     "publish": {
       "provider": "github",
       "owner": "tulshidas39",
-      "repo": "opengit"
+      "repo": "lithiumgit"
     },
-    "artifactName": "OpenGit-Setup-${os}-${arch}-${version}.${ext}"
+    "artifactName": "LithiumGit-Setup-${os}-${arch}-${version}.${ext}"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tulshidas39/opengit.git"
+    "url": "git+https://github.com/tulshidas39/LithiumGit.git"
   }
 }

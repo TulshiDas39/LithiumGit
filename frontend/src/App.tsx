@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layouts/layout';
-import { useMultiState } from './lib';
+import { ReduxUtils, useMultiState } from './lib';
 import { UiConstants } from './lib/constants';
 import { ActionUI } from './store/slices/UiSlice';
 
@@ -15,6 +15,7 @@ function App() {
   const [state,setState] = useMultiState<IState>({isInitialised:false});
 
   const dispatch = useDispatch();
+  ReduxUtils.dispatch = dispatch;
   useEffect(()=>{
     if(!window.ipcRenderer) return;
     window.ipcRenderer.on(RendererEvents.logger,(e,data:any)=>{

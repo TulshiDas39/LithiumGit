@@ -1,5 +1,11 @@
-import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, IGitCommandInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
+// import { ReduxUtils } from "./ReduxUtils";
+import { IpcParams } from "../interfaces";
+import { ModalData } from "../../components/modals/ModalData";
+import { ActionModals } from "../../store";
+import { EnumModals } from "../enums";
+import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
     static getRepoStatus(repoInfo?:RepositoryInfo){
@@ -15,8 +21,22 @@ export class IpcUtils{
         return status;
     }
 
-    static trigerPush(){
-        return window.ipcRenderer.invoke(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    static trigerPush(options?:string[]){
+        if(!options){
+            options = [BranchUtils.activeOriginName];
+            if(!BranchUtils.repositoryDetails.status.trackingBranch)
+                options.push("-u",BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
+    }
+
+    static trigerPull(options?:string[]){
+        if(!options){
+            options = [BranchUtils.activeOriginName];
+            if(!BranchUtils.repositoryDetails.status.trackingBranch)
+                options.push(BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
 
     static unstageItem(paths:string[],repoInfo:RepositoryInfo){
@@ -35,8 +55,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
     }
 
-    static doCommit(message:string){
-        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,message);
+    static doCommit(messages:string[],options:string[]){        
+        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages,options]);
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
@@ -87,5 +107,39 @@ export class IpcUtils{
     
     static async removeRecentRepo(repoId:string){
         await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
+    }
+
+    static async rebaseBranch(branch:string){
+        await window.ipcRenderer.invoke(RendererEvents.rebase,BranchUtils.repositoryDetails.repoInfo,branch);
+    }
+
+    static async cherryPick(options:string[]){
+        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,BranchUtils.repositoryDetails.repoInfo,options);
+    }
+
+    private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{
+        const result = {} as IpcResult<T>;
+        return window.ipcRenderer.invoke(channel,...args).then(r=>{
+            result.response = r;
+            return result;
+        }).catch((e)=>{
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                ModalData.errorModal.message = err;
+                //ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));                
+            }
+            result.error = err;
+            return result;
+        });
+    }
+
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
+        if(!repositoryPath)
+            repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
+        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
+    }
+
+    static updateRepository(repo:RepositoryInfo){
+        return IpcUtils.execute(RendererEvents.updateRepository,[repo]);
     }
 }

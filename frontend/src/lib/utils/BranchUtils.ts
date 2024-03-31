@@ -293,12 +293,48 @@ export class BranchUtils{
 
     private static setX(commit:ICommitInfo,x:number){
         
-        if(!!commit.previousCommit?.refs && !!commit.refs){
-            const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
-            commit.x = x + BranchUtils.branchPanelFontSize * maxRefSize;
+        if(!commit.refValues.length){
+            commit.x = x;
+            return;
+        }
+
+        let extraSpace = BranchUtils.getExtraSpaceForRefs(commit);
+        if(extraSpace > BranchUtils.distanceBetweenCommits) {
+            commit.x = x + extraSpace - BranchUtils.distanceBetweenCommits;
         }
         else commit.x = x;
+    }
+
+    private static getExtraSpaceForRefs(commit:ICommitInfo){
+        const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
+        const spaceForRef = (BranchUtils.branchPanelFontSize * 0.8) * maxRefSize;
+        let previousCommit = commit.previousCommit;
+        let extraSpace = 0;
+        let availableSpace = 0;
+        while(previousCommit){
+            if(previousCommit.ownerBranch !== commit.ownerBranch){
+                break;
+            }
+            if(!previousCommit.refValues.length){
+                availableSpace += BranchUtils.distanceBetweenCommits;                                
+            }
+            else{
+                break;
+            }
+
+            if(availableSpace >= spaceForRef){
+                break;
+            }
+            previousCommit = previousCommit.previousCommit;
+        }
+
+        if(availableSpace > spaceForRef){
+            availableSpace = spaceForRef;
+        }
         
+        extraSpace = spaceForRef - availableSpace;
+
+        return extraSpace;
     }
 
     private static isBranch(str:string,repoDetails:IRepositoryDetails){
@@ -437,5 +473,58 @@ export class BranchUtils{
 
         return mergerCommitMessage;
         
+    }
+
+    static generateMergeCommitMessage(hash:string){
+        const sourceCommit = BranchUtils.repositoryDetails.allCommits.find(x=> x.hash === hash);
+        if(!sourceCommit) return;
+        let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
+        return mergerCommitMessage;
+    }
+
+    static generateMergeBranchMessage(branch:string){
+        let mergerCommitMessage = `Merge branch '${branch}'`;
+        return mergerCommitMessage;
+    }
+
+    static isOriginBranch(str:string){
+        if(!str.startsWith("remotes/"))
+            str = "remotes/"+str;
+        if(BranchUtils.repositoryDetails.branchList.includes(str))
+            return true;
+    }
+
+    static hasLocalBranch(originBranch:string){
+        if(!BranchUtils.isOriginBranch(originBranch))
+            return false;
+        const localBranch = BranchUtils.getLocalBranch(originBranch);
+        if(BranchUtils.repositoryDetails.branchList.includes(localBranch))
+            return true;
+        return false;
+    }
+
+    static getLocalBranch(originBranch:string){
+        let localBranch = originBranch;
+        if(originBranch.startsWith("remotes/")){
+            localBranch = localBranch.substring("remotes/".length);            
+        }
+        const remotes = BranchUtils.repositoryDetails.remotes;
+        const remote = remotes.find(_ => localBranch.startsWith(`${_.name}/`))
+        if(remote){
+            localBranch = localBranch.substring(`${remote.name}/`.length);
+        }
+
+        return localBranch;
+        
+    }
+
+    static get activeOriginName(){
+        if(!BranchUtils.repositoryDetails.remotes.length)
+            return "";
+        const orignName = BranchUtils.repositoryDetails.repoInfo.activeOrigin;
+        if(!BranchUtils.repositoryDetails.remotes.some(_=> _.name === orignName)){
+            return BranchUtils.repositoryDetails.remotes[0].name;
+        }
+        return orignName;
     }
 }

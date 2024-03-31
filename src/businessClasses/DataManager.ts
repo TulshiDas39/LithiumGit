@@ -11,6 +11,7 @@ export class DataManager{
     private addIpcHandlers(){
         this.handleRecentRepositoriesRequest();
         this.handleUpdateRepositories();
+        this.handleUpdateRepository();
         this.handleRemoveRepository();
         this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
@@ -40,6 +41,18 @@ export class DataManager{
                 else{
                     SavedData.data.recentRepositories.push(repo);
                 }
+            }
+        });
+    }
+    private handleUpdateRepository(){
+        ipcMain.on(RendererEvents.updateRepository,(_,repo:RepositoryInfo)=>{            
+            DB.repository.updateOne(repo);
+            var index = SavedData.data.recentRepositories.findIndex(_=>_.path == repo.path);
+            if(index > -1){
+                SavedData.data.recentRepositories[index] = repo;
+            }
+            else{
+                SavedData.data.recentRepositories.push(repo);
             }
         });
     }

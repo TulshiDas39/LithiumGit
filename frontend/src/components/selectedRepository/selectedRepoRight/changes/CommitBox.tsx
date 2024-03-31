@@ -6,9 +6,11 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { StringUtils } from "../../../../lib/utils/StringUtils";
 
 interface IState{
     value:string;
+    amend:boolean;
 }
 
 function CommitBoxComponent(){
@@ -31,14 +33,18 @@ function CommitBoxComponent(){
 
     const ref = useRef<HTMLDivElement>();
 
-    const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled} as IState);
+    const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled,amend:false} as IState);
 
     const handleCommit=()=>{
-        IpcUtils.doCommit(state.value).finally(()=>{
+        const options:string[] = [];
+        if(state.amend)
+            options.push("--amend");
+        const messages = new StringUtils().getLines(state.value);        
+        IpcUtils.doCommit(messages,options).finally(()=>{
             setState({value:""});
             IpcUtils.getRepoStatus();
         })
-        window.ipcRenderer.send(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,state.value);
+        
     }
 
     useEffect(()=>{
@@ -46,6 +52,13 @@ function CommitBoxComponent(){
             setState({value:BranchUtils.generateMergeCommit()});
         }        
     },[store.isMergingState])
+
+    useEffect(()=>{
+        if(!state.amend || !!state.value)
+            return;
+        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        setState({value:headCommit.message});
+    },[state.amend])
 
     
 
@@ -65,6 +78,10 @@ function CommitBoxComponent(){
                     </div>
                 </div>
                 <div className="col-3"></div>
+            </div>
+            <div className="d-flex align-items-center justify-content-center pt-1">
+                <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
+                <label htmlFor="amend" className="ps-1">Amend</label>
             </div>
     </div>
 }

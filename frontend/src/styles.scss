@@ -124,7 +124,7 @@ html {
   }
 
   .hover:hover{
-    cursor: pointer;
+    cursor: default;
     opacity: 0.6;
   }
 
@@ -133,6 +133,12 @@ html {
   }
 
   .hover-shadow:hover{
+    box-shadow: 0 0 2px rgb(104, 104, 237);
+  }
+
+  .button-effect:hover{
+    cursor: default;
+    filter: brightness(150%);
     box-shadow: 0 0 2px rgb(104, 104, 237);
   }
 

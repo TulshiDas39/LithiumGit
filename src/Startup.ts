@@ -1,4 +1,4 @@
-import { IConfigInfo, MainEvents } from "common_library";
+import { IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import { autoUpdater } from "electron-updater";
 import * as path from "path";
@@ -16,6 +16,7 @@ export class Startup{
 
     async initilise(){
       //this.initAppData();
+      this.addExceptionHandler();
       this.checkForUpdate();
       await this.loadSavedData();      
       this.startIpcManagers();
@@ -25,8 +26,13 @@ export class Startup{
       if(Config.env === 'development')
         return;
         new Updater().checkForUpdate();
+    }
 
-
+    addExceptionHandler(){
+      process.on('uncaughtException',  (error) => {
+        console.log("inside erro handler.");
+        AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error.message);
+      })
     }
 
     start(){

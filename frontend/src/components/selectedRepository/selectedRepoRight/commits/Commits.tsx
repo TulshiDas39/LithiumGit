@@ -73,7 +73,6 @@ function CommitsComponent(){
         }
         
         IpcUtils.getCommitList(filterOptions).then(result=>{
-            console.log(result.count);
             setState({commits:result.list.reverse(),total:result.count,loading:false});
         });
         

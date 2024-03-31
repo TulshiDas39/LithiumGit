@@ -1,10 +1,19 @@
 export class LogFields{
-    static Hash="Hash";
-    static Abbrev_Hash="Abbrev_Hash";
-    static Parent_Hashes="Parent_Hashes";
-    static Author_Name="Author_Name";
-    static Author_Email="Author_Email";
-    static Date="Date";
-    static Ref="Ref";
-    static Message="Message";
+    static Fields() {
+        return {
+            Hash:"Hash",
+            Abbrev_Hash:"Abbrev_Hash",
+            Parent_Hashes:"Parent_Hashes",
+            Author_Name:"Author_Name",
+            Author_Email:"Author_Email",
+            Date:"Date",
+            Ref:"Ref",
+            Message:"Message",
+            Body:"Body",
+        }
+    }
+
+    static FieldCount(){
+        return Object.keys(LogFields.Fields).length;
+    }
 }

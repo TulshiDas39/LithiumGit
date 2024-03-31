@@ -1,12 +1,20 @@
 import { RendererEvents } from "common_library";
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { Dropdown } from "react-bootstrap";
-import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaCaretDown } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils } from "../../../lib";
+import { BranchUtils, EnumModals, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { ActionModals } from "../../../store";
+
+interface IStatus{
+    showPushTo:boolean;
+    showPullFrom:boolean;
+    showFetchAll:boolean;
+    
+}
 
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
@@ -16,15 +24,24 @@ function PullPushMenuComponent(){
         isDetached:!!state.ui.status?.isDetached
     }),shallowEqual);
 
+    const [state,setState] = useMultiState<IStatus>({showPushTo:false,
+        showPullFrom:false,showFetchAll:false});
+
     const dispatch = useDispatch();
     const currentText = useMemo(()=>{
         if(store.isDetached)
             return BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
         return store.current;
     },[store.isDetached,store.current])
+
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
-        window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
+        IpcUtils.trigerPull().then(()=>{
+            dispatch(ActionUI.setLoader({text:"Checking status..."}));
+            IpcUtils.getRepoStatus().finally(()=>{
+                dispatch(ActionUI.setLoader(undefined));
+            })
+        })
     }
 
     const handlePush=()=>{
@@ -44,6 +61,34 @@ function PullPushMenuComponent(){
             IpcUtils.getRepoStatus();
         })
     }
+
+    const handlePushCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        setState({showPushTo:!state.showPushTo});
+    }
+
+    const handlePullCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        setState({showPullFrom:!state.showPullFrom});
+    }
+    const handleFetchCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        setState({showFetchAll:!state.showFetchAll});
+    }
+
+    useEffect(()=>{
+        const handler = ()=>{
+            setState({showPushTo:false,showPullFrom:false,showFetchAll:false})
+        }
+        document.addEventListener("click",handler);
+
+        return ()=>{
+            document.removeEventListener("click",handler);
+        }
+    },[])
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
@@ -75,40 +120,46 @@ function PullPushMenuComponent(){
             </div>
 
         </div>
-        <div className="col-auto ps-1 pe-1 hover hover-bg-secondary" onClick={handlePush}>
-            <div className="row g-0 align-items-center h-100">
-                <div className="col-auto">
-                    <FaArrowUp />
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-stretch h-100 bg-success">
+                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePush}>
+                    <span className="px-2 text-light">Push</span> 
                 </div>
-                <div className="col-auto">
-                    Push
-                </div>
-            </div>
-        </div>
-        <div className="col-auto ps-2 pe-1 hover hover-bg-secondary" onClick={handlePull}>
-            <div className="row g-0 align-items-center h-100">
-                <div className="col-auto">
-                    <FaArrowDown />
-                </div>
-                <div className="col-auto">
-                    Pull
+                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
+                    <FaCaretDown onClick={handlePushCaretClick} />
+                    {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PUSH_TO))}>
+                        <span className="text-nowrap text-light">Push To &gt;</span>
+                    </div>}
                 </div>
             </div>
         </div>
-        <div className="col-auto ps-2 pe-1 cur-point">
-            <div className="row g-0 align-items-center h-100">
-                <div className="col-auto hover hover-bg-secondary border-end pe-2" onClick={_=> handleFetch(false)}>
-                    <FaArrowDown />
-                    <span>Fetch</span>
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-stretch h-100 bg-success">
+                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePull}>
+                    <span className="px-2 text-light">Pull</span> 
                 </div>
-                <div className="col-auto">
-                    <Dropdown>
-                        <Dropdown.Toggle className="bg-transparent hover-bg-secondary text-dark border-0 outline-none outline-none-focus hover px-2">                            
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu className="min-w-auto py-0" align={"end"}>
-                            <Dropdown.Item className="" onClick={_=> handleFetch(true)}>Fetch All</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
+                    <FaCaretDown onClick={handlePullCaretClick} />
+                    {state.showPullFrom && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PULL_FROM))}>
+                        <span className="text-nowrap text-light">Pull From &gt;</span>
+                    </div>}
+                </div>
+            </div>
+        </div>
+
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-stretch h-100 bg-success">
+                <div className="col-auto d-flex align-items-center button-effect" onClick={_=> handleFetch(false)}>
+                    <span className="px-2 text-light">Fetch</span> 
+                </div>
+                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
+                    <FaCaretDown onClick={handleFetchCaretClick} />
+                    {state.showFetchAll && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        onClick={_=> handleFetch(true)}>
+                        <span className="text-nowrap text-light">Fetch all</span>
+                    </div>}
                 </div>
             </div>
         </div>
