@@ -23,11 +23,20 @@ export class IpcUtils{
 
     static trigerPush(options?:string[]){
         if(!options){
-            options = [BranchUtils.repositoryDetails.remotes[0].name];
+            options = [BranchUtils.activeOriginName];
             if(!BranchUtils.repositoryDetails.status.trackingBranch)
                 options.push("-u",BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
         }
         return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
+    }
+
+    static trigerPull(options?:string[]){
+        if(!options){
+            options = [BranchUtils.activeOriginName];
+            if(!BranchUtils.repositoryDetails.status.trackingBranch)
+                options.push(BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
 
     static unstageItem(paths:string[],repoInfo:RepositoryInfo){

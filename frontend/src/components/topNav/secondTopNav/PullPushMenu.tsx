@@ -29,9 +29,15 @@ function PullPushMenuComponent(){
             return BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
         return store.current;
     },[store.isDetached,store.current])
+    
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
-        window.ipcRenderer.send(RendererEvents.pull().channel,BranchUtils.repositoryDetails);
+        IpcUtils.trigerPull().then(()=>{
+            dispatch(ActionUI.setLoader({text:"Checking status..."}));
+            IpcUtils.getRepoStatus().finally(()=>{
+                dispatch(ActionUI.setLoader(undefined));
+            })
+        })
     }
 
     const handlePush=()=>{

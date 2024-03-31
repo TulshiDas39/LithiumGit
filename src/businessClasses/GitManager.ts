@@ -433,8 +433,8 @@ export class GitManager{
     }
 
     private async addPullHandler(){
-        ipcMain.on(RendererEvents.pull().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.takePull(repoDetails,e);
+        ipcMain.handle(RendererEvents.pull().channel,async (e,repoPath:string,options:string[])=>{
+            await this.takePull(repoPath,options);
         });
     }
 
@@ -517,13 +517,11 @@ export class GitManager{
         return false;
     }
 
-    private async takePull(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoDetails.repoInfo);
-        
+    private async takePull(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
         try {
-            const result = await git.pull(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
-            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else e.reply(RendererEvents.pull().replyChannel);
+            const result = await git.pull(options);
+            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)            
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
