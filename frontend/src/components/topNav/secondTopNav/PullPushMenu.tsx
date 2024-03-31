@@ -134,7 +134,7 @@ function PullPushMenuComponent(){
                 <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
                     <FaCaretDown onClick={handlePullCaretClick} />
                     {state.showPullFrom && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
-                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PUSH_TO))}>
+                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PULL_FROM))}>
                         <span className="text-nowrap text-light">Pull From &gt;</span>
                     </div>}
                 </div>

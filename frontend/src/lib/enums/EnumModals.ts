@@ -4,4 +4,5 @@ export enum EnumModals{
     ERROR="ERROR",
     CONFIRMATION="CONFIRMATION",
     PUSH_TO="PUSH_TO",
+    PULL_FROM="PULL_FROM",
 }

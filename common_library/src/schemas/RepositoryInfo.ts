@@ -7,6 +7,7 @@ export interface RepositoryInfo extends BaseSchema{
     lastOpenedAt?:string;
     activeOrigin:string;
     pushToBranch?:string;
+    pullFromBranch?:string;
 }
 
 export const createRepositoryInfo=(props?:Partial<RepositoryInfo>)=>{
