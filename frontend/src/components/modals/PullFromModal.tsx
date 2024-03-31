@@ -77,7 +77,7 @@ function PullFromModalComponent(){
             <hr />
             <div className="row g-0">
                 <div className="col-12 text-break overflow-auto" style={{maxWidth:600,maxHeight:500}}>
-                    <Form.Control type="text" value={state.branch} onChange={e=>setState({branch:e.target.value})} />
+                    <Form.Control type="text" placeholder="Branch name" value={state.branch} onChange={e=>setState({branch:e.target.value})} />
                 </div>
             </div>
             <div className="row g-0">
