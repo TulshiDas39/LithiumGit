@@ -10,7 +10,8 @@ import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
 
 interface IStatus{
-    showPushTo:boolean;    
+    showPushTo:boolean;
+    showPullFrom:boolean;    
 }
 
 function PullPushMenuComponent(){
@@ -21,7 +22,7 @@ function PullPushMenuComponent(){
         isDetached:!!state.ui.status?.isDetached
     }),shallowEqual);
 
-    const [state,setState] = useMultiState<IStatus>({showPushTo:false});
+    const [state,setState] = useMultiState<IStatus>({showPushTo:false,showPullFrom:false});
 
     const dispatch = useDispatch();
     const currentText = useMemo(()=>{
@@ -29,7 +30,7 @@ function PullPushMenuComponent(){
             return BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
         return store.current;
     },[store.isDetached,store.current])
-    
+
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         IpcUtils.trigerPull().then(()=>{
@@ -64,9 +65,15 @@ function PullPushMenuComponent(){
         setState({showPushTo:!state.showPushTo});
     }
 
+    const handlePullCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        setState({showPullFrom:!state.showPullFrom});
+    }
+
     useEffect(()=>{
         const handler = ()=>{
-            setState({showPushTo:false})
+            setState({showPushTo:false,showPullFrom:false})
         }
         document.addEventListener("click",handler);
 
@@ -119,13 +126,17 @@ function PullPushMenuComponent(){
                 </div>
             </div>
         </div>
-        <div className="col-auto ps-2 pe-1 hover hover-bg-secondary" onClick={handlePull}>
-            <div className="row g-0 align-items-center h-100">
-                <div className="col-auto">
-                    <FaArrowDown />
+        <div className="col-auto ps-1 pe-1">
+            <div className="row g-0 align-items-stretch h-100 bg-success">
+                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePull}>
+                    <span className="px-2 text-light">Pull</span> 
                 </div>
-                <div className="col-auto">
-                    Pull
+                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative">
+                    <FaCaretDown onClick={handlePullCaretClick} />
+                    {state.showPullFrom && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        onClick={()=> dispatch(ActionModals.showModal(EnumModals.PUSH_TO))}>
+                        <span className="text-nowrap text-light">Pull From &gt;</span>
+                    </div>}
                 </div>
             </div>
         </div>
