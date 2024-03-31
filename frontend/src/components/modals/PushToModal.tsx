@@ -3,7 +3,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { BranchUtils, EnumModals, useMultiState } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
-import React from "react";
+import React, { useEffect } from "react";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
@@ -16,19 +16,22 @@ interface IState{
 function PushToModalComponent(){
     const store = useSelectorTyped(state=>({
         show:state.modal.openedModals.includes(EnumModals.PUSH_TO),        
-        selectedRepo:state.repository.selectedRepo,
     }),shallowEqual);
 
     const [state,setState] = useMultiState<IState>({
-        branch:store.selectedRepo?.pushToBranch || "",
-        remember:!!store.selectedRepo?.pushToBranch
+        branch:"",
+        remember:false,
     });
 
     const dispatch = useDispatch();
 
     const closeModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.PUSH_TO));
-        setState({branch:""});
+        clearState();
+    }
+
+    const clearState = ()=>{
+        setState({branch:"",remember:false});;
     }
 
     const handlePush=()=>{
@@ -42,16 +45,23 @@ function PushToModalComponent(){
             IpcUtils.getRepoStatus().finally(()=>{                
                 dispatch(ActionUI.setLoader(undefined));
             })
-        });
-        const newPushTo = state.remember ? state.branch:"";
-        if(newPushTo !== store.selectedRepo?.pushToBranch){
+        }).finally(()=>{
+            const newPushTo = state.remember ? state.branch:"";
             const repo = BranchUtils.repositoryDetails.repoInfo;
-            if(state.branch)
-                repo.pushToBranch = state.branch;
-            dispatch(ActionSavedData.updateRepository(repo));
-        }
-
+            if(newPushTo !== repo?.pushToBranch){            
+                repo.pushToBranch = newPushTo;
+                dispatch(ActionSavedData.updateRepository(repo));
+            }
+        })
+        
     }
+
+    useEffect(()=>{
+        if(!store.show)
+            return ;
+        const pushToBranch = BranchUtils.repositoryDetails.repoInfo.pushToBranch || "";
+        setState({branch:pushToBranch,remember:!!pushToBranch});
+    },[store.show])
 
     return <Modal show={store.show} centered size="sm" backdrop={false}>
     <Modal.Body>

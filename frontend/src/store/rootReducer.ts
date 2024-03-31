@@ -6,7 +6,6 @@ const AppReducer = combineReducers({
     savedData:ReducerSavedData,
     ui:ReducerUI,
     modal:ReducerModals,
-    repository:ReducerRepository,
 });
 
 const AppResetActionType = 'app/Reset';
