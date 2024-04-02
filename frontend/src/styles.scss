@@ -123,6 +123,10 @@ html {
     cursor: e-resize;
   }
 
+  .cur-resize-v{
+    cursor: n-resize;
+  }
+
   .hover:hover{
     cursor: default;
     opacity: 0.6;

@@ -13,7 +13,7 @@ function BranchActionsComponent(){
         dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
     }
 
-    return <div className="d-flex py-2 align-items-center">
+    return <div className="d-flex py-2 align-items-center" style={{height:30}}>
     <div className="px-2">
         <FaSyncAlt className="hover" onClick={handleRefresh} />
     </div>
