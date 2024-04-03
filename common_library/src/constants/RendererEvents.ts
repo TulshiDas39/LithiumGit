@@ -260,5 +260,7 @@ export class RendererEvents{
     static readonly rebase = "rebase";
     static readonly cherry_pick = "cherry_pick";
     static readonly updateRepository = "updateRepository";
+    static readonly diffTree = "diffTree";
+    static readonly gitRaw = "gitRaw";
 }
 

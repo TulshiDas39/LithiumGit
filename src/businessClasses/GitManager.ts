@@ -30,6 +30,7 @@ export class GitManager{
         this.addFetchHandler();
         this.addCommitHandler();
         this.addGitShowHandler();
+        this.addRawHandler();
         this.addMergeHandler();
         this.addCleanhHandler();
         this.addRemoteAddHandler();
@@ -61,9 +62,16 @@ export class GitManager{
         
     }
 
-    addGitShowHandler(){
+    private addGitShowHandler(){
         ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
             const result = await this.getShowResult(repository,options);
+            return result;
+        })
+    }
+
+    private addRawHandler(){
+        ipcMain.handle(RendererEvents.diffTree, async (e,repoPath:string, options:string[])=>{
+            const result = await this.getRawResult(repoPath,options);
             return result;
         })
     }
@@ -76,6 +84,12 @@ export class GitManager{
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
+    }
+
+    async getRawResult(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
+        const result = await git.raw(options);   
+        return result;       
     }
 
     addCommitHandler(){
