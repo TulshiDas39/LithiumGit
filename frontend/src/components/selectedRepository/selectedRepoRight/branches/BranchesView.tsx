@@ -5,6 +5,7 @@ import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
 import { CommitProperty } from "./CommitProperty";
+import { CommitChangeView } from "./CommitChangeView";
 
 function BranchesViewComponent() {
     const store = useSelectorTyped(state => ({
@@ -66,8 +67,8 @@ function BranchesViewComponent() {
             </div>
         </div>        
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
-        <div className="" style={{height:`${bottomHeight-3}px`}}>
-            bottom
+        <div className="w-100" style={{height:`${bottomHeight-3}px`}}>
+            <CommitChangeView />
         </div>
 
     </div>

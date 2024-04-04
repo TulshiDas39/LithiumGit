@@ -9,7 +9,7 @@ import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
     static getRaw(options: string[]) {
-        return IpcUtils.runGitCommand<string>(RendererEvents.gitRaw,options);
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitRaw,[options]);
     }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)

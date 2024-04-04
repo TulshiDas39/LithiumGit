@@ -1,9 +1,8 @@
-import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
 import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -100,7 +99,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
             return ;
         if(store.selectedFile.changeType !== EnumChangeType.DELETED){
             IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(content=>{
-                const lines = new StringUtils().getLines(content);
+                const lines = StringUtils.getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;
@@ -124,7 +123,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         }
         else{
             IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
-                const lines = new StringUtils().getLines(content);
+                const lines = StringUtils.getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;

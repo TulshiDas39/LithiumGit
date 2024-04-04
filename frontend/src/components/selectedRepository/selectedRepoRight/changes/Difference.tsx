@@ -1,11 +1,10 @@
-import { EnumChangeType, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import { DeltaStatic} from "quill";
 import React, { useCallback, useEffect, useRef } from "react"
 import ReactQuill from "react-quill";
 import { shallowEqual, useDispatch } from "react-redux";
 import { EditorColors, EnumChangeGroup, EnumCustomBlots, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { DiffUtils } from "../../../../lib/utils/DiffUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
@@ -221,7 +220,7 @@ function DifferenceComponent(props:IDifferenceProps){
         });
 
         window.ipcRenderer.on(RendererEvents.gitShow().replyChannel,(e,content:string)=>{
-            const lines = new StringUtils().getLines(content);
+            const lines = StringUtils.getLines(content);
             const hasChanges = UiUtils.hasChanges(textLines,lines);
             if(!hasChanges) return;
             textLines = lines;

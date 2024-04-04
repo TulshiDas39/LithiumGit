@@ -70,7 +70,7 @@ export class GitManager{
     }
 
     private addRawHandler(){
-        ipcMain.handle(RendererEvents.diffTree, async (e,repoPath:string, options:string[])=>{
+        ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
             const result = await this.getRawResult(repoPath,options);
             return result;
         })

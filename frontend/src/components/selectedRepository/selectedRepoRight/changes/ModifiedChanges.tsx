@@ -1,13 +1,12 @@
-import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
-import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
+import { FaPlus, FaUndo } from "react-icons/fa";
 import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
@@ -142,7 +141,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         }
         else{            
             IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
-                const lines = new StringUtils().getLines(content);
+                const lines = StringUtils.getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
                 if(!hasChanges) return;
                 refData.current.selectedFileContent = lines;
