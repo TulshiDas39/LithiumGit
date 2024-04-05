@@ -44,7 +44,7 @@ function BranchesViewComponent() {
     },[bottomHeight])
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
-        <div className="d-flex flex-column" style={{height:`calc(100% - ${bottomHeight-3}px)`}}>
+        <div className="d-flex flex-column" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
             <BranchActions />
             <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - 30px)`}}>
                 <div id={EnumHtmlIds.branchPanelContainer} className="overflow-hidden" style={{width:`75%`}}>
@@ -67,7 +67,7 @@ function BranchesViewComponent() {
             </div>
         </div>        
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
-        <div className="w-100" style={{height:`${bottomHeight-3}px`}}>
+        <div className="w-100" style={{height:`${bottomHeight}px`}}>
             <CommitChangeView />
         </div>
 
