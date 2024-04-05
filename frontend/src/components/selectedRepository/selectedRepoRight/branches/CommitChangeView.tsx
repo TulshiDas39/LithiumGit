@@ -3,10 +3,12 @@ import { BranchGraphUtils, useDrag, useMultiState } from "../../../../lib";
 import { ICommitInfo, IFile } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { CommitFileList } from "./CommitFileList";
+import { CommitDiffView } from "./CommitDiffView";
 
 interface IState{
     selectedCommitHash?:string;
     files:IFile[];
+    selectedFile?:IFile;
 }
 
 function CommitChangeViewComponent(){
@@ -20,7 +22,7 @@ function CommitChangeViewComponent(){
         
         GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
             console.log(res);
-            setState({files:res});
+            setState({files:res,selectedFile:res[0]});
         });
 
     },[state.selectedCommitHash])
@@ -37,7 +39,7 @@ function CommitChangeViewComponent(){
     
     useEffect(()=>{
         const listener = (commit?:ICommitInfo)=>{
-            setState({selectedCommitHash:commit?.hash});
+            setState({selectedCommitHash:commit?.hash,selectedFile:undefined});
         }
         BranchGraphUtils.state.selectedCommit.subscribe(listener);
         return ()=>{
@@ -47,9 +49,11 @@ function CommitChangeViewComponent(){
 
     return <div className="d-flex w-100 h-100">
         <div style={{width:`calc(100% - ${rightWidth+3}px)`}}>
+            <CommitDiffView file={state.selectedFile} />
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{width:`3px`}}></div>
-        <CommitFileList files={state.files} width={rightWidth} />
+        <CommitFileList files={state.files} width={rightWidth} onFileSelect={_=>setState({selectedFile:_})}
+            selectedFile={state.selectedFile} />
     </div>
 }
 

@@ -98,8 +98,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
         if(!store.selectedFile)
             return ;
         if(store.selectedFile.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(content=>{
-                const lines = StringUtils.getLines(content);
+            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(res=>{
+                const lines = StringUtils.getLines(res.response!);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;

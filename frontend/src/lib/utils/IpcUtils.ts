@@ -85,7 +85,12 @@ export class IpcUtils{
 
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
+    }
+
+    static async getFileContentAtSpecificCommit(commitHash:string, path:string){
+        const options = [`${commitHash}:${path}`];
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
     }
 
     static async addRemote(remote:IRemoteInfo){

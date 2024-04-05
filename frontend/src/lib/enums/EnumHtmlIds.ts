@@ -9,4 +9,5 @@ export enum EnumHtmlIds{
     stage_unstage_allPanel="unstage_unstage_allPanel",
     unstage_unstage_allPanel="unstage_unstage_allPanel",
     diffview_container = "diffview_container",
+    CommitDiff = "CommitDiff",
 }

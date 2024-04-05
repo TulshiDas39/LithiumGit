@@ -63,8 +63,8 @@ export class GitManager{
     }
 
     private addGitShowHandler(){
-        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.getShowResult(repository,options);
+        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.getShowResult(repoPath,options);
             return result;
         })
     }
@@ -76,9 +76,9 @@ export class GitManager{
         })
     }
 
-    async getShowResult(repository:RepositoryInfo,options:string[]){
+    async getShowResult(repoPath:string,options:string[]){
         try {
-            const git = this.getGitRunner(repository);
+            const git = this.getGitRunner(repoPath);
             const result = await git.show(options);   
             return result;
         } catch (error) {
