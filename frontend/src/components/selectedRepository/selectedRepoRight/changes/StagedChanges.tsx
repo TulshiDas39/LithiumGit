@@ -1,7 +1,7 @@
 import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -111,6 +111,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
+                        ReduxUtils.resetChangeNavigation();
                     })
                 }
                 else{
@@ -118,6 +119,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
+                    ReduxUtils.resetChangeNavigation();
                 }
                                     
             })

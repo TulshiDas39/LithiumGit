@@ -18,7 +18,8 @@ function CommitDiffViewComponent(props:IProps){
     const [state,setState] = useMultiState({currentStep:0,totalStep:0} as IState);
     const resetStepNavigation = ()=>{
         const totalChange = ChangeUtils.totalChangeCount;
-        setState({totalStep:totalChange,currentStep:1});
+        const currentStep = ChangeUtils.totalChangeCount > 0 ? 1:0;
+        setState({totalStep:totalChange,currentStep});
     }
     useEffect(()=>{
         const selectedCommit = BranchGraphUtils.state.selectedCommit;

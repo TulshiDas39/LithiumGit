@@ -1,7 +1,7 @@
 import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaPlus, FaUndo } from "react-icons/fa";
-import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -129,7 +129,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
-    
+                        ReduxUtils.resetChangeNavigation();
                     });
                 }
                 if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
@@ -137,6 +137,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
+                    ReduxUtils.resetChangeNavigation();
                 }
             })
         }
@@ -150,6 +151,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
+                ReduxUtils.resetChangeNavigation();
             })
         }
 
