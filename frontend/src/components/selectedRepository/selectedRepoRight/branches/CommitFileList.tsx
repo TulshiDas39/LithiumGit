@@ -3,10 +3,11 @@ import React from "react"
 
 interface IProps{
     files:IFile[];
+    width:number;
 }
 
 function CommitFileListComponent(props:IProps){
-    return <div style={{width:300}} className="h-100 overflow-auto">
+    return <div style={{width:props.width}} className="h-100 overflow-auto">
         {
             props.files.map(f=>(
                 <div title={f.path} key={f.path} className="cur-default hover">

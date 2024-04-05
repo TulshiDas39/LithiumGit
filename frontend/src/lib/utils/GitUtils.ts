@@ -11,7 +11,7 @@ export class GitUtils{
         if(!result.response)
             return files;
 
-        const lines = StringUtils.getLines(result.response).filter(l => !!l);
+        const lines = StringUtils.getLines(result.response).filter(l => !!l).slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const file = {
