@@ -83,8 +83,7 @@ function ChangesComponent() {
 
     }
     
-    useEffect(()=>{
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+    useEffect(()=>{        
         ReduxUtils.resetChangeNavigation = ()=>{
             dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
             if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));

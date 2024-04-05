@@ -6,6 +6,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
 import { CommitProperty } from "./CommitProperty";
 import { CommitChangeView } from "./CommitChangeView";
+import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 
 function BranchesViewComponent() {
     const store = useSelectorTyped(state => ({

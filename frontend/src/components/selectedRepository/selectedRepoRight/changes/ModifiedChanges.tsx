@@ -116,6 +116,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         if(!store.selectedFile)
             return ;
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
         const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
         if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContent(joinedPath).then(lines=>{

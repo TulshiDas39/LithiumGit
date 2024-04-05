@@ -21,7 +21,6 @@ function CommitChangeViewComponent(){
             return;
         
         GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
-            console.log(res);
             setState({files:res,selectedFile:res[0]});
         });
 

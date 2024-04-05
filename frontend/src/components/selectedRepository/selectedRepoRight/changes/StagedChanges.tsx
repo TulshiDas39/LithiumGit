@@ -97,6 +97,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     useEffect(()=>{
         if(!store.selectedFile)
             return ;
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
         if(store.selectedFile.changeType !== EnumChangeType.DELETED){
             IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(res=>{
                 const lines = StringUtils.getLines(res.response!);

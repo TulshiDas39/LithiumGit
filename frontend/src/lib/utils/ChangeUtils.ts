@@ -36,6 +36,8 @@ export class ChangeUtils{
     }
 
     static FocusHightlightedLine(step:number){
+        if(!ChangeUtils.containerId)
+            return;
         const container = document.querySelector("#"+ChangeUtils.containerId);
         const focusElem = container?.querySelector('.line_numbers')?.children[ChangeUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});

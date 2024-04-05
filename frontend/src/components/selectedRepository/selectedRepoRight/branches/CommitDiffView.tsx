@@ -16,13 +16,13 @@ function CommitDiffViewComponent(props:IProps){
             ChangeUtils.ClearView();
             return;
         }
+        ChangeUtils.containerId = EnumHtmlIds.CommitDiff;
         IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
             const content = res.response || "";
             const lines = StringUtils.getLines(content);
             if(props.file?.changeType === EnumChangeType.MODIFIED){
                 const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.file.path];            
                 IpcUtils.getGitShowResult(options).then(res=>{
-                    console.log("res",res);
                     let lineConfigs = DiffUtils.GetUiLines(res,lines);
                     ChangeUtils.currentLines = lineConfigs.currentLines;
                     ChangeUtils.previousLines = lineConfigs.previousLines;
@@ -39,9 +39,6 @@ function CommitDiffViewComponent(props:IProps){
         })
     },[props.file])
     
-    useEffect(()=>{
-        ChangeUtils.containerId = EnumHtmlIds.CommitDiff;        
-    },[])
     return <div id={EnumHtmlIds.CommitDiff} className="h-100 w-100">
 
     </div>
