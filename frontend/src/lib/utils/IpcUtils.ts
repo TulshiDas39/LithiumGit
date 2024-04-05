@@ -78,10 +78,10 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
     }
 
-    static async getGitShowResult(path:string){
-        const options =  [`HEAD:${path}`];
+    static async getGitShowResult(options:string[]){
+        //const options =  [`HEAD:${path}`];
         return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
-    }
+    }    
 
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];

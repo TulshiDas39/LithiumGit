@@ -122,7 +122,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
             })
         }
         else{
-            IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
+            IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
                 const lines = StringUtils.getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
