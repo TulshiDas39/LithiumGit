@@ -1,5 +1,5 @@
-import { ICommitInfo, IStatus, RendererEvents } from "common_library";
-import React, { useEffect, useMemo, useRef } from "react";
+import { IStatus, RendererEvents } from "common_library";
+import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../lib";
@@ -15,10 +15,15 @@ enum Option{
     Merge,
     Rebase,
     CherryPick,
+    MoreOptions,
+    SoftReset,
+    HardReset,
+    DeleteBranch,
 }
 
 interface IState{
     mouseOver?:Option;
+    showMore:boolean;
 }
 
 function CommitContextModalComponent(){
@@ -29,7 +34,7 @@ function CommitContextModalComponent(){
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
     
-    const [state, setState] = useMultiState({} as IState);
+    const [state, setState] = useMultiState({showMore:false} as IState);
 
     const refData = useRef({mergerCommitMessage:""});
 
@@ -40,6 +45,9 @@ function CommitContextModalComponent(){
                 elem.style.marginTop = Data.position.y+"px";
                 elem.style.marginLeft = Data.position.x+"px";
             }
+        }
+        else{
+            setState({showMore:false});
         }
     },[store.show])
 
@@ -155,6 +163,13 @@ function CommitContextModalComponent(){
         return branches;
     },[referredLocalBranches,store.show])
 
+    const branchNamesForDelete = useMemo(()=>{
+        if(!store.show || !Data.selectedCommit?.refValues.length)
+            return [];
+        const branches = referredLocalBranches.slice();        
+        return branches;
+    },[referredLocalBranches,store.show])
+
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
@@ -249,6 +264,51 @@ function CommitContextModalComponent(){
                     {!Data.selectedCommit?.isHead && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={cherryPick}>Cherry-Pick this commit</div>
                     </div>}
+                    {!state.showMore && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}
+                        onClick={_=> setState({showMore:true})}>
+                        <div className="col-12 hover cur-default ">Show More</div>
+                    </div>}
+                    {
+                        state.showMore && <Fragment>
+                            {!Data.selectedCommit.nextCommit && Data.selectedCommit.isHead && <Fragment>
+                                <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                                    <div className="col-12 hover cur-default ">Soft reset this commit</div>
+                                </div>
+                                <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                                    <div className="col-12 hover cur-default ">Hard reset this commit</div>
+                                </div>
+                            </Fragment>
+                            }
+                            
+                            {
+                            branchNamesForDelete.length > 0 && <div>
+                            <div className="row g-0 border-bottom">
+                                {
+                                    branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
+                                        <div className="d-flex hover text-danger" onMouseEnter={()=> setState(({mouseOver:Option.DeleteBranch}))}>
+                                            <span className="flex-grow-1">Delete branch</span>
+                                            <span>&gt;</span>
+                                        </div>
+                                        
+                                        {(state.mouseOver === Option.DeleteBranch) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                            {
+                                                branchNamesForDelete.map((br=>(
+                                                    <div key={br} className="border-bottom py-1 px-3">
+                                                        <span className="hover" onClick={() => checkOutCommit(br)}>{br}</span>
+                                                    </div>
+                                                )))
+                                            }
+                                        </div>}
+                                    </div>:
+                                    <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchNamesForDelete[0])}>Delete branch '{branchNamesForDelete[0]}'</div>
+                                }                                
+                            </div>
+                        </div>
+                    }
+                        
+                        </Fragment>
+                    }
+                                 
                 </div>
             </Modal.Body>
         </Modal>
