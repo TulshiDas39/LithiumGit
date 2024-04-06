@@ -5,4 +5,6 @@ export interface IFile{
     path:string;
     changeType:EnumChangeType;
     changeGroup:EnumChangeGroup;
+    addCount?:number;
+    deleteCount?:number;
 }

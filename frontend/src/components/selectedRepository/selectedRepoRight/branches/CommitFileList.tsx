@@ -1,5 +1,6 @@
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import React from "react"
+import { FaMinus, FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 
 interface IProps{
     files:IFile[];
@@ -19,15 +20,21 @@ function CommitFileListComponent(props:IProps){
                     <div title={f.path} key={f.path} className={`row g-0 align-items-center flex-nowrap hover w-100 cur-default ${props.selectedFile?.path === f.path?'selected':''}`} onClick={_=> props.onFileSelect(f)}>
                         <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} style={{textOverflow:'ellipsis'}}>
                             <span className= {`${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span> 
-                            <span className="small text-secondary">
-                                <span className="ps-1">{f.path}</span>
+                            <span className="ps-2 text-secondary small" style={{whiteSpace: 'nowrap'}}>
+                                <span className="px-1">
+                                     <FaPlusCircle className="text-success small"/>
+                                     <span className="ps-1">{f.addCount || 0}</span>
+                                </span>
+                                <span className="px-1">
+                                    <FaMinusCircle className="text-danger small"/>
+                                    <span className="ps-1">{f.deleteCount || 0}</span>
+                                </span>
+                                {/* <span className="ps-1">{f.path}</span> */}
                             </span>
                         </div>
                         <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">
                             <span className="px-2 text-success fw-bold cur-default" title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span>
-                        </div>
-                        
-                        {/* <span className="ps-2 text-success fw-bold cur-default" title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span> */}
+                        </div>                        
                     </div>
                 ))
             }
