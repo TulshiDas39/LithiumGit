@@ -83,7 +83,7 @@ function CommitDiffViewComponent(props:IProps){
     return <div className="h-100 w-100">
         <StepNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
             onNextClick={handleNext} onPreviousClick={handlePrevious} />
-        <div id={EnumHtmlIds.CommitDiff} className="h-100 w-100" style={{height:`calc(100% - 30px)`}}>
+        <div id={EnumHtmlIds.CommitDiff} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>
     </div>
