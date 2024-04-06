@@ -59,6 +59,7 @@ function CommitDiffViewComponent(props:IProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
+                resetStepNavigation();
             })            
         }
         

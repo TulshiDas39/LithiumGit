@@ -41,7 +41,7 @@ export class ChangeUtils{
 
     private static SetHeighlightedLines(){
         ChangeUtils.heighlightedLineIndexes = [];
-        let lastItemHightlighted = false;
+        let lastItemHightlighted = false;        
         const lenght = ChangeUtils.currentLines?.length || ChangeUtils.previousLines?.length || 0;
         for(let i = 0;i < lenght; i++){
             if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.previousLines?.[i].hightLightBackground){
