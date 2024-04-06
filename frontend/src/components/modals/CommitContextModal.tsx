@@ -170,6 +170,19 @@ function CommitContextModalComponent(){
         return branches;
     },[referredLocalBranches,store.show])
 
+    const moreOptionList = useMemo(()=>{
+        const options:Option[] = [];
+        if(!store.show)
+            return options;
+        if(Data.selectedCommit.nextCommit && Data.selectedCommit.isHead){
+            options.push(Option.HardReset,Option.SoftReset);
+        }
+        if(branchNamesForDelete.length){
+            options.push(Option.DeleteBranch);
+        }
+        return options;
+    },[store.show])
+
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
@@ -264,24 +277,20 @@ function CommitContextModalComponent(){
                     {!Data.selectedCommit?.isHead && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={cherryPick}>Cherry-Pick this commit</div>
                     </div>}
-                    {!state.showMore && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}
+                    {!!moreOptionList.length && !state.showMore && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}
                         onClick={_=> setState({showMore:true})}>
                         <div className="col-12 hover cur-default ">Show More</div>
                     </div>}
                     {
-                        state.showMore && <Fragment>
-                            {!Data.selectedCommit.nextCommit && Data.selectedCommit.isHead && <Fragment>
-                                <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                                    <div className="col-12 hover cur-default ">Soft reset this commit</div>
-                                </div>
-                                <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                                    <div className="col-12 hover cur-default ">Hard reset this commit</div>
-                                </div>
-                            </Fragment>
-                            }
-                            
+                        state.showMore && <Fragment>                        
+                            {moreOptionList.includes(Option.SoftReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                                <div className="col-12 hover cur-default ">Soft reset this commit</div>
+                            </div>}
+                            {moreOptionList.includes(Option.HardReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                                <div className="col-12 hover cur-default ">Hard reset this commit</div>
+                            </div>}                        
                             {
-                            branchNamesForDelete.length > 0 && <div>
+                            moreOptionList.includes(Option.DeleteBranch) && <div>
                             <div className="row g-0 border-bottom">
                                 {
                                     branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
