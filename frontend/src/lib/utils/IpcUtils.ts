@@ -79,9 +79,16 @@ export class IpcUtils{
     }
 
     static async getGitShowResult(options:string[]){
-        //const options =  [`HEAD:${path}`];
         return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
-    }    
+    }
+    
+    static async reset(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.reset,[options]);
+    }
+
+    static async deleteLocalBranch(branchName:string){
+        return IpcUtils.runGitCommand(RendererEvents.deleteBranch,[branchName]);
+    }
 
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];
@@ -133,8 +140,8 @@ export class IpcUtils{
         }).catch((e)=>{
             const err = e?.toString() as string;
             if(!disableErrorDisplay){
-                ModalData.errorModal.message = err;
-                //ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));                
+                IpcUtils.showError?.(err);
+                //ReduxStore?.dispatch(ActionModals.showModal(EnumModals.ERROR));
             }
             result.error = err;
             return result;
@@ -150,4 +157,6 @@ export class IpcUtils{
     static updateRepository(repo:RepositoryInfo){
         return IpcUtils.execute(RendererEvents.updateRepository,[repo]);
     }
+
+    static showError:(err:string)=>void;
 }

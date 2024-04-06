@@ -21,6 +21,8 @@ export class GitManager{
         this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
+        this.addResetHandler();
+        this.addDeleteLocalBranchHandler();
         this.addDiscardUnStagedItemHandler();
         this.addDiffHandler();
         this.addCheckOutCommitHandlder();
@@ -149,6 +151,18 @@ export class GitManager{
             await this.unStageItem(paths,repoInfo);            
         })
     }
+    private addResetHandler() {
+        ipcMain.handle(RendererEvents.reset, async(e,repoPath:string, options:string[])=>{
+            await this.resetItem(repoPath,options);
+        })
+    }
+
+    private addDeleteLocalBranchHandler() {
+        ipcMain.handle(RendererEvents.deleteBranch, async(e,repoPath:string, branchName:string)=>{
+            await this.delete(repoPath,branchName);
+        })
+    }
+
     private addStageItemHandler() {
         ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             await this.stageItem(paths,repoInfo);
@@ -168,6 +182,16 @@ export class GitManager{
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.reset(['head', ...paths]);
+    }
+
+    private async resetItem(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.reset(options);
+    }
+
+    private async delete(repoPath:string,branchNme:string){
+        const git = this.getGitRunner(repoPath);
+        await git.deleteLocalBranch(branchNme);
     }
 
     private async stageItem(path:string[],repoInfo:RepositoryInfo){

@@ -262,5 +262,7 @@ export class RendererEvents{
     static readonly updateRepository = "updateRepository";
     static readonly diffTree = "diffTree";
     static readonly gitRaw = "gitRaw";
+    static readonly reset = "reset";
+    static readonly deleteBranch = "deleteBranch";
 }
 
