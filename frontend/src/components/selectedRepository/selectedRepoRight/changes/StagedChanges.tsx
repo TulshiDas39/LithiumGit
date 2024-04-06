@@ -38,7 +38,7 @@ function SingleFile(props:ISingleFileProps){
                 <span className="hover" title="Unstage" onClick={_=> {_.stopPropagation(); props.handleUnstage()}}><FaMinus /></span>                                    
             </Fragment>}
             <span>
-                <span className="ps-1 text-success fw-bold" title={StringUtils.getStatusText(props.item.changeType)}>{getStatusText()}</span>
+                <span className={`ps-1 fw-bold ${UiUtils.getChangeTypeHintColor(props.item.changeType)}`} title={StringUtils.getStatusText(props.item.changeType)}>{getStatusText()}</span>
             </span>
         </div>
     </div>

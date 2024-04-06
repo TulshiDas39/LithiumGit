@@ -1,6 +1,7 @@
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import React from "react"
 import { FaMinus, FaMinusCircle, FaPlusCircle } from "react-icons/fa";
+import { UiUtils } from "../../../../lib";
 
 interface IProps{
     files:IFile[];
@@ -33,7 +34,7 @@ function CommitFileListComponent(props:IProps){
                             </span>
                         </div>
                         <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">
-                            <span className="px-2 text-success fw-bold cur-default" title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span>
+                            <span className={`px-2 fw-bold cur-default ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span>
                         </div>                        
                     </div>
                 ))
