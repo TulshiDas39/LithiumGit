@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { BranchGraphUtils, DiffUtils, EnumHtmlIds, ILine, useMultiState } from "../../../../lib";
+import { BranchGraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
@@ -28,28 +28,40 @@ function CommitDiffViewComponent(props:IProps){
             return;
         }
         ChangeUtils.containerId = EnumHtmlIds.CommitDiff;
-        IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
-            const content = res.response || "";
-            const lines = StringUtils.getLines(content);
-            if(props.file?.changeType === EnumChangeType.MODIFIED){
-                const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.file.path];            
-                IpcUtils.getGitShowResult(options).then(res=>{
-                    let lineConfigs = DiffUtils.GetUiLines(res,lines);
-                    ChangeUtils.currentLines = lineConfigs.currentLines;
-                    ChangeUtils.previousLines = lineConfigs.previousLines;
+        if(props.file.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
+                const content = res.response || "";
+                const lines = StringUtils.getLines(content);
+                if(props.file?.changeType === EnumChangeType.MODIFIED){
+                    const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.file.path];            
+                    IpcUtils.getGitShowResult(options).then(res=>{
+                        let lineConfigs = DiffUtils.GetUiLines(res,lines);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+                        resetStepNavigation();
+                    })
+                }
+                else{
+                    const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                    ChangeUtils.currentLines = lineConfigs;
+                    ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
                     resetStepNavigation();
-                })
-            }
-            else{
+                }
+                
+            })
+        }
+        else{            
+            IpcUtils.getGitShowResult([`${selectedCommit.value.hash}^:${props.file.path}`]).then(content=>{                
+                const lines = StringUtils.getLines(content);                
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = lineConfigs;
-                ChangeUtils.previousLines = null!;
+                ChangeUtils.currentLines = null!;
+                ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
-                resetStepNavigation();
-            }
-            
-        })
+            })            
+        }
+        
     },[props.file])
 
     useEffect(()=>{
