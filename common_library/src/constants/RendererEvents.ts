@@ -264,5 +264,7 @@ export class RendererEvents{
     static readonly gitRaw = "gitRaw";
     static readonly reset = "reset";
     static readonly deleteBranch = "deleteBranch";
+    static readonly cloneRepository = "cloneRepository";
+    static readonly cloneProgress = "cloneProgress";
 }
 

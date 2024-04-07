@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -18,6 +18,7 @@ export class GitManager{
         this.addRepoDetailsHandler();
         this.addLogHandler();
         this.addStatusHandler();
+        this.addCloneRepositoryHandler();
         this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
@@ -232,6 +233,12 @@ export class GitManager{
         });
     }
 
+    private addCloneRepositoryHandler(){
+        ipcMain.handle(RendererEvents.cloneRepository, async (e,folderPath:string, url:string)=>{
+            await this.cloneRepository(folderPath,url);
+        });
+    }
+
     private addCherryPickHandler(){
         ipcMain.handle(RendererEvents.cherry_pick, async (e,repoInfo:RepositoryInfo,options:string[] )=>{
             await this.cherryPick(repoInfo,options);
@@ -291,6 +298,13 @@ export class GitManager{
     private async notifyStatus(repoInfo:RepositoryInfo){
         const status = await this.getStatus(repoInfo);
         AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+    }
+
+    private async cloneRepository(folderPath:string,url:string){
+        const git = this.getGitRunner(folderPath,(data)=>{
+            AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
+        });        
+        git.clone(url,folderPath);
     }
 
     private async getStatus(repoInfo:RepositoryInfo){
@@ -599,7 +613,7 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo | string){
+    private getGitRunner(repoInfo:RepositoryInfo | string,progress?:(data:SimpleGitProgressEvent)=>void){
         let repoPath = "";
         if(typeof(repoInfo) === 'string'){
             repoPath = repoInfo as string;
@@ -611,6 +625,7 @@ export class GitManager{
             baseDir: repoPath,
             binary: 'git',
             maxConcurrentProcesses: 6,
+            progress
          };
         let git = simpleGit(options);  
         return git;

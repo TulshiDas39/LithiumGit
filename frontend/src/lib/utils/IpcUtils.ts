@@ -1,13 +1,11 @@
-import { ICommitInfo, IGitCommandInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
-// import { ReduxUtils } from "./ReduxUtils";
-import { IpcParams } from "../interfaces";
-import { ModalData } from "../../components/modals/ModalData";
-import { ActionModals } from "../../store";
-import { EnumModals } from "../enums";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static cloneRepository(url: string, directory: string) {
+        return IpcUtils.execute(RendererEvents.cloneRepository,[directory,url]);
+    }
     static getRaw(options: string[]) {
         return IpcUtils.runGitCommand<string>(RendererEvents.gitRaw,[options]);
     }
