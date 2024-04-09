@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { Fragment, useEffect, useRef } from "react"
 import { Form, ProgressBar } from "react-bootstrap";
 import { AppButton } from "../../../common";
 import { UiUtils, useMultiState } from "../../../../lib";
@@ -11,17 +11,25 @@ enum CloneState{
     Finished
 }
 
+enum FetchState{
+    Remote="remote:",
+    Receiving="receiving",
+    Resolving="resolving"
+}
+
 interface IState{
     url:string;
     directory:string;
     cloningState:CloneState;
     progress:number;
-    progressLabel:string;
+    progressLabel:FetchState;
 }
 
 function CloneRepoPanelRepository(){
-    const [state,setState] = useMultiState({directory:"",url:"",cloningState:CloneState.NotStarted} as IState);
-    const refData = useRef({progress:0,stage:"Resolving",timer: undefined! as NodeJS.Timeout});
+    const [state,setState] = useMultiState({directory:"",url:"",
+    cloningState:CloneState.NotStarted,
+    progressLabel:FetchState.Remote, progress:0} as IState);
+    const refData = useRef({progress:0,stage: FetchState.Remote,timer: undefined! as NodeJS.Timeout});
     const cloneRepo = ()=>{        
         IpcUtils.cloneRepository(state.url,state.directory);
         setState({cloningState:CloneState.InProgress});
@@ -30,10 +38,26 @@ function CloneRepoPanelRepository(){
     useEffect(()=>{
         if(state.cloningState === CloneState.InProgress){
             refData.current.timer = setInterval(()=>{
-                setState({
-                    progress:refData.current.progress,
-                    progressLabel:refData.current.stage
+                let progress = 0;                
+                if(refData.current.stage === FetchState.Resolving){
+                    progress = 100;
+                }
+                else{
+                    progress = refData.current.progress;
+                }
+                setState(state=>{
+                    let cloningState = state.cloningState;
+                    if(state.progressLabel === FetchState.Resolving && refData.current.progress === 100){            
+                        cloningState = CloneState.Finished;
+                    }
+                    return {
+                        ...state,
+                        progress:progress,
+                        progressLabel:refData.current.stage,
+                        cloningState,
+                    }
                 });
+                
             },500);
         }
         else if(state.cloningState === CloneState.Finished){
@@ -44,11 +68,11 @@ function CloneRepoPanelRepository(){
             //setState({})
         }
     },[state.cloningState])
+
     useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:string)=>{
-            console.log("stage",stage);
-            refData.current.progress = progress;
+        window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            
             refData.current.stage = stage;
+            refData.current.progress = progress;
         })
 
         window.ipcRenderer.on(RendererEvents.getDirectoryPath().replyChannel,(e,path:string)=>{            
@@ -93,12 +117,16 @@ function CloneRepoPanelRepository(){
               <AppButton text="Clone Repository" type="default" onClick={cloneRepo}/>
         </div>}
 
-        {state.cloningState === CloneState.InProgress && <div className="row g-0 py-5">
-            <div className="col-1" />
-            <div className="col-10">
-                <ProgressBar className="w-100" style={{height:20}} animated variant="success" now={state.progress} key={1}  label={`${state.progress}%`} />
-            </div>            
-        </div>}
+        {state.cloningState === CloneState.InProgress && <Fragment>
+            <div className="row g-0 py-5">
+                <div className="col-1" />
+                <div className="col-10">
+                    <ProgressBar className="w-100" style={{height:20}} animated variant="success" now={state.progress} key={1}  label={`${state.progress}%`} />
+                </div>            
+            </div>
+            <div className="text-center">{state.progressLabel === FetchState.Remote?"fetching":state.progressLabel}...</div>
+        </Fragment>
+        }
     </div>
 }
 
