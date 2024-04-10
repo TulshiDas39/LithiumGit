@@ -3,6 +3,9 @@ import { BranchUtils } from "./BranchUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static showInFileExplorer(path:string){        
+        return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
+    }
     static cloneRepository(url: string, directory: string) {
         return IpcUtils.execute(RendererEvents.cloneRepository,[directory,url]);
     }

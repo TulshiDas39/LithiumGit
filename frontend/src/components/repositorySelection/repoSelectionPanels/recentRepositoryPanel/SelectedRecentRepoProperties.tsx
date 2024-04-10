@@ -38,7 +38,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
     const handleOpenInExplorer=()=>{
         const isValid = validatePath();
         if(isValid){
-            window.ipcRenderer.send(RendererEvents.openFileExplorer,props.selectedItem?.path);
+           IpcUtils.showInFileExplorer(props.selectedItem?.path!);
         }
     }
     if(!props.selectedItem) return null;
@@ -51,8 +51,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
             </div>
             <div className="py-1">
                 <Button className="px" onClick={handleOpenInExplorer}>Open in explorer</Button>
-            </div>
-            
+            </div>            
         </div>
         {!!props.selectedItem.lastOpenedAt &&
             <span>Last opened: {moment(props.selectedItem.lastOpenedAt).fromNow()}</span>

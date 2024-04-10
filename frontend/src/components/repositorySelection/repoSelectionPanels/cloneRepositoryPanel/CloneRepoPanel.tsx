@@ -4,6 +4,7 @@ import { AppButton } from "../../../common";
 import { UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { RendererEvents } from "common_library";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 enum CloneState{
     NotStarted,
@@ -85,6 +86,14 @@ function CloneRepoPanelRepository(){
     const handleBrowse=()=>{
         window.ipcRenderer.send(RendererEvents.getDirectoryPath().channel);        
     }
+    const showInFolder=()=>{
+        IpcUtils.showInFileExplorer(state.directory);
+    }
+
+    const open=()=>{
+        GitUtils.OpenRepository(state.directory);
+    }
+
     return <div>
         <div className="text-center">
             <h2>Clone Repository</h2>
@@ -103,18 +112,31 @@ function CloneRepoPanelRepository(){
                 <span>Directory Path: </span>
             </div>
             <div className="col-8">
-                <Form.Control type="text" value={state.directory} onChange={_=> setState({directory:_.target.value})} />
+                <Form.Control type="text" value={state.directory} readOnly={state.cloningState !== CloneState.NotStarted}
+                    onChange={_=> setState({directory:_.target.value})} />
             </div>
             <div className="col-2">
-                <div className="ps-1 h-100">
-                    <AppButton className="" text="Browse" type="success" style={{maxWidth:120,height:'100%',color:'white'}}
-                    onClick={handleBrowse}  />
+                <div className="ps-1 h-100 d-flex">
+                    {state.cloningState !== CloneState.Finished && <div className="h-100" style={{maxWidth:120}}>
+                        <AppButton disabled={state.cloningState === CloneState.InProgress} className="w-100" text="Browse" type="success" style={{height:'100%',color:'white'}}
+                        onClick={handleBrowse}  />
+                    </div>}
+                    {state.cloningState === CloneState.Finished && <div className="ps-2 h-100" style={{maxWidth:120}}>
+                        <AppButton className="w-100" text="Show in Folder" type="success" style={{height:'100%',color:'white'}}
+                        onClick={showInFolder}  />
+                    </div>}
                 </div>
             </div>
         </div>
 
         {state.cloningState === CloneState.NotStarted && <div className="d-flex justify-content-center pt-3">
               <AppButton text="Clone Repository" type="default" onClick={cloneRepo}/>
+        </div>}
+        {state.cloningState === CloneState.Finished && <div className="d-flex align-items-center justify-content-center">
+            <div className="pe-2">Clone Complete</div>
+            <div className="d-flex justify-content-center pt-3">
+                <AppButton text="Open" type="default" onClick={open}/>
+            </div>
         </div>}
 
         {state.cloningState === CloneState.InProgress && <Fragment>

@@ -1,5 +1,9 @@
-import { EnumChangeGroup, IFile, StringUtils } from "common_library";
+import { EnumChangeGroup, IFile, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
+import { ReduxUtils } from "./ReduxUtils";
+import { ActionModals, ActionSavedData } from "../../store";
+import { EnumModals } from "../enums";
+import { ModalData } from "../../components/modals/ModalData";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
@@ -51,5 +55,20 @@ export class GitUtils{
         }
 
         return files;
+    }
+
+    static OpenRepository(path:string){
+        const isValidPath = IpcUtils.isValidPath(path);
+        if(!isValidPath) {
+            ModalData.errorModal.message = "The path is not a git repository";
+            ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));            
+        }
+        else {
+            const newRepoInfo = createRepositoryInfo({
+                name:StringUtils.getFolderName(path),
+                path:path
+            });
+            ReduxUtils.dispatch(ActionSavedData.setSelectedRepository(newRepoInfo));
+        }
     }
 }
