@@ -56,7 +56,12 @@ function CommitBoxComponent(){
         if(!state.amend || !!state.value)
             return;
         const headCommit = BranchUtils.repositoryDetails.headCommit;
-        setState({value:headCommit.message});
+        let msg  = headCommit.message;
+        if(headCommit.body){
+            msg += `\n${headCommit.body}`;
+        }
+
+        setState({value:msg});
     },[state.amend])
 
     
