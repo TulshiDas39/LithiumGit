@@ -103,7 +103,7 @@ function CloneRepoPanelRepository(){
                 <span>URL: </span>
             </div>
             <div className="col-8">
-                <Form.Control type="text" value={state.url} onChange={_=>setState({url:_.target.value})} />
+                <Form.Control type="text" value={state.url} readOnly={state.cloningState !== CloneState.NotStarted} onChange={_=>setState({url:_.target.value})} />
             </div>                        
         </div>
 
@@ -121,7 +121,7 @@ function CloneRepoPanelRepository(){
                         <AppButton disabled={state.cloningState === CloneState.InProgress} className="w-100" text="Browse" type="success" style={{height:'100%',color:'white'}}
                         onClick={handleBrowse}  />
                     </div>}
-                    {state.cloningState === CloneState.Finished && <div className="ps-2 h-100" style={{maxWidth:120}}>
+                    {state.cloningState === CloneState.Finished && <div className="ps-2 h-100" style={{maxWidth:150}}>
                         <AppButton className="w-100" text="Show in Folder" type="success" style={{height:'100%',color:'white'}}
                         onClick={showInFolder}  />
                     </div>}
@@ -132,10 +132,13 @@ function CloneRepoPanelRepository(){
         {state.cloningState === CloneState.NotStarted && <div className="d-flex justify-content-center pt-3">
               <AppButton text="Clone Repository" type="default" onClick={cloneRepo}/>
         </div>}
-        {state.cloningState === CloneState.Finished && <div className="d-flex align-items-center justify-content-center">
-            <div className="pe-2">Clone Complete</div>
+        {state.cloningState === CloneState.Finished && <div className="pt-3">
+            <div className="pe-2 text-center">Clone Complete</div>
             <div className="d-flex justify-content-center pt-3">
-                <AppButton text="Open" type="default" onClick={open}/>
+                <AppButton text="Open" type="success" className="text-white" onClick={open}/>
+            </div>
+            <div className="d-flex justify-content-center pt-5">
+                <AppButton text="Clone More Repository" type="default" onClick={()=>setState({cloningState:CloneState.NotStarted})}/>
             </div>
         </div>}
 

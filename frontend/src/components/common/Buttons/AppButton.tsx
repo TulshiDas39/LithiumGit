@@ -59,7 +59,7 @@ function AppButtonComponent(props:IProps){
         return style;
     },[props.style])
 
-    return <div className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} d-flex align-items-center justify-content-center cur-default py-1 px-3 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+    return <div className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} d-flex align-items-center justify-content-center text-center cur-default py-1 px-3 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
         style={styles}>
         {props.text}
     </div>
