@@ -33,7 +33,7 @@ function CommitDiffViewComponent(props:IProps){
                 const content = res.response || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
-                    const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",props.file.path];            
+                    const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m",props.file.path];            
                     IpcUtils.getGitShowResult(options).then(res=>{
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
                         ChangeUtils.currentLines = lineConfigs.currentLines;

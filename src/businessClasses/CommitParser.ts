@@ -41,6 +41,9 @@ export class CommitParser{
             indexObj.index++;
             line = lines[indexObj.index];
         }
+        if(body.endsWith('\n')){
+            body = body.substring(0,body.length-1);
+        }
         return body;
     }
 

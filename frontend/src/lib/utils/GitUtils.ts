@@ -10,7 +10,7 @@ export class GitUtils{
 
     static async GetFileListByCommit(commitHash:string){
         const files:IFile[]  = [];
-        const options = ["diff-tree", "--no-commit-id", commitHash, "-r"];
+        const options = ["diff-tree", "--no-commit-id", commitHash, "-r", "-m"];
         const result = await IpcUtils.getRaw(options);
         if(!result.response)
             return files;
@@ -20,6 +20,8 @@ export class GitUtils{
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const path = words[words.length-1];
+            if(files.some(_=> _.path === path))
+                continue;
             const stat = statResult.find(_=> _.path === path);
             const addCount = stat?.addCount;
             const deleteCount = stat?.deleteCount;
@@ -43,15 +45,19 @@ export class GitUtils{
 
     static async getNumStat(commitHash:string){
         const files:{path:string;addCount:number;deleteCount:number}[]  = [];
-        const options = ["diff-tree", "--no-commit-id", commitHash, "-r","--numstat"];
+        const options = ["diff-tree", "--no-commit-id", commitHash, "-r","-m","--numstat"];
         const result = await IpcUtils.getRaw(options);
         if(!result.response)
             return files;
 
         const lines = StringUtils.getLines(result.response).filter(l => !!l).slice(0,1000);
         for(let line of lines){
-            const words = StringUtils.getWords(line);            
-            files.push({addCount:Number(words[0]),deleteCount:Number(words[1]),path:words[2]});
+            const words = StringUtils.getWords(line);
+            const path = words[2];
+            if(!files.some(_=> path === _.path)){
+                files.push({addCount:Number(words[0]),deleteCount:Number(words[1]),path});
+            }
+            
         }
 
         return files;
