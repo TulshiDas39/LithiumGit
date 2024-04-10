@@ -17,7 +17,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
 
     const validatePath = ()=>{
         const item = props.selectedItem!;
-        const isValidPath = IpcUtils.isValidPath(item!.path);
+        const isValidPath = IpcUtils.isValidRepositoryPath(item!.path);
         if(!isValidPath){
             ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
             ModalData.confirmationModal.YesHandler = ()=>{

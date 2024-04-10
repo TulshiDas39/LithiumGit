@@ -1,10 +1,13 @@
 import React, { Fragment, useEffect, useRef } from "react"
 import { Form, ProgressBar } from "react-bootstrap";
 import { AppButton } from "../../../common";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { RendererEvents } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { useDispatch } from "react-redux";
+import { ActionModals } from "../../../../store";
+import { ModalData } from "../../../modals/ModalData";
 
 enum CloneState{
     NotStarted,
@@ -27,11 +30,23 @@ interface IState{
 }
 
 function CloneRepoPanelRepository(){
+    const dispatch = useDispatch();
     const [state,setState] = useMultiState({directory:"",url:"",
     cloningState:CloneState.NotStarted,
     progressLabel:FetchState.Remote, progress:0} as IState);
     const refData = useRef({progress:0,stage: FetchState.Remote,timer: undefined! as NodeJS.Timeout});
     const cloneRepo = ()=>{        
+        if(!state.url){
+            ModalData.errorModal.message = "URL required.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        const isValidPath = IpcUtils.isValidPath(state.directory);
+        if(!isValidPath.response){
+            ModalData.errorModal.message = "Invalid directory path";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }        
         IpcUtils.cloneRepository(state.url,state.directory);
         setState({cloningState:CloneState.InProgress});
     }
@@ -130,7 +145,7 @@ function CloneRepoPanelRepository(){
         </div>
 
         {state.cloningState === CloneState.NotStarted && <div className="d-flex justify-content-center pt-3">
-              <AppButton text="Clone Repository" type="default" onClick={cloneRepo}/>
+              <AppButton text="Clone Repository" type="default" onClick={() => cloneRepo()}/>
         </div>}
         {state.cloningState === CloneState.Finished && <div className="pt-3">
             <div className="pe-2 text-center">Clone Complete</div>

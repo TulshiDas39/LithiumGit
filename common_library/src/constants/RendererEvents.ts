@@ -266,5 +266,6 @@ export class RendererEvents{
     static readonly deleteBranch = "deleteBranch";
     static readonly cloneRepository = "cloneRepository";
     static readonly cloneProgress = "cloneProgress";
+    static readonly isValidPath = "isValidPath";
 }
 

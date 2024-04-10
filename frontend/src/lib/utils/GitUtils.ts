@@ -58,7 +58,7 @@ export class GitUtils{
     }
 
     static OpenRepository(path:string){
-        const isValidPath = IpcUtils.isValidPath(path);
+        const isValidPath = IpcUtils.isValidRepositoryPath(path);
         if(!isValidPath) {
             ModalData.errorModal.message = "The path is not a git repository";
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));            

@@ -15,6 +15,7 @@ export class GitManager{
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addValidPathHandler();
         this.addRepoDetailsHandler();
         this.addLogHandler();
         this.addStatusHandler();
@@ -200,6 +201,12 @@ export class GitManager{
         await git.add(path);
     }
 
+    private addValidPathHandler(){
+        ipcMain.on(RendererEvents.isValidPath,(e,path:string)=>{
+            e.returnValue = existsSync(path);
+        })
+    }
+
     private addValidGitPathHandler(){
         ipcMain.on(RendererEvents.isValidRepoPath,(e,path:string)=>{
             if(!existsSync(path)) {
@@ -235,7 +242,7 @@ export class GitManager{
 
     private addCloneRepositoryHandler(){
         ipcMain.handle(RendererEvents.cloneRepository, async (e,folderPath:string, url:string)=>{
-            await this.cloneRepository(folderPath,url);
+            return await this.cloneRepository(folderPath,url);
         });
     }
 
@@ -304,7 +311,7 @@ export class GitManager{
         const git = this.getGitRunner(folderPath,(data)=>{
             AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
         });        
-        git.clone(url,folderPath);
+        return await git.clone(url,folderPath);
     }
 
     private async getStatus(repoInfo:RepositoryInfo){

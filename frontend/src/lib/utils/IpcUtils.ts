@@ -117,8 +117,11 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
     }
 
-    static isValidPath(path:string){
+    static isValidRepositoryPath(path:string){
         return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
+    }
+    static isValidPath(path:string){
+        return IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
     }
     
     static async removeRecentRepo(repoId:string){
@@ -141,12 +144,27 @@ export class IpcUtils{
         }).catch((e)=>{
             const err = e?.toString() as string;
             if(!disableErrorDisplay){
-                IpcUtils.showError?.(err);
-                //ReduxStore?.dispatch(ActionModals.showModal(EnumModals.ERROR));
+                IpcUtils.showError?.(err);                
             }
             result.error = err;
             return result;
         });
+    }
+
+    private static executeSync<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean){
+        const result = {} as IpcResult<T>;
+        try{
+            const r:T = window.ipcRenderer.sendSync(channel,...args);
+            result.response = r;
+            return result;
+        }catch(e:any){
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                IpcUtils.showError?.(err);
+            }
+            result.error = err;
+            return result;
+        };
     }
 
     private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
