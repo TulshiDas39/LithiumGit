@@ -138,7 +138,8 @@ function CloneRepoPanelRepository(){
                 <AppButton text="Open" type="success" className="text-white" onClick={open}/>
             </div>
             <div className="d-flex justify-content-center pt-5">
-                <AppButton text="Clone More Repository" type="default" onClick={()=>setState({cloningState:CloneState.NotStarted})}/>
+                <AppButton text="Clone More Repository" type="default"
+                 onClick={()=>setState({cloningState:CloneState.NotStarted,directory:"",url:""})}/>
             </div>
         </div>}
 

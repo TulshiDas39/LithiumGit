@@ -54,7 +54,7 @@ export class FileManager{
     }
 
     private handleOpenFileExplorer(){
-        ipcMain.on(RendererEvents.openFileExplorer,(e,path:string)=>{
+        ipcMain.handle(RendererEvents.openFileExplorer,(e,path:string)=>{
             shell.showItemInFolder(path);
         })
     }
