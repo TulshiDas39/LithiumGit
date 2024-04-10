@@ -15,6 +15,7 @@ export class GitManager{
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addCreateNewRepoHandler();
         this.addValidPathHandler();
         this.addRepoDetailsHandler();
         this.addLogHandler();
@@ -218,6 +219,13 @@ export class GitManager{
             if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
         })        
+    }
+
+    private addCreateNewRepoHandler(){
+        ipcMain.handle(RendererEvents.createNewRepo, async (e,path:string)=>{
+            const git = this.getGitRunner(path);
+            await git.init();
+        })
     }
 
     private addRepoDetailsHandler(){

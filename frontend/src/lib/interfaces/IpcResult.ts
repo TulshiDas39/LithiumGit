@@ -1,4 +1,4 @@
 export interface IpcResult<T=any>{
-    response?:T;
+    result?:T;
     error?:string;
 }

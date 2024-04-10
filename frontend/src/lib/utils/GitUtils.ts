@@ -12,10 +12,10 @@ export class GitUtils{
         const files:IFile[]  = [];
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r", "-m"];
         const result = await IpcUtils.getRaw(options);
-        if(!result.response)
+        if(!result.result)
             return files;
 
-        const lines = StringUtils.getLines(result.response).filter(l => !!l).slice(0,1000);
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         const statResult = await GitUtils.getNumStat(commitHash);
         for(let line of lines){
             const words = StringUtils.getWords(line);
@@ -47,10 +47,10 @@ export class GitUtils{
         const files:{path:string;addCount:number;deleteCount:number}[]  = [];
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r","-m","--numstat"];
         const result = await IpcUtils.getRaw(options);
-        if(!result.response)
+        if(!result.result)
             return files;
 
-        const lines = StringUtils.getLines(result.response).filter(l => !!l).slice(0,1000);
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const path = words[2];

@@ -30,7 +30,7 @@ function CommitDiffViewComponent(props:IProps){
         ChangeUtils.containerId = EnumHtmlIds.CommitDiff;
         if(props.file.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
-                const content = res.response || "";
+                const content = res.result || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
                     const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m",props.file.path];            

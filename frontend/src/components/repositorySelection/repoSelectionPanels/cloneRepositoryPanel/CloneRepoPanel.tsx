@@ -42,7 +42,7 @@ function CloneRepoPanelRepository(){
             return;
         }
         const isValidPath = IpcUtils.isValidPath(state.directory);
-        if(!isValidPath.response){
+        if(!isValidPath.result){
             ModalData.errorModal.message = "Invalid directory path";
             dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;
@@ -91,15 +91,14 @@ function CloneRepoPanelRepository(){
             refData.current.progress = progress;
         })
 
-        window.ipcRenderer.on(RendererEvents.getDirectoryPath().replyChannel,(e,path:string)=>{            
-            if(!!path) setState({directory:path});
-        });
         return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.getDirectoryPath().replyChannel]);
+            UiUtils.removeIpcListeners([RendererEvents.cloneProgress]);
         }
     },[])
     const handleBrowse=()=>{
-        window.ipcRenderer.send(RendererEvents.getDirectoryPath().channel);        
+        IpcUtils.browseFolderPath().then(r=>{
+            if(r.result) setState({directory:r.result});
+        })
     }
     const showInFolder=()=>{
         IpcUtils.showInFileExplorer(state.directory);

@@ -195,7 +195,7 @@ function CommitContextModalComponent(){
         hideModal();
         const handler = ()=>{
             IpcUtils.getRaw(["branch","-D",branchName]).then(r=>{
-                if(r.response){
+                if(r.result){
                     dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
                 }
             })

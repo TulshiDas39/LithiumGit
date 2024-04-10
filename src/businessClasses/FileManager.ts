@@ -41,16 +41,17 @@ export class FileManager{
     }
 
     handleGetDirectoryPath(){
-        ipcMain.on(RendererEvents.getDirectoryPath().channel,(e)=>{
-            dialog.showOpenDialog({
+        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e)=>{
+            return this.getDirectoryPathUsingExplorer();
+        });        
+    }
+
+    private getDirectoryPathUsingExplorer(){
+        return dialog.showOpenDialog({
                 properties: ['openDirectory']
             }).then(res=>{
-                res.filePaths[0];
-                e.reply(RendererEvents.getDirectoryPath().replyChannel,res.filePaths[0]);
+                return res.filePaths[0];
             });
-
-        });
-        
     }
 
     private handleOpenFileExplorer(){

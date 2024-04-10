@@ -3,6 +3,12 @@ import { BranchUtils } from "./BranchUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static initNewRepo(path:string){
+        return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
+    }
+    static browseFolderPath(){
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[]);
+    }
     static showInFileExplorer(path:string){        
         return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
     }
@@ -139,7 +145,7 @@ export class IpcUtils{
     private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{
         const result = {} as IpcResult<T>;
         return window.ipcRenderer.invoke(channel,...args).then(r=>{
-            result.response = r;
+            result.result = r;
             return result;
         }).catch((e)=>{
             const err = e?.toString() as string;
@@ -155,7 +161,7 @@ export class IpcUtils{
         const result = {} as IpcResult<T>;
         try{
             const r:T = window.ipcRenderer.sendSync(channel,...args);
-            result.response = r;
+            result.result = r;
             return result;
         }catch(e:any){
             const err = e?.toString() as string;
