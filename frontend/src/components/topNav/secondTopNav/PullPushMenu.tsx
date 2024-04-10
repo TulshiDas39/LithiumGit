@@ -19,7 +19,7 @@ interface IStatus{
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
         current:state.ui.status?.current,
-        hashOfHead:state.ui.status?.headCommit.avrebHash,
+        hashOfHead:state.ui.status?.headCommit?.avrebHash,
         ahead:state.ui.status?.ahead,
         behind:state.ui.status?.behind,
         isDetached:!!state.ui.status?.isDetached

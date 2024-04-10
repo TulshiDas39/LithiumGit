@@ -14,6 +14,8 @@ export class BranchUtils{
     static readonly distanceBetweenCommits = BranchUtils.commitRadius*3;
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
+        if(!repoDetails.allCommits.length)
+            return;
         BranchUtils.getBranchDetails(repoDetails);
         BranchUtils.enListSourceCommits(repoDetails);
         BranchUtils.finaliseSourceCommits(repoDetails);

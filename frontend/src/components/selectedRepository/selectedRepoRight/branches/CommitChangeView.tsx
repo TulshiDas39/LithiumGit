@@ -17,8 +17,10 @@ function CommitChangeViewComponent(){
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     useEffect(()=>{
-        if(!state.selectedCommitHash)
+        if(!state.selectedCommitHash){
+            setState({files:[],selectedFile:undefined});
             return;
+        }
         
         GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
             setState({files:res,selectedFile:res[0]});

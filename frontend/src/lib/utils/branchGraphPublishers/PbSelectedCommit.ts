@@ -8,6 +8,8 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     protected applyChange(): void {   
         this.resetPrevious();
         this.highlight();
+        if(!this.value)
+            return ;
         if(!BranchGraphUtils.state.viewBox.isVisible(this.value.x,this.value.ownerBranch.y)){
             this.focus();
         }
@@ -27,6 +29,7 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     }
 
     private highlight(){
+        if(!this.value) return;
         var elem = BranchGraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.value.hash}`);        
         elem?.setAttribute("fill",BranchGraphUtils.selectedCommitColor);        
     }

@@ -362,6 +362,8 @@ export class GitManager{
         result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
         result.headCommit = await this.getCommitInfo(git,undefined);
+        if(!result.headCommit)
+            return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
     }
@@ -650,9 +652,15 @@ export class GitManager{
         const options:string[] = [];
         if(commitHash) options.push(commitHash);
         options.push(this.LogFormat);
-        const showResult = await git.show(options);        
-        const commit = CommitParser.parse(showResult);        
-        return commit?.[0];
+        let commits:ICommitInfo[] = [];
+        try{
+            const showResult = await git.show(options);        
+            commits = CommitParser.parse(showResult);        
+        }catch(e){
+            return null!;
+        }
+        
+        return commits?.[0];
     }
 
 
