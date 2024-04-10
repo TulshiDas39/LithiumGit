@@ -19,6 +19,7 @@ interface IStatus{
 function PullPushMenuComponent(){
     const store = useSelectorTyped(state=>({
         current:state.ui.status?.current,
+        hashOfHead:state.ui.status?.headCommit.avrebHash,
         ahead:state.ui.status?.ahead,
         behind:state.ui.status?.behind,
         isDetached:!!state.ui.status?.isDetached
@@ -30,9 +31,9 @@ function PullPushMenuComponent(){
     const dispatch = useDispatch();
     const currentText = useMemo(()=>{
         if(store.isDetached)
-            return BranchUtils.repositoryDetails.headCommit.avrebHash+"(Detached)";
+            return store.hashOfHead+"(Detached)";
         return store.current;
-    },[store.isDetached,store.current])
+    },[store.isDetached,store.current,store.hashOfHead])
 
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
