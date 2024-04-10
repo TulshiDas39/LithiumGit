@@ -17,7 +17,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
 
     const validatePath = ()=>{
         const item = props.selectedItem!;
-        const isValidPath = IpcUtils.isValidPath(item!.path);
+        const isValidPath = IpcUtils.isValidRepositoryPath(item!.path);
         if(!isValidPath){
             ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
             ModalData.confirmationModal.YesHandler = ()=>{
@@ -38,7 +38,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
     const handleOpenInExplorer=()=>{
         const isValid = validatePath();
         if(isValid){
-            window.ipcRenderer.send(RendererEvents.openFileExplorer,props.selectedItem?.path);
+           IpcUtils.showInFileExplorer(props.selectedItem?.path!);
         }
     }
     if(!props.selectedItem) return null;
@@ -51,8 +51,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
             </div>
             <div className="py-1">
                 <Button className="px" onClick={handleOpenInExplorer}>Open in explorer</Button>
-            </div>
-            
+            </div>            
         </div>
         {!!props.selectedItem.lastOpenedAt &&
             <span>Last opened: {moment(props.selectedItem.lastOpenedAt).fromNow()}</span>

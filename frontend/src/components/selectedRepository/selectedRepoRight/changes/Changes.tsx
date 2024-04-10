@@ -83,8 +83,7 @@ function ChangesComponent() {
 
     }
     
-    useEffect(()=>{
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+    useEffect(()=>{        
         ReduxUtils.resetChangeNavigation = ()=>{
             dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
             if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));
@@ -105,11 +104,7 @@ function ChangesComponent() {
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
 
-        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {/* {!!state.selectedFile && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
-                path={state.selectedFile.path} repoInfo={repoInfo} 
-                changeGroup={state.selectedFileGroup} 
-                changeType={state.selectedFile.changeType}/>} */}
+        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>            
 
             <div id={EnumHtmlIds.diffview_container} className="h-100">
 

@@ -31,7 +31,7 @@ function CommitPropertyComponent(){
 
     if(!state.selectedCommit) return null;
     return <div id="commit_property" className="d-flex flex-column w-100 ps-1 overflow-hidden border">
-        <h6>Commit properties</h6>
+        <b>Commit properties</b>
         {!!state.selectedCommit.hash && <span>Sha: {state.selectedCommit.avrebHash}</span>}
         <span>Date: {moment(state.selectedCommit.date).format("D MMM,YYYY") }</span>
         {!!state.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">

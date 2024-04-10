@@ -1,13 +1,17 @@
-import { ICommitInfo, IGitCommandInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { BranchUtils } from "./BranchUtils";
-// import { ReduxUtils } from "./ReduxUtils";
-import { IpcParams } from "../interfaces";
-import { ModalData } from "../../components/modals/ModalData";
-import { ActionModals } from "../../store";
-import { EnumModals } from "../enums";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static showInFileExplorer(path:string){        
+        return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
+    }
+    static cloneRepository(url: string, directory: string) {
+        return IpcUtils.execute(RendererEvents.cloneRepository,[directory,url]);
+    }
+    static getRaw(options: string[]) {
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitRaw,[options]);
+    }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
             repoInfo = BranchUtils.repositoryDetails.repoInfo;
@@ -75,14 +79,26 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
     }
 
-    static async getGitShowResult(path:string){
-        const options =  [`HEAD:${path}`];
+    static async getGitShowResult(options:string[]){
         return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+    }
+    
+    static async reset(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.reset,[options]);
+    }
+
+    static async deleteLocalBranch(branchName:string){
+        return IpcUtils.runGitCommand(RendererEvents.deleteBranch,[branchName]);
     }
 
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
+    }
+
+    static async getFileContentAtSpecificCommit(commitHash:string, path:string){
+        const options = [`${commitHash}:${path}`];
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
     }
 
     static async addRemote(remote:IRemoteInfo){
@@ -101,8 +117,11 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
     }
 
-    static isValidPath(path:string){
+    static isValidRepositoryPath(path:string){
         return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
+    }
+    static isValidPath(path:string){
+        return IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
     }
     
     static async removeRecentRepo(repoId:string){
@@ -125,12 +144,27 @@ export class IpcUtils{
         }).catch((e)=>{
             const err = e?.toString() as string;
             if(!disableErrorDisplay){
-                ModalData.errorModal.message = err;
-                //ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));                
+                IpcUtils.showError?.(err);                
             }
             result.error = err;
             return result;
         });
+    }
+
+    private static executeSync<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean){
+        const result = {} as IpcResult<T>;
+        try{
+            const r:T = window.ipcRenderer.sendSync(channel,...args);
+            result.response = r;
+            return result;
+        }catch(e:any){
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                IpcUtils.showError?.(err);
+            }
+            result.error = err;
+            return result;
+        };
     }
 
     private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
@@ -142,4 +176,6 @@ export class IpcUtils{
     static updateRepository(repo:RepositoryInfo){
         return IpcUtils.execute(RendererEvents.updateRepository,[repo]);
     }
+
+    static showError:(err:string)=>void;
 }

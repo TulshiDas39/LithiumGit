@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -15,12 +15,16 @@ export class GitManager{
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addValidPathHandler();
         this.addRepoDetailsHandler();
         this.addLogHandler();
         this.addStatusHandler();
+        this.addCloneRepositoryHandler();
         this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
+        this.addResetHandler();
+        this.addDeleteLocalBranchHandler();
         this.addDiscardUnStagedItemHandler();
         this.addDiffHandler();
         this.addCheckOutCommitHandlder();
@@ -30,6 +34,7 @@ export class GitManager{
         this.addFetchHandler();
         this.addCommitHandler();
         this.addGitShowHandler();
+        this.addRawHandler();
         this.addMergeHandler();
         this.addCleanhHandler();
         this.addRemoteAddHandler();
@@ -61,21 +66,34 @@ export class GitManager{
         
     }
 
-    addGitShowHandler(){
-        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.getShowResult(repository,options);
+    private addGitShowHandler(){
+        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.getShowResult(repoPath,options);
             return result;
         })
     }
 
-    async getShowResult(repository:RepositoryInfo,options:string[]){
+    private addRawHandler(){
+        ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
+            const result = await this.getRawResult(repoPath,options);
+            return result;
+        })
+    }
+
+    async getShowResult(repoPath:string,options:string[]){
         try {
-            const git = this.getGitRunner(repository);
+            const git = this.getGitRunner(repoPath);
             const result = await git.show(options);   
             return result;
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
+    }
+
+    async getRawResult(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
+        const result = await git.raw(options);   
+        return result;       
     }
 
     addCommitHandler(){
@@ -135,6 +153,18 @@ export class GitManager{
             await this.unStageItem(paths,repoInfo);            
         })
     }
+    private addResetHandler() {
+        ipcMain.handle(RendererEvents.reset, async(e,repoPath:string, options:string[])=>{
+            await this.resetItem(repoPath,options);
+        })
+    }
+
+    private addDeleteLocalBranchHandler() {
+        ipcMain.handle(RendererEvents.deleteBranch, async(e,repoPath:string, branchName:string)=>{
+            await this.delete(repoPath,branchName);
+        })
+    }
+
     private addStageItemHandler() {
         ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
             await this.stageItem(paths,repoInfo);
@@ -156,9 +186,25 @@ export class GitManager{
         await git.reset(['head', ...paths]);
     }
 
+    private async resetItem(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.reset(options);
+    }
+
+    private async delete(repoPath:string,branchNme:string){
+        const git = this.getGitRunner(repoPath);
+        await git.deleteLocalBranch(branchNme);
+    }
+
     private async stageItem(path:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
         await git.add(path);
+    }
+
+    private addValidPathHandler(){
+        ipcMain.on(RendererEvents.isValidPath,(e,path:string)=>{
+            e.returnValue = existsSync(path);
+        })
     }
 
     private addValidGitPathHandler(){
@@ -191,6 +237,12 @@ export class GitManager{
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             await this.notifyStatus(repoInfo);
+        });
+    }
+
+    private addCloneRepositoryHandler(){
+        ipcMain.handle(RendererEvents.cloneRepository, async (e,folderPath:string, url:string)=>{
+            return await this.cloneRepository(folderPath,url);
         });
     }
 
@@ -253,6 +305,13 @@ export class GitManager{
     private async notifyStatus(repoInfo:RepositoryInfo){
         const status = await this.getStatus(repoInfo);
         AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+    }
+
+    private async cloneRepository(folderPath:string,url:string){
+        const git = this.getGitRunner(folderPath,(data)=>{
+            AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
+        });        
+        return await git.clone(url,folderPath);
     }
 
     private async getStatus(repoInfo:RepositoryInfo){
@@ -561,7 +620,7 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo | string){
+    private getGitRunner(repoInfo:RepositoryInfo | string,progress?:(data:SimpleGitProgressEvent)=>void){
         let repoPath = "";
         if(typeof(repoInfo) === 'string'){
             repoPath = repoInfo as string;
@@ -573,6 +632,7 @@ export class GitManager{
             baseDir: repoPath,
             binary: 'git',
             maxConcurrentProcesses: 6,
+            progress
          };
         let git = simpleGit(options);  
         return git;

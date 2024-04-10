@@ -1,4 +1,4 @@
-import React from "react"
+import React, { CSSProperties, useMemo } from "react"
 
 type ButtonType = "default"|"success"|"danger"|"info"|"primary";
 
@@ -37,6 +37,8 @@ interface IProps{
     borderSize?:number;
     borderColor?:string;
     disabled?:boolean;
+    style?:CSSProperties;
+    className?:string;
 }
 
 
@@ -49,8 +51,16 @@ function AppButtonComponent(props:IProps){
             return 1;
         return 0;
     }
-    return <div className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} text-center cur-default p-1`} onClick={props.disabled?undefined:props.onClick}
-        style={{borderStyle:"solid", borderWidth:getBorderSize(),borderColor:props.borderColor || "rgba(0,0,0,.2)", minWidth:50}}>
+    const styles = useMemo(()=>{
+        let style:CSSProperties = {borderStyle:"solid", borderWidth:getBorderSize(),borderColor:props.borderColor || "rgba(0,0,0,.2)", minWidth:50};
+        if(props.style){
+            style = {...style,...props.style};
+        }
+        return style;
+    },[props.style])
+
+    return <div className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} d-flex align-items-center justify-content-center text-center cur-default py-1 px-3 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+        style={styles}>
         {props.text}
     </div>
 }

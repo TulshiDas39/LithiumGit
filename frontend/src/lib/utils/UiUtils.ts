@@ -1,4 +1,4 @@
-import { ICommitInfo } from "common_library";
+import { EnumChangeType, ICommitInfo } from "common_library";
 import { IPositionDiff, IPositition } from "../interfaces";
 import * as ReactDOMServer from 'react-dom/server';
 
@@ -151,5 +151,15 @@ export class UiUtils {
             }, 200);
         })
         
+    }
+
+    static getChangeTypeHintColor(changeType:EnumChangeType){
+        if(changeType === EnumChangeType.MODIFIED)
+            return "text-primary";
+        if(changeType === EnumChangeType.CREATED)
+            return "text-success";
+        if(changeType === EnumChangeType.DELETED)
+            return "text-danger";
+        return "text-info";
     }
 }

@@ -1,4 +1,4 @@
-import { RendererEvents } from "common_library";
+import { RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useRef  } from "react"
 import { Form } from "react-bootstrap";
 import { FaCheck } from "react-icons/fa";
@@ -6,7 +6,6 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 
 interface IState{
     value:string;
@@ -39,7 +38,7 @@ function CommitBoxComponent(){
         const options:string[] = [];
         if(state.amend)
             options.push("--amend");
-        const messages = new StringUtils().getLines(state.value);        
+        const messages = StringUtils.getLines(state.value);        
         IpcUtils.doCommit(messages,options).finally(()=>{
             setState({value:""});
             IpcUtils.getRepoStatus();
