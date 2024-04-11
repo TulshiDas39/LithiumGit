@@ -5,4 +5,5 @@ export enum EnumModals{
     CONFIRMATION="CONFIRMATION",
     PUSH_TO="PUSH_TO",
     PULL_FROM="PULL_FROM",
+    CHECKOUT="CHECKOUT",
 }
