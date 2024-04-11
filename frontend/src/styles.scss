@@ -129,7 +129,8 @@ html {
 
   .hover:hover{
     cursor: default;
-    opacity: 0.6;
+    //opacity: 0.6;
+    color: #0bc59c;
   }
 
   .hover-brighter:hover{
@@ -254,5 +255,15 @@ html {
 .difference{
   p {
     margin: 0 !important;
+  }
+}
+.context-option{
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.commitContext{
+  .modal-content{
+    border-radius: 0 !important;
   }
 }

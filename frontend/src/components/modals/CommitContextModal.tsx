@@ -9,6 +9,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { FaCodeBranch, FaRegPaperPlane } from "react-icons/fa";
 
 enum Option{
     Checkout,
@@ -218,13 +219,15 @@ function CommitContextModalComponent(){
         return options;
     },[store.show])
 
+    const optionClasses = "border-bottom context-option";
+
     return (
         <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     {
                         branchNamesForCheckout.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                            <div className={`row g-0 border-bottom ${optionClasses}`}>
                                 {
                                     branchNamesForCheckout.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Checkout}))}>
@@ -248,15 +251,17 @@ function CommitContextModalComponent(){
                         </div>
                     }
 
-                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
                     </div>
-                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
+                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>
+                            Create branch from this commit <FaCodeBranch />
+                        </div>
                     </div>
                     {
-                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && 
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
@@ -277,15 +282,14 @@ function CommitContextModalComponent(){
                                     <div className="col-12 hover cur-default " onClick={() => mergeBranch(referredLocalBranches[0])}>Merge branch '{referredLocalBranches[0]}'</div>
                                 }                                
                             </div>
-                        </div>
                     }
-                    {!Data.selectedCommit?.isHead && <div className="border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                    {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>mergeCommit(Data.selectedCommit?.hash)}>Merge this commit</div>
                     </div>}
 
                     {
-                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 &&
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
@@ -305,32 +309,33 @@ function CommitContextModalComponent(){
                                     </div>:
                                     <div className="col-12 hover cur-default " onClick={() => rebaseBranch(referredLocalBranches[0])}>Rebase branch '{referredLocalBranches[0]}'</div>
                                 }                                
-                            </div>
-                        </div>
+                            </div>                        
                     }
 
-                    {!Data.selectedCommit?.isHead && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={cherryPick}>Cherry-Pick this commit</div>
+                    {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={cherryPick}>
+                            Cherry-Pick this commit <FaRegPaperPlane />
+                        </div>
                     </div>}
-                    {!!moreOptionList.length && !state.showMore && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}
+                    {!!moreOptionList.length && !state.showMore && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}
                         onClick={_=> setState({showMore:true})}>
                         <div className="col-12 hover cur-default ">Show More</div>
                     </div>}
                     {
                         state.showMore && <Fragment>                        
-                            {moreOptionList.includes(Option.SoftReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                            {moreOptionList.includes(Option.SoftReset) && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                                 <div className="col-12 hover cur-default " onClick={softReset}>Soft reset this commit</div>
                             </div>}
-                            {moreOptionList.includes(Option.HardReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                            {moreOptionList.includes(Option.HardReset) && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                                 <div className="col-12 hover cur-default " onClick={hardReset}>Hard reset this commit</div>
                             </div>}                        
                             {
-                            moreOptionList.includes(Option.DeleteBranch) && <div>
-                            <div className="row g-0 border-bottom">
+                            moreOptionList.includes(Option.DeleteBranch) && 
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
-                                        <div className="d-flex hover bg-danger" onMouseEnter={()=> setState(({mouseOver:Option.DeleteBranch}))}>
-                                            <span className="flex-grow-1">Delete branch</span>
+                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.DeleteBranch}))}>
+                                            <span className="flex-grow-1 text-danger">Delete branch</span>
                                             <span>&gt;</span>
                                         </div>
                                         
@@ -347,7 +352,6 @@ function CommitContextModalComponent(){
                                     <div className="col-12 hover cur-default text-danger" onClick={() => deleteBranch(branchNamesForDelete[0])}>Delete branch '{branchNamesForDelete[0]}'</div>
                                 }                                
                             </div>
-                        </div>
                     }
                         
                         </Fragment>
