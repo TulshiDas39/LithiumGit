@@ -102,9 +102,9 @@ function ChangesComponent() {
             <CommitBox />
             <ChangesTabPane  />
         </div>
-        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
+        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
 
-        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>            
+        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
             <div id={EnumHtmlIds.diffview_container} className="h-100">
 
