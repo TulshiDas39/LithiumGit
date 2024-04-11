@@ -155,7 +155,7 @@ function CommitContextModalComponent(){
         const branchList = BranchUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
         return referredBranches;
-    },[store.show])
+    },[store.show,Data.selectedCommit])
     
     const branchNamesForCheckout = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
@@ -169,14 +169,14 @@ function CommitContextModalComponent(){
                 branches.push(localBranch);
         }
         return branches;
-    },[referredLocalBranches,store.show])
+    },[referredLocalBranches,store.show,Data.selectedCommit])
 
     const branchNamesForDelete = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];
         const branches = referredLocalBranches.slice();        
         return branches;
-    },[referredLocalBranches,store.show])
+    },[referredLocalBranches,store.show,Data.selectedCommit])
 
     const softReset=()=>{
         hideModal();
@@ -217,14 +217,14 @@ function CommitContextModalComponent(){
         const options:Option[] = [];
         if(!store.show)
             return options;
-        if(!Data.selectedCommit.nextCommit && Data.selectedCommit.isHead){
+        if(!Data.selectedCommit?.nextCommit && Data.selectedCommit?.isHead){
             options.push(Option.HardReset,Option.SoftReset);
         }
         if(branchNamesForDelete.length){
             options.push(Option.DeleteBranch);
         }
         return options;
-    },[store.show])
+    },[store.show,Data.selectedCommit])
 
     const optionClasses = "border-bottom context-option";
 
