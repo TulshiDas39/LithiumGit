@@ -10,7 +10,6 @@ import { ActionUI } from "../../store/slices/UiSlice";
 
 interface IState{
     branch:string;
-    remember:boolean;
 }
 
 function PushToModalComponent(){
@@ -20,7 +19,6 @@ function PushToModalComponent(){
 
     const [state,setState] = useMultiState<IState>({
         branch:"",
-        remember:false,
     });
 
     const dispatch = useDispatch();
@@ -31,7 +29,7 @@ function PushToModalComponent(){
     }
 
     const clearState = ()=>{
-        setState({branch:"",remember:false});;
+        setState({branch:""});;
     }
 
     const handlePush=()=>{
@@ -46,7 +44,7 @@ function PushToModalComponent(){
                 dispatch(ActionUI.setLoader(undefined));
             })
         }).finally(()=>{
-            const newPushTo = state.remember ? state.branch:"";
+            const newPushTo = state.branch;
             const repo = BranchUtils.repositoryDetails.repoInfo;
             if(newPushTo !== repo?.pushToBranch){            
                 repo.pushToBranch = newPushTo;
@@ -60,7 +58,7 @@ function PushToModalComponent(){
         if(!store.show)
             return ;
         const pushToBranch = BranchUtils.repositoryDetails.repoInfo.pushToBranch || "";
-        setState({branch:pushToBranch,remember:!!pushToBranch});
+        setState({branch:pushToBranch});
     },[store.show])
 
     return <Modal show={store.show} centered size="sm" backdrop={false}>
@@ -85,14 +83,14 @@ function PushToModalComponent(){
                     <AppButton text="Push" type="success" onClick={handlePush} />
                 </div>
             </div>
-            <div className="row g-0">
+            {/* <div className="row g-0">
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
                     <input id="remember_push" type="checkbox" checked={state.remember} onChange={e=>setState({remember:e.target.checked})} />
                     <label htmlFor="remember_push">
                         <span className="ps-2">Remember</span>
                     </label>
                 </div>
-            </div>
+            </div> */}
         </div>
     </Modal.Body>
 </Modal>
