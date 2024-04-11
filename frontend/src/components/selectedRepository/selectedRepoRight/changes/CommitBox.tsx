@@ -3,7 +3,7 @@ import React, { useEffect, useRef  } from "react"
 import { Form } from "react-bootstrap";
 import { FaCheck } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, UiUtils, useMultiState } from "../../../../lib";
+import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
@@ -48,14 +48,14 @@ function CommitBoxComponent(){
 
     useEffect(()=>{
         if(store.isMergingState){            
-            setState({value:BranchUtils.generateMergeCommit()});
+            setState({value:RepoUtils.generateMergeCommit()});
         }        
     },[store.isMergingState])
 
     useEffect(()=>{
         if(!state.amend || !!state.value)
             return;
-        const headCommit = BranchUtils.repositoryDetails.headCommit;
+        const headCommit = RepoUtils.repositoryDetails.headCommit;
         let msg  = headCommit.message;
         if(headCommit.body){
             msg += `\n${headCommit.body}`;

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react"
-import { BranchGraphUtils, useDrag, useMultiState } from "../../../../lib";
+import { GraphUtils, useDrag, useMultiState } from "../../../../lib";
 import { ICommitInfo, IFile } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { CommitFileList } from "./CommitFileList";
@@ -42,9 +42,9 @@ function CommitChangeViewComponent(){
         const listener = (commit?:ICommitInfo)=>{
             setState({selectedCommitHash:commit?.hash,selectedFile:undefined});
         }
-        BranchGraphUtils.state.selectedCommit.subscribe(listener);
+        GraphUtils.state.selectedCommit.subscribe(listener);
         return ()=>{
-            BranchGraphUtils.state.selectedCommit.unSubscribe(listener);
+            GraphUtils.state.selectedCommit.unSubscribe(listener);
         }
     },[])
 

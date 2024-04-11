@@ -2,8 +2,8 @@ import { IStatus, RendererEvents } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
-import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { RepoUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { GraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
@@ -60,10 +60,8 @@ function CommitContextModalComponent(){
     }
 
     const checkOutCommit=(destination:string)=>{
-        const options:string[]=[destination];
-        //const canCheckoutBranch = BranchUtils.canCheckoutBranch(Data.selectedCommit);
-        //if(canCheckoutBranch) options.push(Data.selectedCommit.ownerBranch.name);        
-        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,BranchUtils.repositoryDetails.repoInfo,options)
+        const options:string[]=[destination];        
+        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,RepoUtils.repositoryDetails.repoInfo,options)
         hideModal();
     }
     const handleCreateNewBranchClick=()=>{
@@ -74,9 +72,9 @@ function CommitContextModalComponent(){
 
     const mergeCommit=(hash:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommitMessage(hash)!;      
+        refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
         const options = [hash,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
     }
 
     const cherryPick=()=>{
@@ -93,9 +91,9 @@ function CommitContextModalComponent(){
 
     const mergeBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeBranchMessage(branch)!;      
+        refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
     }
 
     const rebaseBranch=(branch:string)=>{
@@ -114,12 +112,12 @@ function CommitContextModalComponent(){
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
 
-        BranchGraphUtils.openContextModal = modalOpenEventListener;
+        GraphUtils.openContextModal = modalOpenEventListener;
         
         const listener = (_e:any,status:IStatus)=>{
             //UiUtils.updateHeadCommit(commit);
             
-            BranchGraphUtils.handleCheckout(Data.selectedCommit,BranchUtils.repositoryDetails,status);            
+            GraphUtils.handleCheckout(Data.selectedCommit,RepoUtils.repositoryDetails,status);            
             // SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
             
         }
@@ -152,7 +150,7 @@ function CommitContextModalComponent(){
     const referredLocalBranches = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];        
-        const branchList = BranchUtils.repositoryDetails.branchList;
+        const branchList = RepoUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
         return referredBranches;
     },[store.show,Data.selectedCommit])
@@ -162,9 +160,9 @@ function CommitContextModalComponent(){
             return [];
         const branches = referredLocalBranches.slice();
         for(let ref of Data.selectedCommit.refValues){
-            if(!BranchUtils.isOriginBranch(ref) || BranchUtils.hasLocalBranch(ref))
+            if(!RepoUtils.isOriginBranch(ref) || RepoUtils.hasLocalBranch(ref))
                 continue;
-            const localBranch = BranchUtils.getLocalBranch(ref);
+            const localBranch = RepoUtils.getLocalBranch(ref);
             if(localBranch)
                 branches.push(localBranch);
         }

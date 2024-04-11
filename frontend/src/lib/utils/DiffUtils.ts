@@ -3,7 +3,7 @@ import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
 import { RendererEvents } from "common_library";
-import { BranchUtils } from "./BranchUtils";
+import { RepoUtils } from "./BranchUtils";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
 

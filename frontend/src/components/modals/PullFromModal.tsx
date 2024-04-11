@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { AppButton } from "../common";
 import { Modal, Form } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, useMultiState, BranchUtils } from "../../lib";
+import { EnumModals, useMultiState, RepoUtils } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
@@ -45,7 +45,7 @@ function PullFromModalComponent(){
             })
         }).finally(()=>{
             const newPullFrom = state.branch;
-            const repo = BranchUtils.repositoryDetails.repoInfo;
+            const repo = RepoUtils.repositoryDetails.repoInfo;
             if(newPullFrom !== repo?.pullFromBranch){            
                 repo.pullFromBranch = newPullFrom;
                 dispatch(ActionSavedData.updateRepository(repo));
@@ -57,7 +57,7 @@ function PullFromModalComponent(){
     useEffect(()=>{
         if(!store.show)
             return ;
-        const pullFromBranch = BranchUtils.repositoryDetails.repoInfo.pullFromBranch || "";
+        const pullFromBranch = RepoUtils.repositoryDetails.repoInfo.pullFromBranch || "";
         setState({branch:pullFromBranch});
     },[store.show])
 

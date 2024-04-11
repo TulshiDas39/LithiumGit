@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef } from "react"
 import { Dropdown } from "react-bootstrap";
 import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaCaretDown } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, useMultiState } from "../../../lib";
+import { RepoUtils, EnumModals, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
@@ -41,7 +41,7 @@ function PullPushMenuComponent(){
 
     const upStreamBranch = useMemo(()=>{
         if(store.isDetached){
-            return BranchUtils.repositoryDetails?.headCommit?.ownerBranch.name || "";
+            return RepoUtils.repositoryDetails?.headCommit?.ownerBranch.name || "";
         }
         else if(store.trackingBranch){
             return store.trackingBranch;
@@ -53,7 +53,7 @@ function PullPushMenuComponent(){
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         const options:string[] = [];
         if(upStreamBranch){
-            const originName = BranchUtils.activeOriginName;
+            const originName = RepoUtils.activeOriginName;
             options.push(originName,upStreamBranch);
         }
         IpcUtils.trigerPull(options).then(()=>{
@@ -68,7 +68,7 @@ function PullPushMenuComponent(){
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         const options:string[] = [];
         if(upStreamBranch){
-            const originName = BranchUtils.activeOriginName;
+            const originName = RepoUtils.activeOriginName;
             options.push(originName,upStreamBranch);
         }
         IpcUtils.trigerPush(options).then(()=>{

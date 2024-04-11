@@ -1,9 +1,9 @@
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../BranchGraphUtils";
 
 export class PbPanelHeight extends DerivedState<number>{    
     protected getDerivedValue(): number {
-        const elem = BranchGraphUtils.svgContainer;
+        const elem = GraphUtils.svgContainer;
         if(!elem)
             return 0;
 
@@ -11,7 +11,7 @@ export class PbPanelHeight extends DerivedState<number>{
     }
 
     protected applyChange(): void {
-        BranchGraphUtils.svgElement?.setAttribute("height",this.value+"");
+        GraphUtils.svgElement?.setAttribute("height",this.value+"");
     }
 
 }

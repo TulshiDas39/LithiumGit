@@ -1,21 +1,21 @@
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../BranchGraphUtils";
 
 export class PbVerticalScrollTop extends DerivedState<number>{
     constructor(value:number){
         super(value);
-        BranchGraphUtils.state.verticalScrollRatio.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.verticalScrollHeight.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.panelHeight.subscribe(this.update.bind(this));
+        GraphUtils.state.verticalScrollRatio.subscribe(this.update.bind(this));
+        GraphUtils.state.verticalScrollHeight.subscribe(this.update.bind(this));
+        GraphUtils.state.panelHeight.subscribe(this.update.bind(this));
     }
     protected applyChange(): void {
-        var elem = BranchGraphUtils.verticalScrollBarElement;
+        var elem = GraphUtils.verticalScrollBarElement;
         elem.style.top = `${this._val}px`;        
     }
     protected getDerivedValue(): number {
-        const scrolRatio = BranchGraphUtils.state.verticalScrollRatio.value;
-        const scrollHeight = BranchGraphUtils.state.verticalScrollHeight.value; 
-        const movableWidth = BranchGraphUtils.state.panelHeight.value-scrollHeight;
+        const scrolRatio = GraphUtils.state.verticalScrollRatio.value;
+        const scrollHeight = GraphUtils.state.verticalScrollHeight.value; 
+        const movableWidth = GraphUtils.state.panelHeight.value-scrollHeight;
         return movableWidth * scrolRatio;
     }
 }

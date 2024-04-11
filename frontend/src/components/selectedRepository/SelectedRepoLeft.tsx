@@ -21,7 +21,7 @@ function SelectedRepoLeftComponent(){
     const tabs = useMemo(()=>{
         const items:ISelectedRepoTabItem[]=[
             {text:"Changes",type:EnumSelectedRepoTab.CHANGES,marked:store.hasChanges},
-            {text:"Branches",type:EnumSelectedRepoTab.BRANCHES},
+            {text:"Graph",type:EnumSelectedRepoTab.GRAPH},
             {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
             {text:"Remotes",type: EnumSelectedRepoTab.REMOTES}
         ];

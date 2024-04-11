@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IFile, IRemoteInfo, IStatus } from "common_library";
-import { BranchGraphUtils, EnumSelectedRepoTab } from "../../lib";
+import { GraphUtils, EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -52,7 +52,7 @@ const initialState:IUIState={
         repoDetails:0,
         remoteList:0,
     },    
-    selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
+    selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     changes:{
         currentStep:0,
         totalStep:1,

@@ -1,6 +1,6 @@
 import { Form, Modal } from "react-bootstrap";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { BranchUtils, EnumModals, useMultiState } from "../../lib";
+import { RepoUtils, EnumModals, useMultiState } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
 import React, { useEffect } from "react";
@@ -36,7 +36,7 @@ function PushToModalComponent(){
         if(!state.branch)
             return ;
         closeModal();
-        const originName = BranchUtils.activeOriginName;
+        const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         IpcUtils.trigerPush(options).then(()=>{
@@ -45,7 +45,7 @@ function PushToModalComponent(){
             })
         }).finally(()=>{
             const newPushTo = state.branch;
-            const repo = BranchUtils.repositoryDetails.repoInfo;
+            const repo = RepoUtils.repositoryDetails.repoInfo;
             if(newPushTo !== repo?.pushToBranch){            
                 repo.pushToBranch = newPushTo;
                 dispatch(ActionSavedData.updateRepository(repo));
@@ -57,7 +57,7 @@ function PushToModalComponent(){
     useEffect(()=>{
         if(!store.show)
             return ;
-        const pushToBranch = BranchUtils.repositoryDetails.repoInfo.pushToBranch || "";
+        const pushToBranch = RepoUtils.repositoryDetails.repoInfo.pushToBranch || "";
         setState({branch:pushToBranch});
     },[store.show])
 

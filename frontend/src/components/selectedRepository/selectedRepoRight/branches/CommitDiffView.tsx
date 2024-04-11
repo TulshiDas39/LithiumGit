@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { BranchGraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
@@ -22,7 +22,7 @@ function CommitDiffViewComponent(props:IProps){
         setState({totalStep:totalChange,currentStep});
     }
     useEffect(()=>{
-        const selectedCommit = BranchGraphUtils.state.selectedCommit;
+        const selectedCommit = GraphUtils.state.selectedCommit;
         if(!props.file || !selectedCommit.value){
             ChangeUtils.ClearView();
             return;

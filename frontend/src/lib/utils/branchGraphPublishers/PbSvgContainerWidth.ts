@@ -1,6 +1,6 @@
 import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../BranchGraphUtils";
 
 export class PbSvgContainerWidth extends DerivedState<number>{    
     protected getDerivedValue() {
@@ -12,6 +12,6 @@ export class PbSvgContainerWidth extends DerivedState<number>{
     }
 
     protected applyChange(): void {
-        BranchGraphUtils.svgElement?.setAttribute("width",this.value+"");
+        GraphUtils.svgElement?.setAttribute("width",this.value+"");
     }
 }
