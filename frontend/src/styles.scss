@@ -275,3 +275,17 @@ html {
     position: absolute !important;
   }
 }
+
+.branchBox{
+  border: 1px solid #dee2e6;
+}
+
+.branchBox:hover{
+  // box-shadow: 2px 2px 2px rgb(126, 237, 104);
+  border: 3px solid #07ab07;
+  *{
+    cursor: default;
+    //opacity: 0.6;
+    color: #2f8512;
+  }
+}
