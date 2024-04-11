@@ -8,6 +8,7 @@ import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
+import { AppButton } from "../../common";
 
 interface IStatus{
     showPushTo:boolean;
@@ -105,7 +106,13 @@ function PullPushMenuComponent(){
     const handlePullFrom = ()=>{
         setState({showPullFrom:false});
         dispatch(ActionModals.showModal(EnumModals.PULL_FROM));
-    }    
+    }
+    const upStreamBranch = useMemo(()=>{
+        if(store.isDetached){
+            return BranchUtils.repositoryDetails?.headCommit?.ownerBranch.name || "";
+        }
+        return store.current;
+    },[store.isDetached,store.current]);
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
@@ -139,8 +146,8 @@ function PullPushMenuComponent(){
         </div>
         <div className="col-auto ps-1 pe-1">
             <div className="row g-0 align-items-stretch h-100 bg-success">
-                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePush}>
-                    <span className="px-2 text-light">Push</span> 
+                <div className="col-auto d-flex">
+                    <AppButton title={`Push To ${upStreamBranch}`} className="text-white" text="Push" type="success" onClick={handlePush} /> 
                 </div>
                 <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative" 
                     onMouseEnter={()=> {refData.current.onHoverPushTo = true}} onMouseLeave={()=>{refData.current.onHoverPushTo = false}}>
@@ -154,8 +161,8 @@ function PullPushMenuComponent(){
         </div>
         <div className="col-auto ps-1 pe-1">
             <div className="row g-0 align-items-stretch h-100 bg-success">
-                <div className="col-auto d-flex align-items-center button-effect" onClick={handlePull}>
-                    <span className="px-2 text-light">Pull</span> 
+                <div className="col-auto d-flex">
+                    <AppButton title={`Pull from ${upStreamBranch}`} text="Pull" type="success" className="text-white" onClick={handlePull} />
                 </div>
                 <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative"
                     onMouseEnter={()=> {refData.current.onHoverPullFrom = true}} onMouseLeave={()=>{refData.current.onHoverPullFrom = false}}>
@@ -170,8 +177,8 @@ function PullPushMenuComponent(){
 
         <div className="col-auto ps-1 pe-1">
             <div className="row g-0 align-items-stretch h-100 bg-success">
-                <div className="col-auto d-flex align-items-center button-effect" onClick={_=> handleFetch(false)}>
-                    <span className="px-2 text-light">Fetch</span> 
+                <div className="col-auto d-flex ">
+                    <AppButton title={`Fetch from ${upStreamBranch}`} text="Fetch" type="success" className="text-white" onClick={()=> handleFetch(false)} />
                 </div>
                 <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative"
                     onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>
