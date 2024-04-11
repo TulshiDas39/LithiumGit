@@ -32,7 +32,7 @@ function SelectedRepoLeftComponent(){
             {
                 tabs.map(t=>(
                     <span key={t.type} 
-                        className={`tabItem w-100 py-2 border-bottom ${store.tab === t.type?"bg-select-color":""}`}
+                        className={`tabItem w-100 py-2 ps-1 border-bottom ${store.tab === t.type?"bg-select-color":""}`}
                         onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>
                             <span className="hover">{t.text}</span>
                             {!!t.marked && <span className="text-primary">*</span>}

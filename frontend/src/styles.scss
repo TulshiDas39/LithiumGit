@@ -267,3 +267,11 @@ html {
     border-radius: 0 !important;
   }
 }
+
+.context-modal{
+  height: 0 !important;
+  overflow: visible !important;
+  .modal-dialog{
+    position: absolute !important;
+  }
+}

@@ -2,7 +2,7 @@ import { IStatus, RendererEvents } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { BranchUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
@@ -25,6 +25,7 @@ enum Option{
 interface IState{
     mouseOver?:Option;
     showMore:boolean;
+    position:IPositition;
 }
 
 function CommitContextModalComponent(){
@@ -37,20 +38,21 @@ function CommitContextModalComponent(){
     
     const [state, setState] = useMultiState({showMore:false} as IState);
 
-    const refData = useRef({mergerCommitMessage:""});
+    const refData = useRef({mergerCommitMessage:"",onHover:false,show:false});
 
     useEffect(()=>{
+        refData.current.show = store.show;
         if(store.show){
             let elem = document.querySelector(".commitContext") as HTMLElement;
             if(elem){
-                elem.style.marginTop = Data.position.y+"px";
-                elem.style.marginLeft = Data.position.x+"px";
+                elem.style.marginTop = state.position.y+"px";
+                elem.style.marginLeft = state.position.x+"px";
             }
         }
         else{
             setState({showMore:false});
         }
-    },[store.show])
+    },[store.show,state.position])
 
     const hideModal=()=>{
         ModalData.commitContextModal = InitialModalData.commitContextModal;
@@ -108,6 +110,7 @@ function CommitContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
+            setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
 
@@ -132,7 +135,11 @@ function CommitContextModalComponent(){
         }
 
         window.ipcRenderer.on(RendererEvents.gitMerge().replyChannel,mergeListener)
-        
+        document.addEventListener("click",(e)=>{
+            if(refData.current.show && !refData.current.onHover){
+                hideModal();
+            }
+        })
         return ()=>{
             UiUtils.removeIpcListeners([
                 RendererEvents.checkoutCommit().replyChannel,
@@ -222,8 +229,8 @@ function CommitContextModalComponent(){
     const optionClasses = "border-bottom context-option";
 
     return (
-        <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
-            <Modal.Body>
+        <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
+            <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     {
                         branchNamesForCheckout.length > 0 && <div>
