@@ -127,7 +127,7 @@ html {
     cursor: n-resize;
   }
 
-  .hover:hover{
+  .hover:hover, .hover:hover *{
     cursor: default;
     //opacity: 0.6;
     color: #0bc59c;
