@@ -23,7 +23,8 @@ function PullPushMenuComponent(){
         hashOfHead:state.ui.status?.headCommit?.avrebHash,
         ahead:state.ui.status?.ahead,
         behind:state.ui.status?.behind,
-        isDetached:!!state.ui.status?.isDetached
+        isDetached:!!state.ui.status?.isDetached,
+        trackingBranch:state.ui.status?.trackingBranch,
     }),shallowEqual);
 
     const [state,setState] = useMultiState<IStatus>({showPushTo:false,
@@ -38,9 +39,24 @@ function PullPushMenuComponent(){
         return store.current;
     },[store.isDetached,store.current,store.hashOfHead])
 
+    const upStreamBranch = useMemo(()=>{
+        if(store.isDetached){
+            return BranchUtils.repositoryDetails?.headCommit?.ownerBranch.name || "";
+        }
+        else if(store.trackingBranch){
+            return store.trackingBranch;
+        }
+        return store.current;
+    },[store.isDetached,store.current,store.trackingBranch]);
+
     const handlePull=()=>{
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
-        IpcUtils.trigerPull().then(()=>{
+        const options:string[] = [];
+        if(upStreamBranch){
+            const originName = BranchUtils.activeOriginName;
+            options.push(originName,upStreamBranch);
+        }
+        IpcUtils.trigerPull(options).then(()=>{
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
             IpcUtils.getRepoStatus().finally(()=>{
                 dispatch(ActionUI.setLoader(undefined));
@@ -50,7 +66,12 @@ function PullPushMenuComponent(){
 
     const handlePush=()=>{
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
-        IpcUtils.trigerPush().then(()=>{
+        const options:string[] = [];
+        if(upStreamBranch){
+            const originName = BranchUtils.activeOriginName;
+            options.push(originName,upStreamBranch);
+        }
+        IpcUtils.trigerPush(options).then(()=>{
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
             IpcUtils.getRepoStatus().finally(()=>{                
                 dispatch(ActionUI.setLoader(undefined));
@@ -106,13 +127,7 @@ function PullPushMenuComponent(){
     const handlePullFrom = ()=>{
         setState({showPullFrom:false});
         dispatch(ActionModals.showModal(EnumModals.PULL_FROM));
-    }
-    const upStreamBranch = useMemo(()=>{
-        if(store.isDetached){
-            return BranchUtils.repositoryDetails?.headCommit?.ownerBranch.name || "";
-        }
-        return store.current;
-    },[store.isDetached,store.current]);
+    }    
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto border px-1">
