@@ -90,14 +90,14 @@ function PullPushMenuComponent(){
         })
     }
 
-    const handlePushCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{        
+    const handlePushCaretClick=()=>{        
         setState({showPushTo:!state.showPushTo});
     }
 
-    const handlePullCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{        
+    const handlePullCaretClick=()=>{        
         setState({showPullFrom:!state.showPullFrom});
     }
-    const handleFetchCaretClick=(e: React.MouseEvent<SVGElement, MouseEvent>)=>{        
+    const handleFetchCaretClick=()=>{        
         setState({showFetchAll:!state.showFetchAll});
     }
 
@@ -163,14 +163,18 @@ function PullPushMenuComponent(){
             <div className="row g-0 align-items-stretch h-100 bg-success">
                 <div className="col-auto d-flex">
                     <AppButton title={`Push To ${upStreamBranch}`} className="text-white" text="Push" type="success" onClick={handlePush} /> 
-                </div>
-                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative" 
+                </div>                
+                <div className="border-secondary border-start border-end col-auto d-flex position-relative" 
                     onMouseEnter={()=> {refData.current.onHoverPushTo = true}} onMouseLeave={()=>{refData.current.onHoverPushTo = false}}>
-                    <FaCaretDown onClick={handlePushCaretClick} />
-                    {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
-                        onClick={handlePushTo}>
-                        <span className="text-nowrap text-light">Push To &gt;</span>
-                    </div>}
+                        <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                            onClick={handlePushCaretClick}>
+                            <FaCaretDown />
+                        </AppButton>
+                        {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                            onClick={handlePushTo}>
+                            <span className="text-nowrap text-light">Push To &gt;</span>
+                        </div>}
+                    
                 </div>
             </div>
         </div>
@@ -179,9 +183,13 @@ function PullPushMenuComponent(){
                 <div className="col-auto d-flex">
                     <AppButton title={`Pull from ${upStreamBranch}`} text="Pull" type="success" className="text-white" onClick={handlePull} />
                 </div>
-                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative"
+                <div className="border-secondary border-start border-end col-auto d-flex position-relative"
                     onMouseEnter={()=> {refData.current.onHoverPullFrom = true}} onMouseLeave={()=>{refData.current.onHoverPullFrom = false}}>
-                    <FaCaretDown onClick={handlePullCaretClick} />
+                    <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                        onClick={handlePullCaretClick}>
+                        <FaCaretDown />
+                    </AppButton>
+                
                     {state.showPullFrom && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
                         onClick={handlePullFrom}>
                         <span className="text-nowrap text-light">Pull From &gt;</span>
@@ -195,9 +203,12 @@ function PullPushMenuComponent(){
                 <div className="col-auto d-flex ">
                     <AppButton title={`Fetch from ${upStreamBranch}`} text="Fetch" type="success" className="text-white" onClick={()=> handleFetch(false)} />
                 </div>
-                <div className="border-secondary border-start border-end col-auto d-flex align-items-center position-relative"
-                    onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>
-                    <FaCaretDown onClick={handleFetchCaretClick} />
+                <div className="border-secondary border-start border-end col-auto d-flex position-relative"
+                    onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>                    
+                    <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                        onClick={handleFetchCaretClick}>
+                        <FaCaretDown />
+                    </AppButton>
                     {state.showFetchAll && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
                         onClick={_=> handleFetch(true)}>
                         <span className="text-nowrap text-light">Fetch all</span>
