@@ -2,7 +2,7 @@ import { ICommitInfo } from "common_library";
 import moment from "moment";
 import React, { useEffect, useMemo } from "react"
 import { useMultiState } from "../../../../lib";
-import { BranchGraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { InputText } from "../../../common";
 
 interface IState{
@@ -16,9 +16,9 @@ function CommitPropertyComponent(){
         const selectListener = (commit:ICommitInfo)=>{
             setState({selectedCommit:commit});
         }
-        BranchGraphUtils.state.selectedCommit.subscribe(selectListener);
+        GraphUtils.state.selectedCommit.subscribe(selectListener);
         return ()=>{
-            BranchGraphUtils.state.selectedCommit.unSubscribe(selectListener);
+            GraphUtils.state.selectedCommit.unSubscribe(selectListener);
         }
     },[])
     const textFieldValue = useMemo(()=>{

@@ -6,6 +6,7 @@ import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ModalData, InitialModalData } from "./ModalData";
 import { AppButton } from "../common";
+import { FaTimes } from "react-icons/fa";
 
 function ConfirmationModalComponent(){
     const Data = ModalData.confirmationModal;
@@ -38,7 +39,7 @@ function ConfirmationModalComponent(){
                         <span className="text-info">Confirm</span>                        
                     </div>
                     <div className="col-1 text-end">
-                        <span className="hover" onClick={handleNoClick}>&times;</span>
+                        <span className="hover" onClick={handleNoClick}><FaTimes /></span>
                     </div>
                 </div>
                 <hr />

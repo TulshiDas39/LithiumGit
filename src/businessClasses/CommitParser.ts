@@ -144,8 +144,10 @@ export class CommitParser{
         // }
     }
     private static removeGurbageLines(lines:string[]){            
-        while(!lines[lines.length - 1].startsWith(CommitParser.logFields.Ref+":")){
+        while(!lines[lines.length - 1]?.startsWith(CommitParser.logFields.Ref+":")){
             lines.pop();
+            if(!lines.length)
+                break;
         }
     }
 
@@ -153,9 +155,9 @@ export class CommitParser{
         let commits:ICommitInfo[] = [];
         let indexObj = {index:0};
         let lines:string[] = str.split('\n');
-        if(!lines.length)
-            return;
         CommitParser.removeGurbageLines(lines);
+        if(!lines.length)
+            return commits;
         while(indexObj.index < lines.length){
             let commit = CommitParser.getCommit(lines,indexObj);
             if(!commit.refValues.some(_=> _.startsWith('refs/notes/')))

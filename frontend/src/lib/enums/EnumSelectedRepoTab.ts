@@ -1,6 +1,6 @@
 export enum EnumSelectedRepoTab{
     CHANGES="CHANGES",
-    BRANCHES="BRANCHES",
+    GRAPH="GRAPH",
     COMMITS="COMMITS",
     REMOTES="REMOTES"
 }

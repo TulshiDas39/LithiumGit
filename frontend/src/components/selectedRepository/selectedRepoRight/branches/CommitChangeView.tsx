@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react"
-import { BranchGraphUtils, useDrag, useMultiState } from "../../../../lib";
+import { GraphUtils, useDrag, useMultiState } from "../../../../lib";
 import { ICommitInfo, IFile } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { CommitFileList } from "./CommitFileList";
@@ -17,8 +17,10 @@ function CommitChangeViewComponent(){
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     useEffect(()=>{
-        if(!state.selectedCommitHash)
+        if(!state.selectedCommitHash){
+            setState({files:[],selectedFile:undefined});
             return;
+        }
         
         GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
             setState({files:res,selectedFile:res[0]});
@@ -38,11 +40,11 @@ function CommitChangeViewComponent(){
     
     useEffect(()=>{
         const listener = (commit?:ICommitInfo)=>{
-            setState({selectedCommitHash:commit?.hash,selectedFile:undefined});
+            setState({selectedCommitHash:commit?.hash});
         }
-        BranchGraphUtils.state.selectedCommit.subscribe(listener);
+        GraphUtils.state.selectedCommit.subscribe(listener);
         return ()=>{
-            BranchGraphUtils.state.selectedCommit.unSubscribe(listener);
+            GraphUtils.state.selectedCommit.unSubscribe(listener);
         }
     },[])
 

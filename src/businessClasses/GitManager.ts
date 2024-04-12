@@ -15,6 +15,7 @@ export class GitManager{
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addCreateNewRepoHandler();
         this.addValidPathHandler();
         this.addRepoDetailsHandler();
         this.addLogHandler();
@@ -123,10 +124,8 @@ export class GitManager{
         })
     }
     addCheckOutCommitHandlder(){
-        // RendererEvents.checkoutCommit
-        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,repoInfo:RepositoryInfo,options:string[])=>{
-            await this.checkoutCommit(repoInfo,options,e);
-            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        ipcMain.handle(RendererEvents.checkoutCommit().channel,async (e,repoPath:string,options:string[])=>{
+            await this.checkoutCommit(repoPath,options);
         })
     }
 
@@ -218,6 +217,13 @@ export class GitManager{
             if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
         })        
+    }
+
+    private addCreateNewRepoHandler(){
+        ipcMain.handle(RendererEvents.createNewRepo, async (e,path:string)=>{
+            const git = this.getGitRunner(path);
+            await git.init();
+        })
     }
 
     private addRepoDetailsHandler(){
@@ -354,6 +360,8 @@ export class GitManager{
         result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
         result.headCommit = await this.getCommitInfo(git,undefined);
+        if(!result.headCommit)
+            return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
     }
@@ -444,7 +452,6 @@ export class GitManager{
 
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
-        let res = await git.status();
         return result.all;
     }
 
@@ -455,12 +462,12 @@ export class GitManager{
         return true;
     }
 
-    private async checkoutCommit(repoInfo:RepositoryInfo,options:string[],e: Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoInfo);
+    private async checkoutCommit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
         try {            
             await git.checkout(options);  
-            const status = await this.getStatus(repoInfo);
-            e.reply(RendererEvents.checkoutCommit().replyChannel,status);
+            // const status = await this.getStatus(repoPath);
+            // return status;
         }catch (error) {
             const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
             const errorMsg:string = error?.toString() || "";
@@ -642,9 +649,15 @@ export class GitManager{
         const options:string[] = [];
         if(commitHash) options.push(commitHash);
         options.push(this.LogFormat);
-        const showResult = await git.show(options);        
-        const commit = CommitParser.parse(showResult);        
-        return commit?.[0];
+        let commits:ICommitInfo[] = [];
+        try{
+            const showResult = await git.show(options);        
+            commits = CommitParser.parse(showResult);        
+        }catch(e){
+            return null!;
+        }
+        
+        return commits?.[0];
     }
 
 

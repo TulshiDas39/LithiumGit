@@ -45,7 +45,7 @@ export class DataManager{
         });
     }
     private handleUpdateRepository(){
-        ipcMain.on(RendererEvents.updateRepository,(_,repo:RepositoryInfo)=>{            
+        ipcMain.handle(RendererEvents.updateRepository,(_,repo:RepositoryInfo)=>{            
             DB.repository.updateOne(repo);
             var index = SavedData.data.recentRepositories.findIndex(_=>_.path == repo.path);
             if(index > -1){

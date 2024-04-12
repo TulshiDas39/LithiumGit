@@ -1,28 +1,28 @@
-import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IMergeLine, IRepositoryDetails, IStatus, StringUtils } from "common_library";
-import { ReduxStore } from "../../store";
+import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, IStatus } from "common_library";
 import { IViewBox } from "../interfaces";
 import { ArrayUtils } from "./ArrayUtils";
-import { BranchGraphUtils } from "./BranchGraphUtils";
 
-export class BranchUtils{
+export class RepoUtils{
     static repositoryDetails:IRepositoryDetails = null!;    
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly remoteBranchNamePrefix = "remotes"
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
-    static readonly commitRadius = BranchUtils.branchPanelFontSize;
-    static readonly distanceBetweenCommits = BranchUtils.commitRadius*3;
+    static readonly commitRadius = RepoUtils.branchPanelFontSize;
+    static readonly distanceBetweenCommits = RepoUtils.commitRadius*3;
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
-        BranchUtils.getBranchDetails(repoDetails);
-        BranchUtils.enListSourceCommits(repoDetails);
-        BranchUtils.finaliseSourceCommits(repoDetails);
-        BranchUtils.specifySerialsOfBranch(repoDetails);
-        BranchUtils.setBranchVerticalOffset(repoDetails);
-        BranchUtils.sortBranches(repoDetails);
-        BranchUtils.setBranchHeights2(repoDetails);
-        BranchUtils.reversBranches(repoDetails);
-        BranchUtils.createMergeLines(repoDetails);
+        if(!repoDetails.allCommits.length)
+            return;
+        RepoUtils.getBranchDetails(repoDetails);
+        RepoUtils.enListSourceCommits(repoDetails);
+        RepoUtils.finaliseSourceCommits(repoDetails);
+        RepoUtils.specifySerialsOfBranch(repoDetails);
+        RepoUtils.setBranchVerticalOffset(repoDetails);
+        RepoUtils.sortBranches(repoDetails);
+        RepoUtils.setBranchHeights2(repoDetails);
+        RepoUtils.reversBranches(repoDetails);
+        RepoUtils.createMergeLines(repoDetails);
 
     }
 
@@ -52,8 +52,8 @@ export class BranchUtils{
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
         let y = 30;
         for(let branch of branchesWithoutParent){
-            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
-            y = branch.y + BranchUtils.distanceBetweenBranchLine;
+            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
+            y = branch.y + RepoUtils.distanceBetweenBranchLine;
         }
 
         const setHeight = (branch:IBranchDetails)=>{
@@ -61,8 +61,8 @@ export class BranchUtils{
             const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
             const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
             upperBranchesWithoutHeight.forEach(_ => setHeight(_));
-            const y = ArrayUtils.findMax(upperBranches.map(_=>_.y)) + BranchUtils.distanceBetweenBranchLine;
-            branch.y = y + (branch.maxRefCount* BranchUtils.branchPanelFontSize);
+            const y = ArrayUtils.findMax(upperBranches.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
+            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
         }
 
         const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
@@ -78,11 +78,11 @@ export class BranchUtils{
     }
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
-        const start1 = branch1.parentCommit!.x  - BranchUtils.commitRadius;
-        const end1 = branch1.commits[branch1.commits.length-1].x  + BranchUtils.commitRadius;
+        const start1 = branch1.parentCommit!.x  - RepoUtils.commitRadius;
+        const end1 = branch1.commits[branch1.commits.length-1].x  + RepoUtils.commitRadius;
 
-        const start2 = (branch2.parentCommit?.x || branch2.commits[0]?.x)  - BranchUtils.commitRadius;
-        const end2 = branch2.commits[branch2.commits.length-1].x - BranchUtils.commitRadius;
+        const start2 = (branch2.parentCommit?.x || branch2.commits[0]?.x)  - RepoUtils.commitRadius;
+        const end2 = branch2.commits[branch2.commits.length-1].x - RepoUtils.commitRadius;
 
         if(start1 >= start2 && start1 <= end2)
             return true;
@@ -116,7 +116,7 @@ export class BranchUtils{
                     break;
                 }
                 else{
-                    const hasOverlapping = branchesHavingOffset.some(_=> BranchUtils.isOverlappingBranches(branch,_));
+                    const hasOverlapping = branchesHavingOffset.some(_=> RepoUtils.isOverlappingBranches(branch,_));
                     if(!hasOverlapping){
                         break;
                     }
@@ -232,7 +232,7 @@ export class BranchUtils{
         
         for(let i = 0; i < repoDetails.allCommits.length; i++){
             const currentCommit = repoDetails.allCommits[i];            
-            let lastRef = BranchUtils.CheckBranchReferenceInCommitMessage(currentCommit);
+            let lastRef = RepoUtils.CheckBranchReferenceInCommitMessage(currentCommit);
             if(!!lastRef) lastReferencesByBranch.push(lastRef);                    
             
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
@@ -254,9 +254,9 @@ export class BranchUtils{
             currentCommit.ownerBranch = ownerBranch;
             currentCommit.ownerBranch.commits.push(currentCommit);
 
-            BranchUtils.setReferences(currentCommit,repoDetails);
-            BranchUtils.setX(currentCommit,x);
-            x = currentCommit.x + BranchUtils.distanceBetweenCommits;
+            RepoUtils.setReferences(currentCommit,repoDetails);
+            RepoUtils.setX(currentCommit,x);
+            x = currentCommit.x + RepoUtils.distanceBetweenCommits;
 
 	        if(currentCommit.branchNameWithRemotes.length){
 	        	let remoteBranches = currentCommit.branchNameWithRemotes.filter((arg0) => !!arg0.remote);	         	
@@ -298,16 +298,16 @@ export class BranchUtils{
             return;
         }
 
-        let extraSpace = BranchUtils.getExtraSpaceForRefs(commit);
-        if(extraSpace > BranchUtils.distanceBetweenCommits) {
-            commit.x = x + extraSpace - BranchUtils.distanceBetweenCommits;
+        let extraSpace = RepoUtils.getExtraSpaceForRefs(commit);
+        if(extraSpace > RepoUtils.distanceBetweenCommits) {
+            commit.x = x + extraSpace - RepoUtils.distanceBetweenCommits;
         }
         else commit.x = x;
     }
 
     private static getExtraSpaceForRefs(commit:ICommitInfo){
         const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
-        const spaceForRef = (BranchUtils.branchPanelFontSize * 0.8) * maxRefSize;
+        const spaceForRef = (RepoUtils.branchPanelFontSize * 0.8) * maxRefSize;
         let previousCommit = commit.previousCommit;
         let extraSpace = 0;
         let availableSpace = 0;
@@ -316,7 +316,7 @@ export class BranchUtils{
                 break;
             }
             if(!previousCommit.refValues.length){
-                availableSpace += BranchUtils.distanceBetweenCommits;                                
+                availableSpace += RepoUtils.distanceBetweenCommits;                                
             }
             else{
                 break;
@@ -355,13 +355,13 @@ export class BranchUtils{
 
     	const branches:string[] = commit.refValues.filter(sp=> this.isBranch(sp,repoDetails));                   
 
-        commit.branchNameWithRemotes = branches.map(x=> BranchUtils.getBranchRemote(x));
+        commit.branchNameWithRemotes = branches.map(x=> RepoUtils.getBranchRemote(x));
     }
 
     private static CheckBranchReferenceInCommitMessage(commit:ICommitInfo) {
-    	let indexOfPrefix = commit.message.indexOf(BranchUtils.MergedCommitMessagePrefix);
+    	let indexOfPrefix = commit.message.indexOf(RepoUtils.MergedCommitMessagePrefix);
     	if(indexOfPrefix == -1) return null;
-    	let branchName = commit.message.substring(indexOfPrefix+BranchUtils.MergedCommitMessagePrefix.length);
+    	let branchName = commit.message.substring(indexOfPrefix+RepoUtils.MergedCommitMessagePrefix.length);
     	branchName = branchName.substring(0, branchName.indexOf("\'"));
     	let lastRef:ILastReference = {
             branchName,
@@ -455,19 +455,19 @@ export class BranchUtils{
 
     static canCheckoutBranch(commit:ICommitInfo){
         if(!commit.branchNameWithRemotes.length) return false;
-        if(BranchUtils.HasBranchNameRef(commit)) return true;
+        if(RepoUtils.HasBranchNameRef(commit)) return true;
         if(commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !!ref.remote)
-         && !BranchUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
+         && !RepoUtils.repositoryDetails.branchList.includes(commit.ownerBranch.name)) return true;
         return false;
     }
 
     static generateMergeCommit(){
-        const srcCommitHash = BranchUtils.repositoryDetails.status.mergingCommitHash;
+        const srcCommitHash = RepoUtils.repositoryDetails.status.mergingCommitHash;
         if(!srcCommitHash) return;
-        const sourceCommit = BranchUtils.repositoryDetails.allCommits.find(x=> x.hash === srcCommitHash);
+        const sourceCommit = RepoUtils.repositoryDetails.allCommits.find(x=> x.hash === srcCommitHash);
         if(!sourceCommit) return;
         let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
-        if(BranchUtils.HasBranchNameRef(sourceCommit)){            
+        if(RepoUtils.HasBranchNameRef(sourceCommit)){            
             mergerCommitMessage = `Merge branch '${sourceCommit.ownerBranch.name}'`;
         }
 
@@ -476,7 +476,7 @@ export class BranchUtils{
     }
 
     static generateMergeCommitMessage(hash:string){
-        const sourceCommit = BranchUtils.repositoryDetails.allCommits.find(x=> x.hash === hash);
+        const sourceCommit = RepoUtils.repositoryDetails.allCommits.find(x=> x.hash === hash);
         if(!sourceCommit) return;
         let mergerCommitMessage = `Merge commit '${sourceCommit.avrebHash}'`;
         return mergerCommitMessage;
@@ -490,15 +490,15 @@ export class BranchUtils{
     static isOriginBranch(str:string){
         if(!str.startsWith("remotes/"))
             str = "remotes/"+str;
-        if(BranchUtils.repositoryDetails.branchList.includes(str))
+        if(RepoUtils.repositoryDetails.branchList.includes(str))
             return true;
     }
 
     static hasLocalBranch(originBranch:string){
-        if(!BranchUtils.isOriginBranch(originBranch))
+        if(!RepoUtils.isOriginBranch(originBranch))
             return false;
-        const localBranch = BranchUtils.getLocalBranch(originBranch);
-        if(BranchUtils.repositoryDetails.branchList.includes(localBranch))
+        const localBranch = RepoUtils.getLocalBranch(originBranch);
+        if(RepoUtils.repositoryDetails.branchList.includes(localBranch))
             return true;
         return false;
     }
@@ -508,7 +508,7 @@ export class BranchUtils{
         if(originBranch.startsWith("remotes/")){
             localBranch = localBranch.substring("remotes/".length);            
         }
-        const remotes = BranchUtils.repositoryDetails.remotes;
+        const remotes = RepoUtils.repositoryDetails.remotes;
         const remote = remotes.find(_ => localBranch.startsWith(`${_.name}/`))
         if(remote){
             localBranch = localBranch.substring(`${remote.name}/`.length);
@@ -519,11 +519,11 @@ export class BranchUtils{
     }
 
     static get activeOriginName(){
-        if(!BranchUtils.repositoryDetails.remotes.length)
+        if(!RepoUtils.repositoryDetails.remotes.length)
             return "";
-        const orignName = BranchUtils.repositoryDetails.repoInfo.activeOrigin;
-        if(!BranchUtils.repositoryDetails.remotes.some(_=> _.name === orignName)){
-            return BranchUtils.repositoryDetails.remotes[0].name;
+        const orignName = RepoUtils.repositoryDetails.repoInfo.activeOrigin;
+        if(!RepoUtils.repositoryDetails.remotes.some(_=> _.name === orignName)){
+            return RepoUtils.repositoryDetails.remotes[0].name;
         }
         return orignName;
     }

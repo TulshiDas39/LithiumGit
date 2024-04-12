@@ -1,24 +1,24 @@
 import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
-import { BranchUtils } from "../BranchUtils";
+import { GraphUtils } from "../GraphUtils";
+import { RepoUtils } from "../RepoUtils";
 
 export class PbHorizontalScrollWidth extends DerivedState<number>{
     constructor(value:number){
         super(value);
-        BranchGraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.zoomLabel.subscribe(this.update.bind(this));
+        GraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
+        GraphUtils.state.zoomLabel.subscribe(this.update.bind(this));
     }
     protected applyChange(): void {        
-        const elem = BranchGraphUtils.horizontalScrollBarElement as HTMLElement;
+        const elem = GraphUtils.horizontalScrollBarElement as HTMLElement;
         if(!elem)
             return ;
         elem.style.width = `${this._val}px`;        
     }
     protected getDerivedValue(): number {
-        let totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        const panelWidth = BranchGraphUtils.state.svgContainerWidth.value;
-        const zoomLabel = BranchGraphUtils.state.zoomLabel.value;
+        let totalWidth = RepoUtils.repositoryDetails.branchPanelWidth;
+        const panelWidth = GraphUtils.state.svgContainerWidth.value;
+        const zoomLabel = GraphUtils.state.zoomLabel.value;
         const effectiveWidth = totalWidth * zoomLabel;
         const width = (panelWidth * panelWidth)/ effectiveWidth;        
         return Math.min(width,panelWidth);

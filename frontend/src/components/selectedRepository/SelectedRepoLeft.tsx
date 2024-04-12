@@ -21,7 +21,7 @@ function SelectedRepoLeftComponent(){
     const tabs = useMemo(()=>{
         const items:ISelectedRepoTabItem[]=[
             {text:"Changes",type:EnumSelectedRepoTab.CHANGES,marked:store.hasChanges},
-            {text:"Branches",type:EnumSelectedRepoTab.BRANCHES},
+            {text:"Graph",type:EnumSelectedRepoTab.GRAPH},
             {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
             {text:"Remotes",type: EnumSelectedRepoTab.REMOTES}
         ];
@@ -32,9 +32,9 @@ function SelectedRepoLeftComponent(){
             {
                 tabs.map(t=>(
                     <span key={t.type} 
-                        className={`tabItem w-100 py-2 border-bottom hover ${store.tab === t.type?"bg-select-color":""}`}
+                        className={`tabItem w-100 py-2 hover ps-1 border-bottom ${store.tab === t.type?"bg-select-color":""}`}
                         onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>
-                            <span>{t.text}</span>
+                            <span className="">{t.text}</span>
                             {!!t.marked && <span className="text-primary">*</span>}
                     </span>
                 ))

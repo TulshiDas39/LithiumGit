@@ -1,16 +1,16 @@
 import { Form, Modal } from "react-bootstrap";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { BranchUtils, EnumModals, useMultiState } from "../../lib";
+import { RepoUtils, EnumModals, useMultiState } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
 import React, { useEffect } from "react";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
+import { FaTimes } from "react-icons/fa";
 
 interface IState{
     branch:string;
-    remember:boolean;
 }
 
 function PushToModalComponent(){
@@ -20,7 +20,6 @@ function PushToModalComponent(){
 
     const [state,setState] = useMultiState<IState>({
         branch:"",
-        remember:false,
     });
 
     const dispatch = useDispatch();
@@ -31,14 +30,14 @@ function PushToModalComponent(){
     }
 
     const clearState = ()=>{
-        setState({branch:"",remember:false});;
+        setState({branch:""});;
     }
 
     const handlePush=()=>{
         if(!state.branch)
             return ;
         closeModal();
-        const originName = BranchUtils.activeOriginName;
+        const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
         IpcUtils.trigerPush(options).then(()=>{
@@ -46,8 +45,8 @@ function PushToModalComponent(){
                 dispatch(ActionUI.setLoader(undefined));
             })
         }).finally(()=>{
-            const newPushTo = state.remember ? state.branch:"";
-            const repo = BranchUtils.repositoryDetails.repoInfo;
+            const newPushTo = state.branch;
+            const repo = RepoUtils.repositoryDetails.repoInfo;
             if(newPushTo !== repo?.pushToBranch){            
                 repo.pushToBranch = newPushTo;
                 dispatch(ActionSavedData.updateRepository(repo));
@@ -59,8 +58,8 @@ function PushToModalComponent(){
     useEffect(()=>{
         if(!store.show)
             return ;
-        const pushToBranch = BranchUtils.repositoryDetails.repoInfo.pushToBranch || "";
-        setState({branch:pushToBranch,remember:!!pushToBranch});
+        const pushToBranch = RepoUtils.repositoryDetails.repoInfo.pushToBranch || "";
+        setState({branch:pushToBranch});
     },[store.show])
 
     return <Modal show={store.show} centered size="sm" backdrop={false}>
@@ -71,7 +70,7 @@ function PushToModalComponent(){
                     <span className="text-success">Push</span>
                 </div>
                 <div className="col-1 text-end">
-                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PUSH_TO))}>&times;</span>
+                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PUSH_TO))}><FaTimes /> </span>
                 </div>
             </div>
             <hr />
@@ -84,15 +83,7 @@ function PushToModalComponent(){
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
                     <AppButton text="Push" type="success" onClick={handlePush} />
                 </div>
-            </div>
-            <div className="row g-0">
-                <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
-                    <input id="remember_push" type="checkbox" checked={state.remember} onChange={e=>setState({remember:e.target.checked})} />
-                    <label htmlFor="remember_push">
-                        <span className="ps-2">Remember</span>
-                    </label>
-                </div>
-            </div>
+            </div>            
         </div>
     </Modal.Body>
 </Modal>

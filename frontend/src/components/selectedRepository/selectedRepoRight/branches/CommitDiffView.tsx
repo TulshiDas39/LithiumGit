@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { BranchGraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
@@ -22,7 +22,7 @@ function CommitDiffViewComponent(props:IProps){
         setState({totalStep:totalChange,currentStep});
     }
     useEffect(()=>{
-        const selectedCommit = BranchGraphUtils.state.selectedCommit;
+        const selectedCommit = GraphUtils.state.selectedCommit;
         if(!props.file || !selectedCommit.value){
             ChangeUtils.ClearView();
             return;
@@ -30,7 +30,7 @@ function CommitDiffViewComponent(props:IProps){
         ChangeUtils.containerId = EnumHtmlIds.CommitDiff;
         if(props.file.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
-                const content = res.response || "";
+                const content = res.result || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
                     const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m",props.file.path];            

@@ -100,7 +100,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         ChangeUtils.containerId = EnumHtmlIds.diffview_container;
         if(store.selectedFile.changeType !== EnumChangeType.DELETED){
             IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(res=>{
-                const lines = StringUtils.getLines(res.response!);
+                const lines = StringUtils.getLines(res.result!);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;

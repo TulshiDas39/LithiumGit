@@ -1,8 +1,20 @@
 import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import { BranchUtils } from "./BranchUtils";
+import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static registerHandler(channel:string,handler:(...args:any[])=>void){
+        window.ipcRenderer.on(channel,handler);
+    }
+    static checkout(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.checkoutCommit().channel,[options]);
+    }
+    static initNewRepo(path:string){
+        return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
+    }
+    static browseFolderPath(){
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[]);
+    }
     static showInFileExplorer(path:string){        
         return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
     }
@@ -14,31 +26,31 @@ export class IpcUtils{
     }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = BranchUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.repositoryDetails.repoInfo;
         return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = BranchUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.repositoryDetails.repoInfo;
         const status:IStatus = await window.ipcRenderer.invoke(RendererEvents.getStatusSync().channel,repoInfo);
         return status;
     }
 
     static trigerPush(options?:string[]){
         if(!options){
-            options = [BranchUtils.activeOriginName];
-            if(!BranchUtils.repositoryDetails.status.trackingBranch)
-                options.push("-u",BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+            options = [RepoUtils.activeOriginName];
+            if(!RepoUtils.repositoryDetails.status.trackingBranch)
+                options.push("-u",RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
         }
         return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
     }
 
     static trigerPull(options?:string[]){
         if(!options){
-            options = [BranchUtils.activeOriginName];
-            if(!BranchUtils.repositoryDetails.status.trackingBranch)
-                options.push(BranchUtils.repositoryDetails.headCommit.ownerBranch.name);
+            options = [RepoUtils.activeOriginName];
+            if(!RepoUtils.repositoryDetails.status.trackingBranch)
+                options.push(RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
         }
         return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
@@ -64,11 +76,11 @@ export class IpcUtils{
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,BranchUtils.repositoryDetails,branchName,checkout);
+        return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,RepoUtils.repositoryDetails,branchName,checkout);
     }
 
     static fetch(isAll:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
+        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,RepoUtils.repositoryDetails,isAll);
     }
 
     static async getFileContent(path:string){
@@ -76,11 +88,11 @@ export class IpcUtils{
     }
 
     static async getDiff(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.repositoryDetails.repoInfo) as string;
     }
 
     static async getGitShowResult(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.repositoryDetails.repoInfo,options) as string;
     }
     
     static async reset(options:string[]){
@@ -102,19 +114,19 @@ export class IpcUtils{
     }
 
     static async addRemote(remote:IRemoteInfo){
-        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,BranchUtils.repositoryDetails.repoInfo,remote);
+        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.repositoryDetails.repoInfo,remote);
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,BranchUtils.repositoryDetails.repoInfo,remoteName);
+        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.repositoryDetails.repoInfo,remoteName);
     }
 
     static async getRemoteList(){
-        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,BranchUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
+        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
     }
 
     static async getCommitList(filterOptions:ILogFilterOptions){
-        return await window.ipcRenderer.invoke(RendererEvents.gitLog,BranchUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
+        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
     }
 
     static isValidRepositoryPath(path:string){
@@ -129,17 +141,17 @@ export class IpcUtils{
     }
 
     static async rebaseBranch(branch:string){
-        await window.ipcRenderer.invoke(RendererEvents.rebase,BranchUtils.repositoryDetails.repoInfo,branch);
+        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,branch);
     }
 
     static async cherryPick(options:string[]){
-        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,BranchUtils.repositoryDetails.repoInfo,options);
+        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,RepoUtils.repositoryDetails.repoInfo,options);
     }
 
     private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{
         const result = {} as IpcResult<T>;
         return window.ipcRenderer.invoke(channel,...args).then(r=>{
-            result.response = r;
+            result.result = r;
             return result;
         }).catch((e)=>{
             const err = e?.toString() as string;
@@ -155,7 +167,7 @@ export class IpcUtils{
         const result = {} as IpcResult<T>;
         try{
             const r:T = window.ipcRenderer.sendSync(channel,...args);
-            result.response = r;
+            result.result = r;
             return result;
         }catch(e:any){
             const err = e?.toString() as string;
@@ -169,7 +181,7 @@ export class IpcUtils{
 
     private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
         if(!repositoryPath)
-            repositoryPath = BranchUtils.repositoryDetails.repoInfo.path;
+            repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
     }
 

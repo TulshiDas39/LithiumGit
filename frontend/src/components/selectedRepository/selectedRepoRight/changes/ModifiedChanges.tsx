@@ -1,7 +1,7 @@
 import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaPlus, FaUndo } from "react-icons/fa";
-import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -117,7 +117,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!store.selectedFile)
             return ;
         ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
         if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContent(joinedPath).then(lines=>{
                 const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);

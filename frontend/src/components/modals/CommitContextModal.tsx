@@ -2,13 +2,14 @@ import { IStatus, RendererEvents } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { BranchUtils, EnumModals, EnumSelectedRepoTab, ReduxUtils, UiUtils, useMultiState } from "../../lib";
-import { BranchGraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { RepoUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { FaCodeBranch, FaRegPaperPlane } from "react-icons/fa";
 
 enum Option{
     Checkout,
@@ -24,6 +25,7 @@ enum Option{
 interface IState{
     mouseOver?:Option;
     showMore:boolean;
+    position:IPositition;
 }
 
 function CommitContextModalComponent(){
@@ -36,20 +38,21 @@ function CommitContextModalComponent(){
     
     const [state, setState] = useMultiState({showMore:false} as IState);
 
-    const refData = useRef({mergerCommitMessage:""});
+    const refData = useRef({mergerCommitMessage:"",onHover:false,show:false});
 
     useEffect(()=>{
+        refData.current.show = store.show;
         if(store.show){
             let elem = document.querySelector(".commitContext") as HTMLElement;
             if(elem){
-                elem.style.marginTop = Data.position.y+"px";
-                elem.style.marginLeft = Data.position.x+"px";
+                elem.style.marginTop = state.position.y+"px";
+                elem.style.marginLeft = state.position.x+"px";
             }
         }
         else{
             setState({showMore:false});
         }
-    },[store.show])
+    },[store.show,state.position])
 
     const hideModal=()=>{
         ModalData.commitContextModal = InitialModalData.commitContextModal;
@@ -58,9 +61,11 @@ function CommitContextModalComponent(){
 
     const checkOutCommit=(destination:string)=>{
         const options:string[]=[destination];
-        //const canCheckoutBranch = BranchUtils.canCheckoutBranch(Data.selectedCommit);
-        //if(canCheckoutBranch) options.push(Data.selectedCommit.ownerBranch.name);        
-        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,BranchUtils.repositoryDetails.repoInfo,options)
+        IpcUtils.checkout(options).then(()=>{
+            IpcUtils.getRepoStatusSync().then(status=>{
+                GraphUtils.handleCheckout(Data.selectedCommit,status);            
+            })
+        });
         hideModal();
     }
     const handleCreateNewBranchClick=()=>{
@@ -71,9 +76,9 @@ function CommitContextModalComponent(){
 
     const mergeCommit=(hash:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeCommitMessage(hash)!;      
+        refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
         const options = [hash,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
     }
 
     const cherryPick=()=>{
@@ -90,9 +95,9 @@ function CommitContextModalComponent(){
 
     const mergeBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = BranchUtils.generateMergeBranchMessage(branch)!;      
+        refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,BranchUtils.repositoryDetails.repoInfo,options);
+        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
     }
 
     const rebaseBranch=(branch:string)=>{
@@ -107,19 +112,11 @@ function CommitContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
+            setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
 
-        BranchGraphUtils.openContextModal = modalOpenEventListener;
-        
-        const listener = (_e:any,status:IStatus)=>{
-            //UiUtils.updateHeadCommit(commit);
-            
-            BranchGraphUtils.handleCheckout(Data.selectedCommit,BranchUtils.repositoryDetails,status);            
-            // SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
-            
-        }
-        window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
+        GraphUtils.openContextModal = modalOpenEventListener;                
 
         const mergeListener = (e:any,status:IStatus)=>{
             dispatch(ActionUI.setLoader())
@@ -131,12 +128,15 @@ function CommitContextModalComponent(){
         }
 
         window.ipcRenderer.on(RendererEvents.gitMerge().replyChannel,mergeListener)
-        
+        document.addEventListener("click",(e)=>{
+            if(refData.current.show && !refData.current.onHover){
+                hideModal();
+            }
+        })
         return ()=>{
             UiUtils.removeIpcListeners([
-                RendererEvents.checkoutCommit().replyChannel,
                 RendererEvents.gitMerge().replyChannel,
-            ],[listener,mergeListener]);
+            ],[mergeListener]);
         }
 
     },[])
@@ -144,31 +144,31 @@ function CommitContextModalComponent(){
     const referredLocalBranches = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];        
-        const branchList = BranchUtils.repositoryDetails.branchList;
+        const branchList = RepoUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
         return referredBranches;
-    },[store.show])
+    },[store.show,Data.selectedCommit])
     
     const branchNamesForCheckout = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];
         const branches = referredLocalBranches.slice();
         for(let ref of Data.selectedCommit.refValues){
-            if(!BranchUtils.isOriginBranch(ref) || BranchUtils.hasLocalBranch(ref))
+            if(!RepoUtils.isOriginBranch(ref) || RepoUtils.hasLocalBranch(ref))
                 continue;
-            const localBranch = BranchUtils.getLocalBranch(ref);
+            const localBranch = RepoUtils.getLocalBranch(ref);
             if(localBranch)
                 branches.push(localBranch);
         }
         return branches;
-    },[referredLocalBranches,store.show])
+    },[referredLocalBranches,store.show,Data.selectedCommit])
 
     const branchNamesForDelete = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];
         const branches = referredLocalBranches.slice();        
         return branches;
-    },[referredLocalBranches,store.show])
+    },[referredLocalBranches,store.show,Data.selectedCommit])
 
     const softReset=()=>{
         hideModal();
@@ -195,7 +195,7 @@ function CommitContextModalComponent(){
         hideModal();
         const handler = ()=>{
             IpcUtils.getRaw(["branch","-D",branchName]).then(r=>{
-                if(r.response){
+                if(r.result){
                     dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
                 }
             })
@@ -209,22 +209,24 @@ function CommitContextModalComponent(){
         const options:Option[] = [];
         if(!store.show)
             return options;
-        if(!Data.selectedCommit.nextCommit && Data.selectedCommit.isHead){
+        if(!Data.selectedCommit?.nextCommit && Data.selectedCommit?.isHead){
             options.push(Option.HardReset,Option.SoftReset);
         }
         if(branchNamesForDelete.length){
             options.push(Option.DeleteBranch);
         }
         return options;
-    },[store.show])
+    },[store.show,Data.selectedCommit])
+
+    const optionClasses = "border-bottom context-option";
 
     return (
-        <Modal dialogClassName="commitContext"  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
-            <Modal.Body>
+        <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
+            <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     {
                         branchNamesForCheckout.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                            <div className={`row g-0 border-bottom ${optionClasses}`}>
                                 {
                                     branchNamesForCheckout.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Checkout}))}>
@@ -248,15 +250,17 @@ function CommitContextModalComponent(){
                         </div>
                     }
 
-                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
                     </div>
-                    <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>Create branch from this commit</div>
+                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>
+                            Create branch from this commit <FaCodeBranch />
+                        </div>
                     </div>
                     {
-                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && 
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
@@ -277,15 +281,14 @@ function CommitContextModalComponent(){
                                     <div className="col-12 hover cur-default " onClick={() => mergeBranch(referredLocalBranches[0])}>Merge branch '{referredLocalBranches[0]}'</div>
                                 }                                
                             </div>
-                        </div>
                     }
-                    {!Data.selectedCommit?.isHead && <div className="border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                    {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={()=>mergeCommit(Data.selectedCommit?.hash)}>Merge this commit</div>
                     </div>}
 
                     {
-                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && <div>
-                            <div className="row g-0 border-bottom">
+                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 &&
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
                                         <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
@@ -305,32 +308,33 @@ function CommitContextModalComponent(){
                                     </div>:
                                     <div className="col-12 hover cur-default " onClick={() => rebaseBranch(referredLocalBranches[0])}>Rebase branch '{referredLocalBranches[0]}'</div>
                                 }                                
-                            </div>
-                        </div>
+                            </div>                        
                     }
 
-                    {!Data.selectedCommit?.isHead && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={cherryPick}>Cherry-Pick this commit</div>
+                    {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                        <div className="col-12 hover cur-default " onClick={cherryPick}>
+                            Cherry-Pick this commit <FaRegPaperPlane />
+                        </div>
                     </div>}
-                    {!!moreOptionList.length && !state.showMore && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}
+                    {!!moreOptionList.length && !state.showMore && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}
                         onClick={_=> setState({showMore:true})}>
                         <div className="col-12 hover cur-default ">Show More</div>
                     </div>}
                     {
                         state.showMore && <Fragment>                        
-                            {moreOptionList.includes(Option.SoftReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                            {moreOptionList.includes(Option.SoftReset) && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                                 <div className="col-12 hover cur-default " onClick={softReset}>Soft reset this commit</div>
                             </div>}
-                            {moreOptionList.includes(Option.HardReset) && <div className="row g-0 border-bottom" onMouseEnter={()=> setState(({mouseOver:null!}))}>
+                            {moreOptionList.includes(Option.HardReset) && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                                 <div className="col-12 hover cur-default " onClick={hardReset}>Hard reset this commit</div>
                             </div>}                        
                             {
-                            moreOptionList.includes(Option.DeleteBranch) && <div>
-                            <div className="row g-0 border-bottom">
+                            moreOptionList.includes(Option.DeleteBranch) && 
+                            <div className={`row g-0 ${optionClasses}`}>
                                 {
                                     branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
-                                        <div className="d-flex hover bg-danger" onMouseEnter={()=> setState(({mouseOver:Option.DeleteBranch}))}>
-                                            <span className="flex-grow-1">Delete branch</span>
+                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.DeleteBranch}))}>
+                                            <span className="flex-grow-1 text-danger">Delete branch</span>
                                             <span>&gt;</span>
                                         </div>
                                         
@@ -347,7 +351,6 @@ function CommitContextModalComponent(){
                                     <div className="col-12 hover cur-default text-danger" onClick={() => deleteBranch(branchNamesForDelete[0])}>Delete branch '{branchNamesForDelete[0]}'</div>
                                 }                                
                             </div>
-                        </div>
                     }
                         
                         </Fragment>
