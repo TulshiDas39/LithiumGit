@@ -81,6 +81,8 @@ function CheckoutBranchModalComponent(){
     }
 
     const checkout = ()=>{
+        if(!state.searchText)
+            return;
         const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
