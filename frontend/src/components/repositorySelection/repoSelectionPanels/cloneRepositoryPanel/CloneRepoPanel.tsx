@@ -24,9 +24,14 @@ function CloneRepoPanelRepository(){
             ModalData.errorModal.message = "Invalid directory path";
             dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;
-        }        
+        }
+        DataUtils.clone.progress = 0;
+        DataUtils.clone.stage = FetchState.Remote;
         IpcUtils.cloneRepository(store.url,store.directory);
-        dispatch(ActionClone.updateData({cloningState:CloneState.InProgress}));
+        dispatch(ActionClone.updateData({cloningState:CloneState.InProgress,
+            progress:0,
+            progressLabel:FetchState.Remote
+        }));
     }
 
     useEffect(()=>{
@@ -64,6 +69,10 @@ function CloneRepoPanelRepository(){
 
     const open=()=>{
         GitUtils.OpenRepository(store.directory);
+    }
+
+    const handleCloneMore = ()=>{        
+        dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,directory:"",url:""}));
     }
 
     return <div>
@@ -111,7 +120,7 @@ function CloneRepoPanelRepository(){
             </div>
             <div className="d-flex justify-content-center pt-5">
                 <AppButton text="Clone More Repository" type="default"
-                 onClick={()=> dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,directory:"",url:""}))}/>
+                 onClick={handleCloneMore}/>
             </div>
         </div>}
 
