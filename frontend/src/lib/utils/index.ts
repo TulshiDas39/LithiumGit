@@ -7,3 +7,4 @@ export * from './ObjectUtils';
 export * from './GraphUtils';
 export * from './NumUtils';
 export * from './ArrayUtils';
+export * from './DataUtils';

@@ -1,18 +1,14 @@
-import { ISavedData, IStatus, RendererEvents } from "common_library";
+import { ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { EnumModals, ObjectUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
-
-interface IMainComponentProps{
-
-}
 
 interface IState{
     isLoading:boolean;
@@ -22,7 +18,7 @@ const initialState = {
     isLoading:true,
 } as IState;
 
-function MainComponent(props:IMainComponentProps){
+function MainComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),        
@@ -69,6 +65,11 @@ function MainComponent(props:IMainComponentProps){
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setLoader({text:"Refreshing..."}));
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        })
+
+        window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            
+            DataUtils.clone.stage = stage;
+            DataUtils.clone.progress = progress;
         })
 
         return ()=>{

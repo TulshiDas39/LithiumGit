@@ -3,6 +3,9 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static registerHandler(channel:string,handler:(...args:any[])=>void){
+        window.ipcRenderer.on(channel,handler);
+    }
     static checkout(options: string[]) {
         return IpcUtils.runGitCommand(RendererEvents.checkoutCommit().channel,[options]);
     }
