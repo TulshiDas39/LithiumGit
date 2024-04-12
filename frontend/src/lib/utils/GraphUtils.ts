@@ -1,5 +1,5 @@
 import { IPositionDiff, IPositition } from "../interfaces";
-import { RepoUtils } from "./BranchUtils";
+import { RepoUtils } from "./RepoUtils";
 import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";

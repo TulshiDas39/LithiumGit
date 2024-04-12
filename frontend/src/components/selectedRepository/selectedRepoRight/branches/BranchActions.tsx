@@ -1,7 +1,7 @@
 import React from "react"
 import { FaHome, FaMinus, FaPlus, FaSyncAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { GraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { RepoUtils } from "../../../../lib";
 

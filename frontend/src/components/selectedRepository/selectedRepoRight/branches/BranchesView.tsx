@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { shallowEqual } from "react-redux";
 import { EnumHtmlIds, EnumSelectedRepoTab, useDrag } from "../../../../lib";
-import { GraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
 import { CommitProperty } from "./CommitProperty";

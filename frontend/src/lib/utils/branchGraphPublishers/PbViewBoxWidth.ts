@@ -1,5 +1,5 @@
 import { DerivedState } from "../../publishers";
-import { GraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../GraphUtils";
 
 export class PbViewBoxWidth extends DerivedState<number>{
     constructor(value:number){

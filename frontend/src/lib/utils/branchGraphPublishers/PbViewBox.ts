@@ -1,6 +1,6 @@
 import { IViewBox } from "../../interfaces";
 import { DerivedState } from "../../publishers";
-import { GraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../GraphUtils";
 import { NumUtils } from "../NumUtils";
 
 export class PbViewBox extends DerivedState<IViewBox>{

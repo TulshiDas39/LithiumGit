@@ -1,8 +1,8 @@
 import { ICommitInfo } from "common_library";
 import { EnumIdPrefix } from "../../enums";
 import { DerivedState } from "../../publishers";
-import { GraphUtils } from "../BranchGraphUtils";
-import { RepoUtils } from "../BranchUtils";
+import { GraphUtils } from "../GraphUtils";
+import { RepoUtils } from "../RepoUtils";
 
 export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     protected getDerivedValue(): ICommitInfo|undefined {

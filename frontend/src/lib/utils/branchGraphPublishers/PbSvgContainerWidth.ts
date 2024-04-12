@@ -1,6 +1,6 @@
 import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
-import { GraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../GraphUtils";
 
 export class PbSvgContainerWidth extends DerivedState<number>{    
     protected getDerivedValue() {

@@ -1,7 +1,7 @@
 import { ICommitInfo } from "common_library";
 import { UiState } from "../../publishers";
-import { RepoUtils } from "../BranchUtils";
-import { GraphUtils } from "../BranchGraphUtils";
+import { RepoUtils } from "../RepoUtils";
+import { GraphUtils } from "../GraphUtils";
 import { EnumIdPrefix } from "../../enums";
 
 export class PbSelectedCommit extends UiState<ICommitInfo>{

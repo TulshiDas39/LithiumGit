@@ -4,7 +4,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { FaTimes } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, EnumModals, useMultiState } from "../../lib";
-import { GraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";

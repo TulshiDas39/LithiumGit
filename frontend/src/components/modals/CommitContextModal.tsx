@@ -3,7 +3,7 @@ import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
-import { GraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";

@@ -6,7 +6,7 @@ import './SelectedRepository.scss';
 import { IRepositoryDetails, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { GraphUtils } from "../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";

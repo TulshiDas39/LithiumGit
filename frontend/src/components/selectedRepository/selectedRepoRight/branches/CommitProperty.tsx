@@ -2,7 +2,7 @@ import { ICommitInfo } from "common_library";
 import moment from "moment";
 import React, { useEffect, useMemo } from "react"
 import { useMultiState } from "../../../../lib";
-import { GraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { InputText } from "../../../common";
 
 interface IState{

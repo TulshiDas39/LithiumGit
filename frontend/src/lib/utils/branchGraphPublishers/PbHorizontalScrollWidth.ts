@@ -1,7 +1,7 @@
 import { EnumHtmlIds } from "../../enums";
 import { DerivedState } from "../../publishers";
-import { GraphUtils } from "../BranchGraphUtils";
-import { RepoUtils } from "../BranchUtils";
+import { GraphUtils } from "../GraphUtils";
+import { RepoUtils } from "../RepoUtils";
 
 export class PbHorizontalScrollWidth extends DerivedState<number>{
     constructor(value:number){

@@ -1,7 +1,7 @@
 import { Constants, IBranchDetails, ICommitInfo } from "common_library";
 import { Fragment } from "react";
 import { RepoUtils, EnumIdPrefix } from "../../../../lib";
-import { GraphUtils } from "../../../../lib/utils/BranchGraphUtils";
+import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 
 interface ISingleBranchProps{
     branchDetails:IBranchDetails;
