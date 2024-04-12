@@ -1,20 +1,17 @@
-import React, { useCallback, useEffect, useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 import { EnumChangeGroup, useMultiState } from "../../../../lib";
 import { ModifiedChanges } from "./ModifiedChanges";
-import { IFile } from "common_library";
 import { StagedChanges } from "./StagedChanges";
-
-interface IProps{
-}
+import { ConflictedChanges } from "./ConflictedChanges";
 
 interface IState{
     selectedTab:EnumChangeGroup;
 }
 
 
-function ChangesTabPaneComponent(props:IProps){
+function ChangesTabPaneComponent(){
     const store = useSelectorTyped(state=>({
        status:state.ui.status,
        recentRepositories:state.savedData.recentRepositories,
@@ -59,6 +56,9 @@ function ChangesTabPaneComponent(props:IProps){
              repoInfoInfo={repoInfo} />}
             {state.selectedTab === EnumChangeGroup.STAGED &&
             <StagedChanges changes={store.status?.staged!} 
+             repoInfoInfo={repoInfo} />}
+             {state.selectedTab === EnumChangeGroup.CONFLICTED &&
+            <ConflictedChanges changes={store.status?.conflicted!} 
              repoInfoInfo={repoInfo} />}
         </div>
     </div>
