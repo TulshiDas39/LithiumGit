@@ -124,10 +124,8 @@ export class GitManager{
         })
     }
     addCheckOutCommitHandlder(){
-        // RendererEvents.checkoutCommit
-        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,repoInfo:RepositoryInfo,options:string[])=>{
-            await this.checkoutCommit(repoInfo,options,e);
-            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        ipcMain.handle(RendererEvents.checkoutCommit().channel,async (e,repoPath:string,options:string[])=>{
+            await this.checkoutCommit(repoPath,options);
         })
     }
 
@@ -465,12 +463,12 @@ export class GitManager{
         return true;
     }
 
-    private async checkoutCommit(repoInfo:RepositoryInfo,options:string[],e: Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoInfo);
+    private async checkoutCommit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
         try {            
             await git.checkout(options);  
-            const status = await this.getStatus(repoInfo);
-            e.reply(RendererEvents.checkoutCommit().replyChannel,status);
+            // const status = await this.getStatus(repoPath);
+            // return status;
         }catch (error) {
             const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
             const errorMsg:string = error?.toString() || "";

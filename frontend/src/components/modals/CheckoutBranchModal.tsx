@@ -1,13 +1,20 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
 import { EnumModals, RepoUtils, useMultiState } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
+import { AppButton } from "../common";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { ActionUI } from "../../store/slices/UiSlice";
 
 interface IState{
-    branches:string[];
+    options:string[];
     searchText:string;
+    showList:boolean;
+    inputFocused:boolean;
+    isSelected:boolean;
+    branchList:string[];
 }
 
 function CheckoutBranchModalComponent(){
@@ -16,15 +23,25 @@ function CheckoutBranchModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.CHECKOUT),
     }),shallowEqual)
 
-    const [state,setState] = useMultiState<IState>({branches:[],searchText:""});
+    const [state,setState] = useMultiState<IState>({
+        options:[],
+        searchText:"",
+        inputFocused:true,
+        showList:true,
+        isSelected:false,
+        branchList:[],
+    });
+
+    const hideModal=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.CHECKOUT));
+    }
 
     useEffect(()=>{
-        if(!store.show){
-            setState({branches:[]});
+        if(!store.show){            
             return;            
         }
-        const branches = RepoUtils.repositoryDetails.branchList;
-        setState({branches});
+        const branches = RepoUtils.repositoryDetails?.branchList || [];
+        setState({branchList:branches,isSelected:false,searchText:""});
     },[store.show])
 
     const getBranchDisplayName = (branch:string)=>{
@@ -32,6 +49,29 @@ function CheckoutBranchModalComponent(){
         if(branch.startsWith(remotePrefix))
             return branch.substring(remotePrefix.length);
         return branch;
+    }
+
+    useEffect(()=>{
+        let branches = state.branchList.map(_=> getBranchDisplayName(_));
+        if(state.isSelected){
+            branches = [];
+        }
+        else if(state.searchText){
+            branches = branches.filter(_ => _.includes(state.searchText));
+        }
+        setState({options: branches});
+    },[state.searchText,state.isSelected,state.branchList])    
+
+    const handleSelect=(option:string)=>{
+        setState({searchText:option,isSelected:true});
+    }
+
+    const checkout = ()=>{
+        const options:string[]=[state.searchText];
+        IpcUtils.checkout(options).then(()=>{
+            dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
+        });
+        hideModal();
     }
 
     return <Modal show={store.show} size="sm" backdrop={false}>
@@ -49,17 +89,22 @@ function CheckoutBranchModalComponent(){
                 <div className="row g-0">
                     <div className="col-12" style={{maxWidth:600,maxHeight:500}}>
                         <div className="w-100 position-relative">
-                            <Form.Control type="text" value={state.searchText} onChange={e=> setState({searchText:e.target.value})} />
-                            <div className="position-absolute bg-white border px-2 overflow-y-auto" 
+                            <Form.Control type="text" value={state.searchText} onChange={e=> setState({searchText:e.target.value,isSelected:false})}
+                             autoFocus={true} />
+                            {!!state.options.length && <div className="position-absolute bg-white border px-2 overflow-y-auto" 
                                 style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}>
                                 {
-                                    state.branches.map(br=>(
-                                        <div title={br} key={br} className="border-bottom py-1 hover overflow-hidden text-nowrap" style={{textOverflow:'ellipsis'}}>
-                                            {getBranchDisplayName(br)}
+                                    state.options.map(br=>(
+                                        <div title={br} key={br} className="border-bottom py-1 hover overflow-hidden text-nowrap" style={{textOverflow:'ellipsis'}}
+                                            onClick={()=>handleSelect(br)}>
+                                            {br}
                                         </div>
                                     ))
                                 }
-                            </div>
+                            </div>}
+                        </div>
+                        <div className="w-100 d-flex justify-content-center pt-4">
+                            <AppButton type="default" onClick={checkout}>Checkout</AppButton>
                         </div>
                     </div>
                 </div>

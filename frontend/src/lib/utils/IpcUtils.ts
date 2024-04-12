@@ -3,6 +3,9 @@ import { RepoUtils } from "./BranchUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static checkout(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.checkoutCommit().channel,[options]);
+    }
     static initNewRepo(path:string){
         return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
     }

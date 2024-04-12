@@ -60,8 +60,12 @@ function CommitContextModalComponent(){
     }
 
     const checkOutCommit=(destination:string)=>{
-        const options:string[]=[destination];        
-        window.ipcRenderer.send(RendererEvents.checkoutCommit().channel,RepoUtils.repositoryDetails.repoInfo,options)
+        const options:string[]=[destination];
+        IpcUtils.checkout(options).then(()=>{
+            IpcUtils.getRepoStatusSync().then(status=>{
+                GraphUtils.handleCheckout(Data.selectedCommit,status);            
+            })
+        });
         hideModal();
     }
     const handleCreateNewBranchClick=()=>{
@@ -112,16 +116,7 @@ function CommitContextModalComponent(){
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
 
-        GraphUtils.openContextModal = modalOpenEventListener;
-        
-        const listener = (_e:any,status:IStatus)=>{
-            //UiUtils.updateHeadCommit(commit);
-            
-            GraphUtils.handleCheckout(Data.selectedCommit,RepoUtils.repositoryDetails,status);            
-            // SelectedRepoRightData.handleRepoDetailsUpdate(newRepoDetails);
-            
-        }
-        window.ipcRenderer.on(RendererEvents.checkoutCommit().replyChannel,listener);
+        GraphUtils.openContextModal = modalOpenEventListener;                
 
         const mergeListener = (e:any,status:IStatus)=>{
             dispatch(ActionUI.setLoader())
@@ -140,9 +135,8 @@ function CommitContextModalComponent(){
         })
         return ()=>{
             UiUtils.removeIpcListeners([
-                RendererEvents.checkoutCommit().replyChannel,
                 RendererEvents.gitMerge().replyChannel,
-            ],[listener,mergeListener]);
+            ],[mergeListener]);
         }
 
     },[])

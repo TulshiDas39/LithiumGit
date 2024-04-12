@@ -286,7 +286,8 @@ export class GraphUtils{
         }
     }
 
-    static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
+    static handleCheckout(commit:ICommitInfo,newStatus:IStatus){
+        const repoDetails = RepoUtils.repositoryDetails;
         this.revertUiOfExistingCheckout();
         const existingHead = repoDetails.headCommit;
         existingHead.isHead = false;
