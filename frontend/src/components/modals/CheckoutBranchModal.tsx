@@ -7,6 +7,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
+import { FaTimes } from "react-icons/fa";
 
 interface IState{
     options:string[];
@@ -82,7 +83,7 @@ function CheckoutBranchModalComponent(){
                         <span className="text-success">Checkout</span>                        
                     </div>
                     <div className="col-1 text-end">
-                        <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.CHECKOUT))}>&times;</span>
+                        <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.CHECKOUT))}><FaTimes /></span>
                     </div>
                 </div>
                 <hr />

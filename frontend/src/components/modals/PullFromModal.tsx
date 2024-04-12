@@ -7,6 +7,7 @@ import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
+import { FaTimes } from "react-icons/fa";
 
 interface IState{
     branch:string;
@@ -69,7 +70,7 @@ function PullFromModalComponent(){
                     <span className="text-success">Pull</span>
                 </div>
                 <div className="col-1 text-end">
-                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PULL_FROM))}>&times;</span>
+                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PULL_FROM))}><FaTimes /></span>
                 </div>
             </div>
             <hr />

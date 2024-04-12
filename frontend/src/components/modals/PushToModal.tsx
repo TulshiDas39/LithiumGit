@@ -7,6 +7,7 @@ import React, { useEffect } from "react";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
+import { FaTimes } from "react-icons/fa";
 
 interface IState{
     branch:string;
@@ -69,7 +70,7 @@ function PushToModalComponent(){
                     <span className="text-success">Push</span>
                 </div>
                 <div className="col-1 text-end">
-                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PUSH_TO))}>&times;</span>
+                    <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.PUSH_TO))}><FaTimes /> </span>
                 </div>
             </div>
             <hr />
@@ -82,15 +83,7 @@ function PushToModalComponent(){
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
                     <AppButton text="Push" type="success" onClick={handlePush} />
                 </div>
-            </div>
-            {/* <div className="row g-0">
-                <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
-                    <input id="remember_push" type="checkbox" checked={state.remember} onChange={e=>setState({remember:e.target.checked})} />
-                    <label htmlFor="remember_push">
-                        <span className="ps-2">Remember</span>
-                    </label>
-                </div>
-            </div> */}
+            </div>            
         </div>
     </Modal.Body>
 </Modal>
