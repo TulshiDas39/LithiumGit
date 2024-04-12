@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
 import { EnumModals, RepoUtils, useMultiState } from "../../lib";
@@ -33,6 +33,8 @@ function CheckoutBranchModalComponent(){
         branchList:[],
     });
 
+    const refData = useRef({hoverOptions:false});
+
     const hideModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.CHECKOUT));
     }
@@ -63,18 +65,19 @@ function CheckoutBranchModalComponent(){
     }
 
     useEffect(()=>{
-        let branches = resolveOptions();
-        if(state.isSelected){
-            branches = [];
+        let branches:string[] = [];
+        if(!state.isSelected && state.inputFocused){
+            branches = branches = resolveOptions();
+            if(state.searchText){            
+                branches = branches.filter(_ => _.includes(state.searchText));
+            }
         }
-        else if(state.searchText){
-            branches = branches.filter(_ => _.includes(state.searchText));
-        }
+        
         setState({options: branches});
-    },[state.searchText,state.isSelected,state.branchList])    
+    },[state.searchText,state.isSelected,state.branchList,state.inputFocused])    
 
     const handleSelect=(option:string)=>{
-        setState({searchText:option,isSelected:true});
+        setState({searchText:option,isSelected:true,inputFocused:false});
     }
 
     const checkout = ()=>{
@@ -83,7 +86,13 @@ function CheckoutBranchModalComponent(){
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
         });
         hideModal();
-    }    
+    }
+    
+    const handleBlur = ()=>{
+        if(refData.current.hoverOptions)
+            return;
+        setState({inputFocused:false});
+    }
 
     return <Modal show={store.show} size="sm" backdrop={false}>
         <Modal.Body>
@@ -101,9 +110,10 @@ function CheckoutBranchModalComponent(){
                     <div className="col-12" style={{maxWidth:600,maxHeight:500}}>
                         <div className="w-100 position-relative">
                             <Form.Control type="text" value={state.searchText} onChange={e=> setState({searchText:e.target.value,isSelected:false})}
-                             autoFocus={true} />
+                             autoFocus={true} onFocus={()=> setState({inputFocused:true})} onBlur={handleBlur} />
                             {!!state.options.length && <div className="position-absolute bg-white border px-2 overflow-y-auto" 
-                                style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}>
+                                style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}
+                                onMouseEnter={()=> {refData.current.hoverOptions = true}} onMouseLeave={()=>{refData.current.hoverOptions = false}}>
                                 {
                                     state.options.map(br=>(
                                         <div title={br} key={br} className="border-bottom py-1 hover overflow-hidden text-nowrap" style={{textOverflow:'ellipsis'}}
