@@ -1,10 +1,12 @@
-import { EnumChangeGroup, EnumChangeType, IFile, RepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils, EnumHtmlIds, ReduxUtils, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { AppButton } from "../../../common";
+import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -63,7 +65,23 @@ function ConflictedChangesComponent(props:IProps){
     },[])
 
     useEffect(()=>{
-
+        if(!store.selectedFile)
+            return ;
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+        // const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        IpcUtils.getFileContentAtSpecificCommit("HEAD",store.selectedFile.path).then(res=>{
+            const lines = StringUtils.getLines(res.result!);
+            console.log("lines",lines);
+            // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
+            DiffUtils.getDiff(store.selectedFile!.path).then(res=>{
+                console.log("diff",res);
+                let lineConfigs = DiffUtils.GetUiLines(res,lines);
+                ChangeUtils.currentLines = lineConfigs.currentLines;
+                ChangeUtils.previousLines = lineConfigs.previousLines;
+                ChangeUtils.showChanges();
+                ReduxUtils.resetChangeNavigation();
+            })
+        })
     },[store.selectedFile])
 
     useEffect(()=>{

@@ -348,7 +348,7 @@ export class GitManager{
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
-        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.CONFLICTED}));
         result.totalConflictedItem = status.conflicted?.length || 0;
         result.isClean = status?.isClean();
         result.current = status.current;
