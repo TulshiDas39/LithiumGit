@@ -40,7 +40,7 @@ function CommitChangeViewComponent(){
     
     useEffect(()=>{
         const listener = (commit?:ICommitInfo)=>{
-            setState({selectedCommitHash:commit?.hash,selectedFile:undefined});
+            setState({selectedCommitHash:commit?.hash});
         }
         GraphUtils.state.selectedCommit.subscribe(listener);
         return ()=>{
