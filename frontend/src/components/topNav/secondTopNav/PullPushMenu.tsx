@@ -131,9 +131,10 @@ function PullPushMenuComponent(){
 
     return <div className="row g-0 align-items-stretch ps-2">
         <div className="col-auto ">
-            <div className="d-flex justify-content-center h-100" style={{width:100 }}>
-                <div className="row g-0 align-items-center h-100 branchBox px-1" onClick={()=> dispatch(ActionModals.showModal(EnumModals.CHECKOUT))}>
-                    <div className="col-auto">
+            <div className="d-flex justify-content-center h-100">
+                <div className="row g-0 align-items-center h-100 branchBox px-1 hover-shadow" onClick={()=> dispatch(ActionModals.showModal(EnumModals.CHECKOUT))}>
+                    <div className="col-auto overflow-hidden" style={{maxWidth:100,textOverflow:'ellipsis'}} 
+                        title={currentText!}>
                         {currentText}
                     </div>
                     <div className="col-auto ps-1">
