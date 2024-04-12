@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
 import { EnumModals, RepoUtils, useMultiState } from "../../lib";
@@ -52,8 +52,18 @@ function CheckoutBranchModalComponent(){
         return branch;
     }
 
-    useEffect(()=>{
+    const resolveOptions = ()=>{
         let branches = state.branchList.map(_=> getBranchDisplayName(_));
+        if(!branches.length)
+            return branches;
+        if(branches.lastIndexOf(branches[0]) > 0 )
+            branches = branches.slice(1);
+        
+        return branches;
+    }
+
+    useEffect(()=>{
+        let branches = resolveOptions();
         if(state.isSelected){
             branches = [];
         }
@@ -68,12 +78,12 @@ function CheckoutBranchModalComponent(){
     }
 
     const checkout = ()=>{
-        const options:string[]=[state.searchText];
+        const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
         });
         hideModal();
-    }
+    }    
 
     return <Modal show={store.show} size="sm" backdrop={false}>
         <Modal.Body>

@@ -452,7 +452,6 @@ export class GitManager{
 
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
-        let res = await git.status();
         return result.all;
     }
 
