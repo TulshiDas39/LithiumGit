@@ -2,14 +2,75 @@ import { ILineHighlight } from "../editor";
 import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
-import { RendererEvents } from "common_library";
-import { RepoUtils } from "./RepoUtils";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
 
 export class DiffUtils{
 
     static tabSize = 4;
+
+    static GetUiLinesOfConflict(contentLines: string[]) {
+        const currentMarker = "<<<<<<< HEAD";
+        const endingMarker = ">>>>>>>";
+        const separator = "=======";
+    
+        const currentLines:ILine[] = [];
+        const previousLines:ILine[] = [];
+        let conflictNo = 0;
+        let currentChangeDetected = false;
+        let incomingChangeDetected = false;
+        for(const contentLine of contentLines){
+            if(contentLine === currentMarker){
+                conflictNo++;
+                currentChangeDetected = true;
+                incomingChangeDetected = false;
+                continue;
+            }
+            if(contentLine === separator){
+                currentChangeDetected = false;
+                incomingChangeDetected = true;
+                continue;
+            }
+            if(contentLine.startsWith(endingMarker)){
+                currentChangeDetected = false;
+                incomingChangeDetected = false;
+                while(currentLines.length > previousLines.length){
+                    previousLines.push({textHightlightIndex:[]});
+                }
+                while(currentLines.length < previousLines.length){
+                    currentLines.push({textHightlightIndex:[]});
+                }                
+                continue;
+            }
+            if(currentChangeDetected){
+                currentLines.push({
+                    text:contentLine,
+                    hightLightBackground:true,
+                    textHightlightIndex:[],
+                    conflictNo
+                });
+                continue;
+            }
+            if(incomingChangeDetected){
+                previousLines.push({
+                    text:contentLine,
+                    hightLightBackground:true,
+                    textHightlightIndex:[],
+                    conflictNo
+                });
+                continue;
+            }
+            previousLines.push({
+                text:contentLine,
+                textHightlightIndex:[],
+            })
+            currentLines.push({
+                text:contentLine,
+                textHightlightIndex:[],
+            })            
+        }
+        return {currentLines,previousLines};
+    }
 
     static getEditorWidth (lines:string[]){
         const width = Math.max(...lines.map(l=>{
@@ -281,12 +342,8 @@ export class DiffUtils{
         if(!lines.length) 
             return delta;
         
-        let createOperation=(line:ILine)=>{    
-            if(line.transparent) operations.push({
-                insert: `${Array(maxLineWidth).fill(" ").join("")}`,
-                attributes:{background:"black"}
-            })
-            else if(line.text != undefined){                
+        let createOperation=(line:ILine)=>{            
+            if(line.text != undefined){                
                 const heightLightCount = line.textHightlightIndex.length;
                 if(!!heightLightCount){
                     let insertedUptoIndex = -1;                    

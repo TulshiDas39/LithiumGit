@@ -68,19 +68,13 @@ function ConflictedChangesComponent(props:IProps){
         if(!store.selectedFile)
             return ;
         ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        // const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
-        IpcUtils.getFileContentAtSpecificCommit("HEAD",store.selectedFile.path).then(res=>{
-            const lines = StringUtils.getLines(res.result!);
-            console.log("lines",lines);
-            // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
-            DiffUtils.getDiff(store.selectedFile!.path).then(res=>{
-                console.log("diff",res);
-                let lineConfigs = DiffUtils.GetUiLines(res,lines);
-                ChangeUtils.currentLines = lineConfigs.currentLines;
-                ChangeUtils.previousLines = lineConfigs.previousLines;
-                ChangeUtils.showChanges();
-                ReduxUtils.resetChangeNavigation();
-            })
+        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        IpcUtils.getFileContent(joinedPath).then(res=>{
+            //const lines = StringUtils.getLines(res.result!);
+            const lineConfig = DiffUtils.GetUiLinesOfConflict(res);
+            console.log("content");
+            console.log(lineConfig);
+            // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];                    
         })
     },[store.selectedFile])
 
