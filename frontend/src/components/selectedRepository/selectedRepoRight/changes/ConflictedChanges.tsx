@@ -1,6 +1,6 @@
-import { EnumChangeGroup, EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
+import { EnumChangeGroup, IFile, RendererEvents, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { DiffUtils, EnumHtmlIds, ReduxUtils, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
+import { ConflictUtils, EnumHtmlIds, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
@@ -71,7 +71,7 @@ function ConflictedChangesComponent(props:IProps){
         const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
         IpcUtils.getFileContent(joinedPath).then(res=>{
             //const lines = StringUtils.getLines(res.result!);
-            const lineConfig = DiffUtils.GetUiLinesOfConflict(res);
+            const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
             console.log("content");
             console.log(lineConfig);
             // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];                    
