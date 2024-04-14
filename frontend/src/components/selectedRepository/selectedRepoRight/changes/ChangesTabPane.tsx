@@ -47,7 +47,7 @@ function ChangesTabPaneComponent(){
                 <span>({store.status?.totalStagedItem || 0})</span>
             </div>}
             {!!store.status?.conflicted?.length && <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.CONFLICTED ?"bg-select-color":""}`} onClick={_=> setState({selectedTab:EnumChangeGroup.CONFLICTED})}>
-                <span>Clonflicted</span><br/>
+                <span>Clonflicts</span><br/>
                 <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>
