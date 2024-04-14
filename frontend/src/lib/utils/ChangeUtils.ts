@@ -1,6 +1,6 @@
 import ReactDOMServer from "react-dom/server";
 import { ILine } from "../interfaces";
-import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
+import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
 import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
 export class ChangeUtils{
@@ -13,7 +13,7 @@ export class ChangeUtils{
     static showChanges(){
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
-        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference2({
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
             linesAfterChange:ChangeUtils.currentLines,
             linesBeforeChange:ChangeUtils.previousLines
         }));
