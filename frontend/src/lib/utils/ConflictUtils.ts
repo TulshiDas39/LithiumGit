@@ -1,8 +1,13 @@
 import { IFile } from "common_library";
 import { ILine } from "../interfaces";
+import { EnumHtmlIds } from "../enums";
+import ReactDOMServer from "react-dom/server";
+import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
+import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 
 export class ConflictUtils{
-    static containerId = "";
+    static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
+    static readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
     static file?:IFile;
     static currentLines:ILine[];
     static previousLines:ILine[];
@@ -69,5 +74,56 @@ export class ConflictUtils{
             })            
         }
         return {currentLines,previousLines};
+    }
+
+    static ShowEditor(){
+        if(!ConflictUtils.currentLines || !ConflictUtils.previousLines)
+            return;
+
+        const topPanel = document.getElementById(`${ConflictUtils.topPanelId}`)!;
+        const bottomPanel = document.getElementById(`${ConflictUtils.bottomPanelId}`)!;
+        
+        console.log("topPanel",topPanel);
+        console.log("bottomPanel",bottomPanel);
+
+        if(!topPanel || !bottomPanel)
+            return;
+
+        const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
+            currentLines:ConflictUtils.currentLines,
+            previousLines:ConflictUtils.previousLines,
+        }));
+
+        const editorBottomHtml = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
+            currentLines:ConflictUtils.currentLines,
+            previousLines:ConflictUtils.previousLines,
+        }));
+
+        topPanel.innerHTML = editorTopHtml;
+        bottomPanel.innerHTML = editorBottomHtml;
+    }
+
+    private static HandleScrolling(){
+        if(ConflictUtils.previousLines !== null && ConflictUtils.currentLines !== null){
+            const previousChangeScroll = document.querySelector(".conflict-diff .previous .content");
+            const currentChangeScroll = document.querySelector(".conflict-diff .current .content");        
+        
+            let handler1 = (e:Event)=>{
+                currentChangeScroll?.scrollTo({
+                    left:previousChangeScroll?.scrollLeft,
+                });
+            }
+
+            let handler2 = (e:Event)=>{
+                previousChangeScroll?.scrollTo({                    
+                    left:currentChangeScroll?.scrollLeft,
+                });
+            }
+
+            if(previousChangeScroll && currentChangeScroll){
+                previousChangeScroll.addEventListener("scroll",handler1)
+                currentChangeScroll.addEventListener("scroll",handler2);
+            }
+        }
     }
 }

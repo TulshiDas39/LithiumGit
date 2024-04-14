@@ -1,4 +1,4 @@
-import { IFile } from "common_library";
+import { EnumChangeType, IFile } from "common_library";
 import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
@@ -9,6 +9,7 @@ import { CommitBox } from "./CommitBox";
 import { ChangesTabPane } from "./ChangesTabPane";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ConflictEditor } from "./ConflictEditor";
 
 
 interface IState {
@@ -101,9 +102,12 @@ function ChangesComponent() {
 
         <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
-            <div id={EnumHtmlIds.diffview_container} className="h-100">
+            {store.selectedFile?.changeType !== EnumChangeType.CONFLICTED && <div id={EnumHtmlIds.diffview_container} className="h-100">
 
-            </div>
+            </div>}
+            {store.selectedFile?.changeType === EnumChangeType.CONFLICTED &&
+                <ConflictEditor />
+            }
         </div>
     </div>
 }

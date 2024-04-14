@@ -65,20 +65,6 @@ function ConflictedChangesComponent(props:IProps){
     },[])
 
     useEffect(()=>{
-        if(!store.selectedFile)
-            return ;
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
-        IpcUtils.getFileContent(joinedPath).then(res=>{
-            //const lines = StringUtils.getLines(res.result!);
-            const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
-            console.log("content");
-            console.log(lineConfig);
-            // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];                    
-        })
-    },[store.selectedFile])
-
-    useEffect(()=>{
         if(!state.containerHeight)
             return;
         UiUtils.resolveHeight(EnumHtmlIds.acceptIncomingCurrentAllPanel).then(height=>{
