@@ -52,20 +52,22 @@ export function ConflictDiffView(props:IProps){
     const getLineElems = ()=>{
         const elems:JSX.Element[]=[];
         let lineNo = 1;
-        let i = 0;
-        for(let line of props.lines){
-            if(line.text === undefined){
-                elems.push(<p key={i}> <br /> </p>)
+        for(let i =0 ;i< props.lines.length;i++){
+            const line = props.lines[i];
+            let startOfConflict = !!line.conflictNo && !props.lines[i-1]?.conflictNo;        
+            if(line.text === undefined){        
+                const child = startOfConflict ? <input type="checkbox" /> : <br />;                
+                elems.push(<p key={i} className="d-flex justify-content-end"> {child} </p>)
             }
             else{
-                elems.push(<p key={i}>{lineNo}</p>);
+                const checkBox = startOfConflict ? <span className="flex-grow-1 text-end"><input type="checkbox" /></span>  : null;
+                elems.push(<p key={i} className="d-flex">{lineNo} {checkBox}</p>);
                 lineNo++;
             }
-            i++;
         }
         return elems;
     }
-    const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
+    const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 3;
     return <div className="d-flex w-100">
         <div className="noselect line_numbers" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}

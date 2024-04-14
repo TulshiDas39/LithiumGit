@@ -39,10 +39,10 @@ export class ConflictUtils{
                 currentChangeDetected = false;
                 incomingChangeDetected = false;
                 while(currentLines.length > previousLines.length){
-                    previousLines.push({textHightlightIndex:[]});
+                    previousLines.push({textHightlightIndex:[],conflictNo});
                 }
                 while(currentLines.length < previousLines.length){
-                    currentLines.push({textHightlightIndex:[]});
+                    currentLines.push({textHightlightIndex:[],conflictNo});
                 }                
                 continue;
             }
