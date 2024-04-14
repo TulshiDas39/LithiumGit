@@ -1,6 +1,13 @@
+import { IFile } from "common_library";
 import { ILine } from "../interfaces";
 
 export class ConflictUtils{
+    static containerId = "";
+    static file?:IFile;
+    static currentLines:ILine[];
+    static previousLines:ILine[];
+    private static heighlightedLineIndexes:number[]=[];
+    
     static GetUiLinesOfConflict(contentLines: string[]) {
         const currentMarker = "<<<<<<< HEAD";
         const endingMarker = ">>>>>>>";

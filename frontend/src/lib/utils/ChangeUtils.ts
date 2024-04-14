@@ -1,6 +1,5 @@
 import ReactDOMServer from "react-dom/server";
 import { ILine } from "../interfaces";
-import { Quill} from "quill";
 import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
 import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
@@ -10,10 +9,6 @@ export class ChangeUtils{
     static currentLines:ILine[];
     static previousLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
-
-    static init(){
-
-    }
 
     static showChanges(){
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;

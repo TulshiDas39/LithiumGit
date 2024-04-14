@@ -1,4 +1,4 @@
-import { EnumChangeType, IFile } from "common_library";
+import { IFile } from "common_library";
 import React, { useMemo, useRef } from "react"
 import { useCallback } from "react";
 import { useEffect } from "react";
@@ -6,15 +6,10 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, ReduxUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
-import { Difference } from "./Difference";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { Difference2 } from "./Difference2";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 
-interface IChangesProps{
-    //height:number;
-}
 
 interface IState {
     adjustedX: number;    
