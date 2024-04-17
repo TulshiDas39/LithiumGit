@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { DiffUtils, EditorColors, ILine } from "../../../../lib";
+import { ConflictUtils, DiffUtils, EditorColors, ILine } from "../../../../lib";
 
 
 interface IProps{
@@ -27,26 +27,30 @@ export function ConflictBottomPanel(props:IProps){
                             <span> | </span>
                             <span className="hover color-secondary underline">Accept Incoming Change</span>
                             <span> | </span>
-                            <span className="hover color-secondary underline">Accept Both Change</span>
+                            <span className="hover color-secondary underline">Accept Both Changes</span>
                         </p>;
                 elems.push(elem);
-                elems.push( <p style={{...paragraphStyles, background:`${EditorColors.line.current.background}`}} key={i+1}>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (Current Changes)</p>)
+                elems.push( <p style={{...paragraphStyles}} key={i+1}
+                    className="bg-current-change-deep">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (Current Changes)</p>)
 
                 const curElems:JSX.Element[] = [];
                 const preElems:JSX.Element[] = [];
                 while(curLine.conflictNo){
                     if(curLine.text !== undefined)
-                        curElems.push(<p key={i+2} style={{ ...paragraphStyles,background:`${EditorColors.line.current.background}` }}>{curLine.text}</p>)
+                        curElems.push(<p key={i+2} className="bg-current-change" style={{ ...paragraphStyles }}>{curLine.text}</p>)
                     if(preLine.text !== undefined)
-                        preElems.push(<p key={i+3} style={{...paragraphStyles,background:`${EditorColors.line.previous.background}` }}>{preLine.text}</p>)
+                        preElems.push(<p key={i+3} className="bg-previous-change" style={{...paragraphStyles }}>{preLine.text}</p>)
                     i++;
                     curLine = props.currentLines[i];
                     preLine = props.previousLines[i];
                 }
-
-                curElems.forEach(e => elems.push(e));
-                preElems.forEach(e => elems.push(e));
                 i--;
+                curElems.forEach(e => elems.push(e));
+                elems.push(<p key={Date.now()} style={{...paragraphStyles}}>{ConflictUtils.Separator}</p>)
+                preElems.forEach(e => elems.push(e));
+                elems.push(<p key={Date.now()+1} className="bg-previous-change-deep" style={{...paragraphStyles}}>{ConflictUtils.GetEndingMarkerText(props.currentLines[i].conflictNo!)?.text}
+                    <span className="color-secondary"> (Incoming Change)</span></p>)
+
             }
             else{
                 elems.push(<p key={i} style={{...paragraphStyles}}>{curLine.text}</p>)

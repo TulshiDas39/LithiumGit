@@ -12,11 +12,20 @@ export class ConflictUtils{
     static currentLines:ILine[];
     static previousLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
+    private static startingMarkers:{conflictNo:number;text:string}[] = [];
+    private static endingMarkers:{conflictNo:number;text:string}[] = [];
+    static get Separator(){
+        return "=======";
+    }
+
+    static GetEndingMarkerText(conflictNo:number){
+        return ConflictUtils.endingMarkers.find(_ => _.conflictNo === conflictNo);
+    }
     
     static GetUiLinesOfConflict(contentLines: string[]) {
         const currentMarker = "<<<<<<< HEAD";
         const endingMarker = ">>>>>>>";
-        const separator = "=======";
+        
     
         const currentLines:ILine[] = [];
         const previousLines:ILine[] = [];
@@ -24,13 +33,14 @@ export class ConflictUtils{
         let currentChangeDetected = false;
         let incomingChangeDetected = false;
         for(const contentLine of contentLines){
-            if(contentLine === currentMarker){
+            if(contentLine.startsWith(currentMarker)){
                 conflictNo++;
                 currentChangeDetected = true;
                 incomingChangeDetected = false;
+                ConflictUtils.startingMarkers.push({conflictNo,text:contentLine});
                 continue;
             }
-            if(contentLine === separator){
+            if(contentLine === ConflictUtils.Separator){
                 currentChangeDetected = false;
                 incomingChangeDetected = true;
                 continue;
@@ -38,6 +48,7 @@ export class ConflictUtils{
             if(contentLine.startsWith(endingMarker)){
                 currentChangeDetected = false;
                 incomingChangeDetected = false;
+                ConflictUtils.endingMarkers.push({conflictNo,text:contentLine});
                 while(currentLines.length > previousLines.length){
                     previousLines.push({textHightlightIndex:[],conflictNo});
                 }

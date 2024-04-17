@@ -35,8 +35,10 @@ html {
     --shadow-1: rgba(0, 0, 0, 0.1);
     --dropdown-background: #ffff;
     --colorBlue: #1CD0A8;
-    --bg-current-change: #26413C;
-    --bg-current-change-light: #2F7366;
+    --bg-current-change: #EBF1DD;
+    --bg-current-change-deep: #e2f4b8;
+    --bg-previous-change: #FFCCCC;
+    --bg-previous-change-deep: #fda0a0;
   }  
   
   html[data-theme='dark'] {
@@ -64,8 +66,10 @@ html {
     --switch-bg: #4c4b4b;    
     --wt-dropdown-background: #232323;
     --colorBlue: #1CD0A8;
-    --bg-current-change:##26413C;
-    --bg-current-change-light: #2F7366;
+    --bg-current-change:#EBF1DD;
+    --bg-current-change-deep: #e2f4b8;
+    --bg-previous-change: #FFCCCC;
+    --bg-previous-change-deep: #fda0a0;
   }
 
   p,span,div,i,h1,h2,h3,h4,h5,h6{
@@ -318,4 +322,20 @@ html {
 
 .underline{
   text-decoration: underline;
+}
+
+.bg-current-change{
+  background-color: var(--bg-current-change);
+}
+
+.bg-current-change-deep{
+  background-color: var(--bg-current-change-deep);
+}
+
+.bg-previous-change{
+  background-color: var(--bg-previous-change);
+}
+
+.bg-previous-change-deep{
+  background-color: var(--bg-previous-change-deep);
 }
