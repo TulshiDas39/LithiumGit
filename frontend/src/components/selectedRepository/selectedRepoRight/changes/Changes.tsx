@@ -30,7 +30,7 @@ function ChangesComponent() {
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
-        selectedFile:state.ui.selectedFile,
+        selectedFile:state.ui.selectedFile || state.conflict.selectedFile,
     }),shallowEqual);
 
     const dispatch = useDispatch()

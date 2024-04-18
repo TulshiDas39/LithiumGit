@@ -7,6 +7,7 @@ import { ActionUI } from "../../../../store/slices/UiSlice";
 import { AppButton } from "../../../common";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ActionConflict } from "../../../../store";
 
 interface ISingleFileProps{
     item:IFile
@@ -41,7 +42,7 @@ interface IState{
 
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
-        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.CONFLICTED?state.ui.selectedFile:undefined,
+        selectedFile:state.conflict.selectedFile,
     }),shallowEqual);
     
     const [state,setState] = useMultiState<IState>({});
@@ -73,7 +74,8 @@ function ConflictedChangesComponent(props:IProps){
     },[state.containerHeight]);
 
     const handleSelect = (file?:IFile)=>{
-        dispatch(ActionUI.setSelectedFile(file));
+        console.log("selected",file);
+        dispatch(ActionConflict.updateData({selectedFile:file}));
     }
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
