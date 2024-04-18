@@ -28,10 +28,17 @@ function ConflictEditorComponent(){
         })
     },[store.selectedFile])
 
-    return <div  className="h-100 w-100">
-        <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorTopPanel}>            
+    return <div id="conflict-editor"  className="h-100 w-100">
+        <div style={{height:30}} className="d-flex">
+            <div>
+                Test.ts
+            </div>
         </div>
-        <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorBottomPanel}>            
+        <div style={{height:'calc(100% - 30px)'}}>
+            <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorTopPanel}>            
+            </div>
+            <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorBottomPanel}>            
+            </div>
         </div>
     </div>
 }

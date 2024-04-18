@@ -23,7 +23,7 @@ function SingleDiff(props:ISingleDiffProps){
         return <p className={`${colorClass}`} style={{...paragraphStyle}}>{childElems}</p>
     }
 
-    return <p className={`transparent-background noselect ${props.colorClass}`} style={{...paragraphStyle}}> </p>
+    return <p className={`transparent-background noselect ${colorClass}`} style={{...paragraphStyle}}> </p>
 }
 
 interface IProps{

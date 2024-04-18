@@ -1,4 +1,4 @@
-import { EditorColors, ILine } from "../../../../lib"
+import { ILine } from "../../../../lib"
 import { ConflictDiffView } from "./ConflictDiffView";
 
 interface IProps{
