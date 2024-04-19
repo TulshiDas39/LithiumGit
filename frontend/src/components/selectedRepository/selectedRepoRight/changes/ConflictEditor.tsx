@@ -1,7 +1,7 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer"
 import { shallowEqual, useDispatch } from "react-redux"
-import { ConflictUtils, EnumHtmlIds, RepoUtils } from "../../../../lib"
+import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
 import { StepNavigation } from "../../../common"
@@ -10,6 +10,20 @@ import { ActionConflict } from "../../../../store"
 function ConflictEditorComponent(){
     const store = useSelectorTyped(state=>state.conflict,shallowEqual);
     const dispatch = useDispatch();
+
+    const hightDisplacementRef = useRef(0);
+    const positionRef = useRef(0);
+    const {currentMousePosition:position,elementRef:resizer} = useDrag();
+
+    const hightDisplacement = useMemo(()=>{
+        if(!position){
+            hightDisplacementRef.current -= positionRef.current;
+            positionRef.current = 0;
+            return hightDisplacementRef.current;
+        }
+        positionRef.current = position.y;
+        return hightDisplacementRef.current - positionRef.current;
+    },[position?.y])
 
     useEffect(()=>{
         if(!store.selectedFile)
@@ -41,6 +55,12 @@ function ConflictEditorComponent(){
         dispatch(ActionConflict.updateData({currentStep:store.currentStep-1}));
     }
 
+    const getSign=(value:number)=>{
+        if(value < 0)
+            return "-";
+        return "+";
+    }
+
     if(!store.selectedFile)
         return null;
     return <div id="conflict-editor"  className="h-100 w-100">
@@ -53,10 +73,11 @@ function ConflictEditorComponent(){
                 onNextClick={handleNext} onPreviousClick={handlePrevious}/>
             </div>
         </div>
-        <div style={{height:'calc(100% - 30px)'}}>
-            <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorTopPanel}>            
+        <div style={{height:'calc(100% - 33px)'}}>
+            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(hightDisplacement+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>            
             </div>
-            <div className="h-50 w-100" id={EnumHtmlIds.ConflictEditorBottomPanel}>            
+            <div ref={resizer as any} className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
+            <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(hightDisplacement)} ${Math.abs(hightDisplacement)}px)`}}>            
             </div>
         </div>
     </div>
