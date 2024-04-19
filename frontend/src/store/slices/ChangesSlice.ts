@@ -1,12 +1,16 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IFile } from "common_library";
+import { EnumChangeGroup, IFile } from "common_library";
 
 interface IData{
-
+    selectedFile?:IFile;
+    currentStep:number;
+    totalStep:number;
+    selectedTab?:EnumChangeGroup
 }
 
 const initialState:IData={
- 
+    currentStep:0,
+    totalStep:0
 }
 
 const slice = createSlice({
@@ -19,5 +23,5 @@ const slice = createSlice({
     }
 })
 
-export const ActionConflict = slice.actions;
-export const ReducerConflict = slice.reducer;
+export const ActionChanges = slice.actions;
+export const ReducerChanges = slice.reducer;

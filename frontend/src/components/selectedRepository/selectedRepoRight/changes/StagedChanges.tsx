@@ -7,6 +7,7 @@ import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ActionChanges } from "../../../../store";
 
 interface ISingleFileProps{
     item:IFile
@@ -59,7 +60,7 @@ interface IState{
 function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
-        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.ui.selectedFile:undefined,
+        selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -148,7 +149,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     },[state.containerHeight]);
 
     const handleSelect = (file?:IFile)=>{
-        dispatch(ActionUI.setSelectedFile(file));
+        dispatch(ActionChanges.updateData({selectedFile:file}));
     }
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>

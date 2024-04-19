@@ -8,7 +8,11 @@ import { StepNavigation } from "../../../common"
 import { ActionConflict } from "../../../../store"
 
 function ConflictEditorComponent(){
-    const store = useSelectorTyped(state=>state.conflict,shallowEqual);
+    const store = useSelectorTyped(state=>({
+        selectedFile:state.changes.selectedFile,
+        currentStep:state.changes.currentStep,
+        totalStep:state.changes.totalStep,        
+    }),shallowEqual);
     const dispatch = useDispatch();
 
     const hightDisplacementRef = useRef(0);

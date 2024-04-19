@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IFile, IRemoteInfo, IStatus } from "common_library";
-import { GraphUtils, EnumSelectedRepoTab } from "../../lib";
+import { IRemoteInfo, IStatus } from "common_library";
+import { EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -37,7 +37,6 @@ interface IUIState{
     loader?:ILoaderInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
-    selectedFile?:IFile;
     remotes:IRemoteInfo[];
     branchList:string[];
 }
@@ -106,9 +105,6 @@ const UISlice = createSlice({
         },
         setStatus(state,action:PayloadAction<IStatus>){
             state.status = action.payload;
-        },
-        setSelectedFile(state,action:PayloadAction<IFile|undefined>){
-            state.selectedFile = action.payload;
         },
         setRemotes(state,action:PayloadAction<IRemoteInfo[]>){
             state.remotes = action.payload;

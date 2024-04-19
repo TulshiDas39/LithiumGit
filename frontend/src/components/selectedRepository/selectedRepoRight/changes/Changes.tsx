@@ -10,6 +10,7 @@ import { ChangesTabPane } from "./ChangesTabPane";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ConflictEditor } from "./ConflictEditor";
+import { ActionChanges } from "../../../../store";
 
 
 interface IState {
@@ -30,7 +31,7 @@ function ChangesComponent() {
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
-        selectedFile:state.ui.selectedFile || state.conflict.selectedFile,
+        selectedFile:state.changes.selectedFile,
     }),shallowEqual);
 
     const dispatch = useDispatch()
@@ -41,7 +42,7 @@ function ChangesComponent() {
     },[store.recentRepositories])
 
     useEffect(()=>{
-         dispatch(ActionUI.setSelectedFile(undefined));
+         dispatch(ActionChanges.updateData({selectedFile:undefined}));
     },[repoInfo?.path]);
 
     useEffect(()=>{
@@ -53,7 +54,7 @@ function ChangesComponent() {
         if(store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === store.selectedFile?.path)) return;
         if(store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === store.selectedFile?.path)) return;
         if(store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === store.selectedFile?.path)) return;
-        dispatch(ActionUI.setSelectedFile(undefined));
+        dispatch(ActionChanges.updateData({selectedFile:undefined}));
     },[store.status])
 
     const getAdjustedSize = (adjustedX: number) => {
@@ -61,9 +62,6 @@ function ChangesComponent() {
         return `- ${-adjustedX}px`;
     }
 
-    const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
-        dispatch(ActionUI.setSelectedFile(changedFile));
-    },[])
     const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         e.preventDefault();
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;

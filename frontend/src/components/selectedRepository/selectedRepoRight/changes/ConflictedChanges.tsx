@@ -1,13 +1,10 @@
-import { EnumChangeGroup, IFile, RendererEvents, RepositoryInfo } from "common_library";
+import { IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { ConflictUtils, EnumHtmlIds, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
+import { EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { AppButton } from "../../../common";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ActionConflict } from "../../../../store";
+import { ActionChanges } from "../../../../store";
 
 interface ISingleFileProps{
     item:IFile
@@ -42,7 +39,7 @@ interface IState{
 
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
-        selectedFile:state.conflict.selectedFile,
+        selectedFile:state.changes.selectedFile,
     }),shallowEqual);
     
     const [state,setState] = useMultiState<IState>({});
@@ -75,7 +72,7 @@ function ConflictedChangesComponent(props:IProps){
 
     const handleSelect = (file?:IFile)=>{
         console.log("selected",file);
-        dispatch(ActionConflict.updateData({selectedFile:file}));
+        dispatch(ActionChanges.updateData({selectedFile:file}));
     }
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
