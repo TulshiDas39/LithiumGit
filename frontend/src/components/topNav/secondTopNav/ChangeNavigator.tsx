@@ -1,12 +1,11 @@
 import React, { useEffect } from "react"
-import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { ActionUI } from "../../../store/slices/UiSlice";
 import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
 import { ModifiedChangeNavigator } from "./ModifiedChangeNavigator";
 import { EnumChangeGroup } from "common_library";
 import { ActionChanges } from "../../../store";
+import { StagedChangeNavigator } from "./StagedChangeNavigator";
 
 function ChangeNavigatorComponent(){
     const store = useSelectorTyped(state=> state.changes,shallowEqual);
@@ -34,6 +33,11 @@ function ChangeNavigatorComponent(){
     return <div className="flex-grow-1 ps-3">
         {store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&
             <ModifiedChangeNavigator selectedFile={store.selectedFile} 
+            currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
+            onPreviousClick={onPreviousClick}/>}
+
+            {store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&
+            <StagedChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
             onPreviousClick={onPreviousClick}/>}
     </div>
