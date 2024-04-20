@@ -40,7 +40,7 @@ function ConflictEditorComponent(){
             ConflictUtils.previousLines = lineConfig.previousLines;
             ConflictUtils.currentLines = lineConfig.currentLines;
             ConflictUtils.ShowEditor();                                    
-            // ConflictUtils.FocusHightlightedLine(1);
+            ConflictUtils.FocusHightlightedLine(1);
             dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
         })
     },[store.selectedFile])
