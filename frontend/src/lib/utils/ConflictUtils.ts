@@ -106,10 +106,7 @@ export class ConflictUtils{
             return;
 
         const topPanel = document.getElementById(`${ConflictUtils.topPanelId}`)!;
-        const bottomPanel = document.getElementById(`${ConflictUtils.bottomPanelId}`)!;
-        
-        console.log("topPanel",topPanel);
-        console.log("bottomPanel",bottomPanel);
+        const bottomPanel = document.getElementById(`${ConflictUtils.bottomPanelId}`)!;              
 
         if(!topPanel || !bottomPanel)
             return;
@@ -218,5 +215,15 @@ export class ConflictUtils{
             return;
         const focusElem = container?.querySelector('.line_numbers')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
+        ConflictUtils.setBottomPanelScrollPosition();
+
+    }
+
+    private static setBottomPanelScrollPosition(){
+        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
+        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+        const topScrollRatio = UiUtils.getVerticalScrollRatio(conflictTop);
+        const top = UiUtils.getVerticalScrollTop(conflictBottom,topScrollRatio);
+        conflictBottom.scrollTo({top});
     }
 }
