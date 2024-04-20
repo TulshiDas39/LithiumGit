@@ -6,6 +6,7 @@ import { ModifiedChangeNavigator } from "./ModifiedChangeNavigator";
 import { EnumChangeGroup } from "common_library";
 import { ActionChanges } from "../../../store";
 import { StagedChangeNavigator } from "./StagedChangeNavigator";
+import { ConflictChangeNavigator } from "./ConflictChangeNavigator";
 
 function ChangeNavigatorComponent(){
     const store = useSelectorTyped(state=> state.changes,shallowEqual);
@@ -38,6 +39,11 @@ function ChangeNavigatorComponent(){
 
             {store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&
             <StagedChangeNavigator selectedFile={store.selectedFile} 
+            currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
+            onPreviousClick={onPreviousClick}/>}
+
+            {store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&
+            <ConflictChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
             onPreviousClick={onPreviousClick}/>}
     </div>
