@@ -4,6 +4,7 @@ import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
 import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
+import { UiUtils } from "./UiUtils";
 
 export class ConflictUtils{
     static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
@@ -16,6 +17,8 @@ export class ConflictUtils{
     private static endingMarkers:{conflictNo:number;text:string}[] = [];
     private static currentLineDivWidth = 0;
     private static previousLineDivWidth = 0;
+    private static hoverTopPanel = false;
+    private static hoverBottomPanel = false;
 
     static get TotalConflict(){
         return ConflictUtils.startingMarkers.length;
@@ -93,6 +96,11 @@ export class ConflictUtils{
         return {currentLines,previousLines};
     }
 
+    private static resetData(){
+        ConflictUtils.hoverBottomPanel = false;
+        ConflictUtils.hoverTopPanel = false;
+    }
+
     static ShowEditor(){
         if(!ConflictUtils.currentLines || !ConflictUtils.previousLines)
             return;
@@ -105,7 +113,7 @@ export class ConflictUtils{
 
         if(!topPanel || !bottomPanel)
             return;
-
+        ConflictUtils.resetData();
         ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
         ConflictUtils.previousLineDivWidth = ((ConflictUtils.previousLines.filter(_=> _.text !== undefined).length)+"").length + 3;
 
@@ -124,10 +132,24 @@ export class ConflictUtils{
         topPanel.innerHTML = editorTopHtml;
         bottomPanel.innerHTML = editorBottomHtml;
 
-        //ConflictUtils.HandleScrolling();
+        ConflictUtils.addEventHanlders();
+        ConflictUtils.HandleScrolling();
         ConflictUtils.purgeEditorUi();
 
         ConflictUtils.SetHeighlightedLines();
+    }
+
+    private static addEventHanlders(){
+        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
+        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+        conflictTop.addEventListener("mouseenter",()=>{
+            ConflictUtils.hoverTopPanel = true;
+            ConflictUtils.hoverBottomPanel = false;
+        })
+        conflictBottom.addEventListener("mouseenter",()=>{
+            ConflictUtils.hoverTopPanel = false;
+            ConflictUtils.hoverBottomPanel = true;
+        })
     }
 
     private static purgeEditorUi(){
@@ -145,26 +167,32 @@ export class ConflictUtils{
     }
 
     private static HandleScrolling(){
-        if(ConflictUtils.previousLines !== null && ConflictUtils.currentLines !== null){
-            const previousChangeScroll = document.querySelector(".conflict-diff .previous .content");
-            const currentChangeScroll = document.querySelector(".conflict-diff .current .content");        
-        
-            let handler1 = (e:Event)=>{
-                currentChangeScroll?.scrollTo({
-                    left:previousChangeScroll?.scrollLeft,
-                });
-            }
+        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
+        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+    
+        let handler1 = (e:Event)=>{
+            if(!ConflictUtils.hoverTopPanel)
+                return;
+            const ratio = UiUtils.getVerticalScrollRatio(conflictTop);
+            const top = UiUtils.getVerticalScrollTop(conflictBottom, ratio);
+            conflictBottom?.scrollTo({
+                top
+            });
+        }
 
-            let handler2 = (e:Event)=>{
-                previousChangeScroll?.scrollTo({                    
-                    left:currentChangeScroll?.scrollLeft,
-                });
-            }
+        let handler2 = (e:Event)=>{
+            if(!ConflictUtils.hoverBottomPanel)
+                return;
+            const ratio = UiUtils.getVerticalScrollRatio(conflictBottom);
+            const top = UiUtils.getVerticalScrollTop(conflictTop, ratio);
+            conflictTop?.scrollTo({                    
+                top,
+            });
+        }
 
-            if(previousChangeScroll && currentChangeScroll){
-                previousChangeScroll.addEventListener("scroll",handler1)
-                currentChangeScroll.addEventListener("scroll",handler2);
-            }
+        if(conflictTop && conflictBottom){
+            conflictTop.addEventListener("scroll",handler1)
+            conflictBottom.addEventListener("scroll",handler2);
         }
     }
 

@@ -162,4 +162,20 @@ export class UiUtils {
             return "text-danger";
         return "text-info";
     }
+
+    static getVerticalScrollRatio(element:HTMLElement){
+        const height = element.getBoundingClientRect().height;
+        const scrollTop = element.scrollTop;
+        const scrollHeight = element.scrollHeight;
+        return scrollTop / (scrollHeight - height);
+    }
+
+    static getVerticalScrollTop(element:HTMLElement,ratio:number){
+        const height = element.getBoundingClientRect().height;
+        const scrollHeight = element.scrollHeight;
+        const scrollTop = (scrollHeight - height)*ratio;
+        return scrollTop;
+    }
+
+
 }
