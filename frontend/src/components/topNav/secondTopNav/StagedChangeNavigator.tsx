@@ -1,7 +1,8 @@
 import { EnumChangeType, IFile } from "common_library";
-import React from "react"
+import React, { useEffect } from "react"
 import { FaArrowsAltH } from "react-icons/fa";
 import { StepNavigation } from "../../common";
+import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
 
 interface IProps{
     selectedFile:IFile;
@@ -12,6 +13,12 @@ interface IProps{
 }
 
 function StagedChangeNavigatorComponent(props:IProps){
+    useEffect(()=>{
+        if(!props.currentStep)
+            return;
+        ChangeUtils.FocusHightlightedLine(props.currentStep);
+    },[props.currentStep])
+    
     return <div className="w-100 h-100 d-flex align-items-center">
         <div className="flex-grow-1 d-flex align-items-center">
             <div title={props.selectedFile.path} className="overflow-ellipsis" style={{maxWidth:200}}>

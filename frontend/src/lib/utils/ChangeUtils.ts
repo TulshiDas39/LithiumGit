@@ -21,6 +21,7 @@ export class ChangeUtils{
         ChangeUtils.HandleScrolling();
         ChangeUtils.SetHeighlightedLines();
         ChangeUtils.FocusHightlightedLine(1);
+
         // ReduxUtils.resetChangeNavigation();
     }
 
@@ -36,10 +37,12 @@ export class ChangeUtils{
 
     private static SetHeighlightedLines(){
         ChangeUtils.heighlightedLineIndexes = [];
-        let lastItemHightlighted = false;        
-        const lenght = ChangeUtils.currentLines?.length || ChangeUtils.previousLines?.length || 0;
+        let lastItemHightlighted = false;
+        if(!ChangeUtils.currentLines?.length || !ChangeUtils.previousLines?.length)
+            return;
+        const lenght = ChangeUtils.currentLines?.length;
         for(let i = 0;i < lenght; i++){
-            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.previousLines?.[i].hightLightBackground){
+            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.currentLines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
                     ChangeUtils.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;

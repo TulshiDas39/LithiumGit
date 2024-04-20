@@ -15,7 +15,7 @@ const initialState:IData={
 
 const slice = createSlice({
     initialState,
-    name:"clone",
+    name:"changes",
     reducers:{
         updateData(state,action:PayloadAction<Partial<IData>>){
             return {...state, ...action.payload};            

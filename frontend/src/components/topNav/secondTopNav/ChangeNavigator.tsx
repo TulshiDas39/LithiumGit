@@ -1,7 +1,6 @@
 import React, { useEffect } from "react"
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
 import { ModifiedChangeNavigator } from "./ModifiedChangeNavigator";
 import { EnumChangeGroup } from "common_library";
 import { ActionChanges } from "../../../store";
@@ -11,23 +10,25 @@ import { ConflictChangeNavigator } from "./ConflictChangeNavigator";
 function ChangeNavigatorComponent(){
     const store = useSelectorTyped(state=> state.changes,shallowEqual);
     const dispatch = useDispatch();
-    useEffect(()=>{
-        if(!store?.currentStep)
-            return;
-        ChangeUtils.FocusHightlightedLine(store.currentStep);
-    },[store?.currentStep])
 
     const onNextClick=()=>{
         if(store.currentStep >= store.totalStep)
             return;
         dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
     }
+    console.log("store",store)
 
     const onPreviousClick = ()=>{
         if(store.currentStep <= 1)
             return;
         dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1}));
     }
+
+    useEffect(()=>{
+        // if(store.totalStep < store.currentStep){
+        //     dispatch(ActionChanges.updateData({currentStep:store.totalStep}));
+        // }
+    },[store.currentStep,store.totalStep])
 
     if(!store?.selectedFile) return null;
 

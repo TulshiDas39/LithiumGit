@@ -16,8 +16,6 @@ import { ActionChanges } from "../../../../store";
 interface IState {
     adjustedX: number;    
     differenceRefreshKey:number;
-    // expandedTabCount:number;
-    // document:Descendant[],
 }
 
 function ChangesComponent() {
@@ -78,13 +76,6 @@ function ChangesComponent() {
     }
     
     useEffect(()=>{        
-        ReduxUtils.resetChangeNavigation = ()=>{
-            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
-            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionChanges.updateData({currentStep:1}));
-            else dispatch(ActionChanges.updateData({currentStep:0}));
-            ChangeUtils.FocusHightlightedLine(1);
-        }
-
         return ()=>{
             dispatch(ActionChanges.updateData({currentStep:0}));
         }

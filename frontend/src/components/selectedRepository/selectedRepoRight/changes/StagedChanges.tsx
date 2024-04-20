@@ -112,7 +112,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
-                        ReduxUtils.resetChangeNavigation();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                     })
                 }
                 else{
@@ -120,7 +120,8 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-                    ReduxUtils.resetChangeNavigation();
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
+
                 }
                                     
             })
@@ -135,9 +136,11 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
             })
         }
         ChangeUtils.file = store.selectedFile;
+        
     },[store.selectedFile])
     
     useEffect(()=>{

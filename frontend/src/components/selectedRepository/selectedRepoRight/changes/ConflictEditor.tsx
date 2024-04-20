@@ -5,7 +5,7 @@ import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
 import { StepNavigation } from "../../../common"
-import { ActionConflict } from "../../../../store"
+import { ActionChanges, ActionConflict } from "../../../../store"
 
 function ConflictEditorComponent(){
     const store = useSelectorTyped(state=>({
@@ -40,6 +40,11 @@ function ConflictEditorComponent(){
             ConflictUtils.previousLines = lineConfig.previousLines;
             ConflictUtils.currentLines = lineConfig.currentLines;
             ConflictUtils.ShowEditor();
+            
+            dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount}));
+            if(ConflictUtils.totalChangeCount > 0) dispatch(ActionChanges.updateData({currentStep:1}));
+            else dispatch(ActionChanges.updateData({currentStep:0}));
+            ConflictUtils.FocusHightlightedLine(1);
             console.log("content");
             console.log(lineConfig);
             //ConflictUtils

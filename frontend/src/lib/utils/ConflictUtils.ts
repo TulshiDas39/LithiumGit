@@ -14,6 +14,10 @@ export class ConflictUtils{
     private static heighlightedLineIndexes:number[]=[];
     private static startingMarkers:{conflictNo:number;text:string}[] = [];
     private static endingMarkers:{conflictNo:number;text:string}[] = [];
+
+    static get TotalConflict(){
+        return ConflictUtils.startingMarkers.length;
+    }
     static get Separator(){
         return "=======";
     }
@@ -112,6 +116,14 @@ export class ConflictUtils{
 
         topPanel.innerHTML = editorTopHtml;
         bottomPanel.innerHTML = editorBottomHtml;
+
+        //ConflictUtils.HandleScrolling();
+
+        ConflictUtils.SetHeighlightedLines();
+    }
+
+    static get totalChangeCount(){
+        return ConflictUtils.heighlightedLineIndexes.length;
     }
 
     private static HandleScrolling(){
@@ -136,5 +148,29 @@ export class ConflictUtils{
                 currentChangeScroll.addEventListener("scroll",handler2);
             }
         }
+    }
+
+    private static SetHeighlightedLines(){
+        ConflictUtils.heighlightedLineIndexes = [];
+        let lastItemHightlighted = false;        
+        const lenght = ConflictUtils.currentLines?.length || ConflictUtils.previousLines?.length || 0;
+        for(let i = 0;i < lenght; i++){
+            if(ConflictUtils.currentLines?.[i].hightLightBackground || ConflictUtils.previousLines?.[i].hightLightBackground){
+                if(!lastItemHightlighted) {
+                    ConflictUtils.heighlightedLineIndexes.push(i);
+                    lastItemHightlighted = true;
+                }
+            }
+            else
+                lastItemHightlighted = false;
+        }
+    }
+
+    static FocusHightlightedLine(step:number){        
+        const container = document.querySelector("#"+ConflictUtils.topPanelId);
+        if(!ConflictUtils.heighlightedLineIndexes.length)
+            return;
+        const focusElem = container?.querySelector('.line_numbers')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
+        focusElem?.scrollIntoView({block:"center"});
     }
 }

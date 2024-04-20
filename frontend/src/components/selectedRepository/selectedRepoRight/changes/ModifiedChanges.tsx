@@ -8,7 +8,6 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -129,7 +128,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
-                        ReduxUtils.resetChangeNavigation();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
                     });
                 }
                 if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
@@ -137,7 +136,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-                    ReduxUtils.resetChangeNavigation();
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                 }
             })
         }
@@ -151,7 +150,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
-                ReduxUtils.resetChangeNavigation();
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
             })
         }
 
