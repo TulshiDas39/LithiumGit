@@ -209,7 +209,9 @@ export class ConflictUtils{
         }
     }
 
-    static FocusHightlightedLine(step:number){        
+    static FocusHightlightedLine(step:number){
+        if(!step)
+            return;
         const container = document.querySelector("#"+ConflictUtils.topPanelId);
         if(!ConflictUtils.heighlightedLineIndexes.length)
             return;

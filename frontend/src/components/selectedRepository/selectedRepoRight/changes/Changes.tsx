@@ -40,7 +40,7 @@ function ChangesComponent() {
     },[store.recentRepositories])
 
     useEffect(()=>{
-         dispatch(ActionChanges.updateData({selectedFile:undefined}));
+         dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
     },[repoInfo?.path]);
 
     useEffect(()=>{

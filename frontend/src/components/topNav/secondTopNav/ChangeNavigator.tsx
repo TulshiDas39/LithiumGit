@@ -16,7 +16,6 @@ function ChangeNavigatorComponent(){
             return;
         dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
     }
-    console.log("store",store)
 
     const onPreviousClick = ()=>{
         if(store.currentStep <= 1)
@@ -25,9 +24,9 @@ function ChangeNavigatorComponent(){
     }
 
     useEffect(()=>{
-        // if(store.totalStep < store.currentStep){
-        //     dispatch(ActionChanges.updateData({currentStep:store.totalStep}));
-        // }
+        if(store.totalStep < store.currentStep){
+            dispatch(ActionChanges.updateData({currentStep:store.totalStep}));
+        }
     },[store.currentStep,store.totalStep])
 
     if(!store?.selectedFile) return null;

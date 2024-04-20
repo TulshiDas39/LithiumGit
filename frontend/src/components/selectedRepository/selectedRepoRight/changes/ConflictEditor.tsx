@@ -39,16 +39,9 @@ function ConflictEditorComponent(){
             const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
             ConflictUtils.previousLines = lineConfig.previousLines;
             ConflictUtils.currentLines = lineConfig.currentLines;
-            ConflictUtils.ShowEditor();
-            
-            dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount}));
-            if(ConflictUtils.totalChangeCount > 0) dispatch(ActionChanges.updateData({currentStep:1}));
-            else dispatch(ActionChanges.updateData({currentStep:0}));
-            ConflictUtils.FocusHightlightedLine(1);
-            console.log("content");
-            console.log(lineConfig);
-            //ConflictUtils
-            // const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];                    
+            ConflictUtils.ShowEditor();                                    
+            // ConflictUtils.FocusHightlightedLine(1);
+            dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
         })
     },[store.selectedFile])
 
