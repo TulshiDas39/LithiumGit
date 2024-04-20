@@ -14,6 +14,8 @@ export class ConflictUtils{
     private static heighlightedLineIndexes:number[]=[];
     private static startingMarkers:{conflictNo:number;text:string}[] = [];
     private static endingMarkers:{conflictNo:number;text:string}[] = [];
+    private static currentLineDivWidth = 0;
+    private static previousLineDivWidth = 0;
 
     static get TotalConflict(){
         return ConflictUtils.startingMarkers.length;
@@ -104,9 +106,14 @@ export class ConflictUtils{
         if(!topPanel || !bottomPanel)
             return;
 
+        ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+        ConflictUtils.previousLineDivWidth = ((ConflictUtils.previousLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+
         const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
             currentLines:ConflictUtils.currentLines,
+            currentLineDivWidth: ConflictUtils.currentLineDivWidth,
             previousLines:ConflictUtils.previousLines,
+            previousLineDivWidth:ConflictUtils.previousLineDivWidth,
         }));
 
         const editorBottomHtml = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
@@ -118,8 +125,19 @@ export class ConflictUtils{
         bottomPanel.innerHTML = editorBottomHtml;
 
         //ConflictUtils.HandleScrolling();
+        ConflictUtils.purgeEditorUi();
 
         ConflictUtils.SetHeighlightedLines();
+    }
+
+    private static purgeEditorUi(){
+        const elem = document.querySelector('.check_all_incoming') as HTMLElement;
+        if(elem)
+            elem.style.width = `${ConflictUtils.previousLineDivWidth}ch`;
+        const elem2 = document.querySelector('.check_all_current') as HTMLElement;
+        if(elem2)
+            elem2.style.width = `${ConflictUtils.currentLineDivWidth}ch`;
+
     }
 
     static get totalChangeCount(){

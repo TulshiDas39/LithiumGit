@@ -28,7 +28,8 @@ function SingleDiff(props:ISingleDiffProps){
 
 interface IProps{
     lines:ILine[];
-    colorClass:string;    
+    colorClass:string;
+    lineDivWidth:number;
 }
 
 export function ConflictDiffView(props:IProps){
@@ -41,22 +42,22 @@ export function ConflictDiffView(props:IProps){
             let startOfConflict = !!line.conflictNo && !props.lines[i-1]?.conflictNo;        
             if(line.text === undefined){        
                 const child = startOfConflict ? <input type="checkbox" /> : <br />;                
-                elems.push(<p key={i} className="d-flex justify-content-end"> {child} </p>)
+                elems.push(<p key={i} className="d-flex justify-content-end w-100"> {child} </p>)
             }
             else{
                 const checkBox = startOfConflict ? <span className="flex-grow-1 text-end"><input type="checkbox" /></span>  : null;
-                elems.push(<p key={i} className="d-flex">{lineNo} {checkBox}</p>);
+                elems.push(<p key={i} className="d-flex w-100">{lineNo} {checkBox}</p>);
                 lineNo++;
             }
         }
         return elems;
     }
-    const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 3;
+    // const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 3;
     return <div className="d-flex w-100">
-        <div className="noselect line_numbers" style={{width:lineDivWidth+"ch"}}>
+        <div className="noselect line_numbers" style={{width:props.lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="ps-1 content" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
+        <div className="ps-1 content" style={{width:`calc(100% - ${props.lineDivWidth}ch)`,overflowY:'hidden'}}>
             {props.lines.map((l, i)=>(
                 <SingleDiff key={i} line={l} colorClass={props.colorClass} maxLineWidth={editorWidth}  />
             ))}

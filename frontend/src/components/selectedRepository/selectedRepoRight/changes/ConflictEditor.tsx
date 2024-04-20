@@ -74,12 +74,17 @@ function ConflictEditorComponent(){
         return null;
     return <div id="conflict-editor"  className="h-100 w-100">
         <div style={{height:30}} className="d-flex align-items-center w-100 border-bottom">
-            <div className={"overflow-ellipsis w-25"} title={store.selectedFile.path}>
-                {store.selectedFile?.fileName}
+            <div className={"w-50 d-flex align-items-center"}>
+                <div className="check_all_incoming d-flex justify-content-end">
+                    <input type="checkbox" title="Accept all incoming changes" />
+                </div>
+                <div className="ps-2">Incoming changes</div>
             </div>
-            <div className="w-75 text-end">
-                <StepNavigation currentStep={store.currentStep} totalStep={store.totalStep}
-                onNextClick={handleNext} onPreviousClick={handlePrevious}/>
+            <div className="w-50 d-flex align-items-center">
+                <div className="check_all_current d-flex justify-content-end">
+                    <input type="checkbox" title="Accept all current changes" />
+                </div>                
+                <div className="ps-2">Current changes</div>
             </div>
         </div>
         <div style={{height:'calc(100% - 33px)'}}>
