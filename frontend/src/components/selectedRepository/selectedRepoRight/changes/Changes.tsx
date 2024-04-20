@@ -79,14 +79,14 @@ function ChangesComponent() {
     
     useEffect(()=>{        
         ReduxUtils.resetChangeNavigation = ()=>{
-            dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
-            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));
-            else dispatch(ActionUI.setComparableStep(0));
+            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionChanges.updateData({currentStep:1}));
+            else dispatch(ActionChanges.updateData({currentStep:0}));
             ChangeUtils.FocusHightlightedLine(1);
         }
 
         return ()=>{
-            dispatch(ActionUI.setComparableStep(0));
+            dispatch(ActionChanges.updateData({currentStep:0}));
         }
     },[])
 

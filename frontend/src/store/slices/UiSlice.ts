@@ -20,11 +20,6 @@ interface EventVersions{
     remoteList:number;
 }
 
-interface IChangesState{
-    totalStep:number;
-    currentStep:number;
-}
-
 export interface ILoaderInfo{
     text:string;
 }
@@ -32,7 +27,6 @@ export interface ILoaderInfo{
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
-    changes?:IChangesState;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
     mergerCommitMessage?:string;
@@ -52,10 +46,6 @@ const initialState:IUIState={
         remoteList:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
-    changes:{
-        currentStep:0,
-        totalStep:1,
-    },
     remotes:[],
     branchList:[],
 }
@@ -86,13 +76,6 @@ const UISlice = createSlice({
         },
         resetBranchPanelZoom(state){
             state.versions.branchPanelZoom = 0;
-        },
-        setTotalComparable(state,action:PayloadAction<number>){
-            if(state.changes)state.changes.totalStep = action.payload;
-            else state.changes = {currentStep:action.payload,totalStep:action.payload};
-        },
-        setComparableStep(state,action:PayloadAction<number>){
-            state.changes!.currentStep = action.payload;
         },
         setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
             state.selectedRepoTab = action.payload;
