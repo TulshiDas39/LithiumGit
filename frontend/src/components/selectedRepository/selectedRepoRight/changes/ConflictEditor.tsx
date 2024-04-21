@@ -4,7 +4,6 @@ import { shallowEqual, useDispatch } from "react-redux"
 import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
-import { StepNavigation } from "../../../common"
 import { ActionChanges, ActionConflict } from "../../../../store"
 
 function ConflictEditorComponent(){
@@ -69,13 +68,13 @@ function ConflictEditorComponent(){
         <div style={{height:30}} className="d-flex align-items-center w-100 border-bottom">
             <div className={"w-50 d-flex align-items-center"}>
                 <div className="check_all_incoming d-flex justify-content-end">
-                    <input type="checkbox" title="Accept all incoming changes" />
+                    <input id={EnumHtmlIds.accept_all_incoming} type="checkbox" title="Accept all incoming changes" />
                 </div>
                 <div className="ps-2">Incoming changes</div>
             </div>
             <div className="w-50 d-flex align-items-center">
                 <div className="check_all_current d-flex justify-content-end">
-                    <input type="checkbox" title="Accept all current changes" />
+                    <input id={EnumHtmlIds.accept_all_current} type="checkbox" title="Accept all current changes" />
                 </div>                
                 <div className="ps-2">Current changes</div>
             </div>

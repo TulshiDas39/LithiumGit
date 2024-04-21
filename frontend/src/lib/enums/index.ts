@@ -6,3 +6,4 @@ export * from './EnumChangeGroup';
 export * from './EnumHtmlIds';
 export * from './CloneState';
 export * from './FetchState';
+export * from './EnumConflictSide';

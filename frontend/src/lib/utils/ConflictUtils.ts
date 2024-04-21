@@ -147,6 +147,20 @@ export class ConflictUtils{
             ConflictUtils.hoverTopPanel = false;
             ConflictUtils.hoverBottomPanel = true;
         })
+        const acceptAllIncomingCheck = document.querySelector(`#${EnumHtmlIds.accept_all_incoming}`) as HTMLInputElement;
+        acceptAllIncomingCheck.addEventListener("change",(e)=>{
+            const checked = !!acceptAllIncomingCheck.checked;
+            const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .previous input");
+            checkboxes.forEach(elem => elem.checked = checked);
+        })
+
+        const acceptAllCurrentCheck = document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
+        acceptAllCurrentCheck.addEventListener("change",(e)=>{
+            const checked = !!acceptAllCurrentCheck.checked;
+            const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .current input");
+            checkboxes.forEach(elem => elem.checked = checked);
+        })
+
     }
 
     private static purgeEditorUi(){

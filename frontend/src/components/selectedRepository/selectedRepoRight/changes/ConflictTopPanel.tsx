@@ -1,4 +1,4 @@
-import { ILine } from "../../../../lib"
+import { EnumConflictSide, ILine } from "../../../../lib"
 import { ConflictDiffView } from "./ConflictDiffView";
 
 interface IProps{
@@ -11,12 +11,12 @@ export function ConflictTopPanel(props:IProps){
     return <div className="d-flex w-100 h-100 conflict-diff" style={{overflowY:'auto'}}>
         <div className={`w-50 previous `}>
             <ConflictDiffView colorClass={"bg-previous-change"} lines={props.previousLines}
-                lineDivWidth={props.previousLineDivWidth} />
+                lineDivWidth={props.previousLineDivWidth} side={EnumConflictSide.Incoming} />
         </div>
 
-        <div className={`w-50 previous ps-2 current`}>
+        <div className={`w-50 ps-2 current`}>
             <ConflictDiffView colorClass={"bg-current-change"} lines={props.currentLines}
-                lineDivWidth={props.currentLineDivWidth} />
+                lineDivWidth={props.currentLineDivWidth} side={EnumConflictSide.Current} />
         </div>
     </div>
 }
