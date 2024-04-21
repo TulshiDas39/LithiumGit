@@ -177,5 +177,10 @@ export class UiUtils {
         return scrollTop;
     }
 
+    static resolveValueFromId(id:string){
+        const lastIndex = id.lastIndexOf("_");
+        return id.substring(lastIndex+1);
+    }
+
 
 }

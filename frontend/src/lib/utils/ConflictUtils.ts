@@ -19,6 +19,7 @@ export class ConflictUtils{
     private static previousLineDivWidth = 0;
     private static hoverTopPanel = false;
     private static hoverBottomPanel = false;
+    private static actionTakenConflictNo:number[] = [];
 
     static get TotalConflict(){
         return ConflictUtils.startingMarkers.length;
@@ -99,6 +100,11 @@ export class ConflictUtils{
     private static resetData(){
         ConflictUtils.hoverBottomPanel = false;
         ConflictUtils.hoverTopPanel = false;
+    }
+
+    private static getConflictNo(id:string){
+        const value = UiUtils.resolveValueFromId(id);
+        return value;
     }
 
     static ShowEditor(){

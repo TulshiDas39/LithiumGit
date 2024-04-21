@@ -42,11 +42,11 @@ export function ConflictDiffView(props:IProps){
             const line = props.lines[i];
             let startOfConflict = !!line.conflictNo && !props.lines[i-1]?.conflictNo;        
             if(line.text === undefined){        
-                const child = startOfConflict ? <input id={`${props.side}${line.conflictNo}`} type="checkbox" /> : <br />;                
+                const child = startOfConflict ? <input id={`${props.side}_${line.conflictNo}`} type="checkbox" /> : <br />;                
                 elems.push(<p key={i} className="d-flex justify-content-end w-100"> {child} </p>)
             }
             else{
-                const checkBox = startOfConflict ? <span className="flex-grow-1 text-end"><input id={`${props.side}${line.conflictNo}`} type="checkbox" /></span>  : null;
+                const checkBox = startOfConflict ? <span className="flex-grow-1 text-end"><input id={`${props.side}_${line.conflictNo}`} type="checkbox" /></span>  : null;
                 elems.push(<p key={i} className="d-flex w-100">{lineNo} {checkBox}</p>);
                 lineNo++;
             }
