@@ -136,9 +136,37 @@ export class ConflictUtils{
         ConflictUtils.SetHeighlightedLines();
     }
 
+    private static get topPanelElement(){
+        const conflictTop = document.querySelector(".conflict-diff") as HTMLDivElement;
+        return conflictTop;
+    }
+
+    private static get bottomPanelElement(){
+        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLDivElement;
+        return conflictBottom;
+    }
+
+    private static get incomingCheckBoxes(){
+        const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .previous input");
+        return checkboxes;
+    }
+
+    private static get currentCheckBoxes(){
+        const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .current input");
+        return checkboxes;
+    }
+
+    private static get acceptAllIncomingCheckBox(){
+        return document.querySelector(`#${EnumHtmlIds.accept_all_incoming}`) as HTMLInputElement;
+    }
+
+    private static get acceptAllCurrentCheckBox(){
+        return document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
+    }
+
     private static addEventHanlders(){
-        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
-        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+        const conflictTop = ConflictUtils.topPanelElement;
+        const conflictBottom = ConflictUtils.bottomPanelElement;
         conflictTop.addEventListener("mouseenter",()=>{
             ConflictUtils.hoverTopPanel = true;
             ConflictUtils.hoverBottomPanel = false;
@@ -147,20 +175,80 @@ export class ConflictUtils{
             ConflictUtils.hoverTopPanel = false;
             ConflictUtils.hoverBottomPanel = true;
         })
-        const acceptAllIncomingCheck = document.querySelector(`#${EnumHtmlIds.accept_all_incoming}`) as HTMLInputElement;
+        const acceptAllIncomingCheck = ConflictUtils.acceptAllIncomingCheckBox;
         acceptAllIncomingCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllIncomingCheck.checked;
-            const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .previous input");
+            const checkboxes = ConflictUtils.incomingCheckBoxes;
             checkboxes.forEach(elem => elem.checked = checked);
         })
 
-        const acceptAllCurrentCheck = document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
+        const acceptAllCurrentCheck = ConflictUtils.acceptAllCurrentCheckBox;
         acceptAllCurrentCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllCurrentCheck.checked;
-            const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .current input");
+            const checkboxes = ConflictUtils.currentCheckBoxes;
             checkboxes.forEach(elem => elem.checked = checked);
         })
 
+        const incomingCheckBoxes = ConflictUtils.incomingCheckBoxes;
+        incomingCheckBoxes.forEach(elem=>{
+            elem.addEventListener("change",(e)=>{
+                ConflictUtils.updateAcceptAllIncomingCheckboxState();
+            })
+        })
+
+        const currentCheckBoxes = ConflictUtils.currentCheckBoxes;
+        currentCheckBoxes.forEach(elem=>{
+            elem.addEventListener("change",(e)=>{
+                ConflictUtils.updateTopLeveCurrentCheckboxState();
+            })
+        })
+
+    }
+
+    private static updateAcceptAllIncomingCheckboxState(){
+        const topLevelCheckBox = ConflictUtils.acceptAllIncomingCheckBox;
+        const checkboxes = ConflictUtils.incomingCheckBoxes;
+        let selectionCount = 0;
+        checkboxes.forEach(_=>{
+            if(_.checked)
+                selectionCount++;
+        });
+
+        if(selectionCount === checkboxes.length){
+            topLevelCheckBox.checked = true;
+            topLevelCheckBox.indeterminate = false;            
+        }
+        else if(selectionCount > 0){
+            topLevelCheckBox.checked = false;
+            topLevelCheckBox.indeterminate = true;
+        }
+        else{
+            topLevelCheckBox.checked = false;
+            topLevelCheckBox.indeterminate = false;
+        }
+    }
+
+    private static updateTopLeveCurrentCheckboxState(){
+        const topLevelCheckBox = ConflictUtils.acceptAllCurrentCheckBox;
+        const checkboxes = ConflictUtils.currentCheckBoxes;
+        let selectionCount = 0;
+        checkboxes.forEach(_=>{
+            if(_.checked)
+                selectionCount++;
+        });
+
+        if(selectionCount === checkboxes.length){
+            topLevelCheckBox.checked = true;
+            topLevelCheckBox.indeterminate = false;            
+        }
+        else if(selectionCount > 0){
+            topLevelCheckBox.checked = false;
+            topLevelCheckBox.indeterminate = true;
+        }
+        else{
+            topLevelCheckBox.checked = false;
+            topLevelCheckBox.indeterminate = false;
+        }
     }
 
     private static purgeEditorUi(){
@@ -178,15 +266,15 @@ export class ConflictUtils{
     }
 
     private static HandleScrolling(){
-        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
-        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+        const topPanel = ConflictUtils.topPanelElement;
+        const bottomPanel = ConflictUtils.bottomPanelElement;
     
         let handler1 = (e:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(conflictTop);
-            const top = UiUtils.getVerticalScrollTop(conflictBottom, ratio);
-            conflictBottom?.scrollTo({
+            const ratio = UiUtils.getVerticalScrollRatio(topPanel);
+            const top = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
+            bottomPanel?.scrollTo({
                 top
             });
         }
@@ -194,16 +282,16 @@ export class ConflictUtils{
         let handler2 = (e:Event)=>{
             if(!ConflictUtils.hoverBottomPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(conflictBottom);
-            const top = UiUtils.getVerticalScrollTop(conflictTop, ratio);
-            conflictTop?.scrollTo({                    
+            const ratio = UiUtils.getVerticalScrollRatio(bottomPanel);
+            const top = UiUtils.getVerticalScrollTop(topPanel, ratio);
+            topPanel?.scrollTo({                    
                 top,
             });
         }
 
-        if(conflictTop && conflictBottom){
-            conflictTop.addEventListener("scroll",handler1)
-            conflictBottom.addEventListener("scroll",handler2);
+        if(topPanel && bottomPanel){
+            topPanel.addEventListener("scroll",handler1)
+            bottomPanel.addEventListener("scroll",handler2);
         }
     }
 
@@ -236,8 +324,8 @@ export class ConflictUtils{
     }
 
     private static setBottomPanelScrollPosition(){
-        const conflictTop = document.querySelector(".conflict-diff") as HTMLElement;
-        const conflictBottom = document.querySelector(".conflict-bottom") as HTMLElement;
+        const conflictTop = ConflictUtils.topPanelElement;
+        const conflictBottom = ConflictUtils.bottomPanelElement;
         const topScrollRatio = UiUtils.getVerticalScrollRatio(conflictTop);
         const top = UiUtils.getVerticalScrollTop(conflictBottom,topScrollRatio);
         conflictBottom.scrollTo({top});
