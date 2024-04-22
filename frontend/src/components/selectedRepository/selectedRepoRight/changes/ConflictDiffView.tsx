@@ -5,6 +5,8 @@ interface ISingleDiffProps{
     line:ILine;
     maxLineWidth:number;
     colorClass:string;
+    conflictNo:number;
+    side:EnumConflictSide;
 }
 
 function SingleDiff(props:ISingleDiffProps){
@@ -14,16 +16,17 @@ function SingleDiff(props:ISingleDiffProps){
     }
 
     const colorClass = props.line.hightLightBackground? props.colorClass:'';
+    const conflictClass = props.line.conflictNo? `${props.side}_${props.line.conflictNo}` : "";
 
     if(props.line.text != undefined){
         const childElems:JSX.Element[] = [];        
         if(props.line.text) childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
         else childElems.push(<br key={1}/>);
     
-        return <p className={`${colorClass}`} style={{...paragraphStyle}}>{childElems}</p>
+        return <p className={`${colorClass} ${conflictClass}`} style={{...paragraphStyle}}>{childElems}</p>
     }
 
-    return <p className={`transparent-background noselect ${colorClass}`} style={{...paragraphStyle}}> </p>
+    return <p className={`transparent-background noselect ${colorClass} ${conflictClass}`} style={{...paragraphStyle}}> </p>
 }
 
 interface IProps{
@@ -60,7 +63,8 @@ export function ConflictDiffView(props:IProps){
         </div>
         <div className="ps-1 content" style={{width:`calc(100% - ${props.lineDivWidth}ch)`,overflowY:'hidden'}}>
             {props.lines.map((l, i)=>(
-                <SingleDiff key={i} line={l} colorClass={props.colorClass} maxLineWidth={editorWidth}  />
+                <SingleDiff key={i} line={l} colorClass={props.colorClass} maxLineWidth={editorWidth} 
+                    conflictNo={l.conflictNo!} side={props.side} />
             ))}
         </div>
     </div>

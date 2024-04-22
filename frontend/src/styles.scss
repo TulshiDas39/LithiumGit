@@ -39,6 +39,7 @@ html {
     --bg-current-change-deep: #e2f4b8;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
+    --bg-fade:#afadad;
   }  
   
   html[data-theme='dark'] {
@@ -70,6 +71,7 @@ html {
     --bg-current-change-deep: #e2f4b8;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
+    --bg-fade:#513f3f;
   }
 
   p,span,div,i,h1,h2,h3,h4,h5,h6{
@@ -342,4 +344,8 @@ html {
 .overflow-ellipsis{
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+.bg-fade{
+  background-color: var(--bg-fade);
 }

@@ -1,6 +1,6 @@
 import { IFile } from "common_library";
 import { ILine } from "../interfaces";
-import { EnumHtmlIds } from "../enums";
+import { EnumConflictSide, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
 import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
@@ -199,6 +199,8 @@ export class ConflictUtils{
         incomingCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
                 ConflictUtils.updateAcceptAllIncomingCheckboxState();
+                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                ConflictUtils.updateConflictState(conflictNo);
             })
         })
 
@@ -206,8 +208,56 @@ export class ConflictUtils{
         currentCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
                 ConflictUtils.updateTopLeveCurrentCheckboxState();
+                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                ConflictUtils.updateConflictState(conflictNo);
             })
         })
+
+    }
+
+    private static getIncomingCheckboxByConflict(conflictNo:number){
+        return document.querySelector(`#${EnumConflictSide.Incoming}_${conflictNo}`) as HTMLInputElement;
+    }
+
+    private static getCurrentCheckboxByConflict(conflictNo:number){
+        return document.querySelector(`#${EnumConflictSide.Current}_${conflictNo}`) as HTMLInputElement;
+    }
+
+    private static getCurrentLineElementsByConflict(conflictNo:number){
+        return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Current}_${conflictNo}`);
+    }
+
+    private static getIncomingLineElementsByConflict(conflictNo:number){
+        return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Incoming}_${conflictNo}`);
+    }
+
+    private static getCheckboxesByConflict(conflictNo:number){
+        const incomingCheckBox = ConflictUtils.getIncomingCheckboxByConflict(conflictNo);
+        const currentCheckBoxe = ConflictUtils.getCurrentCheckboxByConflict(conflictNo);
+        return {incomingCheckBox,currentCheckBoxe};
+    }
+
+    private static updateConflictState(conflictNo:number){
+        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
+        const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
+        const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
+        if(checkboxes.currentCheckBoxe.checked){
+            currentLineElements.forEach(elem=> elem.classList.remove("bg-fade"));
+            currentLineElements.forEach(elem=> elem.classList.add("bg-current-change"));
+        }
+        else if(!checkboxes.currentCheckBoxe.checked){
+            currentLineElements.forEach(elem=> elem.classList.add("bg-fade"));
+            currentLineElements.forEach(elem=> elem.classList.remove("bg-current-change"));
+        }
+
+        if(checkboxes.incomingCheckBox.checked){
+            incomingLineElements.forEach(elem=> elem.classList.remove("bg-fade"));
+            incomingLineElements.forEach(elem=> elem.classList.add("bg-previous-change"));            
+        }
+        else if(!checkboxes.incomingCheckBox.checked){
+            incomingLineElements.forEach(elem=> elem.classList.add("bg-fade"));
+            incomingLineElements.forEach(elem=> elem.classList.remove("bg-previous-change"));
+        }
 
     }
 
