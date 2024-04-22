@@ -185,14 +185,26 @@ export class ConflictUtils{
         acceptAllIncomingCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllIncomingCheck.checked;
             const checkboxes = ConflictUtils.incomingCheckBoxes;
-            checkboxes.forEach(elem => elem.checked = checked);
+            checkboxes.forEach(elem => {
+                if(elem.checked !== checked){
+                    elem.checked = checked;
+                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+                    ConflictUtils.updateConflictState(conflictNo);
+                }
+            });
         })
 
         const acceptAllCurrentCheck = ConflictUtils.acceptAllCurrentCheckBox;
         acceptAllCurrentCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllCurrentCheck.checked;
             const checkboxes = ConflictUtils.currentCheckBoxes;
-            checkboxes.forEach(elem => elem.checked = checked);
+            checkboxes.forEach(elem => {
+                if(elem.checked !== checked){
+                    elem.checked = checked;
+                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+                    ConflictUtils.updateConflictState(conflictNo);
+                }
+            });
         })
 
         const incomingCheckBoxes = ConflictUtils.incomingCheckBoxes;
