@@ -249,7 +249,7 @@ export class ConflictUtils{
         return {incomingCheckBox,currentCheckBoxe};
     }
 
-    private static updateConflictState(conflictNo:number){
+    private static updateConflictTopPanelState(conflictNo:number){
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
         const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
@@ -270,6 +270,36 @@ export class ConflictUtils{
             incomingLineElements.forEach(elem=> elem.classList.add("bg-fade"));
             incomingLineElements.forEach(elem=> elem.classList.remove("bg-previous-change","bg-change-accepted"));
         }
+    }
+
+    private static updateConflictBottomPanelState(conflictNo:number){
+        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
+        const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
+        markers.forEach(elm=> elm.parentNode!.removeChild(elm));
+        const incomingContentLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`)
+        if(checkboxes.incomingCheckBox.checked){
+            if(!incomingContentLines.length){
+                //insert elements
+            }
+        }
+        else{
+            incomingContentLines.forEach(elem=> elem.parentNode!.removeChild(elem));
+        }
+
+        const currentContentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`)
+        if(checkboxes.currentCheckBoxe.checked){
+            if(!currentContentLines.length){
+                //insert elements
+            }
+        }
+        else{
+            currentContentLines.forEach(elem=> elem.parentNode!.removeChild(elem));
+        }
+    }
+
+    private static updateConflictState(conflictNo:number){
+        ConflictUtils.updateConflictTopPanelState(conflictNo);
+        ConflictUtils.updateConflictBottomPanelState(conflictNo);
 
     }
 
