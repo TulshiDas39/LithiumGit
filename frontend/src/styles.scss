@@ -40,6 +40,7 @@ html {
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#afadad;
+    --bg-change-accepted:#b9d5f6;
   }  
   
   html[data-theme='dark'] {
@@ -72,6 +73,7 @@ html {
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#513f3f;
+    --bg-change-accepted:#b9d5f6;
   }
 
   p,span,div,i,h1,h2,h3,h4,h5,h6{
@@ -348,4 +350,8 @@ html {
 
 .bg-fade{
   background-color: var(--bg-fade);
+}
+
+.bg-change-accepted{
+  background-color: var(--bg-change-accepted);
 }

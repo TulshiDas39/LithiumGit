@@ -254,21 +254,21 @@ export class ConflictUtils{
         const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
         const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
         if(checkboxes.currentCheckBoxe.checked){
-            currentLineElements.forEach(elem=> elem.classList.remove("bg-fade"));
-            currentLineElements.forEach(elem=> elem.classList.add("bg-current-change"));
+            currentLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-current-change"));
+            currentLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));
         }
         else if(!checkboxes.currentCheckBoxe.checked){
             currentLineElements.forEach(elem=> elem.classList.add("bg-fade"));
-            currentLineElements.forEach(elem=> elem.classList.remove("bg-current-change"));
+            currentLineElements.forEach(elem=> elem.classList.remove("bg-current-change","bg-change-accepted"));
         }
 
         if(checkboxes.incomingCheckBox.checked){
-            incomingLineElements.forEach(elem=> elem.classList.remove("bg-fade"));
-            incomingLineElements.forEach(elem=> elem.classList.add("bg-previous-change"));            
+            incomingLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-previous-change"));
+            incomingLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));            
         }
         else if(!checkboxes.incomingCheckBox.checked){
             incomingLineElements.forEach(elem=> elem.classList.add("bg-fade"));
-            incomingLineElements.forEach(elem=> elem.classList.remove("bg-previous-change"));
+            incomingLineElements.forEach(elem=> elem.classList.remove("bg-previous-change","bg-change-accepted"));
         }
 
     }
