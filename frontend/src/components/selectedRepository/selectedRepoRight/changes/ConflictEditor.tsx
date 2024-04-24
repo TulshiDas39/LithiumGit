@@ -36,7 +36,7 @@ function ConflictEditorComponent(){
         IpcUtils.getFileContent(joinedPath).then(res=>{
             //const lines = StringUtils.getLines(res.result!);
             const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
-            ConflictUtils.previousLines = lineConfig.previousLines;
+            ConflictUtils.incomingLines = lineConfig.previousLines;
             ConflictUtils.currentLines = lineConfig.currentLines;
             ConflictUtils.ShowEditor();                                    
             ConflictUtils.FocusHightlightedLine(1);

@@ -182,5 +182,11 @@ export class UiUtils {
         return id.substring(lastIndex+1);
     }
 
+    static jsx_to_domElement<T extends HTMLElement>(jsx:JSX.Element){
+        var wrapper= document.createElement('div');
+        wrapper.innerHTML= ReactDOMServer.renderToStaticMarkup(jsx);
+        return wrapper.firstChild as T;
+    }
+
 
 }

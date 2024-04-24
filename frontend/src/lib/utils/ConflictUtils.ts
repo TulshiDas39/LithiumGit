@@ -3,15 +3,16 @@ import { ILine } from "../interfaces";
 import { EnumConflictSide, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
-import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
+import { ConflictBottomPanel, SingleConflictLine } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 import { UiUtils } from "./UiUtils";
+import { DiffUtils } from "./DiffUtils";
 
 export class ConflictUtils{
     static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
     static readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
     static file?:IFile;
     static currentLines:ILine[];
-    static previousLines:ILine[];
+    static incomingLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
     private static startingMarkers:{conflictNo:number;text:string}[] = [];
     private static endingMarkers:{conflictNo:number;text:string}[] = [];
@@ -20,6 +21,8 @@ export class ConflictUtils{
     private static hoverTopPanel = false;
     private static hoverBottomPanel = false;
     private static actionTakenConflictNo:number[] = [];
+    private static currentEditorWidth = 0;
+    private static incomingEditorWidth = 0;
 
     static get TotalConflict(){
         return ConflictUtils.startingMarkers.length;
@@ -28,8 +31,21 @@ export class ConflictUtils{
         return "=======";
     }
 
+    static get CurrentEditorWidth(){
+        return ConflictUtils.currentEditorWidth;
+    }
+
+    static get IncomingEditorWidth(){
+        return ConflictUtils.incomingEditorWidth;
+    }
+
     static GetEndingMarkerText(conflictNo:number){
         return ConflictUtils.endingMarkers.find(_ => _.conflictNo === conflictNo);
+    }
+
+    private setEditorWidths(){
+        ConflictUtils.currentEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.currentLines.map(x=>x.text?x.text:""));
+        ConflictUtils.incomingEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.incomingLines.map(x=>x.text?x.text:""));
     }
     
     static GetUiLinesOfConflict(contentLines: string[]) {
@@ -108,7 +124,7 @@ export class ConflictUtils{
     }
 
     static ShowEditor(){
-        if(!ConflictUtils.currentLines || !ConflictUtils.previousLines)
+        if(!ConflictUtils.currentLines || !ConflictUtils.incomingLines)
             return;
 
         const topPanel = document.getElementById(`${ConflictUtils.topPanelId}`)!;
@@ -118,18 +134,18 @@ export class ConflictUtils{
             return;
         ConflictUtils.resetData();
         ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-        ConflictUtils.previousLineDivWidth = ((ConflictUtils.previousLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+        ConflictUtils.previousLineDivWidth = ((ConflictUtils.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
 
         const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
             currentLines:ConflictUtils.currentLines,
             currentLineDivWidth: ConflictUtils.currentLineDivWidth,
-            previousLines:ConflictUtils.previousLines,
+            previousLines:ConflictUtils.incomingLines,
             previousLineDivWidth:ConflictUtils.previousLineDivWidth,
         }));
 
         const editorBottomHtml = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
             currentLines:ConflictUtils.currentLines,
-            previousLines:ConflictUtils.previousLines,
+            previousLines:ConflictUtils.incomingLines,
         }));
 
         topPanel.innerHTML = editorTopHtml;
@@ -278,22 +294,24 @@ export class ConflictUtils{
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
         const incomingContentLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`)
         if(checkboxes.incomingCheckBox.checked){
-            if(!incomingContentLines.length){
-                //insert elements
-            }
+            incomingContentLines.forEach(elem => {
+                elem.classList.remove("d-none","bg-previous-change");
+                elem.classList.add("bg-change-accepted");
+            });
         }
         else{
-            incomingContentLines.forEach(elem=> elem.parentNode!.removeChild(elem));
+            incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
 
         const currentContentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`)
         if(checkboxes.currentCheckBoxe.checked){
-            if(!currentContentLines.length){
-                //insert elements
-            }
+            currentContentLines.forEach(elem=> {
+                elem.classList.remove("d-none","bg-current-change");
+                elem.classList.add("bg-change-accepted");
+            });
         }
         else{
-            currentContentLines.forEach(elem=> elem.parentNode!.removeChild(elem));
+            currentContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
     }
 
@@ -396,9 +414,9 @@ export class ConflictUtils{
     private static SetHeighlightedLines(){
         ConflictUtils.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;        
-        const lenght = ConflictUtils.currentLines?.length || ConflictUtils.previousLines?.length || 0;
+        const lenght = ConflictUtils.currentLines?.length || ConflictUtils.incomingLines?.length || 0;
         for(let i = 0;i < lenght; i++){
-            if(ConflictUtils.currentLines?.[i].hightLightBackground || ConflictUtils.previousLines?.[i].hightLightBackground){
+            if(ConflictUtils.currentLines?.[i].hightLightBackground || ConflictUtils.incomingLines?.[i].hightLightBackground){
                 if(!lastItemHightlighted) {
                     ConflictUtils.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;

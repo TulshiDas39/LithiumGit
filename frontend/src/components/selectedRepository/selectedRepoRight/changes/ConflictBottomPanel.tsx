@@ -1,6 +1,15 @@
 import { CSSProperties } from "react";
-import { ConflictUtils, DiffUtils, EditorColors, ILine } from "../../../../lib";
+import { ConflictUtils, DiffUtils, ILine } from "../../../../lib";
 
+interface ISingleConflictLineProps{
+    className:string;
+    conflictNo:number;
+    editorWidth:number;
+    text:string;
+}
+export function SingleConflictLine(props:ISingleConflictLineProps) {
+   return <p className={`content conflict conflictNo_${props.conflictNo} ${props.className}`} style={{minWidth:props.editorWidth+"ch" }}>{props.text || <br/>}</p>
+}
 
 interface IProps{
     previousLines:ILine[];
@@ -10,8 +19,8 @@ interface IProps{
 export function ConflictBottomPanel(props:IProps){
 
     const getElements=()=>{
-        const maxWithOfCurLines = DiffUtils.getEditorWidth(props.currentLines.map(x=>x.text?x.text:""));
-        const maxWithOfPreLines = DiffUtils.getEditorWidth(props.previousLines.map(x=>x.text?x.text:""));
+        const maxWithOfCurLines = ConflictUtils.CurrentEditorWidth;
+        const maxWithOfPreLines = ConflictUtils.IncomingEditorWidth;
         const editorWidth = Math.max(maxWithOfCurLines,maxWithOfPreLines);
 
         const elems:JSX.Element[] = [];
@@ -24,6 +33,7 @@ export function ConflictBottomPanel(props:IProps){
             let curLine = props.currentLines[i];
             let preLine = props.previousLines[i];
             if(curLine.conflictNo){
+                const conflictNo = curLine.conflictNo;
                 let elem = <p key={i} style={{...paragraphStyles}} className={`noselect marker conflict conflictNo_${curLine.conflictNo}`}> 
                             <span className="hover color-secondary underline">Accept Current Change</span> 
                             <span> | </span>
@@ -42,12 +52,12 @@ export function ConflictBottomPanel(props:IProps){
                 const preElems:JSX.Element[] = [];
                 while(curLine.conflictNo){
                     if(curLine.text !== undefined){
-                        curElems.push(<p key={i+2} className={`current content conflict conflictNo_${curLine.conflictNo} bg-current-change`} style={{ ...paragraphStyles }}>{curLine.text || <br/>}</p>)
+                        curElems.push(<SingleConflictLine key={i+2} className={`current bg-current-change`} conflictNo={curLine.conflictNo} editorWidth={editorWidth} text={curLine.text}  />)
                         lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
                         line++;
                     }
                     if(preLine.text !== undefined){
-                        preElems.push(<p key={i+3} className={`incoming content bg-previous-change conflict conflictNo_${curLine.conflictNo}`} style={{...paragraphStyles }}>{preLine.text || <br/>}</p>)
+                        preElems.push(<SingleConflictLine key={i+3} className={`incoming bg-previous-change`} conflictNo={curLine.conflictNo} text={preLine.text} editorWidth={editorWidth} />)
                         lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
                         line++;
                     }
