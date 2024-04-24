@@ -118,6 +118,9 @@ export class ConflictUtils{
         ConflictUtils.hoverBottomPanel = false;
         ConflictUtils.hoverTopPanel = false;
         ConflictUtils.actionsTaken = [];
+        ConflictUtils.acceptAllCurrentCheckBox.checked = false;
+        ConflictUtils.acceptAllIncomingCheckBox.checked = false;
+
     }
 
     private static getConflictNo(id:string){
