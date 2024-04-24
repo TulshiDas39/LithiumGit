@@ -1,9 +1,9 @@
-import { IFile } from "common_library";
+import { EnumConflictSide, IActionTaken, IFile } from "common_library";
 import { ILine } from "../interfaces";
-import { EnumConflictSide, EnumHtmlIds } from "../enums";
+import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
-import { ConflictBottomPanel, SingleConflictLine } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
+import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 
@@ -20,7 +20,7 @@ export class ConflictUtils{
     private static previousLineDivWidth = 0;
     private static hoverTopPanel = false;
     private static hoverBottomPanel = false;
-    private static actionTakenConflictNo:number[] = [];
+    private static actionsTaken:IActionTaken[] = [];
     private static currentEditorWidth = 0;
     private static incomingEditorWidth = 0;
 
@@ -43,7 +43,7 @@ export class ConflictUtils{
         return ConflictUtils.endingMarkers.find(_ => _.conflictNo === conflictNo);
     }
 
-    private setEditorWidths(){
+    private static setEditorWidths(){
         ConflictUtils.currentEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.currentLines.map(x=>x.text?x.text:""));
         ConflictUtils.incomingEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.incomingLines.map(x=>x.text?x.text:""));
     }
@@ -114,8 +114,10 @@ export class ConflictUtils{
     }
 
     private static resetData(){
+        ConflictUtils.setEditorWidths();
         ConflictUtils.hoverBottomPanel = false;
         ConflictUtils.hoverTopPanel = false;
+        ConflictUtils.actionsTaken = [];
     }
 
     private static getConflictNo(id:string){
@@ -265,6 +267,15 @@ export class ConflictUtils{
         return {incomingCheckBox,currentCheckBoxe};
     }
 
+    private static getContentLinesByConflict(conflictNo:number){
+        const incomingLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`);
+        const currentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`);
+        return {
+            incomingLines,
+            currentLines
+        }
+    }
+
     private static updateConflictTopPanelState(conflictNo:number){
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
@@ -288,30 +299,71 @@ export class ConflictUtils{
         }
     }
 
+    private static moveDownIncomingChange(conflictNo:number){
+        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+        if(!contentLines.incomingLines.length)
+            return;
+        const firstItem = contentLines.incomingLines.item(0);
+        contentLines.currentLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
+    }
+
+    private static moveDownCurrentChange(conflictNo:number){
+        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+        if(!contentLines.currentLines.length)
+            return;
+        const firstItem = contentLines.currentLines.item(0);
+        contentLines.incomingLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
+    }
+
     private static updateConflictBottomPanelState(conflictNo:number){
+        let action = ConflictUtils.actionsTaken.find(_=>_.conflictNo === conflictNo);
+        if(!action){
+            action = {
+                conflictNo,
+                taken:[]
+            };
+            ConflictUtils.actionsTaken.push(action);
+        }        
+            
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
-        const incomingContentLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`)
+        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+        const incomingContentLines = contentLines.incomingLines;
         if(checkboxes.incomingCheckBox.checked){
+            if(!action.taken.includes(EnumConflictSide.Incoming)){
+                action.taken.push(EnumConflictSide.Incoming);
+            }
             incomingContentLines.forEach(elem => {
                 elem.classList.remove("d-none","bg-previous-change");
                 elem.classList.add("bg-change-accepted");
             });
         }
-        else{
+        else{            
+            action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
             incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
 
-        const currentContentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`)
+        const currentContentLines = contentLines.currentLines;
         if(checkboxes.currentCheckBoxe.checked){
+            if(!action.taken.includes(EnumConflictSide.Current)){
+                action.taken.push(EnumConflictSide.Current);
+            }
             currentContentLines.forEach(elem=> {
                 elem.classList.remove("d-none","bg-current-change");
                 elem.classList.add("bg-change-accepted");
             });
         }
         else{
+            action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
             currentContentLines.forEach(elem=> elem.classList.add("d-none"));
+        }
+
+        if(action.taken.length === 2){
+            if(action.taken[1] === EnumConflictSide.Current)
+                ConflictUtils.moveDownCurrentChange(conflictNo);
+            else
+                ConflictUtils.moveDownIncomingChange(conflictNo);
         }
     }
 

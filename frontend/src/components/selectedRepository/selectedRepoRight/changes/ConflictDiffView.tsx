@@ -1,4 +1,5 @@
-import { DiffUtils, EnumConflictSide, ILine, ILineHighlight } from "../../../../lib";
+import { EnumConflictSide } from "common_library";
+import { DiffUtils, ILine } from "../../../../lib";
 
 
 interface ISingleDiffProps{

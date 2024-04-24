@@ -1,4 +1,5 @@
-import { EnumConflictSide, ILine } from "../../../../lib"
+import { EnumConflictSide } from "common_library";
+import { ILine } from "../../../../lib"
 import { ConflictDiffView } from "./ConflictDiffView";
 
 interface IProps{
