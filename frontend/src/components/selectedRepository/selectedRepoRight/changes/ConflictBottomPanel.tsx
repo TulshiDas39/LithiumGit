@@ -91,7 +91,7 @@ export function ConflictBottomPanel(props:IProps){
     const elements = getElements();
 
     return <div className="h-100 w-100 conflict-bottom overflow-auto d-flex">
-        <div className="pe-2">
+        <div className="pe-2 line-container">
             {elements.lineNumbers}
         </div>
         <div className="flex-grow-1">

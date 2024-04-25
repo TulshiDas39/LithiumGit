@@ -320,31 +320,53 @@ export class ConflictUtils{
 
     private static updateBottomPanelState(conflictNo:number){
         let action = ConflictUtils.actionsTaken.find(_=>_.conflictNo === conflictNo);
+        let firstAction = false;
         if(!action){
             action = {
                 conflictNo,
                 taken:[]
             };
             ConflictUtils.actionsTaken.push(action);
-        }        
+            firstAction = true;
+        }
+        
+        const bottomPanel = ConflictUtils.bottomPanelElement;        
             
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
+        
         const nonLineNumberElems = document.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
         nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
+        const lineContainer = bottomPanel.querySelector('.line-container')!;
+        if(firstAction){            
+            lineContainer.removeChild(lineContainer.lastChild!);
+            lineContainer.removeChild(lineContainer.lastChild!);
+        }
+
         const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
         const incomingContentLines = contentLines.incomingLines;
+        //const lineNumberParent = bottomPanel.querySelector('.lineNo')?.parentElement!;
         if(checkboxes.incomingCheckBox.checked){
             if(!action.taken.includes(EnumConflictSide.Incoming)){
                 action.taken.push(EnumConflictSide.Incoming);
+                if(!firstAction){
+                    incomingContentLines.forEach(_=>{
+                        lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
+                    })
+                }
             }
             incomingContentLines.forEach(elem => {
                 elem.classList.remove("d-none","bg-previous-change");
-                elem.classList.add("bg-change-accepted");
+                elem.classList.add("bg-change-accepted");                
             });
         }
-        else{            
+        else{
+            if(action.taken.includes(EnumConflictSide.Incoming) || firstAction){
+                incomingContentLines.forEach(_=>{
+                    lineContainer.querySelector('.lineNo:not(.d-none)')?.classList.add('d-none');
+                })
+            }            
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
             incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
@@ -353,6 +375,11 @@ export class ConflictUtils{
         if(checkboxes.currentCheckBoxe.checked){
             if(!action.taken.includes(EnumConflictSide.Current)){
                 action.taken.push(EnumConflictSide.Current);
+                if(!firstAction){
+                    currentContentLines.forEach(_=>{
+                        lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
+                    })
+                }
             }
             currentContentLines.forEach(elem=> {
                 elem.classList.remove("d-none","bg-current-change");
@@ -360,6 +387,11 @@ export class ConflictUtils{
             });
         }
         else{
+            if(action.taken.includes(EnumConflictSide.Current) || firstAction){
+                currentContentLines.forEach(_=>{
+                    lineContainer.querySelector('.lineNo:not(.d-none)')?.classList.add('d-none');
+                })
+            }  
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
             currentContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
