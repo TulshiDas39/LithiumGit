@@ -42,10 +42,10 @@ export function ConflictBottomPanel(props:IProps){
                             <span className="hover color-secondary underline">Accept Both Changes</span>
                         </p>;
                 elems.push(elem);
-                lineNumbers.push(<p key={Date.now()} className={`conflict lineNo conflictNo_${curLine.conflictNo}`}><br/></p>)
+                lineNumbers.push(<p key={Date.now()} className={`conflict noLine conflictNo_${curLine.conflictNo} noselect`}><br/></p>)
                 elems.push( <p style={{...paragraphStyles}} key={i+1}
                     className={`bg-current-change-deep marker conflict conflictNo_${curLine.conflictNo}`}>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD <span className={`noselect color-secondary`}>(Current Changes)</span></p>)
-                lineNumbers.push(<p key={line}>{line}</p>);
+                lineNumbers.push(<p className={`conflict lineNo conflictNo_${curLine.conflictNo} noselect`} key={line}>{line}</p>);
                 line++;
 
                 const curElems:JSX.Element[] = [];
@@ -53,12 +53,12 @@ export function ConflictBottomPanel(props:IProps){
                 while(curLine.conflictNo){
                     if(curLine.text !== undefined){
                         curElems.push(<SingleConflictLine key={i+2} className={`current bg-current-change`} conflictNo={curLine.conflictNo} editorWidth={editorWidth} text={curLine.text}  />)
-                        lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
+                        lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`}>{line}</p>);
                         line++;
                     }
                     if(preLine.text !== undefined){
                         preElems.push(<SingleConflictLine key={i+3} className={`incoming bg-previous-change`} conflictNo={curLine.conflictNo} text={preLine.text} editorWidth={editorWidth} />)
-                        lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
+                        lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`}>{line}</p>);
                         line++;
                     }
                     i++;
@@ -69,12 +69,12 @@ export function ConflictBottomPanel(props:IProps){
                 curLine = props.currentLines[i];
                 curElems.forEach(e => elems.push(e));
                 elems.push(<p key={Date.now()} style={{...paragraphStyles}} className={`marker conflict conflictNo_${curLine.conflictNo}`}>{ConflictUtils.Separator}</p>)
-                lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
+                lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`} >{line}</p>);
                 line++;
                 preElems.forEach(e => elems.push(e));
                 elems.push(<p key={Date.now()+1} className={`bg-previous-change-deep marker conflict conflictNo_${curLine.conflictNo}`} style={{...paragraphStyles}}>{ConflictUtils.GetEndingMarkerText(curLine.conflictNo!)?.text}
                     <span className="color-secondary noselect"> (Incoming Change)</span></p>)
-                lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo}`}>{line}</p>);
+                lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`}>{line}</p>);
                 line++;                    
 
             }

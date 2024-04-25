@@ -279,7 +279,7 @@ export class ConflictUtils{
         }
     }
 
-    private static updateConflictTopPanelState(conflictNo:number){
+    private static updateTopPanelState(conflictNo:number){
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
         const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
@@ -318,7 +318,7 @@ export class ConflictUtils{
         contentLines.incomingLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
     }
 
-    private static updateConflictBottomPanelState(conflictNo:number){
+    private static updateBottomPanelState(conflictNo:number){
         let action = ConflictUtils.actionsTaken.find(_=>_.conflictNo === conflictNo);
         if(!action){
             action = {
@@ -331,6 +331,8 @@ export class ConflictUtils{
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
+        const nonLineNumberElems = document.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
+        nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
         const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
         const incomingContentLines = contentLines.incomingLines;
         if(checkboxes.incomingCheckBox.checked){
@@ -371,8 +373,8 @@ export class ConflictUtils{
     }
 
     private static updateConflictState(conflictNo:number){
-        ConflictUtils.updateConflictTopPanelState(conflictNo);
-        ConflictUtils.updateConflictBottomPanelState(conflictNo);
+        ConflictUtils.updateTopPanelState(conflictNo);
+        ConflictUtils.updateBottomPanelState(conflictNo);
 
     }
 
