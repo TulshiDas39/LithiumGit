@@ -336,9 +336,14 @@ export class ConflictUtils{
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
         
-        const nonLineNumberElems = document.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
-        nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
         const lineContainer = bottomPanel.querySelector('.line-container')!;
+        if(firstAction){
+            const nonLineNumberElems = lineContainer.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
+            nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
+            const lastLineElem = lineContainer.querySelector(`.lineNo:last-child`);
+            lastLineElem?.parentNode?.removeChild(lastLineElem);
+        }        
+        
         if(firstAction){            
             lineContainer.removeChild(lineContainer.lastChild!);
             lineContainer.removeChild(lineContainer.lastChild!);
@@ -363,9 +368,13 @@ export class ConflictUtils{
         }
         else{
             if(action.taken.includes(EnumConflictSide.Incoming) || firstAction){
-                incomingContentLines.forEach(_=>{
-                    lineContainer.querySelector('.lineNo:not(.d-none)')?.classList.add('d-none');
-                })
+                const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
+                const lineElemLen = lineElems.length;
+                let i = 1;
+                incomingContentLines.forEach((_)=>{
+                    lineElems.item(lineElemLen-i).classList.add('d-none');
+                    i++;
+                })                
             }            
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
             incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
@@ -388,8 +397,12 @@ export class ConflictUtils{
         }
         else{
             if(action.taken.includes(EnumConflictSide.Current) || firstAction){
-                currentContentLines.forEach(_=>{
-                    lineContainer.querySelector('.lineNo:not(.d-none)')?.classList.add('d-none');
+                const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
+                const lineElemLen = lineElems.length;
+                let i = 1;
+                currentContentLines.forEach((_)=>{
+                    lineElems.item(lineElemLen-i).classList.add('d-none');
+                    i++;
                 })
             }  
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);

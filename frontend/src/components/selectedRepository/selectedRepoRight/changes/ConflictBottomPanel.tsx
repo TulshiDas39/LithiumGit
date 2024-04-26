@@ -80,7 +80,7 @@ export function ConflictBottomPanel(props:IProps){
             }
             else{
                 elems.push(<p key={i} className={`content`} style={{...paragraphStyles}}>{curLine.text || <br/>}</p>)
-                lineNumbers.push(<p key={line}>{line}</p>);
+                lineNumbers.push(<p className="lineNo" key={line}>{line}</p>);
                 line++;
             }
         }
