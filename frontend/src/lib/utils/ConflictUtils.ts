@@ -23,6 +23,8 @@ export class ConflictUtils{
     private static actionsTaken:IActionTaken[] = [];
     private static currentEditorWidth = 0;
     private static incomingEditorWidth = 0;
+    private static topPanel?:HTMLDivElement;
+    private static bottomPanel?:HTMLDivElement;
 
     static get TotalConflict(){
         return ConflictUtils.startingMarkers.length;
@@ -115,6 +117,8 @@ export class ConflictUtils{
 
     private static resetData(){
         ConflictUtils.setEditorWidths();
+        ConflictUtils.topPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.topPanelId}`)!;
+        ConflictUtils.bottomPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.bottomPanelId}`)!;
         ConflictUtils.hoverBottomPanel = false;
         ConflictUtils.hoverTopPanel = false;
         ConflictUtils.actionsTaken = [];
@@ -191,6 +195,18 @@ export class ConflictUtils{
         return document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
     }
 
+    private static get acceptIncomingElems(){
+        return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
+    }
+
+    private static get acceptCurrentElems(){
+        return document.querySelectorAll<HTMLSpanElement>(`.accept_current`);
+    }
+
+    private static get acceptBothElems(){
+        return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
+    }
+
     private static addEventHanlders(){
         const conflictTop = ConflictUtils.topPanelElement;
         const conflictBottom = ConflictUtils.bottomPanelElement;
@@ -231,7 +247,7 @@ export class ConflictUtils{
         const incomingCheckBoxes = ConflictUtils.incomingCheckBoxes;
         incomingCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
-                ConflictUtils.updateAcceptAllIncomingCheckboxState();
+                ConflictUtils.updateTopLabelIncomingCheckboxState();
                 const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
                 ConflictUtils.updateConflictState(conflictNo);
             })
@@ -246,6 +262,42 @@ export class ConflictUtils{
             })
         })
 
+        ConflictUtils.acceptIncomingElems.forEach(elem=>{
+            elem.addEventListener("click",()=>{
+                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+                ConflictUtils.handleAcceptIncoming(conflictNo);
+            })
+        })
+
+        ConflictUtils.acceptCurrentElems.forEach(elem=>{
+            elem.addEventListener("click",()=>{
+                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+                ConflictUtils.handleAcceptCurrent(conflictNo);
+            })
+        })
+
+        ConflictUtils.acceptBothElems.forEach(elem=>{
+            elem.addEventListener("click",()=>{
+                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+                ConflictUtils.handleAcceptCurrent(conflictNo);
+                ConflictUtils.handleAcceptIncoming(conflictNo);
+            })
+        })
+
+    }
+
+    private static handleAcceptIncoming(conflictNo:number){
+        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
+        checkBoxes.incomingCheckBox.checked = true;        
+        ConflictUtils.updateTopLabelIncomingCheckboxState();        
+        ConflictUtils.updateConflictState(conflictNo);
+    }
+
+    private static handleAcceptCurrent(conflictNo:number){
+        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
+        checkBoxes.currentCheckBoxe.checked = true;        
+        ConflictUtils.updateTopLeveCurrentCheckboxState();        
+        ConflictUtils.updateConflictState(conflictNo);
     }
 
     private static getIncomingCheckboxByConflict(conflictNo:number){
@@ -425,7 +477,7 @@ export class ConflictUtils{
 
     }
 
-    private static updateAcceptAllIncomingCheckboxState(){
+    private static updateTopLabelIncomingCheckboxState(){
         const topLevelCheckBox = ConflictUtils.acceptAllIncomingCheckBox;
         const checkboxes = ConflictUtils.incomingCheckBoxes;
         let selectionCount = 0;

@@ -35,11 +35,11 @@ export function ConflictBottomPanel(props:IProps){
             if(curLine.conflictNo){
                 const conflictNo = curLine.conflictNo;
                 let elem = <p key={i} style={{...paragraphStyles}} className={`noselect marker conflict conflictNo_${curLine.conflictNo}`}> 
-                            <span className="hover color-secondary underline">Accept Current Change</span> 
+                            <span id={`accept_current_${conflictNo}`} className="accept_current hover color-secondary underline">Accept Current Change</span> 
                             <span> | </span>
-                            <span className="hover color-secondary underline">Accept Incoming Change</span>
+                            <span id={`accept_incoming_${conflictNo}`} className="accept_incoming hover color-secondary underline">Accept Incoming Change</span>
                             <span> | </span>
-                            <span className="hover color-secondary underline">Accept Both Changes</span>
+                            <span id={`accept_both_${conflictNo}`} className="accept_both hover color-secondary underline">Accept Both Changes</span>
                         </p>;
                 elems.push(elem);
                 lineNumbers.push(<p key={Date.now()} className={`conflict noLine conflictNo_${curLine.conflictNo} noselect`}><br/></p>)
