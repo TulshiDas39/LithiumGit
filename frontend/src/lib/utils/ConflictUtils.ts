@@ -308,6 +308,7 @@ export class ConflictUtils{
             return;
         const firstItem = contentLines.incomingLines.item(0);
         contentLines.currentLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
+        firstItem.classList.add("border-top");
     }
 
     private static moveDownCurrentChange(conflictNo:number){
@@ -316,18 +317,19 @@ export class ConflictUtils{
             return;
         const firstItem = contentLines.currentLines.item(0);
         contentLines.incomingLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
+        firstItem.classList.add("border-top");
     }
 
     private static updateBottomPanelState(conflictNo:number){
-        let action = ConflictUtils.actionsTaken.find(_=>_.conflictNo === conflictNo);
-        let firstAction = false;
+        let action = ConflictUtils.actionsTaken.find(_=> _.conflictNo === conflictNo);
+        let newAction = false;
         if(!action){
             action = {
                 conflictNo,
                 taken:[]
             };
             ConflictUtils.actionsTaken.push(action);
-            firstAction = true;
+            newAction = true;
         }
         
         const bottomPanel = ConflictUtils.bottomPanelElement;        
@@ -337,14 +339,14 @@ export class ConflictUtils{
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
         
         const lineContainer = bottomPanel.querySelector('.line-container')!;
-        if(firstAction){
+        if(newAction){
             const nonLineNumberElems = lineContainer.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
             nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
             const lastLineElem = lineContainer.querySelector(`.lineNo:last-child`);
             lastLineElem?.parentNode?.removeChild(lastLineElem);
         }        
         
-        if(firstAction){            
+        if(newAction){            
             lineContainer.removeChild(lineContainer.lastChild!);
             lineContainer.removeChild(lineContainer.lastChild!);
         }
@@ -355,7 +357,7 @@ export class ConflictUtils{
         if(checkboxes.incomingCheckBox.checked){
             if(!action.taken.includes(EnumConflictSide.Incoming)){
                 action.taken.push(EnumConflictSide.Incoming);
-                if(!firstAction){
+                if(!newAction){
                     incomingContentLines.forEach(_=>{
                         lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
                     })
@@ -367,7 +369,7 @@ export class ConflictUtils{
             });
         }
         else{
-            if(action.taken.includes(EnumConflictSide.Incoming) || firstAction){
+            if(action.taken.includes(EnumConflictSide.Incoming) || newAction){
                 const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
                 const lineElemLen = lineElems.length;
                 let i = 1;
@@ -384,7 +386,7 @@ export class ConflictUtils{
         if(checkboxes.currentCheckBoxe.checked){
             if(!action.taken.includes(EnumConflictSide.Current)){
                 action.taken.push(EnumConflictSide.Current);
-                if(!firstAction){
+                if(!newAction){
                     currentContentLines.forEach(_=>{
                         lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
                     })
@@ -396,7 +398,7 @@ export class ConflictUtils{
             });
         }
         else{
-            if(action.taken.includes(EnumConflictSide.Current) || firstAction){
+            if(action.taken.includes(EnumConflictSide.Current) || newAction){
                 const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
                 const lineElemLen = lineElems.length;
                 let i = 1;
