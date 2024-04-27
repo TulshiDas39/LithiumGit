@@ -1,12 +1,13 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IFile } from "common_library";
 
 interface IData{
-
+    totalConflict:number;
+    resolvedConflict:number;
 }
 
 const initialState:IData={
- 
+ resolvedConflict:0,
+ totalConflict:0
 }
 
 const slice = createSlice({

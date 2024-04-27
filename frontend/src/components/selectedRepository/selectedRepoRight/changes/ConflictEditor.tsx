@@ -42,19 +42,7 @@ function ConflictEditorComponent(){
             ConflictUtils.FocusHightlightedLine(1);
             dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
         })
-    },[store.selectedFile])
-
-    const handleNext=()=>{
-        if(store.currentStep >= store.totalStep)
-            return;
-        dispatch(ActionConflict.updateData({currentStep:store.currentStep+1}));
-    }
-
-    const handlePrevious=()=>{
-        if(store.currentStep <= 1)
-            return;
-        dispatch(ActionConflict.updateData({currentStep:store.currentStep-1}));
-    }
+    },[store.selectedFile])        
 
     const getSign=(value:number)=>{
         if(value < 0)
