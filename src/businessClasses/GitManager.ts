@@ -5,6 +5,7 @@ import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import { FileManager } from "./FileManager";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();    
@@ -254,8 +255,8 @@ export class GitManager{
     }
     
     private resolveConflict(repoPath: string, filePath: string, actions: IActionTaken[]) {
-        
-        throw new Error("Method not implemented.");
+        const fileAbsPath = path.join(repoPath,filePath);
+        new FileManager().resolveConflict(fileAbsPath,actions);
     }
 
     private addCloneRepositoryHandler(){

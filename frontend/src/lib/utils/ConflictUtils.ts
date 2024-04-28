@@ -7,8 +7,6 @@ import { ConflictBottomPanel } from "../../components/selectedRepository/selecte
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
-import { ReduxUtils } from "./ReduxUtils";
-import { ActionConflict } from "../../store";
 
 export class ConflictUtils{
     static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;

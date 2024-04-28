@@ -1,9 +1,59 @@
-import { RendererEvents } from "common_library";
+import { EnumConflictSide, IActionTaken, RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
 
 export class FileManager{
+    resolveConflict(path: string, actions: IActionTaken[]) {
+        fs.readFile(path,{encoding:"utf8"},(err,data)=>{
+            if(!err){
+                const lines = data.split(/\n/g);
+                const currentMarker = "<<<<<<< HEAD";
+                const endingMarker = ">>>>>>>";
+                const separator = "=======";
+                let actionIndex = 0;
+                for(let i=0;i<lines.length;i++){
+                    let line = lines[i];
+                    if(line.startsWith(currentMarker)){
+                        const action = actions[actionIndex];
+                        lines.splice(i,1);
+                        line = lines[i];
+                        const currentChanges:string[] = [];
+                        const incomingChanges:string[] = [];
+                    
+                        while(line !== separator){
+                            lines.splice(i,1);
+                            currentChanges.push(line);
+                            line = lines[i];
+                        }
+                        lines.splice(i,1);
+
+                        while(!line.startsWith(endingMarker)){
+                            lines.splice(i,1);
+                            incomingChanges.push(line);
+                            line = lines[i];
+                        }
+                        lines.splice(i,1);
+                        for(let item of action.taken){
+                            if(item ===  EnumConflictSide.Current){
+                                currentChanges.forEach(l => {
+                                    lines.splice(i,0,l);
+                                    i++;
+                                });
+                            }
+                            else{
+                                incomingChanges.forEach(l=> {
+                                    lines.splice(i,0,l);
+                                    i++;
+                                });
+                            }
+                        }
+                    }
+                    i--;
+                }
+            }
+        })
+    }
     start(){
         this.addIpcHandlers();
     }
