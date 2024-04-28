@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -43,6 +43,7 @@ export class GitManager{
         this.addRemoteListHandler();
         this.addRebaseHandler();
         this.addCherryPickHandler();
+        this.addConflictResolveHandler();
     }
 
 
@@ -244,6 +245,17 @@ export class GitManager{
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
             await this.notifyStatus(repoInfo);
         });
+    }
+
+    private addConflictResolveHandler(){
+        ipcMain.handle(RendererEvents.ResolveConflict, async (e,repoPath:string,filePath:string,actions:IActionTaken[])=>{
+            await this.resolveConflict(repoPath,filePath,actions);
+        });
+    }
+    
+    private resolveConflict(repoPath: string, filePath: string, actions: IActionTaken[]) {
+        
+        throw new Error("Method not implemented.");
     }
 
     private addCloneRepositoryHandler(){
