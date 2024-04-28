@@ -5,6 +5,7 @@ import { AppButton, StepNavigation } from "../../common";
 import { ConflictUtils } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 interface IProps{
     selectedFile:IFile;
@@ -26,7 +27,12 @@ function ConflictChangeNavigatorComponent(props:IProps){
         ConflictUtils.FocusHightlightedLine(props.currentStep);
     },[props.currentStep])
 
-    return <div className="w-100 h-100 row g-0 align-items-center">
+    const handleApply=()=>{
+        const actions = ConflictUtils.Actions;
+        IpcUtils.resolveConflict(props.selectedFile.path,actions);
+    }
+
+    return <div className="w-100 h-100 row g-0">
     <div className="col-5 d-flex align-items-center">
         <div title={props.selectedFile.path} className="overflow-ellipsis" style={{maxWidth:200}}>
             {props.selectedFile.fileName}
@@ -37,12 +43,12 @@ function ConflictChangeNavigatorComponent(props:IProps){
                 <span>Index</span>
          )</div>
     </div>
-    <div className="col-2 d-flex justify-content-center">
+    <div className="col-2 d-flex justify-content-center align-items-center">
         {store.resolvedCount !== store.totalConflict &&
             <div title={`${store.totalConflict} total conflict, ${store.resolvedCount} resolved`} className="overflow-ellipsis">Resolved {store.resolvedCount}/{store.totalConflict}</div>
         }
-        {store.resolvedCount === store.totalConflict &&
-            <AppButton type="success" style={{color:'white'}}>Finish</AppButton>
+        {!!store.totalConflict && store.resolvedCount === store.totalConflict &&
+            <AppButton type="success" style={{color:'white'}} onClick={handleApply}>Apply</AppButton>
         }
     </div>
     

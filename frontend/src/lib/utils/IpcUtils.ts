@@ -1,8 +1,11 @@
-import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static resolveConflict(path: string, actions:IActionTaken[]) {
+        throw new Error("Method not implemented.");
+    }
     static registerHandler(channel:string,handler:(...args:any[])=>void){
         window.ipcRenderer.on(channel,handler);
     }

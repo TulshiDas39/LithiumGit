@@ -13,6 +13,10 @@ function ConflictEditorComponent(){
         totalStep:state.changes.totalStep,        
     }),shallowEqual);
     const dispatch = useDispatch();
+    
+    ConflictUtils.dispatchResolvedCount = (count:number)=>{
+        dispatch(ActionConflict.updateData({resolvedConflict:count}));
+    }
 
     const hightDisplacementRef = useRef(0);
     const positionRef = useRef(0);
@@ -41,6 +45,8 @@ function ConflictEditorComponent(){
             ConflictUtils.ShowEditor();                                    
             ConflictUtils.FocusHightlightedLine(1);
             dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
+            const totalConflict = ConflictUtils.TotalConflict
+            dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict}));
         })
     },[store.selectedFile])        
 

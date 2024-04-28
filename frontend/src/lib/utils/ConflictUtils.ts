@@ -6,6 +6,9 @@ import { ConflictTopPanel } from "../../components/selectedRepository/selectedRe
 import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
+import { NumUtils } from "./NumUtils";
+import { ReduxUtils } from "./ReduxUtils";
+import { ActionConflict } from "../../store";
 
 export class ConflictUtils{
     static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
@@ -26,8 +29,13 @@ export class ConflictUtils{
     private static topPanel?:HTMLDivElement;
     private static bottomPanel?:HTMLDivElement;
 
+    static get Actions(){
+        return ConflictUtils.actionsTaken;
+    }
+
     static get TotalConflict(){
-        return ConflictUtils.startingMarkers.length;
+        const conflictNos = ConflictUtils.currentLines.filter(_=> !!_.conflictNo).map(_=>_.conflictNo!);
+        return NumUtils.max(conflictNos);
     }
     static get Separator(){
         return "=======";
@@ -471,10 +479,13 @@ export class ConflictUtils{
         }
     }
 
+    static dispatchResolvedCount = (resolvedConflict:number)=>{}
+
     private static updateConflictState(conflictNo:number){
         ConflictUtils.updateTopPanelState(conflictNo);
         ConflictUtils.updateBottomPanelState(conflictNo);
-
+        ConflictUtils.dispatchResolvedCount(ConflictUtils.Actions.length);
+        //ReduxUtils.dispatch(ActionConflict.updateData({}))
     }
 
     private static updateTopLabelIncomingCheckboxState(){
