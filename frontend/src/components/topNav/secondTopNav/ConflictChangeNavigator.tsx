@@ -29,7 +29,9 @@ function ConflictChangeNavigatorComponent(props:IProps){
 
     const handleApply=()=>{
         const actions = ConflictUtils.Actions;
-        IpcUtils.resolveConflict(props.selectedFile.path,actions);
+        IpcUtils.resolveConflict(props.selectedFile.path,actions).then(()=>{
+            IpcUtils.stageItems([props.selectedFile.path]);
+        });
     }
 
     return <div className="w-100 h-100 row g-0">
@@ -47,7 +49,7 @@ function ConflictChangeNavigatorComponent(props:IProps){
         {store.resolvedCount !== store.totalConflict &&
             <div title={`${store.totalConflict} total conflict, ${store.resolvedCount} resolved`} className="overflow-ellipsis">Resolved {store.resolvedCount}/{store.totalConflict}</div>
         }
-        {!!store.totalConflict && store.resolvedCount === store.totalConflict &&
+        {store.resolvedCount === store.totalConflict &&
             <AppButton type="success" style={{color:'white'}} onClick={handleApply}>Apply</AppButton>
         }
     </div>

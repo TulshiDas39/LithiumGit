@@ -121,16 +121,19 @@ export class ConflictUtils{
         return {currentLines,previousLines};
     }
 
-    private static resetData(){
+    static resetData(){
+        ConflictUtils.hoverBottomPanel = false;
+        ConflictUtils.hoverTopPanel = false;
+        ConflictUtils.actionsTaken = [];        
+    }
+
+    private static initialiseData(){
+        ConflictUtils.resetData();
         ConflictUtils.setEditorWidths();
         ConflictUtils.topPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.topPanelId}`)!;
         ConflictUtils.bottomPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.bottomPanelId}`)!;
-        ConflictUtils.hoverBottomPanel = false;
-        ConflictUtils.hoverTopPanel = false;
-        ConflictUtils.actionsTaken = [];
         ConflictUtils.acceptAllCurrentCheckBox.checked = false;
         ConflictUtils.acceptAllIncomingCheckBox.checked = false;
-
     }
 
     private static getConflictNo(id:string){
@@ -147,7 +150,7 @@ export class ConflictUtils{
 
         if(!topPanel || !bottomPanel)
             return;
-        ConflictUtils.resetData();
+        ConflictUtils.initialiseData();
         ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
         ConflictUtils.previousLineDivWidth = ((ConflictUtils.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
 

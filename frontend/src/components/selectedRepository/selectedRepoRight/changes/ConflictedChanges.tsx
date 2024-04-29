@@ -1,10 +1,11 @@
 import { IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { EnumHtmlIds, UiUtils, useMultiState } from "../../../../lib";
+import { ConflictUtils, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AppButton } from "../../../common";
-import { ActionChanges } from "../../../../store";
+import { ActionChanges, ActionModals } from "../../../../store";
+import { ModalData } from "../../../modals/ModalData";
 
 interface ISingleFileProps{
     item:IFile
@@ -49,6 +50,7 @@ function ConflictedChangesComponent(props:IProps){
     const refData = useRef({fileContentAfterChange:[] as string[]});
 
     useEffect(()=>{
+        ConflictUtils.resetData();
         const setContainerHeight=()=>{
             UiUtils.resolveHeight(EnumHtmlIds.conflictedChangesPanel).then(height=>{
                 setState({containerHeight:height});
@@ -71,8 +73,15 @@ function ConflictedChangesComponent(props:IProps){
     },[state.containerHeight]);
 
     const handleSelect = (file?:IFile)=>{
-        console.log("selected",file);
-        dispatch(ActionChanges.updateData({selectedFile:file}));
+        if(ConflictUtils.Actions.length){
+            ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
+            ModalData.confirmationModal.YesHandler = ()=>{
+                dispatch(ActionChanges.updateData({selectedFile:file}));                
+            }
+            dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        }else{
+            dispatch(ActionChanges.updateData({selectedFile:file})); 
+        }
     }
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>

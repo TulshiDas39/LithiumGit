@@ -38,14 +38,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems([file.path]).then(_=>{
             IpcUtils.getRepoStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
-        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
             IpcUtils.getRepoStatus();
         });        
     }

@@ -78,7 +78,13 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
         const options = [hash,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
+        IpcUtils.merge(options).then((r)=>{
+            debugger;
+            IpcUtils.getRepoStatus();
+            if(r.error?.includes('CONFLICTS:')){
+                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+            }
+        });        
     }
 
     const cherryPick=()=>{

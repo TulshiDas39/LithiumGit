@@ -5,6 +5,7 @@ import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
 import { ActionChanges, ActionConflict } from "../../../../store"
+import { ModalData } from "../../../modals/ModalData"
 
 function ConflictEditorComponent(){
     const store = useSelectorTyped(state=>({

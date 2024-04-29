@@ -6,6 +6,7 @@ import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 import { FileManager } from "./FileManager";
+import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();    
@@ -49,24 +50,15 @@ export class GitManager{
 
 
     addMergeHandler(){
-        ipcMain.on(RendererEvents.gitMerge().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.merge(repository,options);
-            e.reply(RendererEvents.gitMerge().replyChannel,result);
+        ipcMain.handle(RendererEvents.gitMerge().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.merge(repoPath,options);
+            return result;
         })
     }
 
-    async merge(repoInfo:RepositoryInfo,options:string[]){
-        try {
-            const git = this.getGitRunner(repoInfo);
-            await git.merge(options);
-            const result = await this.getStatus(repoInfo);            
-            return result;
-        } catch (error) {
-            const errStr = error?.toString();
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errStr);
-            return null;
-        }
-        
+    async merge(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.merge(options);
     }
 
     private addGitShowHandler(){
@@ -167,8 +159,8 @@ export class GitManager{
     }
 
     private addStageItemHandler() {
-        ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.stageItem(paths,repoInfo);
+        ipcMain.handle(RendererEvents.stageItem().channel, async(e,repoPath:string,paths:string[])=>{
+            await this.stageItem(paths,repoPath);
         })
     }
 
@@ -197,8 +189,8 @@ export class GitManager{
         await git.deleteLocalBranch(branchNme);
     }
 
-    private async stageItem(path:string[],repoInfo:RepositoryInfo){
-        const git = this.getGitRunner(repoInfo);
+    private async stageItem(path:string[],repoPath:string){
+        const git = this.getGitRunner(repoPath);
         await git.add(path);
     }
 
@@ -256,7 +248,7 @@ export class GitManager{
     
     private resolveConflict(repoPath: string, filePath: string, actions: IActionTaken[]) {
         const fileAbsPath = path.join(repoPath,filePath);
-        new FileManager().resolveConflict(fileAbsPath,actions);
+        new ConflictResolver().resolveConflict(fileAbsPath,actions);
     }
 
     private addCloneRepositoryHandler(){

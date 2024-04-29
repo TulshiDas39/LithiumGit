@@ -1,59 +1,11 @@
-import { EnumConflictSide, IActionTaken, RendererEvents } from "common_library";
+import {RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
+import * as languageEncoding from "detect-file-encoding-and-language";
+
 
 export class FileManager{
-    resolveConflict(path: string, actions: IActionTaken[]) {
-        fs.readFile(path,{encoding:"utf8"},(err,data)=>{
-            if(!err){
-                const lines = data.split(/\n/g);
-                const currentMarker = "<<<<<<< HEAD";
-                const endingMarker = ">>>>>>>";
-                const separator = "=======";
-                let actionIndex = 0;
-                for(let i=0;i<lines.length;i++){
-                    let line = lines[i];
-                    if(line.startsWith(currentMarker)){
-                        const action = actions[actionIndex];
-                        lines.splice(i,1);
-                        line = lines[i];
-                        const currentChanges:string[] = [];
-                        const incomingChanges:string[] = [];
-                    
-                        while(line !== separator){
-                            lines.splice(i,1);
-                            currentChanges.push(line);
-                            line = lines[i];
-                        }
-                        lines.splice(i,1);
-
-                        while(!line.startsWith(endingMarker)){
-                            lines.splice(i,1);
-                            incomingChanges.push(line);
-                            line = lines[i];
-                        }
-                        lines.splice(i,1);
-                        for(let item of action.taken){
-                            if(item ===  EnumConflictSide.Current){
-                                currentChanges.forEach(l => {
-                                    lines.splice(i,0,l);
-                                    i++;
-                                });
-                            }
-                            else{
-                                incomingChanges.forEach(l=> {
-                                    lines.splice(i,0,l);
-                                    i++;
-                                });
-                            }
-                        }
-                    }
-                    i--;
-                }
-            }
-        })
-    }
     start(){
         this.addIpcHandlers();
     }
@@ -108,5 +60,31 @@ export class FileManager{
         ipcMain.handle(RendererEvents.openFileExplorer,(e,path:string)=>{
             shell.showItemInFolder(path);
         })
+    }
+
+    getFileEncoding(path:string){
+        const langEnc = languageEncoding as any;
+        return langEnc(path).then((fileInfo:any) => {
+            return fileInfo.encoding;
+        }).catch((_:any)=> {
+            return "";
+        });
+    }
+
+    async writeToFile(path:string,data:string){
+        let encoding:any = await this.getFileEncoding(path);
+        if(!encoding)
+            encoding = "utf8"
+        return new Promise<boolean>((res)=>{
+            fs.writeFile(path,data,{encoding},(err)=>{
+                if(!err){
+                    res(true);
+                }
+                else{
+                    res(false);
+                }
+            });
+        })
+        
     }
 }

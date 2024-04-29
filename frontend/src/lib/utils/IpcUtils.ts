@@ -4,7 +4,7 @@ import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
     static resolveConflict(path: string, actions:IActionTaken[]) {
-        throw new Error("Method not implemented.");
+        return IpcUtils.runGitCommand(RendererEvents.ResolveConflict,[path,actions]);
     }
     static registerHandler(channel:string,handler:(...args:any[])=>void){
         window.ipcRenderer.on(channel,handler);
@@ -62,8 +62,12 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.unStageItem().channel,paths,repoInfo);
     }
 
-    static stageItems(paths:string[], repoInfo:RepositoryInfo){
-        return window.ipcRenderer.invoke(RendererEvents.stageItem().channel,paths,repoInfo);
+    static stageItems(paths:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.stageItem().channel,[paths]);        
+    }
+
+    static merge(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.gitMerge().channel,[options]);        
     }
 
     static discardItems(paths:string[],repoInfo:RepositoryInfo){
