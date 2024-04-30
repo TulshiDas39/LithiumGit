@@ -236,7 +236,8 @@ export class GitManager{
 
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            await this.notifyStatus(repoInfo);
+            const result = await this.notifyStatus(repoInfo);
+            return result;
         });
     }
 
@@ -316,6 +317,7 @@ export class GitManager{
     private async notifyStatus(repoInfo:RepositoryInfo){
         const status = await this.getStatus(repoInfo);
         AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+        return status;
     }
 
     private async cloneRepository(folderPath:string,url:string){

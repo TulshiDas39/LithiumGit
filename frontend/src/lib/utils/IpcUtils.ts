@@ -30,7 +30,7 @@ export class IpcUtils{
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
             repoInfo = RepoUtils.repositoryDetails.repoInfo;
-        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
+        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo) as Promise<IStatus>;
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){

@@ -137,9 +137,15 @@ export class UiUtils {
         return false;
     }
 
-    static resolveHeight(id:string){
+    static resolveHeight(id:string){        
         return new Promise<number>((res)=>{
+            let tryCount = 0;
             const timer = setInterval(() => {
+                tryCount++;
+                if(tryCount > 1000){
+                    clearInterval(timer);
+                    res(0);
+                }
                 const elem = document.querySelector("#"+id);
                 if(!elem)
                     return;

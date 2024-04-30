@@ -1,29 +1,30 @@
 import React, { useEffect, useMemo } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { EnumChangeGroup, useMultiState } from "../../../../lib";
 import { ModifiedChanges } from "./ModifiedChanges";
 import { StagedChanges } from "./StagedChanges";
 import { ConflictedChanges } from "./ConflictedChanges";
+import { ActionChanges } from "../../../../store";
 
-interface IState{
-    selectedTab:EnumChangeGroup;
-}
 
 
 function ChangesTabPaneComponent(){
     const store = useSelectorTyped(state=>({
        status:state.ui.status,
        recentRepositories:state.savedData.recentRepositories,
+       selectedTab: state.changes.selectedTab 
     }),shallowEqual);
 
-    const [state,setState] = useMultiState({
-        selectedTab:EnumChangeGroup.UN_STAGED
-    } as IState)
+    const dispatch = useDispatch();
+
+    const setTab=(tab:EnumChangeGroup)=>{
+        dispatch(ActionChanges.updateData({selectedTab:tab}));
+    }
     
     useEffect(()=>{
-        if(!store.status?.staged.length && state.selectedTab === EnumChangeGroup.STAGED){
-            setState({selectedTab:EnumChangeGroup.UN_STAGED});
+        if(!store.status?.staged.length && store.selectedTab === EnumChangeGroup.STAGED){
+            setTab(EnumChangeGroup.UN_STAGED);
         }
     },[!!store.status?.staged.length])
 
@@ -36,28 +37,28 @@ function ChangesTabPaneComponent(){
 
     return <div className="flex-grow-1 d-flex flex-column">
         <div className="row g-0 px-1 flex-nowrap overflow-auto">
-            <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.UN_STAGED ?"bg-select-color":""}`}
-            onClick={_=> setState({selectedTab:EnumChangeGroup.UN_STAGED})}>
+            <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.UN_STAGED ?"bg-select-color":""}`}
+            onClick={_=> setTab(EnumChangeGroup.UN_STAGED)}>
                 <span>Modified</span><br/>
                 <span>({store.status?.totalUnStagedItem || 0})</span>
             </div>
-            {!!store.status?.staged?.length && <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.STAGED ?"bg-select-color":""}`} 
-            onClick={_=> setState({selectedTab:EnumChangeGroup.STAGED})}>
+            {!!store.status?.staged?.length && <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.STAGED ?"bg-select-color":""}`} 
+            onClick={_=> setTab(EnumChangeGroup.STAGED)}>
                 <span>Staged</span><br/>
                 <span>({store.status?.totalStagedItem || 0})</span>
             </div>}
-            {!!store.status?.conflicted?.length && <div className={`col border cur-default text-center ${state.selectedTab === EnumChangeGroup.CONFLICTED ?"bg-select-color":""}`} onClick={_=> setState({selectedTab:EnumChangeGroup.CONFLICTED})}>
+            {!!store.status?.conflicted?.length && <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.CONFLICTED ?"bg-select-color":""}`} onClick={_=> setTab(EnumChangeGroup.CONFLICTED)}>
                 <span>Conflicts</span><br/>
                 <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>
         <div className="flex-grow-1">            
-            {state.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} 
+            {store.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} 
              repoInfoInfo={repoInfo} />}
-            {state.selectedTab === EnumChangeGroup.STAGED &&
+            {store.selectedTab === EnumChangeGroup.STAGED &&
             <StagedChanges changes={store.status?.staged!} 
              repoInfoInfo={repoInfo} />}
-             {state.selectedTab === EnumChangeGroup.CONFLICTED &&
+             {store.selectedTab === EnumChangeGroup.CONFLICTED &&
             <ConflictedChanges changes={store.status?.conflicted!} 
              repoInfoInfo={repoInfo} />}
         </div>

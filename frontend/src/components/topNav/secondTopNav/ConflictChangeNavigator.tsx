@@ -30,7 +30,9 @@ function ConflictChangeNavigatorComponent(props:IProps){
     const handleApply=()=>{
         const actions = ConflictUtils.Actions;
         IpcUtils.resolveConflict(props.selectedFile.path,actions).then(()=>{
-            IpcUtils.stageItems([props.selectedFile.path]);
+            IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
+                IpcUtils.getRepoStatus();
+            });
         });
     }
 

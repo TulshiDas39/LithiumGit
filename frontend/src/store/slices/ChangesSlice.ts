@@ -5,12 +5,13 @@ interface IData{
     selectedFile?:IFile;
     currentStep:number;
     totalStep:number;
-    selectedTab?:EnumChangeGroup
+    selectedTab:EnumChangeGroup
 }
 
 const initialState:IData={
     currentStep:0,
-    totalStep:0
+    totalStep:0,
+    selectedTab:EnumChangeGroup.UN_STAGED,
 }
 
 const slice = createSlice({

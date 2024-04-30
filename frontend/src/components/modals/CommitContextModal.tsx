@@ -1,10 +1,10 @@
-import { IStatus, RendererEvents } from "common_library";
+import { EnumChangeGroup, IStatus, RendererEvents } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, EnumModals, EnumSelectedRepoTab, IPositition, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { GraphUtils } from "../../lib/utils/GraphUtils";
-import { ActionModals } from "../../store";
+import { ActionChanges, ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -78,12 +78,13 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
         const options = [hash,"--no-commit","--no-ff"];
-        IpcUtils.merge(options).then((r)=>{
-            debugger;
-            IpcUtils.getRepoStatus();
-            if(r.error?.includes('CONFLICTS:')){
-                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-            }
+        IpcUtils.merge(options).then((r)=>{            
+            IpcUtils.getRepoStatus().then(r=>{
+                if(r.conflicted?.length){
+                    dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
+                }
+            });
         });        
     }
 
@@ -103,7 +104,11 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
-        window.ipcRenderer.send(RendererEvents.gitMerge().channel,RepoUtils.repositoryDetails.repoInfo,options);
+        IpcUtils.merge(options).then(()=>{
+            IpcUtils.getRepoStatus().then(()=>{
+                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+            });
+        })
     }
 
     const rebaseBranch=(branch:string)=>{
