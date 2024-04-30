@@ -47,7 +47,7 @@ function ConflictChangeNavigatorComponent(props:IProps){
                 <span>Index</span>
          )</div>
     </div>
-    <div className="col-2 d-flex justify-content-center align-items-center">
+    <div className="col-2 d-flex justify-content-center">
         {store.resolvedCount !== store.totalConflict &&
             <div title={`${store.totalConflict} total conflict, ${store.resolvedCount} resolved`} className="overflow-ellipsis">Resolved {store.resolvedCount}/{store.totalConflict}</div>
         }
