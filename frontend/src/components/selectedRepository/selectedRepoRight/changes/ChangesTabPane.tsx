@@ -23,12 +23,16 @@ function ChangesTabPaneComponent(){
     }
     
     useEffect(()=>{
-        if((!store.status?.staged.length && store.selectedTab === EnumChangeGroup.STAGED) ||
-            (!store.status?.conflicted.length && store.selectedTab === EnumChangeGroup.CONFLICTED)
-        ){
+        if(!store.status?.staged.length && store.selectedTab === EnumChangeGroup.STAGED){
             setTab(EnumChangeGroup.UN_STAGED);
         }
-    },[!!store.status?.staged.length,!!store.status?.conflicted.length,store.selectedTab])
+    },[!!store.status?.staged.length,store.selectedTab === EnumChangeGroup.STAGED])
+
+    useEffect(()=>{
+        if(!store.status?.conflicted.length && store.selectedTab === EnumChangeGroup.CONFLICTED){
+            setTab(EnumChangeGroup.STAGED);
+        }
+    },[!!store.status?.conflicted.length,store.selectedTab === EnumChangeGroup.CONFLICTED])
 
     const repoInfo = useMemo(()=>{
         return store.recentRepositories.find(x=>x.isSelected);

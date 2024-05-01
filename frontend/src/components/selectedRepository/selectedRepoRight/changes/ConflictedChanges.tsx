@@ -108,11 +108,7 @@ function ConflictedChangesComponent(props:IProps){
         applyCommonMerge(paths,action).then(resolvedPaths=>{
             if(resolvedPaths.length) {
                 IpcUtils.stageItems(resolvedPaths).then(()=>{
-                    IpcUtils.getRepoStatus().then(r=>{
-                        if(r.staged?.length){
-                            dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
-                        }
-                    });
+                    IpcUtils.getRepoStatus();
                 });
             }
         });
@@ -126,11 +122,7 @@ function ConflictedChangesComponent(props:IProps){
         applyCommonMerge(paths,action).then(resolvedPaths=>{
             if(resolvedPaths.length) {
                 IpcUtils.stageItems(resolvedPaths).then(()=>{
-                    IpcUtils.getRepoStatus().then(r=>{
-                        if(r.staged?.length){
-                            dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
-                        }
-                    });
+                    IpcUtils.getRepoStatus();
                 })
             }
         });
