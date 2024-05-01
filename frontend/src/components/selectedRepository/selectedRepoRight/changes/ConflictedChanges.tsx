@@ -1,4 +1,4 @@
-import { IFile, RepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
 import { ConflictUtils, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -6,6 +6,9 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { AppButton } from "../../../common";
 import { ActionChanges, ActionModals } from "../../../../store";
 import { ModalData } from "../../../modals/ModalData";
+import { FaEllipsisH } from "react-icons/fa";
+import { Dropdown } from "react-bootstrap";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -83,19 +86,70 @@ function ConflictedChangesComponent(props:IProps){
             dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0})); 
         }
     }
+
+    const applyCommonMerge= async (paths:string[],action:IActionTaken)=>{
+        const actions = [action];
+        const resolvedPaths:string[] = [];
+        for(let path of paths){
+            try{
+                await IpcUtils.resolveConflict(path,actions);
+                resolvedPaths.push(path);
+            }catch(e){}
+        }
+
+        return resolvedPaths;
+    }
+
+    const acceptAllIncomingChanges=()=>{
+        const action:IActionTaken = {conflictNo:-1,taken:[EnumConflictSide.Incoming]};
+        const paths = props.changes?.map(_=>_.path);
+        if(!paths?.length)
+            return;
+        applyCommonMerge(paths,action).then(resolvedPaths=>{
+            if(resolvedPaths.length) {
+                IpcUtils.stageItems(resolvedPaths).then(()=>{
+                    IpcUtils.getRepoStatus().then(r=>{
+                        if(r.staged?.length){
+                            dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
+                        }
+                    });
+                });
+            }
+        });
+    }
+
+    const acceptAllCurrentChanges=()=>{
+        const action:IActionTaken = {conflictNo:-1,taken:[EnumConflictSide.Current]};
+        const paths = props.changes?.map(_=>_.path);
+        if(!paths?.length)
+            return;
+        applyCommonMerge(paths,action).then(resolvedPaths=>{
+            if(resolvedPaths.length) {
+                IpcUtils.stageItems(resolvedPaths).then(()=>{
+                    IpcUtils.getRepoStatus().then(r=>{
+                        if(r.staged?.length){
+                            dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
+                        }
+                    });
+                })
+            }
+        });
+    }
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
-    <div ref={headerRef as any} className="d-flex overflow-auto"
+    <div ref={headerRef as any} className="d-flex justify-content-end"
      >
-        <div id={EnumHtmlIds.acceptIncomingCurrentAllPanel} className="d-flex justify-content-center align-items-center pt-2 ps-1">
-            <div className="text-center">
-                <div>
-                    <AppButton type="default">Accept Current Changes</AppButton>
-                </div>
-                <div className="py-2">
-                    <AppButton type="default">Accept Incoming Changes</AppButton>
-                </div>
-            </div>            
+        <div id={EnumHtmlIds.acceptIncomingCurrentAllPanel} className="d-flex justify-content-end align-items-center pt-2">            
+            <Dropdown>
+                <Dropdown.Toggle variant="link" id="dropdown-reposelection" className="rounded-0 no-caret">
+                    <FaEllipsisH />
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="no-radius">
+                    <Dropdown.Item onClick={acceptAllIncomingChanges}>Accept All Incoming Changes</Dropdown.Item>
+                    <Dropdown.Item onClick={acceptAllCurrentChanges}>Accept All Current Changes</Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
+            
         </div>        
     </div>
     { state.firstPaneHeight &&

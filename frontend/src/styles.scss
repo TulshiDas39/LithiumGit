@@ -10,7 +10,7 @@ html {
 
 html {
     --font-color: #282828;   
-    --hover: #e4e6e896;
+    --hover: #0bc59c;
     --bg-color:white;
     --gs-normal: white;
     --gs-primary: blue;
@@ -59,7 +59,7 @@ html {
     --active-color: #333333;
     --white: #181818;
     --svg-lite: #E5E6EB;
-    --hover: #333333;        
+    --hover: #0bc59c;        
     --search-bg: #181818;
     --svg-dark: #909090;
     --scrollbar-color: #636363;
@@ -143,6 +143,10 @@ html {
     cursor: default;
     //opacity: 0.6;
     color: #0bc59c;
+  }
+
+  .hover-color:hover{
+    color: var(--hover);
   }
 
   .hover-brighter:hover{
@@ -354,4 +358,12 @@ html {
 
 .bg-change-accepted{
   background-color: var(--bg-change-accepted);
+}
+
+.no-caret.dropdown-toggle::after{
+  content: none;
+}
+
+.no-radius{
+  border-radius: 0 !important;
 }
