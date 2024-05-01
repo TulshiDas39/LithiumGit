@@ -105,13 +105,18 @@ function ConflictedChangesComponent(props:IProps){
         const paths = props.changes?.map(_=>_.path);
         if(!paths?.length)
             return;
-        applyCommonMerge(paths,action).then(resolvedPaths=>{
-            if(resolvedPaths.length) {
-                IpcUtils.stageItems(resolvedPaths).then(()=>{
-                    IpcUtils.getRepoStatus();
-                });
-            }
-        });
+        ModalData.confirmationModal.message = "Accept all incoming changes for all files?";
+        ModalData.confirmationModal.YesHandler = ()=>{
+            applyCommonMerge(paths,action).then(resolvedPaths=>{
+                if(resolvedPaths.length) {
+                    IpcUtils.stageItems(resolvedPaths).then(()=>{
+                        IpcUtils.getRepoStatus();
+                    });
+                }
+            });
+        }
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        
     }
 
     const acceptAllCurrentChanges=()=>{
@@ -119,13 +124,18 @@ function ConflictedChangesComponent(props:IProps){
         const paths = props.changes?.map(_=>_.path);
         if(!paths?.length)
             return;
-        applyCommonMerge(paths,action).then(resolvedPaths=>{
-            if(resolvedPaths.length) {
-                IpcUtils.stageItems(resolvedPaths).then(()=>{
-                    IpcUtils.getRepoStatus();
-                })
-            }
-        });
+        ModalData.confirmationModal.message = "Accept all current changes for all files?";
+        ModalData.confirmationModal.YesHandler = ()=>{
+            applyCommonMerge(paths,action).then(resolvedPaths=>{
+                if(resolvedPaths.length) {
+                    IpcUtils.stageItems(resolvedPaths).then(()=>{
+                        IpcUtils.getRepoStatus();
+                    })
+                }
+            });
+        }
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        
     }
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
@@ -137,7 +147,7 @@ function ConflictedChangesComponent(props:IProps){
                     <FaEllipsisH />
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="no-radius">
-                    <Dropdown.Item onClick={acceptAllIncomingChanges}>Accept All Incoming Changes</Dropdown.Item>
+                    <Dropdown.Item onClick={acceptAllIncomingChanges} className="border-bottom">Accept All Incoming Changes</Dropdown.Item>
                     <Dropdown.Item onClick={acceptAllCurrentChanges}>Accept All Current Changes</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
