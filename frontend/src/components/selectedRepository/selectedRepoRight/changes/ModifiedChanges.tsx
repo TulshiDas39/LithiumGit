@@ -159,7 +159,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[store.selectedFile])
 
     const handleFileSelect = (file:IFile)=>{
-        dispatch(ActionChanges.updateData({selectedFile: file}));
+        dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
     }
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>

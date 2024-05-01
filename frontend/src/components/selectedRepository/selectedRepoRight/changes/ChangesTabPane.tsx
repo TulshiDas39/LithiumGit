@@ -23,10 +23,12 @@ function ChangesTabPaneComponent(){
     }
     
     useEffect(()=>{
-        if(!store.status?.staged.length && store.selectedTab === EnumChangeGroup.STAGED){
+        if((!store.status?.staged.length && store.selectedTab === EnumChangeGroup.STAGED) ||
+            (!store.status?.conflicted.length && store.selectedTab === EnumChangeGroup.CONFLICTED)
+        ){
             setTab(EnumChangeGroup.UN_STAGED);
         }
-    },[!!store.status?.staged.length])
+    },[!!store.status?.staged.length,!!store.status?.conflicted.length,store.selectedTab])
 
     const repoInfo = useMemo(()=>{
         return store.recentRepositories.find(x=>x.isSelected);
@@ -36,19 +38,19 @@ function ChangesTabPaneComponent(){
         return <div></div>;
 
     return <div className="flex-grow-1 d-flex flex-column">
-        <div className="row g-0 px-1 flex-nowrap overflow-auto">
+        <div className="row g-0 flex-nowrap overflow-auto">
             <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.UN_STAGED ?"bg-select-color":""}`}
             onClick={_=> setTab(EnumChangeGroup.UN_STAGED)}>
-                <span>Modified</span><br/>
+                <span className="px-1">Modified</span><br/>
                 <span>({store.status?.totalUnStagedItem || 0})</span>
             </div>
             {!!store.status?.staged?.length && <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.STAGED ?"bg-select-color":""}`} 
             onClick={_=> setTab(EnumChangeGroup.STAGED)}>
-                <span>Staged</span><br/>
+                <span className="px-1">Staged</span><br/>
                 <span>({store.status?.totalStagedItem || 0})</span>
             </div>}
             {!!store.status?.conflicted?.length && <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.CONFLICTED ?"bg-select-color":""}`} onClick={_=> setTab(EnumChangeGroup.CONFLICTED)}>
-                <span>Conflicts</span><br/>
+                <span className="px-1">Conflicts</span><br/>
                 <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>

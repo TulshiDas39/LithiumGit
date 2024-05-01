@@ -76,11 +76,11 @@ function ConflictedChangesComponent(props:IProps){
         if(ConflictUtils.Actions.length){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
-                dispatch(ActionChanges.updateData({selectedFile:file}));                
+                dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));                
             }
             dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         }else{
-            dispatch(ActionChanges.updateData({selectedFile:file})); 
+            dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0})); 
         }
     }
     

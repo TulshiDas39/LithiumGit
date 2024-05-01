@@ -80,9 +80,12 @@ function CommitContextModalComponent(){
         const options = [hash,"--no-commit","--no-ff"];
         IpcUtils.merge(options).then((r)=>{            
             IpcUtils.getRepoStatus().then(r=>{
+                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                 if(r.conflicted?.length){
-                    dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
+                }
+                else if(r.staged?.length){
+                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
                 }
             });
         });        
@@ -105,8 +108,14 @@ function CommitContextModalComponent(){
         refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
         IpcUtils.merge(options).then(()=>{
-            IpcUtils.getRepoStatus().then(()=>{
+            IpcUtils.getRepoStatus().then((r)=>{
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+                if(r.conflicted?.length){
+                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
+                }
+                else if(r.staged?.length){
+                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
+                }
             });
         })
     }
