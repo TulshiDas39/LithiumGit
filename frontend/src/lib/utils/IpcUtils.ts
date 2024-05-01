@@ -152,7 +152,7 @@ export class IpcUtils{
     }
 
     static async cherryPick(options:string[]){
-        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,RepoUtils.repositoryDetails.repoInfo,options);
+        return IpcUtils.runGitCommand(RendererEvents.cherry_pick,[options])
     }
 
     private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{

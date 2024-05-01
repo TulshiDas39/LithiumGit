@@ -49,7 +49,9 @@ function ConflictChangeNavigatorComponent(props:IProps){
     </div>
     <div className="col-2 d-flex justify-content-center">
         {store.resolvedCount !== store.totalConflict &&
-            <div title={`${store.totalConflict} total conflict, ${store.resolvedCount} resolved`} className="overflow-ellipsis">Resolved {store.resolvedCount}/{store.totalConflict}</div>
+            <div title={`${store.totalConflict} total conflict, ${store.resolvedCount} resolved`} className="overflow-ellipsis d-flex align-items-center">
+                Resolved {store.resolvedCount}/{store.totalConflict}
+            </div>
         }
         {store.resolvedCount === store.totalConflict &&
             <AppButton type="success" style={{color:'white'}} onClick={handleApply}>Apply</AppButton>

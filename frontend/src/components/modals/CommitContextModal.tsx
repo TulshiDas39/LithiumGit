@@ -95,7 +95,12 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));        
         const options = [Data.selectedCommit.hash];
         IpcUtils.cherryPick(options).then(r=>{
-            IpcUtils.getRepoStatus();
+            IpcUtils.getRepoStatus().then(r=>{
+                if(r.conflicted?.length){
+                    dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
+                }
+            });
         }).catch(e=>{
             const message = e?.toString() || "Failed to perform cherry-pick.";
             ModalData.errorModal.message = message;

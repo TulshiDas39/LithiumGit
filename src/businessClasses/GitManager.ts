@@ -259,8 +259,8 @@ export class GitManager{
     }
 
     private addCherryPickHandler(){
-        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoInfo:RepositoryInfo,options:string[] )=>{
-            await this.cherryPick(repoInfo,options);
+        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoPath:string,options:string[] )=>{
+            await this.cherryPick(repoPath,options);
         });
     }
 
@@ -373,8 +373,8 @@ export class GitManager{
         return result;
     }
 
-    private async cherryPick(repoInfo:RepositoryInfo,options:string[]){
-        const git = this.getGitRunner(repoInfo);
+    private async cherryPick(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
         await git.raw(["cherry-pick",...options]);
     }
     
