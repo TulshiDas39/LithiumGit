@@ -5,10 +5,9 @@ import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, 
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionModals } from "../../../../store";
+import { ActionChanges, ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -24,7 +23,7 @@ interface IState{
 function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
-        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.ui.selectedFile:undefined,
+        selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -39,14 +38,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems([file.path]).then(_=>{
             IpcUtils.getRepoStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
-        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
             IpcUtils.getRepoStatus();
         });        
     }
@@ -129,7 +128,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
-                        ReduxUtils.resetChangeNavigation();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
                     });
                 }
                 if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
@@ -137,7 +136,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
-                    ReduxUtils.resetChangeNavigation();
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                 }
             })
         }
@@ -151,7 +150,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
-                ReduxUtils.resetChangeNavigation();
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
             })
         }
 
@@ -160,7 +159,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[store.selectedFile])
 
     const handleFileSelect = (file:IFile)=>{
-        dispatch(ActionUI.setSelectedFile(file));
+        dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
     }
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>

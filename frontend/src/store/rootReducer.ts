@@ -1,12 +1,14 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import {createSelectorHook} from 'react-redux';
-import { ReducerClone, ReducerModals, ReducerSavedData } from './slices';
+import { ReducerChanges, ReducerClone, ReducerConflict, ReducerModals, ReducerSavedData } from './slices';
 import { ReducerUI } from './slices/UiSlice';
 const AppReducer = combineReducers({
     savedData:ReducerSavedData,
     ui:ReducerUI,
     modal:ReducerModals,
     clone:ReducerClone,
+    conflict:ReducerConflict,
+    changes:ReducerChanges,
 });
 
 const AppResetActionType = 'app/Reset';

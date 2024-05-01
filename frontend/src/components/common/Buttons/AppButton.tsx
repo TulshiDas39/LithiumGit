@@ -1,6 +1,6 @@
 import React, { CSSProperties, PropsWithChildren, useMemo } from "react"
 
-type ButtonType = "default"|"success"|"danger"|"info"|"primary";
+type ButtonType = "default"|"success"|"danger"|"info"|"primary"|"text";
 
 interface IConfig{
     type:ButtonType;
@@ -24,6 +24,10 @@ function getButtonConfigs(type:ButtonType){
         {
             type:"danger",
             bgColor:"bg-danger"
+        },
+        {
+            type:"text",
+            bgColor:"transparent"
         }
     ]
 
@@ -48,10 +52,23 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
     const getBorderSize = ()=>{
         if(props.borderSize !== undefined)
             return props.borderSize;
+        if(props.type === "text")
+            return 0;
         if(props.type === "default")
             return 1;
         return 0;
     }
+
+    const getHoverClasses=()=>{
+        if(props.disabled){
+            return "";
+        }
+        if(props.type === "text"){
+            return "hover-color cur-point";
+        }
+        return "hover-brighter hover-shadow cur-default";
+    }
+
     const styles = useMemo(()=>{
         let style:CSSProperties = {
             borderStyle:"solid", 
@@ -66,7 +83,7 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
         return style;
     },[props.style])
 
-    return <div title={props.title} className={`${config.bgColor} ${props.disabled?'':'hover-brighter hover-shadow'} d-flex align-items-center justify-content-center text-center cur-default py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+    return <div title={props.title} className={`${config.bgColor} ${getHoverClasses()} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
         style={styles}>
         {props.children || props.text}
     </div>

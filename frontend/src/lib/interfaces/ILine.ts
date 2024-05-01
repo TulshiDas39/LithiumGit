@@ -5,7 +5,5 @@ export interface ILine{
         count:number;
     }[];
     hightLightBackground?:boolean;
-    transparent?:{
-        lineCount:number;
-    }
+    conflictNo?:number;
 }

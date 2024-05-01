@@ -268,5 +268,6 @@ export class RendererEvents{
     static readonly cloneProgress = "cloneProgress";
     static readonly isValidPath = "isValidPath";
     static readonly createNewRepo = "createNewRepo";
+    static readonly ResolveConflict = "resolveConflict";
 }
 

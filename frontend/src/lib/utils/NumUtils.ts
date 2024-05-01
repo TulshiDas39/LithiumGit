@@ -14,4 +14,16 @@ export class NumUtils{
             return false;
         return true;
     }
+
+    static max(arr:number[]){
+        if(!arr.length)
+            return 0;
+        let max = arr[0];
+        for(let item of arr){
+            if(item > max)
+                max = item;
+        }
+
+        return max;
+    }
 }

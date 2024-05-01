@@ -2,8 +2,6 @@ import { ILineHighlight } from "../editor";
 import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
-import { RendererEvents } from "common_library";
-import { RepoUtils } from "./RepoUtils";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
 
@@ -281,12 +279,8 @@ export class DiffUtils{
         if(!lines.length) 
             return delta;
         
-        let createOperation=(line:ILine)=>{    
-            if(line.transparent) operations.push({
-                insert: `${Array(maxLineWidth).fill(" ").join("")}`,
-                attributes:{background:"black"}
-            })
-            else if(line.text != undefined){                
+        let createOperation=(line:ILine)=>{            
+            if(line.text != undefined){                
                 const heightLightCount = line.textHightlightIndex.length;
                 if(!!heightLightCount){
                     let insertedUptoIndex = -1;                    

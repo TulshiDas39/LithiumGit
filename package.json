@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "0.1.0-alpha.1",
+  "version": "0.2.0-alpha.1",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "common_library": "file:common_library",
+    "detect-file-encoding-and-language": "^2.4.0",
     "electron-updater": "^5.0.1",
     "fs-extra": "^10.1.0",
     "nedb": "^1.8.0",

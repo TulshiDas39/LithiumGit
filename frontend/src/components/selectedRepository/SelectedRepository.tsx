@@ -27,7 +27,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         remoteListRefreshVersion:state.ui.versions.remoteList,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
-    const leftWidthRef = useRef(200);
+    const leftWidthRef = useRef(100);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     const dispatch = useDispatch();

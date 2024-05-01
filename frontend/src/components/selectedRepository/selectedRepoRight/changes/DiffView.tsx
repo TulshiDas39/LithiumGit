@@ -12,11 +12,6 @@ function SingleDiff(props:ISingleDiffProps){
         minWidth:props.maxLineWidth+"ch",
     }
 
-    if(props.line.transparent){
-        return <p className="bg-dark" style={{...paragraphStyle}}>
-            <span className="py-1">{Array(props.maxLineWidth).fill(" ").join("")}</span>            
-        </p>
-    }
     if(props.line.text != undefined){
         const childElems:JSX.Element[] = [];
         const heightLightCount = props.line.textHightlightIndex.length;
@@ -57,7 +52,7 @@ export function DiffView(props:IProps){
         let lineNo = 1;
         let i = 0;
         for(let line of props.lines){
-            if(line.transparent || line.text === undefined){
+            if(line.text === undefined){
                 elems.push(<p key={i}> <br /> </p>)
             }
             else{

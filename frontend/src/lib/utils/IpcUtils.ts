@@ -1,8 +1,11 @@
-import { ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static resolveConflict(path: string, actions:IActionTaken[]) {
+        return IpcUtils.runGitCommand(RendererEvents.ResolveConflict,[path,actions]);
+    }
     static registerHandler(channel:string,handler:(...args:any[])=>void){
         window.ipcRenderer.on(channel,handler);
     }
@@ -27,7 +30,7 @@ export class IpcUtils{
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
             repoInfo = RepoUtils.repositoryDetails.repoInfo;
-        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
+        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo) as Promise<IStatus>;
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){
@@ -59,8 +62,12 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.unStageItem().channel,paths,repoInfo);
     }
 
-    static stageItems(paths:string[], repoInfo:RepositoryInfo){
-        return window.ipcRenderer.invoke(RendererEvents.stageItem().channel,paths,repoInfo);
+    static stageItems(paths:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.stageItem().channel,[paths]);        
+    }
+
+    static merge(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.gitMerge().channel,[options]);        
     }
 
     static discardItems(paths:string[],repoInfo:RepositoryInfo){
@@ -145,7 +152,7 @@ export class IpcUtils{
     }
 
     static async cherryPick(options:string[]){
-        await window.ipcRenderer.invoke(RendererEvents.cherry_pick,RepoUtils.repositoryDetails.repoInfo,options);
+        return IpcUtils.runGitCommand(RendererEvents.cherry_pick,[options])
     }
 
     private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{

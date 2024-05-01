@@ -1,7 +1,6 @@
 import ReactDOMServer from "react-dom/server";
 import { ILine } from "../interfaces";
-import { Quill} from "quill";
-import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
+import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
 import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
 export class ChangeUtils{
@@ -11,14 +10,10 @@ export class ChangeUtils{
     static previousLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
 
-    static init(){
-
-    }
-
     static showChanges(){
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
-        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference2({
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
             linesAfterChange:ChangeUtils.currentLines,
             linesBeforeChange:ChangeUtils.previousLines
         }));
@@ -26,6 +21,7 @@ export class ChangeUtils{
         ChangeUtils.HandleScrolling();
         ChangeUtils.SetHeighlightedLines();
         ChangeUtils.FocusHightlightedLine(1);
+
         // ReduxUtils.resetChangeNavigation();
     }
 
@@ -41,10 +37,12 @@ export class ChangeUtils{
 
     private static SetHeighlightedLines(){
         ChangeUtils.heighlightedLineIndexes = [];
-        let lastItemHightlighted = false;        
-        const lenght = ChangeUtils.currentLines?.length || ChangeUtils.previousLines?.length || 0;
+        let lastItemHightlighted = false;
+        if(!ChangeUtils.currentLines?.length || !ChangeUtils.previousLines?.length)
+            return;
+        const lenght = ChangeUtils.currentLines?.length;
         for(let i = 0;i < lenght; i++){
-            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.previousLines?.[i].hightLightBackground){
+            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.currentLines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
                     ChangeUtils.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;

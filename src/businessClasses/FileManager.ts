@@ -1,7 +1,9 @@
-import { RendererEvents } from "common_library";
+import {RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
+import * as languageEncoding from "detect-file-encoding-and-language";
+
 
 export class FileManager{
     start(){
@@ -58,5 +60,31 @@ export class FileManager{
         ipcMain.handle(RendererEvents.openFileExplorer,(e,path:string)=>{
             shell.showItemInFolder(path);
         })
+    }
+
+    getFileEncoding(path:string){
+        const langEnc = languageEncoding as any;
+        return langEnc(path).then((fileInfo:any) => {
+            return fileInfo.encoding;
+        }).catch((_:any)=> {
+            return "";
+        });
+    }
+
+    async writeToFile(path:string,data:string){
+        let encoding:any = await this.getFileEncoding(path);
+        if(!encoding)
+            encoding = "utf8"
+        return new Promise<boolean>((res)=>{
+            fs.writeFile(path,data,{encoding},(err)=>{
+                if(!err){
+                    res(true);
+                }
+                else{
+                    res(false);
+                }
+            });
+        })
+        
     }
 }

@@ -1,38 +1,51 @@
 import React, { useEffect } from "react"
-import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { ActionUI } from "../../../store/slices/UiSlice";
-import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
+import { ModifiedChangeNavigator } from "./ModifiedChangeNavigator";
+import { EnumChangeGroup } from "common_library";
+import { ActionChanges } from "../../../store";
+import { StagedChangeNavigator } from "./StagedChangeNavigator";
+import { ConflictChangeNavigator } from "./ConflictChangeNavigator";
 
 function ChangeNavigatorComponent(){
-    const store = useSelectorTyped(state=> state.ui.changes,shallowEqual);
+    const store = useSelectorTyped(state=> state.changes,shallowEqual);
     const dispatch = useDispatch();
-    useEffect(()=>{
-        if(!store?.currentStep)
+
+    const onNextClick=()=>{
+        if(store.currentStep >= store.totalStep)
             return;
-        ChangeUtils.FocusHightlightedLine(store.currentStep);
-    },[store?.currentStep])
-
-    if(!store) return null;
-    const handleUp=()=>{
-        if(store.currentStep > 1) dispatch(ActionUI.setComparableStep(store.currentStep-1));
+        dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
     }
 
-    const handleDown=()=>{
-        if(store.currentStep < store.totalStep) dispatch(ActionUI.setComparableStep(store.currentStep+1));
+    const onPreviousClick = ()=>{
+        if(store.currentStep <= 1)
+            return;
+        dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1}));
     }
 
-    return <div className="justify-content-center align-items-center flex-grow-1 d-flex"> 
-        <span>Showing {store.currentStep}/{store.totalStep}</span>
-        <span className="px-1" />
-        <span>
-            <FaArrowUp className="cur-point" onClick={handleUp}/>
-        </span>
-        <span className="px-1" />
-        <span>
-            <FaArrowDown className="cur-point" onClick={handleDown} />
-        </span>
+    useEffect(()=>{
+        if(store.totalStep < store.currentStep){
+            dispatch(ActionChanges.updateData({currentStep:store.totalStep}));
+        }
+    },[store.currentStep,store.totalStep])
+
+    if(!store?.selectedFile) return null;
+
+    return <div className="flex-grow-1 ps-3">
+        {store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&
+            <ModifiedChangeNavigator selectedFile={store.selectedFile} 
+            currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
+            onPreviousClick={onPreviousClick}/>}
+
+            {store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&
+            <StagedChangeNavigator selectedFile={store.selectedFile} 
+            currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
+            onPreviousClick={onPreviousClick}/>}
+
+            {store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&
+            <ConflictChangeNavigator selectedFile={store.selectedFile} 
+            currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
+            onPreviousClick={onPreviousClick}/>}
     </div>
 }
 

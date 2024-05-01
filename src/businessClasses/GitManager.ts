@@ -1,10 +1,12 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import { FileManager } from "./FileManager";
+import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();    
@@ -43,28 +45,20 @@ export class GitManager{
         this.addRemoteListHandler();
         this.addRebaseHandler();
         this.addCherryPickHandler();
+        this.addConflictResolveHandler();
     }
 
 
     addMergeHandler(){
-        ipcMain.on(RendererEvents.gitMerge().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.merge(repository,options);
-            e.reply(RendererEvents.gitMerge().replyChannel,result);
+        ipcMain.handle(RendererEvents.gitMerge().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.merge(repoPath,options);
+            return result;
         })
     }
 
-    async merge(repoInfo:RepositoryInfo,options:string[]){
-        try {
-            const git = this.getGitRunner(repoInfo);
-            await git.merge(options);
-            const result = await this.getStatus(repoInfo);            
-            return result;
-        } catch (error) {
-            const errStr = error?.toString();
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errStr);
-            return null;
-        }
-        
+    async merge(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.merge(options);
     }
 
     private addGitShowHandler(){
@@ -165,8 +159,8 @@ export class GitManager{
     }
 
     private addStageItemHandler() {
-        ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.stageItem(paths,repoInfo);
+        ipcMain.handle(RendererEvents.stageItem().channel, async(e,repoPath:string,paths:string[])=>{
+            await this.stageItem(paths,repoPath);
         })
     }
 
@@ -195,8 +189,8 @@ export class GitManager{
         await git.deleteLocalBranch(branchNme);
     }
 
-    private async stageItem(path:string[],repoInfo:RepositoryInfo){
-        const git = this.getGitRunner(repoInfo);
+    private async stageItem(path:string[],repoPath:string){
+        const git = this.getGitRunner(repoPath);
         await git.add(path);
     }
 
@@ -242,8 +236,20 @@ export class GitManager{
 
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            await this.notifyStatus(repoInfo);
+            const result = await this.notifyStatus(repoInfo);
+            return result;
         });
+    }
+
+    private addConflictResolveHandler(){
+        ipcMain.handle(RendererEvents.ResolveConflict, async (e,repoPath:string,filePath:string,actions:IActionTaken[])=>{
+            await this.resolveConflict(repoPath,filePath,actions);
+        });
+    }
+    
+    private resolveConflict(repoPath: string, filePath: string, actions: IActionTaken[]) {
+        const fileAbsPath = path.join(repoPath,filePath);
+        new ConflictResolver().resolveConflict(fileAbsPath,actions);
     }
 
     private addCloneRepositoryHandler(){
@@ -253,8 +259,8 @@ export class GitManager{
     }
 
     private addCherryPickHandler(){
-        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoInfo:RepositoryInfo,options:string[] )=>{
-            await this.cherryPick(repoInfo,options);
+        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoPath:string,options:string[] )=>{
+            await this.cherryPick(repoPath,options);
         });
     }
 
@@ -311,6 +317,7 @@ export class GitManager{
     private async notifyStatus(repoInfo:RepositoryInfo){
         const status = await this.getStatus(repoInfo);
         AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+        return status;
     }
 
     private async cloneRepository(folderPath:string,url:string){
@@ -348,7 +355,7 @@ export class GitManager{
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
-        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.CONFLICTED}));
         result.totalConflictedItem = status.conflicted?.length || 0;
         result.isClean = status?.isClean();
         result.current = status.current;
@@ -366,8 +373,8 @@ export class GitManager{
         return result;
     }
 
-    private async cherryPick(repoInfo:RepositoryInfo,options:string[]){
-        const git = this.getGitRunner(repoInfo);
+    private async cherryPick(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
         await git.raw(["cherry-pick",...options]);
     }
     

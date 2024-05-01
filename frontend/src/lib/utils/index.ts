@@ -8,3 +8,4 @@ export * from './GraphUtils';
 export * from './NumUtils';
 export * from './ArrayUtils';
 export * from './DataUtils';
+export * from './ConflictUtils';
