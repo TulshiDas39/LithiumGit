@@ -1,7 +1,9 @@
-import { RendererEvents } from "common_library";
+import {RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
+import * as languageEncoding from "detect-file-encoding-and-language";
+
 
 export class FileManager{
     start(){
@@ -41,21 +43,48 @@ export class FileManager{
     }
 
     handleGetDirectoryPath(){
-        ipcMain.on(RendererEvents.getDirectoryPath().channel,(e)=>{
-            dialog.showOpenDialog({
+        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e)=>{
+            return this.getDirectoryPathUsingExplorer();
+        });        
+    }
+
+    private getDirectoryPathUsingExplorer(){
+        return dialog.showOpenDialog({
                 properties: ['openDirectory']
             }).then(res=>{
-                res.filePaths[0];
-                e.reply(RendererEvents.getDirectoryPath().replyChannel,res.filePaths[0]);
+                return res.filePaths[0];
             });
-
-        });
-        
     }
 
     private handleOpenFileExplorer(){
-        ipcMain.on(RendererEvents.openFileExplorer,(e,path:string)=>{
+        ipcMain.handle(RendererEvents.openFileExplorer,(e,path:string)=>{
             shell.showItemInFolder(path);
         })
+    }
+
+    getFileEncoding(path:string){
+        const langEnc = languageEncoding as any;
+        return langEnc(path).then((fileInfo:any) => {
+            return fileInfo.encoding;
+        }).catch((_:any)=> {
+            return "";
+        });
+    }
+
+    async writeToFile(path:string,data:string){
+        let encoding:any = await this.getFileEncoding(path);
+        if(!encoding)
+            encoding = "utf8"
+        return new Promise<boolean>((res)=>{
+            fs.writeFile(path,data,{encoding},(err)=>{
+                if(!err){
+                    res(true);
+                }
+                else{
+                    res(false);
+                }
+            });
+        })
+        
     }
 }

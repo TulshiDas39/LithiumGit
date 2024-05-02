@@ -1,13 +1,13 @@
-import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ActionChanges } from "../../../../store";
 
 interface ISingleFileProps{
     item:IFile
@@ -39,7 +39,7 @@ function SingleFile(props:ISingleFileProps){
                 <span className="hover" title="Unstage" onClick={_=> {_.stopPropagation(); props.handleUnstage()}}><FaMinus /></span>                                    
             </Fragment>}
             <span>
-                <span className="ps-1 text-success fw-bold" title={StringUtils.getStatusText(props.item.changeType)}>{getStatusText()}</span>
+                <span className={`ps-1 fw-bold ${UiUtils.getChangeTypeHintColor(props.item.changeType)}`} title={StringUtils.getStatusText(props.item.changeType)}>{getStatusText()}</span>
             </span>
         </div>
     </div>
@@ -60,7 +60,7 @@ interface IState{
 function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
-        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.ui.selectedFile:undefined,
+        selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -76,7 +76,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
-        IpcUtils.unstageItem(props.changes.map(_=>_.path),props.repoInfoInfo!).then(_=>{
+        IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
             IpcUtils.getRepoStatus();
         });        
     }
@@ -98,9 +98,10 @@ function StagedChangesComponent(props:IStagedChangesProps){
     useEffect(()=>{
         if(!store.selectedFile)
             return ;
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
         if(store.selectedFile.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(content=>{
-                const lines = new StringUtils().getLines(content);
+            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(res=>{
+                const lines = StringUtils.getLines(res.result!);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;
@@ -111,6 +112,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                     })
                 }
                 else{
@@ -118,13 +120,15 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
+
                 }
                                     
             })
         }
         else{
-            IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
-                const lines = new StringUtils().getLines(content);
+            IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
+                const lines = StringUtils.getLines(content);
                 const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
                 if(!hasChanges) return;
                 refData.current.fileContentAfterChange = lines;
@@ -132,9 +136,11 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
             })
         }
         ChangeUtils.file = store.selectedFile;
+        
     },[store.selectedFile])
     
     useEffect(()=>{
@@ -146,14 +152,14 @@ function StagedChangesComponent(props:IStagedChangesProps){
     },[state.containerHeight]);
 
     const handleSelect = (file?:IFile)=>{
-        dispatch(ActionUI.setSelectedFile(file));
+        dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));
     }
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>
     <div ref={headerRef as any} className="d-flex hover overflow-auto"
      >
         <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center align-items-center pt-2 ps-1">
-            <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Discard all" onClick={_=>unStageAll()}>
+            <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
                 <FaMinus />
             </span>
         </div>        

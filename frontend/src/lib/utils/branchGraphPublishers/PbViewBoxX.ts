@@ -1,19 +1,19 @@
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
-import { BranchUtils } from "../BranchUtils";
+import { GraphUtils } from "../GraphUtils";
+import { RepoUtils } from "../RepoUtils";
 
 export class PbViewBoxX extends DerivedState<number>{
     constructor(value:number){
         super(value);
-        BranchGraphUtils.state.horizontalScrollRatio.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.zoomLabel.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
+        GraphUtils.state.horizontalScrollRatio.subscribe(this.update.bind(this));
+        GraphUtils.state.zoomLabel.subscribe(this.update.bind(this));
+        GraphUtils.state.svgContainerWidth.subscribe(this.update.bind(this));
     }
     protected getDerivedValue(): number {        
-        const scrollRatio = BranchGraphUtils.state.horizontalScrollRatio.value;
-        const totalWidth = BranchUtils.repositoryDetails.branchPanelWidth;
-        const zoomLabel = BranchGraphUtils.state.zoomLabel.value;
-        const panelWidth = BranchGraphUtils.state.svgContainerWidth.value-BranchGraphUtils.scrollBarSize;
+        const scrollRatio = GraphUtils.state.horizontalScrollRatio.value;
+        const totalWidth = RepoUtils.repositoryDetails.branchPanelWidth;
+        const zoomLabel = GraphUtils.state.zoomLabel.value;
+        const panelWidth = GraphUtils.state.svgContainerWidth.value-GraphUtils.scrollBarSize;
         const effectivePanelWidth =  panelWidth / zoomLabel;
         const scrollableWidth = Math.max(totalWidth - effectivePanelWidth,0);
         return scrollRatio * scrollableWidth;

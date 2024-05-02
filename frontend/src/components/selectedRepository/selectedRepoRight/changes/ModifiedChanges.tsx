@@ -1,15 +1,13 @@
-import { EnumChangeType, IFile, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
-import { FaAngleDown, FaAngleRight, FaPlus, FaUndo } from "react-icons/fa";
-import { BranchUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { FaPlus, FaUndo } from "react-icons/fa";
+import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionModals } from "../../../../store";
+import { ActionChanges, ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
-import { StringUtils } from "../../../../lib/utils/StringUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -25,7 +23,7 @@ interface IState{
 function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
-        selectedFile:state.ui.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.ui.selectedFile:undefined,
+        selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -40,14 +38,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
-        IpcUtils.stageItems([file.path],props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems([file.path]).then(_=>{
             IpcUtils.getRepoStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
-        IpcUtils.stageItems(props.changes.map(x=>x.path),props.repoInfoInfo!).then(_=>{
+        IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
             IpcUtils.getRepoStatus();
         });        
     }
@@ -117,7 +115,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         if(!store.selectedFile)
             return ;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, BranchUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
         if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContent(joinedPath).then(lines=>{
                 const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
@@ -129,7 +128,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         ChangeUtils.currentLines = lineConfigs.currentLines;
                         ChangeUtils.previousLines = lineConfigs.previousLines;
                         ChangeUtils.showChanges();
-    
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
                     });
                 }
                 if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
@@ -137,16 +136,21 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangeUtils.currentLines = lineConfigs;
                     ChangeUtils.previousLines = null!;
                     ChangeUtils.showChanges();
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                 }
             })
         }
         else{            
-            IpcUtils.getGitShowResult(store.selectedFile.path).then(content=>{                
-                const lines = new StringUtils().getLines(content);
+            IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
+                const lines = StringUtils.getLines(content);
+                const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
+                if(!hasChanges) return;
+                refData.current.selectedFileContent = lines;
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 ChangeUtils.currentLines = null!;
                 ChangeUtils.previousLines = lineConfigs!;
                 ChangeUtils.showChanges();
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
             })
         }
 
@@ -155,7 +159,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[store.selectedFile])
 
     const handleFileSelect = (file:IFile)=>{
-        dispatch(ActionUI.setSelectedFile(file));
+        dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
     }
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
@@ -189,7 +193,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                                     <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
                                 </Fragment>}
                                 <span>
-                                    <span className="ps-1 text-success fw-bold" title={StringUtils.getStatusText(f.changeType)}>{getStatusText(f.changeType)}</span>
+                                    <span className={`ps-1 fw-bold ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{getStatusText(f.changeType)}</span>
                                 </span>
                             </div>
                         </div>

@@ -10,7 +10,7 @@ function FooterNavComponent(){
 
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-2">
-            <span>Git Studio</span> 
+            <span>LithiumGit</span> 
         </div>
         <div className="col-3"></div>
         <div className="col-auto text-center">

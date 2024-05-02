@@ -1,4 +1,4 @@
-import { BranchUtils, EnumIdPrefix } from "../../../../lib";
+import { RepoUtils, EnumIdPrefix } from "../../../../lib";
 
 interface IHeadTextProps{
     commitHash:string;
@@ -9,6 +9,6 @@ interface IHeadTextProps{
 }
 export function HeadText(props:IHeadTextProps){
     return (
-        <text id={`${EnumIdPrefix.COMMIT_TEXT}${props.commitHash}`} className={`cur-default`} x={props.x} onContextMenu={(e) => props.handleContext(e)} y={props.y} textAnchor="middle" alignmentBaseline="middle" fontSize={BranchUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
+        <text id={`${EnumIdPrefix.COMMIT_TEXT}${props.commitHash}`} className={`cur-default`} x={props.x} onContextMenu={(e) => props.handleContext(e)} y={props.y} textAnchor="middle" alignmentBaseline="middle" fontSize={RepoUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
     )
 }

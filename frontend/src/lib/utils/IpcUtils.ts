@@ -1,30 +1,73 @@
-import { ICommitInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
-import { BranchUtils } from "./BranchUtils";
+import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { RepoUtils } from "./RepoUtils";
+import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static resolveConflict(path: string, actions:IActionTaken[]) {
+        return IpcUtils.runGitCommand(RendererEvents.ResolveConflict,[path,actions]);
+    }
+    static registerHandler(channel:string,handler:(...args:any[])=>void){
+        window.ipcRenderer.on(channel,handler);
+    }
+    static checkout(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.checkoutCommit().channel,[options]);
+    }
+    static initNewRepo(path:string){
+        return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
+    }
+    static browseFolderPath(){
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[]);
+    }
+    static showInFileExplorer(path:string){        
+        return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
+    }
+    static cloneRepository(url: string, directory: string) {
+        return IpcUtils.execute(RendererEvents.cloneRepository,[directory,url]);
+    }
+    static getRaw(options: string[]) {
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitRaw,[options]);
+    }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = BranchUtils.repositoryDetails.repoInfo;
-        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo);
+            repoInfo = RepoUtils.repositoryDetails.repoInfo;
+        return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo) as Promise<IStatus>;
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = BranchUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.repositoryDetails.repoInfo;
         const status:IStatus = await window.ipcRenderer.invoke(RendererEvents.getStatusSync().channel,repoInfo);
         return status;
     }
 
-    static trigerPush(){
-        return window.ipcRenderer.invoke(RendererEvents.push().channel,BranchUtils.repositoryDetails);
+    static trigerPush(options?:string[]){
+        if(!options){
+            options = [RepoUtils.activeOriginName];
+            if(!RepoUtils.repositoryDetails.status.trackingBranch)
+                options.push("-u",RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
+    }
+
+    static trigerPull(options?:string[]){
+        if(!options){
+            options = [RepoUtils.activeOriginName];
+            if(!RepoUtils.repositoryDetails.status.trackingBranch)
+                options.push(RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
 
     static unstageItem(paths:string[],repoInfo:RepositoryInfo){
         return window.ipcRenderer.invoke(RendererEvents.unStageItem().channel,paths,repoInfo);
     }
 
-    static stageItems(paths:string[], repoInfo:RepositoryInfo){
-        return window.ipcRenderer.invoke(RendererEvents.stageItem().channel,paths,repoInfo);
+    static stageItems(paths:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.stageItem().channel,[paths]);        
+    }
+
+    static merge(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.gitMerge().channel,[options]);        
     }
 
     static discardItems(paths:string[],repoInfo:RepositoryInfo){
@@ -35,16 +78,16 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.gitClean().channel,repoInfo,paths);
     }
 
-    static doCommit(message:string){
-        return window.ipcRenderer.invoke(RendererEvents.commit().channel,BranchUtils.repositoryDetails.repoInfo,message);
+    static doCommit(messages:string[],options:string[]){        
+        return IpcUtils.runGitCommand(RendererEvents.commit().channel,[messages,options]);
     }
 
     static createBranch(branchName:string,sourceCommit:ICommitInfo,checkout:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,BranchUtils.repositoryDetails,branchName,checkout);
+        return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,RepoUtils.repositoryDetails,branchName,checkout);
     }
 
     static fetch(isAll:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,BranchUtils.repositoryDetails,isAll);
+        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,RepoUtils.repositoryDetails,isAll);
     }
 
     static async getFileContent(path:string){
@@ -52,16 +95,106 @@ export class IpcUtils{
     }
 
     static async getDiff(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,BranchUtils.repositoryDetails.repoInfo) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.repositoryDetails.repoInfo) as string;
     }
 
-    static async getGitShowResult(path:string){
-        const options =  [`HEAD:${path}`];
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+    static async getGitShowResult(options:string[]){
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.repositoryDetails.repoInfo,options) as string;
+    }
+    
+    static async reset(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.reset,[options]);
+    }
+
+    static async deleteLocalBranch(branchName:string){
+        return IpcUtils.runGitCommand(RendererEvents.deleteBranch,[branchName]);
     }
 
     static async getGitShowResultOfStagedFile(path:string){
         const options = [":"+path];
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,BranchUtils.repositoryDetails.repoInfo,options) as string;
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
     }
+
+    static async getFileContentAtSpecificCommit(commitHash:string, path:string){
+        const options = [`${commitHash}:${path}`];
+        return IpcUtils.runGitCommand<string>(RendererEvents.gitShow().channel,[options]);
+    }
+
+    static async addRemote(remote:IRemoteInfo){
+        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.repositoryDetails.repoInfo,remote);
+    }
+
+    static async removeRemote(remoteName:string){
+        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.repositoryDetails.repoInfo,remoteName);
+    }
+
+    static async getRemoteList(){
+        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
+    }
+
+    static async getCommitList(filterOptions:ILogFilterOptions){
+        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
+    }
+
+    static isValidRepositoryPath(path:string){
+        return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
+    }
+    static isValidPath(path:string){
+        return IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
+    }
+    
+    static async removeRecentRepo(repoId:string){
+        await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
+    }
+
+    static async rebaseBranch(branch:string){
+        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,branch);
+    }
+
+    static async cherryPick(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.cherry_pick,[options])
+    }
+
+    private static execute<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean):Promise<IpcResult<T>>{
+        const result = {} as IpcResult<T>;
+        return window.ipcRenderer.invoke(channel,...args).then(r=>{
+            result.result = r;
+            return result;
+        }).catch((e)=>{
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                IpcUtils.showError?.(err);                
+            }
+            result.error = err;
+            return result;
+        });
+    }
+
+    private static executeSync<T=any>(channel:string,args:any[],disableErrorDisplay?:boolean){
+        const result = {} as IpcResult<T>;
+        try{
+            const r:T = window.ipcRenderer.sendSync(channel,...args);
+            result.result = r;
+            return result;
+        }catch(e:any){
+            const err = e?.toString() as string;
+            if(!disableErrorDisplay){
+                IpcUtils.showError?.(err);
+            }
+            result.error = err;
+            return result;
+        };
+    }
+
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
+        if(!repositoryPath)
+            repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
+        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
+    }
+
+    static updateRepository(repo:RepositoryInfo){
+        return IpcUtils.execute(RendererEvents.updateRepository,[repo]);
+    }
+
+    static showError:(err:string)=>void;
 }

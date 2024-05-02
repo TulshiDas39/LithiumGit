@@ -11,6 +11,8 @@ export class DataManager{
     private addIpcHandlers(){
         this.handleRecentRepositoriesRequest();
         this.handleUpdateRepositories();
+        this.handleUpdateRepository();
+        this.handleRemoveRepository();
         this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
 
@@ -42,6 +44,26 @@ export class DataManager{
             }
         });
     }
+    private handleUpdateRepository(){
+        ipcMain.handle(RendererEvents.updateRepository,(_,repo:RepositoryInfo)=>{            
+            DB.repository.updateOne(repo);
+            var index = SavedData.data.recentRepositories.findIndex(_=>_.path == repo.path);
+            if(index > -1){
+                SavedData.data.recentRepositories[index] = repo;
+            }
+            else{
+                SavedData.data.recentRepositories.push(repo);
+            }
+        });
+    }
+
+    private handleRemoveRepository(){
+        ipcMain.handle(RendererEvents.removeRecentRepo, async(_, repoId:string)=>{
+            await DB.repository.deleteAsync({_id:repoId});
+            SavedData.data.recentRepositories = SavedData.data.recentRepositories.filter(_ => _._id !== repoId);
+        });
+    }
+
     private handleUpdateAutoStaging(){
         ipcMain.on(RendererEvents.updateAutoStaging().channel,(e,value:boolean)=>{            
             SavedData.data.configInfo.autoStage = value;

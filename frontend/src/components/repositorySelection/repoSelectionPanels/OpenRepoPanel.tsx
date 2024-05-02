@@ -5,32 +5,19 @@ import {createRepositoryInfo, RendererEvents, StringUtils} from "common_library"
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { ActionSavedData } from "../../../store/slices";
+import { GitUtils } from "../../../lib/utils/GitUtils";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 function OpenRepoPanelComponent(){
     const [state,setState] = useMultiState({path:"",error:""});
-    const dispatch = useDispatch();
 
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.getDirectoryPath().replyChannel,(e,path:string)=>{            
-            if(!!path) setState({path,error:""});
-        });
-        return ()=>{
-            UiUtils.removeIpcListeners([RendererEvents.getDirectoryPath().replyChannel]);
-        }
-    },[])
-    const handleOpen=()=>{
-        const isValidPath = window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath,state.path);
-        if(!isValidPath) setState({error:"The path is not a git repository"});
-        else {
-            const newRepoInfo = createRepositoryInfo({
-                name:StringUtils.getFolderName(state.path),
-                path:state.path
-            });
-            dispatch(ActionSavedData.setSelectedRepository(newRepoInfo));
-        }
+    const handleOpen=()=>{       
+        GitUtils.OpenRepository(state.path);
     }
     const handleBrowse=()=>{
-        window.ipcRenderer.send(RendererEvents.getDirectoryPath().channel);        
+        IpcUtils.browseFolderPath().then(r=>{
+            if(r.result) setState({path:r.result,error:""});
+        })
     }
     return <div className="d-flex flex-column align-items-center py-2">
         <div className="d-flex justify-content-center w-75">

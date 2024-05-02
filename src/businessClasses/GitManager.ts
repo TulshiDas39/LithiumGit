@@ -1,24 +1,33 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions } from "simple-git";
+import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields, SavedData } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import { FileManager } from "./FileManager";
+import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
-    private readonly LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
+    private readonly logFields = LogFields.Fields();    
+    private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
     }
 
     private addEventHandlers(){
         this.addValidGitPathHandler();
+        this.addCreateNewRepoHandler();
+        this.addValidPathHandler();
         this.addRepoDetailsHandler();
+        this.addLogHandler();
         this.addStatusHandler();
+        this.addCloneRepositoryHandler();
         this.addStatusSyncHandler();
         this.addStageItemHandler();
         this.addUnStageItemHandler();
+        this.addResetHandler();
+        this.addDeleteLocalBranchHandler();
         this.addDiscardUnStagedItemHandler();
         this.addDiffHandler();
         this.addCheckOutCommitHandlder();
@@ -28,42 +37,47 @@ export class GitManager{
         this.addFetchHandler();
         this.addCommitHandler();
         this.addGitShowHandler();
+        this.addRawHandler();
         this.addMergeHandler();
         this.addCleanhHandler();
+        this.addRemoteAddHandler();
+        this.addRemoteRemoveHandler();
+        this.addRemoteListHandler();
+        this.addRebaseHandler();
+        this.addCherryPickHandler();
+        this.addConflictResolveHandler();
     }
 
 
     addMergeHandler(){
-        ipcMain.on(RendererEvents.gitMerge().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.merge(repository,options);
-            e.reply(RendererEvents.gitMerge().replyChannel,result);
-        })
-    }
-
-    async merge(repoInfo:RepositoryInfo,options:string[]){
-        try {
-            const git = this.getGitRunner(repoInfo);
-            await git.merge(options);
-            const result = await this.getStatus(repoInfo);            
-            return result;
-        } catch (error) {
-            const errStr = error?.toString();
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errStr);
-            return null;
-        }
-        
-    }
-
-    addGitShowHandler(){
-        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repository:RepositoryInfo,options:string[])=>{
-            const result = await this.getShowResult(repository,options);
+        ipcMain.handle(RendererEvents.gitMerge().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.merge(repoPath,options);
             return result;
         })
     }
 
-    async getShowResult(repository:RepositoryInfo,options:string[]){
+    async merge(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.merge(options);
+    }
+
+    private addGitShowHandler(){
+        ipcMain.handle(RendererEvents.gitShow().channel, async (e,repoPath:string,options:string[])=>{
+            const result = await this.getShowResult(repoPath,options);
+            return result;
+        })
+    }
+
+    private addRawHandler(){
+        ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
+            const result = await this.getRawResult(repoPath,options);
+            return result;
+        })
+    }
+
+    async getShowResult(repoPath:string,options:string[]){
         try {
-            const git = this.getGitRunner(repository);
+            const git = this.getGitRunner(repoPath);
             const result = await git.show(options);   
             return result;
         } catch (error) {
@@ -71,16 +85,22 @@ export class GitManager{
         }        
     }
 
+    async getRawResult(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
+        const result = await git.raw(options);   
+        return result;       
+    }
+
     addCommitHandler(){
-        ipcMain.handle(RendererEvents.commit().channel, async (e,repository:RepositoryInfo,message:string)=>{
-            await this.giveCommit(repository,message);            
+        ipcMain.handle(RendererEvents.commit().channel, async (e,repoPath:string, messages:string[],options:string[])=>{
+            await this.giveCommit(repoPath, messages,options);            
         })
     }
 
-    async giveCommit(repository:RepositoryInfo,message:string){
+    async giveCommit(repoPath:string, messages:string[],options:string[]){
         try {
-            const git = this.getGitRunner(repository);            
-            await git.commit(message);            
+            const git = this.getGitRunner(repoPath);            
+            await git.commit(messages,options);
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
@@ -92,11 +112,14 @@ export class GitManager{
             await this.createBranch(sourceCommit,repository,newBranchName,checkout);            
         })
     }
+    private addRebaseHandler(){
+        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,branch:string)=>{
+            await this.rebaseBranch(repository,branch);
+        })
+    }
     addCheckOutCommitHandlder(){
-        // RendererEvents.checkoutCommit
-        ipcMain.on(RendererEvents.checkoutCommit().channel,async (e,repoInfo:RepositoryInfo,options:string[])=>{
-            await this.checkoutCommit(repoInfo,options,e);
-            // e.reply(RendererEvents.checkoutCommit().replyChannel,commit);
+        ipcMain.handle(RendererEvents.checkoutCommit().channel,async (e,repoPath:string,options:string[])=>{
+            await this.checkoutCommit(repoPath,options);
         })
     }
 
@@ -123,10 +146,27 @@ export class GitManager{
             await this.unStageItem(paths,repoInfo);            
         })
     }
-    private addStageItemHandler() {
-        ipcMain.handle(RendererEvents.stageItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.stageItem(paths,repoInfo);
+    private addResetHandler() {
+        ipcMain.handle(RendererEvents.reset, async(e,repoPath:string, options:string[])=>{
+            await this.resetItem(repoPath,options);
         })
+    }
+
+    private addDeleteLocalBranchHandler() {
+        ipcMain.handle(RendererEvents.deleteBranch, async(e,repoPath:string, branchName:string)=>{
+            await this.delete(repoPath,branchName);
+        })
+    }
+
+    private addStageItemHandler() {
+        ipcMain.handle(RendererEvents.stageItem().channel, async(e,repoPath:string,paths:string[])=>{
+            await this.stageItem(paths,repoPath);
+        })
+    }
+
+    private async rebaseBranch(repoInfo:RepositoryInfo,branch:string){
+        const git = this.getGitRunner(repoInfo);        
+        await git.rebase([branch]);        
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
@@ -139,9 +179,25 @@ export class GitManager{
         await git.reset(['head', ...paths]);
     }
 
-    private async stageItem(path:string[],repoInfo:RepositoryInfo){
-        const git = this.getGitRunner(repoInfo);
+    private async resetItem(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.reset(options);
+    }
+
+    private async delete(repoPath:string,branchNme:string){
+        const git = this.getGitRunner(repoPath);
+        await git.deleteLocalBranch(branchNme);
+    }
+
+    private async stageItem(path:string[],repoPath:string){
+        const git = this.getGitRunner(repoPath);
         await git.add(path);
+    }
+
+    private addValidPathHandler(){
+        ipcMain.on(RendererEvents.isValidPath,(e,path:string)=>{
+            e.returnValue = existsSync(path);
+        })
     }
 
     private addValidGitPathHandler(){
@@ -157,6 +213,13 @@ export class GitManager{
         })        
     }
 
+    private addCreateNewRepoHandler(){
+        ipcMain.handle(RendererEvents.createNewRepo, async (e,path:string)=>{
+            const git = this.getGitRunner(path);
+            await git.init();
+        })
+    }
+
     private addRepoDetailsHandler(){
         ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
             const repoDetails = await this.repoDetails(repoInfo);
@@ -164,9 +227,40 @@ export class GitManager{
         });
     }
 
+    private addLogHandler(){
+        ipcMain.handle(RendererEvents.gitLog, async (e,repoInfo:RepositoryInfo,filterOptions:ILogFilterOptions)=>{
+            const repoDetails = await this.getFilteredCommits(repoInfo,filterOptions);
+            return repoDetails;
+        });
+    }
+
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            await this.notifyStatus(repoInfo);
+            const result = await this.notifyStatus(repoInfo);
+            return result;
+        });
+    }
+
+    private addConflictResolveHandler(){
+        ipcMain.handle(RendererEvents.ResolveConflict, async (e,repoPath:string,filePath:string,actions:IActionTaken[])=>{
+            await this.resolveConflict(repoPath,filePath,actions);
+        });
+    }
+    
+    private resolveConflict(repoPath: string, filePath: string, actions: IActionTaken[]) {
+        const fileAbsPath = path.join(repoPath,filePath);
+        new ConflictResolver().resolveConflict(fileAbsPath,actions);
+    }
+
+    private addCloneRepositoryHandler(){
+        ipcMain.handle(RendererEvents.cloneRepository, async (e,folderPath:string, url:string)=>{
+            return await this.cloneRepository(folderPath,url);
+        });
+    }
+
+    private addCherryPickHandler(){
+        ipcMain.handle(RendererEvents.cherry_pick, async (e,repoPath:string,options:string[] )=>{
+            await this.cherryPick(repoPath,options);
         });
     }
 
@@ -178,6 +272,8 @@ export class GitManager{
     }
 
     private setActiveOrigin(repoDetails:IRepositoryDetails){
+        if(!repoDetails.remotes.length)
+            return ;
         const defaultOrigin = repoDetails.repoInfo.activeOrigin;
         let origin = repoDetails.remotes.find(x => x.name === defaultOrigin);
         if(!origin) origin = repoDetails.remotes[0];
@@ -221,6 +317,14 @@ export class GitManager{
     private async notifyStatus(repoInfo:RepositoryInfo){
         const status = await this.getStatus(repoInfo);
         AppData.mainWindow?.webContents.send(RendererEvents.getStatus().replyChannel,status);
+        return status;
+    }
+
+    private async cloneRepository(folderPath:string,url:string){
+        const git = this.getGitRunner(folderPath,(data)=>{
+            AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
+        });        
+        return await git.clone(url,folderPath);
     }
 
     private async getStatus(repoInfo:RepositoryInfo){
@@ -229,35 +333,51 @@ export class GitManager{
         const result = {
             staged:[],
             unstaged:[],
-            conflicted:[]
+            conflicted:[],
+            totalChangedItem:0,
         } as IStatus;
-        ///staged changes
+        const limit = 500;
+        ///staged changes        
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
         let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.STAGED}));
-        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));
+        let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));        
         result.staged = [...modified,...created,...deleted];
+        result.totalStagedItem = result.staged.length;
+        result.staged = result.staged.slice(0,limit);
 
         ///not staged changes
         deleted = status.deleted.filter(_=>!status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.UN_STAGED}));
         modified = status.files?.filter(x=>x.working_dir === "M")?.map(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.UN_STAGED}));
         created = status.files?.filter(x=>x.working_dir === "?" && x.index === "?")?.map<IFile>(x=> ({fileName:path.basename(x.path),path:x.path,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.UN_STAGED}));
-        result.unstaged = [...modified,...created,...deleted]
+        result.unstaged = [...modified,...created,...deleted];
+        result.totalUnStagedItem = result.unstaged.length;
+        result.unstaged = result.unstaged.slice(0,limit);
 
         result.ahead = status.ahead;
         result.behind = status.behind;        
-        result.conflicted = status.conflicted?.map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.STAGED}));
+        result.conflicted = status.conflicted?.slice(0,limit).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CONFLICTED,changeGroup:EnumChangeGroup.CONFLICTED}));
+        result.totalConflictedItem = status.conflicted?.length || 0;
         result.isClean = status?.isClean();
         result.current = status.current;
         result.isDetached = status.detached;
         if(status.tracking){
             result.trackingBranch = status.tracking.substring(status.tracking.indexOf("/")+1);
         }
+
+        result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
         result.headCommit = await this.getCommitInfo(git,undefined);
+        if(!result.headCommit)
+            return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
         return result;
     }
 
+    private async cherryPick(repoPath:string, options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.raw(["cherry-pick",...options]);
+    }
+    
     private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
@@ -269,7 +389,7 @@ export class GitManager{
 
     private async getCommits(git: SimpleGit){
         const commitLimit=500;
-        //const LogFormat = "--pretty="+LogFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
+        //const LogFormat = "--pretty="+logFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
             let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
             const commits = CommitParser.parse(res);
@@ -280,9 +400,65 @@ export class GitManager{
     
     }
 
+    private async getFilteredCommits(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["log","--exclude=refs/stash","--date=iso-strict","--no-notes"];
+        if(filterOption.pageSize){
+            options.push(`--max-count=${filterOption.pageSize}`);
+            if(filterOption.pageIndex){
+                options.push(`--skip=${filterOption.pageIndex*filterOption.pageSize}`);
+            }
+        }
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
+        }
+        else{
+            options.push("--all");
+        }
+
+        options.push(this.LogFormat);
+
+        try{
+            let res = await git.raw(options);
+            const commits = CommitParser.parse(res);
+            const count = await this.getTotalCommitCount(repoInfo,filterOption);
+            const result:IPaginated<ICommitInfo>={
+                count,
+                list:commits
+            };
+            return result;
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+    
+    }
+
+    private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
+        const git = this.getGitRunner(repoInfo);
+        const options = ["rev-list","--count","--exclude=refs/stash"];
+        if(filterOption.message){
+            options.push(`--grep=${filterOption.message}`);
+        }
+        if(filterOption.branchName){
+            options.push(`--first-parent`,`${filterOption.branchName}`,"--no-merges");
+        }
+        else{
+            options.push("--all");
+        }
+        try{
+            let res = await git.raw(options);
+            return Number(res);
+        }catch(e){
+            console.error("error on get logs:", e);
+        }
+
+    }
+
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
-        let res = await git.status();
         return result.all;
     }
 
@@ -293,12 +469,12 @@ export class GitManager{
         return true;
     }
 
-    private async checkoutCommit(repoInfo:RepositoryInfo,options:string[],e: Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoInfo);
+    private async checkoutCommit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
         try {            
             await git.checkout(options);  
-            const status = await this.getStatus(repoInfo);
-            e.reply(RendererEvents.checkoutCommit().replyChannel,status);
+            // const status = await this.getStatus(repoPath);
+            // return status;
         }catch (error) {
             const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
             const errorMsg:string = error?.toString() || "";
@@ -330,32 +506,78 @@ export class GitManager{
     }
 
     private async addPullHandler(){
-        ipcMain.on(RendererEvents.pull().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.takePull(repoDetails,e);
+        ipcMain.handle(RendererEvents.pull().channel,async (e,repoPath:string,options:string[])=>{
+            await this.takePull(repoPath,options);
         });
     }
 
-    private async addPushHandler(){
-        ipcMain.handle(RendererEvents.push().channel,async (e,repoDetails:IRepositoryDetails)=>{
-            await this.givePush(repoDetails);
+    private addPushHandler(){
+        ipcMain.handle(RendererEvents.push().channel,async (e,repoPath:string,options:string[])=>{
+            await this.givePush(repoPath ,options);
         });
     }
 
-    private async addFetchHandler(){
+    private  addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
             await this.takeFetch(repoDetails,all);
         });
     }
 
-    private async addCleanhHandler(){
+    private addCleanhHandler(){
         ipcMain.handle(RendererEvents.gitClean().channel,async (e,repoInfo:RepositoryInfo,files:string[])=>{
             await this.cleanFiles(repoInfo,files);
         });
     }
 
+    private addRemoteAddHandler(){
+        ipcMain.handle(RendererEvents.gitAddRemote().channel,async (e,repoInfo:RepositoryInfo,remote:IRemoteInfo)=>{
+            await this.addRemote(repoInfo, remote);
+        })
+    }
+
+    private addRemoteRemoveHandler(){
+        ipcMain.handle(RendererEvents.gitRemoveRemote,async (e,repoInfo:RepositoryInfo,remoteName:string)=>{
+            await this.removeRemote(repoInfo, remoteName);
+        })
+    }
+
+    private addRemoteListHandler(){
+        ipcMain.handle(RendererEvents.gitGetRemoteList().channel,async (e,repoInfo:RepositoryInfo)=>{
+            return await this.getRemotes(repoInfo);
+        })
+    }
+
     private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
         const git = this.getGitRunner(repoInfo);
         await git.clean(CleanOptions.FORCE,files);
+    }
+
+    private async addRemote(repoInfo:RepositoryInfo, remote:IRemoteInfo){
+        const git = this.getGitRunner(repoInfo);
+        await git.addRemote(remote.name,remote.url);
+    }
+
+    private async removeRemote(repoInfo:RepositoryInfo, remoteName:string){
+        const git = this.getGitRunner(repoInfo);
+        await git.removeRemote(remoteName);
+    }
+
+    private async getRemotes(repoInfo:RepositoryInfo){
+        const git = this.getGitRunner(repoInfo);
+        const remotes:IRemoteInfo[] = [];
+        const result = await git.getRemotes(true);        
+        result.forEach(r=>{
+            const remote:IRemoteInfo = {
+                name:r.name,
+                url:r.refs.fetch || r.refs.push,
+                actionTyps:[]
+            };
+            if(!!r.refs.fetch) remote.actionTyps.push("fetch");
+            if(!!r.refs.push) remote.actionTyps.push("push");
+            remotes.push(remote);
+        });
+
+        return remotes;
     }
     
     private hasChangesInPull(result:PullResult){
@@ -368,13 +590,11 @@ export class GitManager{
         return false;
     }
 
-    private async takePull(repoDetails:IRepositoryDetails,e:Electron.IpcMainEvent){
-        const git = this.getGitRunner(repoDetails.repoInfo);
-        
+    private async takePull(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
         try {
-            const result = await git.pull(repoDetails.remotes[0].name,repoDetails.headCommit.ownerBranch.name);
-            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)
-            else e.reply(RendererEvents.pull().replyChannel);
+            const result = await git.pull(options);
+            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)            
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
@@ -402,13 +622,10 @@ export class GitManager{
         return hasChange;
     }
 
-    private async givePush(repoDetails:IRepositoryDetails){
-        const git = this.getGitRunner(repoDetails.repoInfo);
+    private async givePush(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
         
-        try {
-            const options:string[] = [repoDetails.remotes[0].name];
-            if(!repoDetails.status.trackingBranch)
-                options.push("-u",repoDetails.headCommit.ownerBranch.name);            
+        try {                       
             const result = await git.push(options);
             if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
         } catch (error) {
@@ -417,11 +634,19 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo){
+    private getGitRunner(repoInfo:RepositoryInfo | string,progress?:(data:SimpleGitProgressEvent)=>void){
+        let repoPath = "";
+        if(typeof(repoInfo) === 'string'){
+            repoPath = repoInfo as string;
+        }
+        else{
+            repoPath = (repoInfo as RepositoryInfo).path;
+        }
         const options: Partial<SimpleGitOptions> = {
-            baseDir: repoInfo.path,
+            baseDir: repoPath,
             binary: 'git',
             maxConcurrentProcesses: 6,
+            progress
          };
         let git = simpleGit(options);  
         return git;
@@ -431,9 +656,15 @@ export class GitManager{
         const options:string[] = [];
         if(commitHash) options.push(commitHash);
         options.push(this.LogFormat);
-        const showResult = await git.show(options);        
-        const commit = CommitParser.parse(showResult);        
-        return commit?.[0];
+        let commits:ICommitInfo[] = [];
+        try{
+            const showResult = await git.show(options);        
+            commits = CommitParser.parse(showResult);        
+        }catch(e){
+            return null!;
+        }
+        
+        return commits?.[0];
     }
 
 

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IFile, IStatus } from "common_library";
-import { BranchGraphUtils, EnumSelectedRepoTab } from "../../lib";
+import { IRemoteInfo, IStatus } from "common_library";
+import { EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -17,11 +17,7 @@ interface EventVersions{
     appFocused:number;
     branchPanelHome:number;
     repoDetails:number;
-}
-
-interface IChangesState{
-    totalStep:number;
-    currentStep:number;
+    remoteList:number;
 }
 
 export interface ILoaderInfo{
@@ -31,12 +27,12 @@ export interface ILoaderInfo{
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
-    changes?:IChangesState;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
-    selectedFile?:IFile;
+    remotes:IRemoteInfo[];
+    branchList:string[];
 }
 
 const initialState:IUIState={
@@ -47,12 +43,11 @@ const initialState:IUIState={
         appFocused:0,
         branchPanelHome:0,
         repoDetails:0,
+        remoteList:0,
     },    
-    selectedRepoTab:EnumSelectedRepoTab.BRANCHES,
-    changes:{
-        currentStep:0,
-        totalStep:1,
-    }
+    selectedRepoTab:EnumSelectedRepoTab.GRAPH,
+    remotes:[],
+    branchList:[],
 }
 
 const UISlice = createSlice({
@@ -82,13 +77,6 @@ const UISlice = createSlice({
         resetBranchPanelZoom(state){
             state.versions.branchPanelZoom = 0;
         },
-        setTotalComparable(state,action:PayloadAction<number>){
-            if(state.changes)state.changes.totalStep = action.payload;
-            else state.changes = {currentStep:action.payload,totalStep:action.payload};
-        },
-        setComparableStep(state,action:PayloadAction<number>){
-            state.changes!.currentStep = action.payload;
-        },
         setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
             state.selectedRepoTab = action.payload;
         },
@@ -101,8 +89,11 @@ const UISlice = createSlice({
         setStatus(state,action:PayloadAction<IStatus>){
             state.status = action.payload;
         },
-        setSelectedFile(state,action:PayloadAction<IFile|undefined>){
-            state.selectedFile = action.payload;
+        setRemotes(state,action:PayloadAction<IRemoteInfo[]>){
+            state.remotes = action.payload;
+        },
+        setBranchList(state,action:PayloadAction<string[]>){
+            state.branchList = action.payload;
         }
     }
 });

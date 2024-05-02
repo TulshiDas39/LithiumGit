@@ -237,5 +237,37 @@ export class RendererEvents{
             replyChannel: RendererEvents.replyChanelPrefix+channel
         } as IChannelModel; 
     }
+
+    static gitAddRemote(){
+        const channel = "gitAddRemote";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static gitGetRemoteList(){
+        const channel = "getRemoteList";
+        return {
+            channel,
+            replyChannel: RendererEvents.replyChanelPrefix+channel
+        } as IChannelModel; 
+    }
+
+    static readonly gitRemoveRemote = "gitRemoveRemote";
+    static readonly gitLog = "gitLog";
+    static readonly removeRecentRepo = "removeRecentRepo";
+    static readonly rebase = "rebase";
+    static readonly cherry_pick = "cherry_pick";
+    static readonly updateRepository = "updateRepository";
+    static readonly diffTree = "diffTree";
+    static readonly gitRaw = "gitRaw";
+    static readonly reset = "reset";
+    static readonly deleteBranch = "deleteBranch";
+    static readonly cloneRepository = "cloneRepository";
+    static readonly cloneProgress = "cloneProgress";
+    static readonly isValidPath = "isValidPath";
+    static readonly createNewRepo = "createNewRepo";
+    static readonly ResolveConflict = "resolveConflict";
 }
 

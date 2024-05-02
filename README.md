@@ -1,6 +1,6 @@
-# Git Studio
+# LithiumGit
 
-**Download and install latest version from [releases](https://github.com/TulshiDas39/GitStudio/releases)..**
+**Download and install latest version from [releases](https://github.com/TulshiDas39/LithiumGit/releases)..**
 
 This is a cross platform Git GUI application.
 

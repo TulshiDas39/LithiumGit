@@ -1,12 +1,6 @@
 import ReactDOMServer from "react-dom/server";
-import { EditorColors } from "../editor";
 import { ILine } from "../interfaces";
-import { DiffUtils } from "./DiffUtils";
-import { DeltaStatic,Quill} from "quill";
-import { Difference2 } from "../../components/selectedRepository/selectedRepoRight/changes/Difference2";
-import { BranchGraphUtils } from "./BranchGraphUtils";
-import { BranchUtils } from "./BranchUtils";
-import { ReduxUtils } from "./ReduxUtils";
+import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
 import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
 export class ChangeUtils{
@@ -16,27 +10,27 @@ export class ChangeUtils{
     static previousLines:ILine[];
     private static heighlightedLineIndexes:number[]=[];
 
-    static init(){
-        var quill = new Quill('#editor', {
-            theme: 'snow'
-          });
-    }
-
     static showChanges(){
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
-        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference2({
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
             linesAfterChange:ChangeUtils.currentLines,
             linesBeforeChange:ChangeUtils.previousLines
         }));
         container.innerHTML = innerHtml;
         ChangeUtils.HandleScrolling();
         ChangeUtils.SetHeighlightedLines();
-        ReduxUtils.resetChangeNavigation();
+        ChangeUtils.FocusHightlightedLine(1);
+
+        // ReduxUtils.resetChangeNavigation();
     }
 
     static FocusHightlightedLine(step:number){
+        if(!ChangeUtils.containerId)
+            return;
         const container = document.querySelector("#"+ChangeUtils.containerId);
+        if(!ChangeUtils.heighlightedLineIndexes.length)
+            return;
         const focusElem = container?.querySelector('.line_numbers')?.children[ChangeUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
     }
@@ -44,8 +38,11 @@ export class ChangeUtils{
     private static SetHeighlightedLines(){
         ChangeUtils.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;
-        for(let i = 0;i < ChangeUtils.currentLines.length; i++){
-            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.previousLines?.[i].hightLightBackground){
+        if(!ChangeUtils.currentLines?.length || !ChangeUtils.previousLines?.length)
+            return;
+        const lenght = ChangeUtils.currentLines?.length;
+        for(let i = 0;i < lenght; i++){
+            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.currentLines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
                     ChangeUtils.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
@@ -89,7 +86,7 @@ export class ChangeUtils{
         if(container)
             container.innerHTML = "";
         ChangeUtils.file = undefined;
-        ReduxUtils.resetChangeNavigation();
+        //ReduxUtils.resetChangeNavigation();
     }
 
     static handleStatusChange(status:IStatus){

@@ -5,6 +5,7 @@ import { EnumModals } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
+import { FaTimes } from "react-icons/fa";
 
 function ErrorModalComponent(){
     const Data = ModalData.errorModal;
@@ -27,7 +28,7 @@ function ErrorModalComponent(){
                         <span className="text-danger">Error</span>                        
                     </div>
                     <div className="col-1 text-end">
-                        <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.ERROR))}>&times;</span>
+                        <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.ERROR))}><FaTimes /></span>
                     </div>
                 </div>
                 <hr />

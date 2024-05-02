@@ -1,6 +1,6 @@
-import React from "react"
+import React, { CSSProperties, PropsWithChildren, useMemo } from "react"
 
-type ButtonType = "default"|"success"|"danger"|"info"|"primary";
+type ButtonType = "default"|"success"|"danger"|"info"|"primary"|"text";
 
 interface IConfig{
     type:ButtonType;
@@ -20,6 +20,14 @@ function getButtonConfigs(type:ButtonType){
         {
             type:"success",
             bgColor:"bg-success"
+        },
+        {
+            type:"danger",
+            bgColor:"bg-danger"
+        },
+        {
+            type:"text",
+            bgColor:"transparent"
         }
     ]
 
@@ -28,25 +36,56 @@ function getButtonConfigs(type:ButtonType){
 
 interface IProps{
     type:ButtonType;
-    onClick?:()=>void;
-    text:string;
+    onClick?:(e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>void;
+    text?:string;
     borderSize?:number;
     borderColor?:string;
+    disabled?:boolean;
+    style?:CSSProperties;
+    className?:string;
+    title?:string;
 }
 
 
-function AppButtonComponent(props:IProps){
+function AppButtonComponent(props:PropsWithChildren<IProps>){
     const config = getButtonConfigs(props.type);
     const getBorderSize = ()=>{
         if(props.borderSize !== undefined)
             return props.borderSize;
+        if(props.type === "text")
+            return 0;
         if(props.type === "default")
             return 1;
         return 0;
     }
-    return <div className={`${config.bgColor} hover-brighter text-center cur-default hover-shadow`} onClick={props.onClick}
-        style={{borderStyle:"solid", borderWidth:getBorderSize(),borderColor:props.borderColor || "rgba(0,0,0,.2)", minWidth:50}}>
-        {props.text}
+
+    const getHoverClasses=()=>{
+        if(props.disabled){
+            return "";
+        }
+        if(props.type === "text"){
+            return "hover-color cur-point";
+        }
+        return "hover-brighter hover-shadow cur-default";
+    }
+
+    const styles = useMemo(()=>{
+        let style:CSSProperties = {
+            borderStyle:"solid", 
+            borderWidth:getBorderSize(),
+            borderColor:props.borderColor || "rgba(0,0,0,.2)", 
+            paddingLeft: '1rem',
+            paddingRight: '1rem',
+        };
+        if(props.style){
+            style = {...style,...props.style};
+        }
+        return style;
+    },[props.style])
+
+    return <div title={props.title} className={`${config.bgColor} ${getHoverClasses()} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+        style={styles}>
+        {props.children || props.text}
     </div>
 }
 

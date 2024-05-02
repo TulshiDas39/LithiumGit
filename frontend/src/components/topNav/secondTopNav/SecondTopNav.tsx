@@ -25,7 +25,7 @@ function SecondTopNavComponent(){
 
     return <div className="d-flex bg-third-color py-2 align-items-center h-100">
         <span className="px-2 hover">
-            <FaHome className="h5 mb-0" onClick={handleHomeClick} />
+            <FaHome className="h4 mb-0" onClick={handleHomeClick} />
         </span>
         <div className="flex-grow-1">
             {store.hasSelectedRepo && <ActionBar />}        

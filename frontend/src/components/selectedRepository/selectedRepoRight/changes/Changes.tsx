@@ -6,21 +6,16 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, ReduxUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
-import { Difference } from "./Difference";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { Difference2 } from "./Difference2";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ConflictEditor } from "./ConflictEditor";
+import { ActionChanges } from "../../../../store";
 
-interface IChangesProps{
-    //height:number;
-}
 
 interface IState {
     adjustedX: number;    
     differenceRefreshKey:number;
-    // expandedTabCount:number;
-    // document:Descendant[],
 }
 
 function ChangesComponent() {
@@ -34,7 +29,7 @@ function ChangesComponent() {
         recentRepositories:state.savedData.recentRepositories,
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
-        selectedFile:state.ui.selectedFile,
+        selectedFile:state.changes.selectedFile,
     }),shallowEqual);
 
     const dispatch = useDispatch()
@@ -45,7 +40,7 @@ function ChangesComponent() {
     },[store.recentRepositories])
 
     useEffect(()=>{
-         dispatch(ActionUI.setSelectedFile(undefined));
+         dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
     },[repoInfo?.path]);
 
     useEffect(()=>{
@@ -57,7 +52,7 @@ function ChangesComponent() {
         if(store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === store.selectedFile?.path)) return;
         if(store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === store.selectedFile?.path)) return;
         if(store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === store.selectedFile?.path)) return;
-        dispatch(ActionUI.setSelectedFile(undefined));
+        dispatch(ActionChanges.updateData({selectedFile:undefined}));
     },[store.status])
 
     const getAdjustedSize = (adjustedX: number) => {
@@ -65,9 +60,6 @@ function ChangesComponent() {
         return `- ${-adjustedX}px`;
     }
 
-    const handleSelect = useCallback((changedFile:IFile,changeGroup:EnumChangeGroup)=>{
-        dispatch(ActionUI.setSelectedFile(changedFile));
-    },[])
     const handleMoseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
         e.preventDefault();
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
@@ -83,17 +75,9 @@ function ChangesComponent() {
 
     }
     
-    useEffect(()=>{
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        ReduxUtils.resetChangeNavigation = ()=>{
-            dispatch(ActionUI.setTotalComparable(ChangeUtils.totalChangeCount));
-            if(ChangeUtils.totalChangeCount > 0) dispatch(ActionUI.setComparableStep(1));
-            else dispatch(ActionUI.setComparableStep(0));
-            ChangeUtils.FocusHightlightedLine(1);
-        }
-
+    useEffect(()=>{        
         return ()=>{
-            dispatch(ActionUI.setComparableStep(0));
+            dispatch(ActionChanges.updateData({currentStep:0}));
         }
     },[])
 
@@ -103,17 +87,16 @@ function ChangesComponent() {
             <CommitBox />
             <ChangesTabPane  />
         </div>
-        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px',zIndex:2 }} />
+        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
 
-        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})`,zIndex:2 }}>
-            {/* {!!state.selectedFile && !!repoInfo && <Difference refreshV={state.differenceRefreshKey} 
-                path={state.selectedFile.path} repoInfo={repoInfo} 
-                changeGroup={state.selectedFileGroup} 
-                changeType={state.selectedFile.changeType}/>} */}
+        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
-            <div id={EnumHtmlIds.diffview_container} className="h-100">
+            {store.selectedFile?.changeType !== EnumChangeType.CONFLICTED && <div id={EnumHtmlIds.diffview_container} className="h-100">
 
-            </div>
+            </div>}
+            {store.selectedFile?.changeType === EnumChangeType.CONFLICTED &&
+                <ConflictEditor />
+            }
         </div>
     </div>
 }

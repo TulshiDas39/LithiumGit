@@ -1,4 +1,4 @@
-import { ICommitInfo } from "common_library";
+import { EnumChangeType, ICommitInfo } from "common_library";
 import { IPositionDiff, IPositition } from "../interfaces";
 import * as ReactDOMServer from 'react-dom/server';
 
@@ -137,9 +137,15 @@ export class UiUtils {
         return false;
     }
 
-    static resolveHeight(id:string){
+    static resolveHeight(id:string){        
         return new Promise<number>((res)=>{
+            let tryCount = 0;
             const timer = setInterval(() => {
+                tryCount++;
+                if(tryCount > 1000){
+                    clearInterval(timer);
+                    res(0);
+                }
                 const elem = document.querySelector("#"+id);
                 if(!elem)
                     return;
@@ -152,4 +158,41 @@ export class UiUtils {
         })
         
     }
+
+    static getChangeTypeHintColor(changeType:EnumChangeType){
+        if(changeType === EnumChangeType.MODIFIED)
+            return "text-primary";
+        if(changeType === EnumChangeType.CREATED)
+            return "text-success";
+        if(changeType === EnumChangeType.DELETED)
+            return "text-danger";
+        return "text-info";
+    }
+
+    static getVerticalScrollRatio(element:HTMLElement){
+        const height = element.getBoundingClientRect().height;
+        const scrollTop = element.scrollTop;
+        const scrollHeight = element.scrollHeight;
+        return scrollTop / (scrollHeight - height);
+    }
+
+    static getVerticalScrollTop(element:HTMLElement,ratio:number){
+        const height = element.getBoundingClientRect().height;
+        const scrollHeight = element.scrollHeight;
+        const scrollTop = (scrollHeight - height)*ratio;
+        return scrollTop;
+    }
+
+    static resolveValueFromId(id:string){
+        const lastIndex = id.lastIndexOf("_");
+        return id.substring(lastIndex+1);
+    }
+
+    static jsx_to_domElement<T extends HTMLElement>(jsx:JSX.Element){
+        var wrapper= document.createElement('div');
+        wrapper.innerHTML= ReactDOMServer.renderToStaticMarkup(jsx);
+        return wrapper.firstChild as T;
+    }
+
+
 }

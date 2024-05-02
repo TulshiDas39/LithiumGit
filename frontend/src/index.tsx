@@ -7,10 +7,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-quill/dist/quill.snow.css';
 import {Provider} from 'react-redux';
 import { ReduxStore } from './store';
-import { BranchGraphUtils } from './lib';
+import { GraphUtils } from './lib';
 
 export {}
-BranchGraphUtils.init();
+GraphUtils.init();
 
 ReactDOM.render(
   <React.StrictMode>

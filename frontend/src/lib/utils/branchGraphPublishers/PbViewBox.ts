@@ -1,30 +1,30 @@
 import { IViewBox } from "../../interfaces";
 import { DerivedState } from "../../publishers";
-import { BranchGraphUtils } from "../BranchGraphUtils";
+import { GraphUtils } from "../GraphUtils";
 import { NumUtils } from "../NumUtils";
 
 export class PbViewBox extends DerivedState<IViewBox>{
     constructor(value:IViewBox){
         super(value);
-        BranchGraphUtils.state.viewBoxX.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.viewBoxY.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.viewBoxWidth.subscribe(this.update.bind(this));
-        BranchGraphUtils.state.viewBoxHeight.subscribe(this.update.bind(this));
+        GraphUtils.state.viewBoxX.subscribe(this.update.bind(this));
+        GraphUtils.state.viewBoxY.subscribe(this.update.bind(this));
+        GraphUtils.state.viewBoxWidth.subscribe(this.update.bind(this));
+        GraphUtils.state.viewBoxHeight.subscribe(this.update.bind(this));
     }
     protected applyChange(): void {
-        const svgElem = BranchGraphUtils.svgElement;
+        const svgElem = GraphUtils.svgElement;
         svgElem.setAttribute("viewBox",this.toString());
     }
     protected getDerivedValue(): IViewBox {
-        const x = BranchGraphUtils.state.viewBoxX.value;
-        const y = BranchGraphUtils.state.viewBoxY.value;
-        const width = BranchGraphUtils.state.viewBoxWidth.value;
-        const height = BranchGraphUtils.state.viewBoxHeight.value;
+        const x = GraphUtils.state.viewBoxX.value;
+        const y = GraphUtils.state.viewBoxY.value;
+        const width = GraphUtils.state.viewBoxWidth.value;
+        const height = GraphUtils.state.viewBoxHeight.value;
         return {x,y,width,height};
     }
     
     toString(){
-        return `${BranchGraphUtils.state.viewBoxX.value} ${BranchGraphUtils.state.viewBoxY.value} ${BranchGraphUtils.state.viewBoxWidth.value} ${BranchGraphUtils.state.viewBoxHeight.value}`;
+        return `${GraphUtils.state.viewBoxX.value} ${GraphUtils.state.viewBoxY.value} ${GraphUtils.state.viewBoxWidth.value} ${GraphUtils.state.viewBoxHeight.value}`;
     }
 
     isVisible(x:number,y:number){        
