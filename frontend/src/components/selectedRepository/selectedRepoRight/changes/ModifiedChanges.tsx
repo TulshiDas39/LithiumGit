@@ -16,8 +16,6 @@ interface IModifiedChangesProps{
 
 interface IState{
     hoveredFile?:IFile;
-    firstPaneHeight?:number;
-    containerHeight?:number;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
@@ -91,26 +89,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }    
     
     useEffect(()=>{
-        const setContainerHeight=()=>{
-            UiUtils.resolveHeight(EnumHtmlIds.modifiedChangesPanel).then(height=>{
-                setState({containerHeight:height});
-            })
-        }
-        setContainerHeight();
 
-        window.addEventListener("resize",setContainerHeight);
-        return ()=>{
-            window.removeEventListener("resize",setContainerHeight);
-        }
     },[])
-
-    useEffect(()=>{
-        if(!state.containerHeight || props.changes?.length === 0)
-            return;                
-        UiUtils.resolveHeight(EnumHtmlIds.stage_unstage_allPanel).then(height=>{
-            setState({firstPaneHeight:height});
-        })
-    },[state.containerHeight,props.changes?.length === 0]);
 
     useEffect(()=>{
         if(!store.selectedFile)
@@ -163,17 +143,17 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
-            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex align-items-center pt-2 ps-2">
-                <span className="h4 hover-brighter bg-danger py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
+                <span className="d-flex align-items-center hover-brighter bg-danger px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>
                 <span className="px-2" />
-                <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
+                <span className="d-flex align-items-center hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
                     <FaPlus />
                 </span>
             </div>}        
-            {!!state.firstPaneHeight &&
-                <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
+            
+            <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
                     {props.changes?.map(f=>(
                         <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                             className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
@@ -198,7 +178,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                             </div>
                         </div>
                     ))}                                                                
-            </div>}
+            </div>
     </div>
 }
 
