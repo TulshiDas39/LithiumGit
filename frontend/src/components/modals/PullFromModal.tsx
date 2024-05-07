@@ -36,7 +36,6 @@ function PullFromModalComponent(){
     const handlePull=()=>{
         if(!state.branch)
             return ;
-        closeModal();
         //const originName = BranchUtils.activeOriginName;
         const options:string[] = [];
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
@@ -52,7 +51,7 @@ function PullFromModalComponent(){
                 dispatch(ActionSavedData.updateRepository(repo));
             }
         })
-        
+        closeModal();        
     }
 
     useEffect(()=>{

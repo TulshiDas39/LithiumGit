@@ -6,6 +6,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { AppButton } from "../../../common";
 
 interface IState{
     value:string;
@@ -66,27 +67,32 @@ function CommitBoxComponent(){
 
     
 
-    return <div className="w-100 pb-2" ref={ref as any}>
-            <Form.Control as="textarea" rows={2} value={state.value} onChange={e=> setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
-                type="textarea" className="w-100 rounded-0 no-resize" placeholder="Commit message" />
-            <div className="row g-0 align-items-center pt-2 justify-content-center flex-nowrap overflow-hidden">  
-                <div className="col-3 pe-1"></div>              
-                <div className="col-6 d-flex bg-success cur-point overflow-hidden" onClick={handleCommit}>
-                    <div className="row g-0 align-items-center py-2 w-100">
-                        <div className="col-4 text-end pe-2">
-                            <FaCheck className="ps-2 h5 m-0"/>
-                        </div>
-                        <div className="col-8">
-                            <span className="">Commit</span> 
-                        </div>
-                    </div>
+    return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
+            <div className="col">
+                <Form.Control as="textarea" rows={2} value={state.value} onChange={e => setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
+                    type="textarea" className="w-100 h-100 rounded-0 no-resize" placeholder="Commit message" />
+            </div>
+            
+            <div className="col d-flex pt-1">
+                <div className="row w-100 h-100 g-0 justify-content-center flex-nowrap overflow-hidden">  
+                    <div className="col-3 pe-1"></div>
+                    <div className="col-6">
+                        <AppButton type="success" onClick={handleCommit} className="h-100">
+                            <span className="pe-2">
+                                <FaCheck className="ps-2 h5 m-0"/>
+                            </span>
+                            <span className="">Commit</span>                    
+                        </AppButton>
+                    </div>                    
+                    <div className="col-3"></div>
+                </div>                
+            </div>
+            <div className="col-auto">
+                <div className="d-flex align-items-center justify-content-center pt-1">
+                    <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
+                    <label htmlFor="amend" className="ps-1">Amend</label>
                 </div>
-                <div className="col-3"></div>
-            </div>
-            <div className="d-flex align-items-center justify-content-center pt-1">
-                <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
-                <label htmlFor="amend" className="ps-1">Amend</label>
-            </div>
+            </div>                        
     </div>
 }
 

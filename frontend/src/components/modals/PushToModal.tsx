@@ -36,7 +36,6 @@ function PushToModalComponent(){
     const handlePush=()=>{
         if(!state.branch)
             return ;
-        closeModal();
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
@@ -52,7 +51,7 @@ function PushToModalComponent(){
                 dispatch(ActionSavedData.updateRepository(repo));
             }
         })
-        
+        closeModal();        
     }
 
     useEffect(()=>{

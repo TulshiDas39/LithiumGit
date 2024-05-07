@@ -23,6 +23,8 @@ function SingleFile(props:ISingleFileProps){
             return "M";
         if(props.item.changeType === EnumChangeType.CREATED)
             return "A";
+        if(props.item.changeType === EnumChangeType.RENAMED)
+            return "R";
         return "D";
     }
     return (
@@ -52,9 +54,7 @@ interface IStagedChangesProps{
 }
 
 interface IState{
-    // isStagedChangesExpanded:boolean;
-    containerHeight?:number;
-    firstPaneHeight?:number;
+    // isStagedChangesExpanded:boolean;    
 }
 
 function StagedChangesComponent(props:IStagedChangesProps){
@@ -65,7 +65,6 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const dispatch = useDispatch();
 
-    const headerRef = useRef<HTMLDivElement>();
     const refData = useRef({fileContentAfterChange:[] as string[]});
 
     const handleUnstageItem = (item:IFile)=>{
@@ -82,17 +81,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     }
 
     useEffect(()=>{
-        const setContainerHeight=()=>{
-            UiUtils.resolveHeight(EnumHtmlIds.stagedChangesPanel).then(height=>{
-                setState({containerHeight:height});
-            })
-        }
-        setContainerHeight();
-
-        window.addEventListener("resize",setContainerHeight);
-        return ()=>{
-            window.removeEventListener("resize",setContainerHeight);
-        }
+        
     },[])
 
     useEffect(()=>{
@@ -114,6 +103,16 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         ChangeUtils.showChanges();
                         dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                     })
+                }
+                else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
+                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
+                    IpcUtils.getDiff(options).then(res=>{
+                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
+                    })                    
                 }
                 else{
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
@@ -142,37 +141,29 @@ function StagedChangesComponent(props:IStagedChangesProps){
         ChangeUtils.file = store.selectedFile;
         
     },[store.selectedFile])
-    
-    useEffect(()=>{
-        if(!state.containerHeight)
-            return;
-        UiUtils.resolveHeight(EnumHtmlIds.unstage_unstage_allPanel).then(height=>{
-            setState({firstPaneHeight:height});
-        })
-    },[state.containerHeight]);
+
 
     const handleSelect = (file?:IFile)=>{
         dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));
     }
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>
-    <div ref={headerRef as any} className="d-flex hover overflow-auto"
+    <div className="d-flex hover py-1" style={{height:40}}
      >
-        <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center align-items-center pt-2 ps-1">
-            <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
+        <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center ps-1">
+            <span className="d-flex align-items-center hover-brighter bg-success px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
                 <FaMinus />
             </span>
         </div>        
     </div>
-    { state.firstPaneHeight &&
-    <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}}>
+    
+    <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}}>
         {props.changes.map(f=>(
             <SingleFile key={f.path} item={f} handleSelect={handleSelect}
                 handleUnstage={() => handleUnstageItem(f)}
                 isSelected ={f.path === store.selectedFile?.path} />
         ))}        
     </div>
-    }
 </div>
 }
 
