@@ -23,6 +23,8 @@ function SingleFile(props:ISingleFileProps){
             return "M";
         if(props.item.changeType === EnumChangeType.CREATED)
             return "A";
+        if(props.item.changeType === EnumChangeType.RENAMED)
+            return "R";
         return "D";
     }
     return (
@@ -101,6 +103,16 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         ChangeUtils.showChanges();
                         dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
                     })
+                }
+                else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
+                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
+                    IpcUtils.getDiff(options).then(res=>{
+                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                        ChangeUtils.currentLines = lineConfigs.currentLines;
+                        ChangeUtils.previousLines = lineConfigs.previousLines;
+                        ChangeUtils.showChanges();
+                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
+                    })                    
                 }
                 else{
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))

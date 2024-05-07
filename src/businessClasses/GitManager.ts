@@ -341,7 +341,15 @@ export class GitManager{
         let deleted = status.deleted.filter(x=>status.files.some(_=> _.path === x && _.index === 'D')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.DELETED,changeGroup:EnumChangeGroup.STAGED}));
         let modified = status.staged.filter(x=> status.files.some(_=> _.path === x && _.index === 'M')).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.MODIFIED,changeGroup:EnumChangeGroup.STAGED}));
         let created = status.created.filter(_=> status.staged.includes(_)).map<IFile>(x=> ({fileName:path.basename(x),path:x,changeType:EnumChangeType.CREATED,changeGroup:EnumChangeGroup.STAGED}));        
-        result.staged = [...modified,...created,...deleted];
+        let renamed = status.renamed.map<IFile>(x=> ({
+            fileName:path.basename(x.to),
+            path:x.to,
+            changeType:EnumChangeType.RENAMED,
+            changeGroup:EnumChangeGroup.STAGED,
+            oldPath:x.from,
+            oldFileName:path.basename(x.from),
+        }));        
+        result.staged = [...modified,...created,...deleted,...renamed];
         result.totalStagedItem = result.staged.length;
         result.staged = result.staged.slice(0,limit);
 

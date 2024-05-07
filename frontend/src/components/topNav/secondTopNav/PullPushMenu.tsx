@@ -129,7 +129,7 @@ function PullPushMenuComponent(){
         dispatch(ActionModals.showModal(EnumModals.PULL_FROM));
     }    
 
-    return <div className="row g-0 align-items-stretch ps-2">
+    return <div className="row g-0 align-items-stretch ps-2 flex-shrink-0">
         <div className="col-auto ">
             <div className="d-flex justify-content-center h-100">
                 <div className="row g-0 align-items-center h-100 branchBox px-1 hover-shadow" onClick={()=> dispatch(ActionModals.showModal(EnumModals.CHECKOUT))}>

@@ -3,4 +3,5 @@ export enum EnumChangeType{
     CREATED,
     DELETED,
     CONFLICTED,
+    RENAMED,
 }
