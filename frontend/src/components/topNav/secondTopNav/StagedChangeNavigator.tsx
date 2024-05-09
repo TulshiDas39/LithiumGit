@@ -8,6 +8,7 @@ interface IProps{
     selectedFile:IFile;
     totalStep:number;
     currentStep:number;
+    stepResetVersion:number;
     onNextClick:()=>void;
     onPreviousClick:()=>void;
 }
@@ -18,7 +19,7 @@ function StagedChangeNavigatorComponent(props:IProps){
         if(!props.currentStep)
             return;
         ChangeUtils.FocusHightlightedLine(props.currentStep);
-    },[props.currentStep])
+    },[props.currentStep,props.stepResetVersion])
     
     return <div className="w-100 h-100 d-flex align-items-center">
         <div className="d-flex align-items-center" style={{width:'80%'}}>

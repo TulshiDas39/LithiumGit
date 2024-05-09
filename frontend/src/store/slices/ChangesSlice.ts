@@ -5,13 +5,15 @@ interface IData{
     selectedFile?:IFile;
     currentStep:number;
     totalStep:number;
-    selectedTab:EnumChangeGroup
+    selectedTab:EnumChangeGroup;
+    stepRefreshVersion:number;
 }
 
 const initialState:IData={
     currentStep:0,
     totalStep:0,
     selectedTab:EnumChangeGroup.UN_STAGED,
+    stepRefreshVersion:0,
 }
 
 const slice = createSlice({
@@ -20,6 +22,9 @@ const slice = createSlice({
     reducers:{
         updateData(state,action:PayloadAction<Partial<IData>>){
             return {...state, ...action.payload};            
+        },
+        increamentStepRefreshVersion(state){
+            state.stepRefreshVersion += 1;
         }
     }
 })
