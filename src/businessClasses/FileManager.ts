@@ -62,7 +62,7 @@ export class FileManager{
         })
     }
 
-    getFileEncoding(path:string){
+    getFileEncoding(path:string):Promise<string>{
         const langEnc = languageEncoding as any;
         return langEnc(path).then((fileInfo:any) => {
             return fileInfo.encoding;
@@ -72,9 +72,7 @@ export class FileManager{
     }
 
     async writeToFile(path:string,data:string){
-        let encoding:any = await this.getFileEncoding(path);
-        if(!encoding)
-            encoding = "utf8"
+        let encoding = "utf8" as any;
         return new Promise<boolean>((res)=>{
             fs.writeFile(path,data,{encoding},(err)=>{
                 if(!err){
