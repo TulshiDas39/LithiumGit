@@ -3,6 +3,11 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static async getLastUpdatedDate(path: string) {
+        const fullPath = await this.joinPathAsync(RepoUtils.repositoryDetails.repoInfo.path,path);
+        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
+        return r.result || "";
+    }
     static resolveConflict(path: string, actions:IActionTaken[]) {
         return IpcUtils.runGitCommand(RendererEvents.ResolveConflict,[path,actions]);
     }
@@ -201,6 +206,10 @@ export class IpcUtils{
 
     static joinPath(...path:string[]){
         const r = this.executeSync<string>(RendererEvents.joinPath().channel,path);
+        return r.result || "";
+    }
+    static async joinPathAsync(...path:string[]){
+        const r = await this.execute<string>(RendererEvents.joinPathAsync,path);
         return r.result || "";
     }
 }

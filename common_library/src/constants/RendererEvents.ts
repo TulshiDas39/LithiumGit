@@ -269,5 +269,8 @@ export class RendererEvents{
     static readonly isValidPath = "isValidPath";
     static readonly createNewRepo = "createNewRepo";
     static readonly ResolveConflict = "resolveConflict";
+    static readonly lastUpdatedDate = "lastUpdatedDate";
+    static readonly joinPathAsync = "joinPathAsync";
+    
 }
 

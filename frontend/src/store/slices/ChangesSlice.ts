@@ -21,7 +21,12 @@ const slice = createSlice({
     name:"changes",
     reducers:{
         updateData(state,action:PayloadAction<Partial<IData>>){
-            return {...state, ...action.payload};            
+            const newState = {...state, ...action.payload};
+            if(newState.currentStep > newState.totalStep)
+                newState.currentStep = newState.totalStep;
+            if(newState.currentStep < 0)
+                newState.currentStep = 0;
+            return newState;
         },
         increamentStepRefreshVersion(state){
             state.stepRefreshVersion += 1;

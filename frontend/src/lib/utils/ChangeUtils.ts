@@ -19,8 +19,7 @@ export class ChangeUtils{
         }));
         container.innerHTML = innerHtml;
         ChangeUtils.HandleScrolling();
-        ChangeUtils.SetHeighlightedLines();
-        ChangeUtils.FocusHightlightedLine(1);
+        ChangeUtils.SetHeighlightedLines();        
 
         // ReduxUtils.resetChangeNavigation();
     }
