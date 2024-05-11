@@ -47,14 +47,12 @@ function CloneRepoPanelRepository(){
                 let cloningState = store.cloningState;
                 if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
                     cloningState = CloneState.Finished;
+                    clearInterval(DataUtils.clone.timer);
+                    DataUtils.clone.timer = null!;
                 }
                 dispatch(ActionClone.updateData({progress,progressLabel:DataUtils.clone.stage,cloningState}));                
                 
             },500);
-        }
-        else if(store.cloningState === CloneState.Finished){
-            clearInterval(DataUtils.clone.timer);
-            DataUtils.clone.timer = null!;            
         }        
     },[store.cloningState])
 
