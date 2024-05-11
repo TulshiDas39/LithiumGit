@@ -37,7 +37,7 @@ function ConflictEditorComponent(){
         if(!store.selectedFile)
             return ;
         // ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
+        const joinedPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile.path);;
         IpcUtils.getFileContent(joinedPath).then(res=>{
             //const lines = StringUtils.getLines(res.result!);
             const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);

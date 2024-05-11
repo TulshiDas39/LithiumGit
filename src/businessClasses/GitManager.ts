@@ -321,6 +321,7 @@ export class GitManager{
     }
 
     private async cloneRepository(folderPath:string,url:string){
+        new FileManager().createPathIfNotExist(folderPath);
         const git = this.getGitRunner(folderPath,(data)=>{
             AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
         });        

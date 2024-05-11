@@ -140,7 +140,8 @@ export class IpcUtils{
         return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
     }
     static isValidPath(path:string){
-        return IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
+        const r = IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
+        return !!r.result;
     }
     
     static async removeRecentRepo(repoId:string){
@@ -197,4 +198,9 @@ export class IpcUtils{
     }
 
     static showError:(err:string)=>void;
+
+    static joinPath(...path:string[]){
+        const r = this.executeSync<string>(RendererEvents.joinPath().channel,path);
+        return r.result || "";
+    }
 }

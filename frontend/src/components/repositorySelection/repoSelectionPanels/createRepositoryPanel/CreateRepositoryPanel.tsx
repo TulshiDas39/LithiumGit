@@ -40,8 +40,7 @@ function CreateRepositoryPanelComponent(){
     }
 
     const createRepo = ()=>{
-        const r = IpcUtils.isValidPath(state.directory);
-        if(!r.result){
+        if(!IpcUtils.isValidPath(state.directory)){
             ModalData.errorModal.message = "Invalid folder path";
             dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;

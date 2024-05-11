@@ -85,4 +85,10 @@ export class FileManager{
         })
         
     }
+
+    createPathIfNotExist(path:string){
+        if (!fs.existsSync(path)){
+            fs.mkdirSync(path, { recursive: true });
+        }
+    }
 }
