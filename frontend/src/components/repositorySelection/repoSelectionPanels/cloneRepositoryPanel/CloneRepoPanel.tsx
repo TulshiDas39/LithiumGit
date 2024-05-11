@@ -36,21 +36,20 @@ function CloneRepoPanelRepository(){
     useEffect(()=>{
         if(store.cloningState === CloneState.InProgress && !DataUtils.clone.timer){
             DataUtils.clone.timer = setInterval(()=>{
+                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
+                    clearInterval(DataUtils.clone.timer);
+                    DataUtils.clone.timer = null!;
+                    dispatch(ActionClone.updateData({cloningState:CloneState.Finished,progress:100}));
+                    return;
+                }
                 let progress = 0;                
                 if(DataUtils.clone.stage === FetchState.Resolving){
                     progress = 100;
                 }
                 else if(DataUtils.clone.stage === FetchState.Receiving){
                     progress = DataUtils.clone.progress;
-                }
-                let cloningState = store.cloningState;
-                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
-                    cloningState = CloneState.Finished;
-                    clearInterval(DataUtils.clone.timer);
-                    DataUtils.clone.timer = null!;
-                }
-                dispatch(ActionClone.updateData({progress,progressLabel:DataUtils.clone.stage,cloningState}));                
-                
+                }                
+                dispatch(ActionClone.updateData({progress,progressLabel:DataUtils.clone.stage}));                
             },500);
         }        
     },[store.cloningState])
@@ -74,11 +73,20 @@ function CloneRepoPanelRepository(){
         }
         DataUtils.clone.progress = 0;
         DataUtils.clone.stage = FetchState.Remote;
-        IpcUtils.cloneRepository(store.url,fullPath);
         dispatch(ActionClone.updateData({cloningState:CloneState.InProgress,
             progress:0,
             progressLabel:FetchState.Remote
         }));
+        IpcUtils.cloneRepository(store.url,fullPath).then(r=>{
+            if(r.error){
+                clearInterval(DataUtils.clone.timer);
+                dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,
+                    progress:0,
+                    progressLabel:FetchState.Remote
+                }));
+            }
+        });
+        
     }
 
     const handleBrowse=()=>{
