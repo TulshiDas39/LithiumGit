@@ -28,15 +28,17 @@ function StagedChangeNavigatorComponent(props:IProps){
             </div>}
             {props.selectedFile.changeType !== EnumChangeType.RENAMED &&
                 <div className="px-2 d-flex align-items-center" style={{maxWidth:300}}>            
-                    {(
-                        props.selectedFile.changeType === EnumChangeType.DELETED ||
+                    {
                         props.selectedFile.changeType === EnumChangeType.CREATED
-                    ) && <span>(Index)</span>}
+                     && <span>(Index)</span>}
+                    {
+                        props.selectedFile.changeType === EnumChangeType.DELETED                        
+                     && <span>(HEAD)</span>}
                     {props.selectedFile.changeType === EnumChangeType.MODIFIED &&
                         <span className="">(
-                           <span className="px-2">Index</span>
-                           <FaArrowsAltH/>
                            <span className="px-2">HEAD</span>
+                           <FaArrowsAltH/>
+                           <span className="px-2">Index</span>
                         )</span>
                     }                    
              </div>}

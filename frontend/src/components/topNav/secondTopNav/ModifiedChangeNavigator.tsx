@@ -26,12 +26,12 @@ function ModifiedChangeNavigatorComponent(props:IProps){
                 {props.selectedFile.fileName}
             </div>
             <div className="px-2">(                 
-                    {props.selectedFile.changeType !== EnumChangeType.DELETED && <span>Working Directory</span>}
+                    {props.selectedFile.changeType === EnumChangeType.DELETED && <span>Index</span>}
                     {props.selectedFile.changeType === EnumChangeType.MODIFIED &&
-                        <span className="px-2"><FaArrowsAltH/></span>
+                        <span className="px-2">Index <FaArrowsAltH/> Working Directory</span>
                     }
-                    {props.selectedFile.changeType !== EnumChangeType.CREATED &&
-                        <span>Index</span>
+                    {props.selectedFile.changeType === EnumChangeType.CREATED &&
+                        <span>Working Directory</span>
                     }
              )</div>
         </div>
