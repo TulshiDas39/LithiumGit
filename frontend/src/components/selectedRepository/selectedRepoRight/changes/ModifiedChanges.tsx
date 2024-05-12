@@ -27,7 +27,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:""});
+    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -98,6 +98,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     refData.current.selectedFileContent = lines;
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
+                            console.log(str);
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
                             ChangeUtils.currentLines = lineConfigs.currentLines;
                             ChangeUtils.previousLines = lineConfigs.previousLines;
@@ -131,7 +132,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     useEffect(()=>{
-        if(!store.selectedFile)
+        if(!store.selectedFile || !refData.current.isMounted)
             return ;
         
         displayChanges(store.selectedFile.path).then(()=>{
@@ -143,15 +144,16 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[store.selectedFile]);
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.lastUpdated || !state.lastUpdated)
+        if(!store.selectedFile || !refData.current.lastUpdated || !state.lastUpdated || !refData.current.isMounted)
             return;
         displayChanges(store.selectedFile.path).then(()=>{
             dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.increamentStepRefreshVersion());
         });                
     },[state.lastUpdated]);
 
     useEffect(()=>{
-        if(!store.selectedFile)
+        if(!store.selectedFile || !refData.current.isMounted)
             return;     
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;
@@ -175,6 +177,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         refData.current.lastUpdated = state.lastUpdated;
     },[state.lastUpdated])
 
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
             {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>

@@ -11,6 +11,7 @@ export class ChangeUtils{
     private static heighlightedLineIndexes:number[]=[];
 
     static showChanges(){
+        console.log("showing changes");
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
