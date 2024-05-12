@@ -1,24 +1,31 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer"
 import { shallowEqual, useDispatch } from "react-redux"
-import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag } from "../../../../lib"
+import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
 import { ActionChanges, ActionConflict } from "../../../../store"
 import { ModalData } from "../../../modals/ModalData"
 
+interface IState{
+    lastUpdated:string;
+}
+
 function ConflictEditorComponent(){
     const store = useSelectorTyped(state=>({
         selectedFile:state.changes.selectedFile,
         currentStep:state.changes.currentStep,
-        totalStep:state.changes.totalStep,        
+        totalStep:state.changes.totalStep,
+        appFocusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
+
+    const [state,setState] = useMultiState<IState>({lastUpdated:""});
     const dispatch = useDispatch();
     
     ConflictUtils.dispatchResolvedCount = (count:number)=>{
         dispatch(ActionConflict.updateData({resolvedConflict:count}));
     }
-
+    const refData = useRef({isMounted:false,lastUpdated:""});
     const hightDisplacementRef = useRef(0);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
@@ -37,7 +44,7 @@ function ConflictEditorComponent(){
         if(!store.selectedFile)
             return ;
         // ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile.path);;
+        const joinedPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile.path);
         IpcUtils.getFileContent(joinedPath).then(res=>{
             //const lines = StringUtils.getLines(res.result!);
             const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
@@ -49,13 +56,36 @@ function ConflictEditorComponent(){
             const totalConflict = ConflictUtils.TotalConflict
             dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict}));
         })
-    },[store.selectedFile])        
+    },[store.selectedFile,state.lastUpdated])
+
+    useEffect(()=>{
+        refData.current.lastUpdated = "";
+    },[store.selectedFile])
+    
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;
+        IpcUtils.getLastUpdatedDate(store.selectedFile!.path).then(date=>{
+            if(!!refData.current.lastUpdated && refData.current.lastUpdated !== date){
+                refData.current.lastUpdated = date;
+                setState({lastUpdated:date});
+            }
+            else{
+                refData.current.lastUpdated = date;
+            }
+
+        })
+    },[store.appFocusVersion])
 
     const getSign=(value:number)=>{
         if(value < 0)
             return "-";
         return "+";
     }
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
 
     if(!store.selectedFile)
         return null;

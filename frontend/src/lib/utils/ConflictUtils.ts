@@ -142,6 +142,7 @@ export class ConflictUtils{
     }
 
     static ShowEditor(){
+        console.log("showing conflict editor.");
         if(!ConflictUtils.currentLines || !ConflictUtils.incomingLines)
             return;
 
