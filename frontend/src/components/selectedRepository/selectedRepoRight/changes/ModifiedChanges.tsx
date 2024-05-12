@@ -152,7 +152,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     useEffect(()=>{
         if(!store.selectedFile)
-            return;        
+            return;     
+        if(store.selectedFile.changeType === EnumChangeType.DELETED)
+            return;
         IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{            
             if(date){
                 setState({lastUpdated:date});
