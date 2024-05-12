@@ -98,7 +98,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     refData.current.selectedFileContent = lines;
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
-                            console.log(str);
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
                             ChangeUtils.currentLines = lineConfigs.currentLines;
                             ChangeUtils.previousLines = lineConfigs.previousLines;
@@ -136,15 +135,18 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             return ;
         
         displayChanges(store.selectedFile.path).then(()=>{
-            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
-            setState({lastUpdated:""});
+            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));            
         })
         ChangeUtils.file = store.selectedFile;
+
+        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{
+            refData.current.lastUpdated = date;
+        })
                 
     },[store.selectedFile]);
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.lastUpdated || !state.lastUpdated || !refData.current.isMounted)
+        if(!store.selectedFile || !refData.current.isMounted)
             return;
         displayChanges(store.selectedFile.path).then(()=>{
             dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
@@ -158,8 +160,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;
         IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{            
-            if(date){
+            if(date !== refData.current.lastUpdated){
+                refData.current.lastUpdated = date;
                 setState({lastUpdated:date});
+            }
+            else{
+                refData.current.lastUpdated = date;
             }
         });        
     },[store.focusVersion])
@@ -172,10 +178,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             })
         }
     }
-
-    useEffect(()=>{
-        refData.current.lastUpdated = state.lastUpdated;
-    },[state.lastUpdated])
 
     useEffect(()=>{
         refData.current.isMounted = true;

@@ -59,7 +59,9 @@ function ConflictEditorComponent(){
     },[store.selectedFile,state.lastUpdated])
 
     useEffect(()=>{
-        refData.current.lastUpdated = "";
+        IpcUtils.getLastUpdatedDate(store.selectedFile!.path).then(date=>{            
+            refData.current.lastUpdated = date;
+        })
     },[store.selectedFile])
     
     useEffect(()=>{
