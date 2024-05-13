@@ -27,11 +27,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         remoteListRefreshVersion:state.ui.versions.remoteList,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
-    const leftWidthRef = useRef(100);
+    const refData = useRef({repo:props.repo,leftMinWidth:100});
+    const leftWidthRef = useRef(refData.current.leftMinWidth);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     const dispatch = useDispatch();
-    const refData = useRef({repo:props.repo});
     
     const getRepoDetails = async ()=>{            
         const res:IRepositoryDetails = await window.ipcRenderer.invoke(RendererEvents.getRepositoryDetails().channel,props.repo);
@@ -116,13 +116,16 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[store.focusVersion]);
 
     const leftWidth = useMemo(()=>{
+        const curWidth = leftWidthRef.current + positionRef.current;
+        const width = Math.max(refData.current.leftMinWidth, curWidth);
         if(!position){
-            leftWidthRef.current += positionRef.current;
+            leftWidthRef.current = width;
             positionRef.current = 0;
-            return leftWidthRef.current;
         }
-        positionRef.current = position.x;
-        return leftWidthRef.current + positionRef.current;
+        else{
+            positionRef.current = position.x;
+        }
+        return width;
     },[position?.x])
 
     useEffect(()=>{
