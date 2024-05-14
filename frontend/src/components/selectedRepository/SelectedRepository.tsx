@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState } from "../../lib";
+import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -117,7 +117,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     const leftWidth = useMemo(()=>{
         const curWidth = leftWidthRef.current + positionRef.current;
-        const width = Math.max(refData.current.leftMinWidth, curWidth);
+        const width = NumUtils.between(refData.current.leftMinWidth, 500, curWidth);
         if(!position){
             leftWidthRef.current = width;
             positionRef.current = 0;
