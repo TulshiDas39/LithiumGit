@@ -66,8 +66,11 @@ function ChangesComponent() {
         e.preventDefault();
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
         function resize(e: MouseEvent) {
+            const deltaX = e.pageX - dragData.current.initialX;
+            if(deltaX < -100 || deltaX > 300)
+                return;
             dragData.current.currentX = e.pageX;
-            setState({adjustedX:dragData.current.currentX-dragData.current.initialX});        
+            setState({adjustedX:deltaX});        
         }
         function stopResize() {
             window.removeEventListener('mousemove', resize);
