@@ -67,7 +67,7 @@ function ChangesComponent() {
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
         function resize(e: MouseEvent) {
             const deltaX = e.pageX - dragData.current.initialX;
-            if(deltaX < -100 || deltaX > 300)
+            if(deltaX < -100 || deltaX > 500)
                 return;
             dragData.current.currentX = e.pageX;
             setState({adjustedX:deltaX});        
