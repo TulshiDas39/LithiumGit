@@ -26,7 +26,7 @@ function BranchesViewComponent() {
         const curHeight = bottomHeightRef.current - positionRef.current;
         const height = Math.max(50, curHeight);
         if(!position){
-            bottomHeightRef.current = curHeight;
+            bottomHeightRef.current = height;
             positionRef.current = 0;
         }
         else{
