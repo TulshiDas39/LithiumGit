@@ -83,9 +83,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{        
         if(!store.status || !RepoUtils.repositoryDetails)
             return;
-        const requiredReload = GraphUtils.isRequiredReload();
-        if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
-        else GraphUtils.checkForUiUpdate(store.status);
+        GraphUtils.isRequiredReload().then(requiredReload => {
+            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+            else GraphUtils.checkForUiUpdate(store.status!);
+        });
+        
         ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 

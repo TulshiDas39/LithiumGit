@@ -11,6 +11,7 @@ import { ReduxUtils } from "./ReduxUtils";
 import { PbSvgContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, PbHeadCommit, PbPanelHeight, PbSelectedCommit, PbViewBoxX, PbViewBoxWidth, PbMergeCommit, PbViewBoxHeight, PbViewBoxY, PbVerticalScrollHeight, PbVerticalScrollTop, PbViewBox } from "./branchGraphPublishers";
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
+import { IpcUtils } from "./IpcUtils";
 
 
 interface IState{
@@ -354,14 +355,23 @@ export class GraphUtils{
         this.refreshBranchPanelUi();
     }
 
-    static isRequiredReload(){
-        const newStatus = RepoUtils.repositoryDetails?.status;
-        if(!newStatus?.headCommit) return false;
-        if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value?.hash) return true;
-        const uiRefs = GraphUtils.state.headCommit.value.refValues;
-        const newRefs = newStatus.headCommit.refValues;        
-        if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
-        return false;        
+    static async isRequiredReload(){
+        try{
+            const newStatus = RepoUtils.repositoryDetails?.status;
+            if(!newStatus?.headCommit) return false;
+            if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value?.hash) return true;
+            const uiRefs = GraphUtils.state.headCommit.value.refValues;
+            const newRefs = newStatus.headCommit.refValues;        
+            if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+            let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
+            const hasNew = commits.list.some(c => !RepoUtils.repositoryDetails.allCommits.some(c2=>c2.hash === c.hash));
+            if(hasNew)
+                return true;
+            return false;
+        }catch(e){
+            return false;
+        }
+             
     }
 
     static getVerticalLinePath(vLineHeight:number,archRadius:number){
