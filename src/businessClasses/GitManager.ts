@@ -635,8 +635,7 @@ export class GitManager{
         const git = this.getGitRunner(repoPath);
         
         try {                       
-            const result = await git.push(options);
-            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
+            await git.push(options);
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
