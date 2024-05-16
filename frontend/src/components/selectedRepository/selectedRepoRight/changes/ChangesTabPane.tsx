@@ -58,7 +58,7 @@ function ChangesTabPaneComponent(){
                 <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>
-        <div className="overflow-hidden" style={{height:`calc(100% - 40px)`}}>            
+        <div className="" style={{height:`calc(100% - 40px)`}}>            
             {store.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} 
              repoInfoInfo={repoInfo} />}
             {store.selectedTab === EnumChangeGroup.STAGED &&
