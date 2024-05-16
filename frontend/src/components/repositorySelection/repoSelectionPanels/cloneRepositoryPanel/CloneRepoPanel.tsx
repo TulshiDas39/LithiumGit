@@ -80,6 +80,7 @@ function CloneRepoPanelRepository(){
         IpcUtils.cloneRepository(store.url,fullPath).then(r=>{
             if(r.error){
                 clearInterval(DataUtils.clone.timer);
+                DataUtils.clone.timer = null!;
                 dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,
                     progress:0,
                     progressLabel:FetchState.Remote
