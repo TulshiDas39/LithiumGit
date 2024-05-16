@@ -15,6 +15,8 @@ export class FileManager{
         this.handleOpenFileExplorer();
         this.handleGetFileContent();
         this.handlePathJoin();
+        this.handlePathJoinAsync();
+        this.handleLastUpdatedDate();
     }
     handleGetFileContent() {
         ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
@@ -28,6 +30,31 @@ export class FileManager{
             const joinedPath = path.join(...pathSegments);
             e.returnValue = joinedPath;
         });
+    }
+
+    private handlePathJoinAsync(){
+        ipcMain.handle(RendererEvents.joinPathAsync,(_e,...pathSegments:string[])=>{
+            const joinedPath = path.join(...pathSegments);
+            return joinedPath;
+        });
+    }
+
+    private handleLastUpdatedDate(){
+        ipcMain.handle(RendererEvents.lastUpdatedDate,(e,path:string)=>{
+            return this.getLastUpdatedDate(path);
+        });
+    }
+
+    getLastUpdatedDate(path:string){
+        return new Promise<string>((res)=>{
+            fs.stat(path,(err,r)=>{
+                if(err){
+                    res("");
+                }else{
+                    res(r.mtime?.toISOString() || "");
+                }
+            })
+        })
     }
     
     getFileContent(path: string) {
@@ -62,7 +89,7 @@ export class FileManager{
         })
     }
 
-    getFileEncoding(path:string){
+    getFileEncoding(path:string):Promise<string>{
         const langEnc = languageEncoding as any;
         return langEnc(path).then((fileInfo:any) => {
             return fileInfo.encoding;
@@ -72,9 +99,7 @@ export class FileManager{
     }
 
     async writeToFile(path:string,data:string){
-        let encoding:any = await this.getFileEncoding(path);
-        if(!encoding)
-            encoding = "utf8"
+        let encoding = "utf8" as any;
         return new Promise<boolean>((res)=>{
             fs.writeFile(path,data,{encoding},(err)=>{
                 if(!err){
@@ -86,5 +111,11 @@ export class FileManager{
             });
         })
         
+    }
+
+    createPathIfNotExist(path:string){
+        if (!fs.existsSync(path)){
+            fs.mkdirSync(path, { recursive: true });
+        }
     }
 }

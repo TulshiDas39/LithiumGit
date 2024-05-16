@@ -11,6 +11,7 @@ interface IProps{
     selectedFile:IFile;
     totalStep:number;
     currentStep:number;
+    stepResetVersion:number;
     onNextClick:()=>void;
     onPreviousClick:()=>void;
 }
@@ -25,7 +26,7 @@ function ConflictChangeNavigatorComponent(props:IProps){
         if(!props.currentStep)
             return;
         ConflictUtils.FocusHightlightedLine(props.currentStep);
-    },[props.currentStep])
+    },[props.currentStep,props.stepResetVersion])
 
     const handleApply=()=>{
         const actions = ConflictUtils.Actions;

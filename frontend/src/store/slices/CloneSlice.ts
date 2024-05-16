@@ -9,6 +9,7 @@ interface ICloneData{
     cloningState:CloneState;
     progress:number;
     progressLabel:FetchState;
+    projectFolder:string;
 }
 
 const initialState:ICloneData={
@@ -17,6 +18,7 @@ const initialState:ICloneData={
     cloningState:CloneState.NotStarted,
     progress:0,
     progressLabel:FetchState.Remote,
+    projectFolder:"",
 }
 
 const slice = createSlice({

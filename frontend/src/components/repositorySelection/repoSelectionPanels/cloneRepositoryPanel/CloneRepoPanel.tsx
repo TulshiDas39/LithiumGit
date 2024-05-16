@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react"
+import React, { Fragment, useEffect, useMemo } from "react"
 import { Form, ProgressBar } from "react-bootstrap";
 import { AppButton } from "../../../common";
 import { CloneState, DataUtils, EnumModals, FetchState } from "../../../../lib";
@@ -11,52 +11,84 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 
 function CloneRepoPanelRepository(){
     const store = useSelectorTyped(state => state.clone,shallowEqual);
-    const dispatch = useDispatch();    
-    // const refData = useRef({progress:0,stage: FetchState.Remote,timer: undefined! as NodeJS.Timeout});
-    const cloneRepo = ()=>{        
-        if(!store.url){
-            ModalData.errorModal.message = "URL required.";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
+    const dispatch = useDispatch();        
+
+    const fullPath = useMemo(()=>{
+        const path = IpcUtils.joinPath(store.directory,store.projectFolder);
+        return path;
+    },[store.directory,store.projectFolder])
+
+    useEffect(()=>{
+        if(!store.url)
             return;
+        try {
+            const segments = new URL(store.url).pathname.split('/').filter(_=> !!_);
+            let last = segments.pop();
+            if(last?.includes('.'))
+            last = last.split('.')[0];
+            dispatch(ActionClone.updateData({projectFolder:last}));
+        } catch (error) {
+            
         }
-        const isValidPath = IpcUtils.isValidPath(store.directory);
-        if(!isValidPath.result){
-            ModalData.errorModal.message = "Invalid directory path";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
-            return;
-        }
-        DataUtils.clone.progress = 0;
-        DataUtils.clone.stage = FetchState.Remote;
-        IpcUtils.cloneRepository(store.url,store.directory);
-        dispatch(ActionClone.updateData({cloningState:CloneState.InProgress,
-            progress:0,
-            progressLabel:FetchState.Remote
-        }));
-    }
+        
+    },[store.url])
 
     useEffect(()=>{
         if(store.cloningState === CloneState.InProgress && !DataUtils.clone.timer){
             DataUtils.clone.timer = setInterval(()=>{
+                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
+                    clearInterval(DataUtils.clone.timer);
+                    DataUtils.clone.timer = null!;
+                    dispatch(ActionClone.updateData({cloningState:CloneState.Finished,progress:100}));
+                    return;
+                }
                 let progress = 0;                
                 if(DataUtils.clone.stage === FetchState.Resolving){
                     progress = 100;
                 }
                 else if(DataUtils.clone.stage === FetchState.Receiving){
                     progress = DataUtils.clone.progress;
-                }
-                let cloningState = store.cloningState;
-                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
-                    cloningState = CloneState.Finished;
-                }
-                dispatch(ActionClone.updateData({progress,progressLabel:DataUtils.clone.stage,cloningState}));                
-                
+                }                
+                dispatch(ActionClone.updateData({progress,progressLabel:DataUtils.clone.stage}));                
             },500);
-        }
-        else if(store.cloningState === CloneState.Finished){
-            clearInterval(DataUtils.clone.timer);
-            DataUtils.clone.timer = null!;            
         }        
     },[store.cloningState])
+
+    const cloneRepo = ()=>{
+        if(!store.url){
+            ModalData.errorModal.message = "URL required.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        const isValidPath = IpcUtils.isValidPath(store.directory);
+        if(!isValidPath){
+            ModalData.errorModal.message = "Invalid directory path";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        if(IpcUtils.isValidPath(fullPath)){
+            ModalData.errorModal.message = `Project Folder "${store.projectFolder}" already exist.`;
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        DataUtils.clone.progress = 0;
+        DataUtils.clone.stage = FetchState.Remote;
+        dispatch(ActionClone.updateData({cloningState:CloneState.InProgress,
+            progress:0,
+            progressLabel:FetchState.Remote
+        }));
+        IpcUtils.cloneRepository(store.url,fullPath).then(r=>{
+            if(r.error){
+                clearInterval(DataUtils.clone.timer);
+                DataUtils.clone.timer = null!;
+                dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,
+                    progress:0,
+                    progressLabel:FetchState.Remote
+                }));
+            }
+        });
+        
+    }
 
     const handleBrowse=()=>{
         IpcUtils.browseFolderPath().then(r=>{
@@ -64,11 +96,11 @@ function CloneRepoPanelRepository(){
         })
     }
     const showInFolder=()=>{
-        IpcUtils.showInFileExplorer(store.directory);
+        IpcUtils.showInFileExplorer(fullPath);
     }
 
     const open=()=>{
-        GitUtils.OpenRepository(store.directory);
+        GitUtils.OpenRepository(fullPath);
     }
 
     const handleCloneMore = ()=>{        
@@ -107,6 +139,15 @@ function CloneRepoPanelRepository(){
                         onClick={showInFolder}  />
                     </div>}
                 </div>
+            </div>
+        </div>
+        <div className="row g-0 pt-2">
+            <div className="col-2 d-flex align-items-center justify-content-end">
+                Project Folder: 
+            </div>
+            <div className="col-8 d-flex align-items-center">
+                <Form.Control type="text" value={store.projectFolder} readOnly={store.cloningState !== CloneState.NotStarted}
+                            onChange={_=> dispatch(ActionClone.updateData({projectFolder:_.target.value}))} />
             </div>
         </div>
 

@@ -61,11 +61,12 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
+        focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
     const dispatch = useDispatch();
 
-    const refData = useRef({fileContentAfterChange:[] as string[]});
+    const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleUnstageItem = (item:IFile)=>{
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
@@ -80,72 +81,91 @@ function StagedChangesComponent(props:IStagedChangesProps){
         });        
     }
 
-    useEffect(()=>{
-        
-    },[])
-
-    useEffect(()=>{
-        if(!store.selectedFile)
-            return ;
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        if(store.selectedFile.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getGitShowResultOfStagedFile(store.selectedFile.path).then(res=>{
-                const lines = StringUtils.getLines(res.result!);
-                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
-                if(!hasChanges) return;
-                refData.current.fileContentAfterChange = lines;
-                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
-                    IpcUtils.getDiff(options).then(res=>{
-                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                        ChangeUtils.currentLines = lineConfigs.currentLines;
-                        ChangeUtils.previousLines = lineConfigs.previousLines;
+    const showChanges=()=>{                    
+        return new Promise<boolean>((resolve)=>{
+            ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+            if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
+                IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
+                    const lines = StringUtils.getLines(res.result!);
+                    const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                    if(!hasChanges) {
+                        resolve(true);
+                        return;
+                    }
+                    refData.current.fileContentAfterChange = lines;
+                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                        const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
+                        IpcUtils.getDiff(options).then(res=>{
+                            let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                            ChangeUtils.currentLines = lineConfigs.currentLines;
+                            ChangeUtils.previousLines = lineConfigs.previousLines;
+                            ChangeUtils.showChanges();                            
+                            resolve(true);
+                        })
+                    }
+                    else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
+                        const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
+                        IpcUtils.getDiff(options).then(res=>{
+                            let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
+                            ChangeUtils.currentLines = lineConfigs.currentLines;
+                            ChangeUtils.previousLines = lineConfigs.previousLines;
+                            ChangeUtils.showChanges();
+                            resolve(true);
+                        })                    
+                    }
+                    else{
+                        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                        ChangeUtils.currentLines = lineConfigs;
+                        ChangeUtils.previousLines = null!;
                         ChangeUtils.showChanges();
-                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
-                    })
-                }
-                else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
-                    const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
-                    IpcUtils.getDiff(options).then(res=>{
-                        let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                        ChangeUtils.currentLines = lineConfigs.currentLines;
-                        ChangeUtils.previousLines = lineConfigs.previousLines;
-                        ChangeUtils.showChanges();
-                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
-                    })                    
-                }
-                else{
+                        resolve(true);
+                    }
+                                        
+                })
+            }
+            else{
+                IpcUtils.getGitShowResult([`HEAD:${store.selectedFile!.path}`]).then(content=>{                
+                    const lines = StringUtils.getLines(content);
+                    const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
+                    if(!hasChanges) return;
+                    refData.current.fileContentAfterChange = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = lineConfigs;
-                    ChangeUtils.previousLines = null!;
+                    ChangeUtils.currentLines = null!;
+                    ChangeUtils.previousLines = lineConfigs!;
                     ChangeUtils.showChanges();
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
+                    resolve(true);
+                })
+            }
+            ChangeUtils.file = store.selectedFile;
+        })
+    }
 
-                }
-                                    
-            })
-        }
-        else{
-            IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
-                const lines = StringUtils.getLines(content);
-                const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
-                if(!hasChanges) return;
-                refData.current.fileContentAfterChange = lines;
-                const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = null!;
-                ChangeUtils.previousLines = lineConfigs!;
-                ChangeUtils.showChanges();
-                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
-            })
-        }
-        ChangeUtils.file = store.selectedFile;
-        
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return ;
+        showChanges().then(()=>{
+            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
+        })
     },[store.selectedFile])
 
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;
+        if(store.selectedFile.changeType === EnumChangeType.DELETED)
+            return;
+        showChanges().then(()=>{
+            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.increamentStepRefreshVersion());
+        })
+    },[store.focusVersion])
 
     const handleSelect = (file?:IFile)=>{
         dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));
     }
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>
     <div className="d-flex hover py-1" style={{height:40}}

@@ -11,11 +11,12 @@ interface IProps{
 
 interface IState{
     currentStep:number;
-    totalStep:number;    
+    totalStep:number;
+    stepResetVersion:number;    
 }
 
 function CommitDiffViewComponent(props:IProps){
-    const [state,setState] = useMultiState({currentStep:0,totalStep:0} as IState);
+    const [state,setState] = useMultiState<IState>({currentStep:0,totalStep:0,stepResetVersion:0,});
     const resetStepNavigation = ()=>{
         const totalChange = ChangeUtils.totalChangeCount;
         const currentStep = ChangeUtils.totalChangeCount > 0 ? 1:0;
@@ -67,18 +68,24 @@ function CommitDiffViewComponent(props:IProps){
 
     useEffect(()=>{
         ChangeUtils.FocusHightlightedLine(state.currentStep);
-    },[state.currentStep])
+    },[state.currentStep,state.stepResetVersion])
 
     const handleNext=()=>{
-        if(state.currentStep >= state.totalStep)
-            return ;
-        setState({currentStep:state.currentStep + 1});
+        if(state.currentStep == state.totalStep){
+            setState({stepResetVersion:state.stepResetVersion+1});
+        }
+        else{
+            setState({currentStep:state.currentStep + 1});
+        }
     }
 
     const handlePrevious=()=>{
-        if(state.currentStep <= 1)
-            return ;
-        setState({currentStep:state.currentStep - 1});
+        if(state.currentStep == 1){
+            setState({stepResetVersion:state.stepResetVersion+1});
+        }
+        else{
+            setState({currentStep:state.currentStep - 1});
+        }
     }
     
     return <div className="h-100 w-100">

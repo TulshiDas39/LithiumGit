@@ -11,6 +11,7 @@ export class ChangeUtils{
     private static heighlightedLineIndexes:number[]=[];
 
     static showChanges(){
+        console.log("showing changes");
         const container = document.getElementById(`${ChangeUtils.containerId}`)!;
 
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
@@ -19,8 +20,7 @@ export class ChangeUtils{
         }));
         container.innerHTML = innerHtml;
         ChangeUtils.HandleScrolling();
-        ChangeUtils.SetHeighlightedLines();
-        ChangeUtils.FocusHightlightedLine(1);
+        ChangeUtils.SetHeighlightedLines();        
 
         // ReduxUtils.resetChangeNavigation();
     }

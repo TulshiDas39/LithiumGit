@@ -23,13 +23,16 @@ function BranchesViewComponent() {
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
     const bottomHeight = useMemo(()=>{
+        const curHeight = bottomHeightRef.current - positionRef.current;
+        const height = Math.max(50, curHeight);
         if(!position){
-            bottomHeightRef.current -= positionRef.current;
+            bottomHeightRef.current = height;
             positionRef.current = 0;
-            return bottomHeightRef.current;
         }
-        positionRef.current = position.y;
-        return bottomHeightRef.current - positionRef.current;
+        else{
+            positionRef.current = position.y;
+        }
+        return height;
     },[position?.y])
 
     useEffect(()=>{        

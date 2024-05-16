@@ -48,11 +48,13 @@ function ChangesComponent() {
     },[store.focusVersion])
 
     useEffect(()=>{
-        if(!store.selectedFile) return;
-        if(store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&  store.status?.conflicted?.some(x=> x.path === store.selectedFile?.path)) return;
-        if(store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&  store.status?.unstaged?.some(x=> x.path === store.selectedFile?.path)) return;
-        if(store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&  store.status?.staged?.some(x=> x.path === store.selectedFile?.path)) return;
-        dispatch(ActionChanges.updateData({selectedFile:undefined}));
+        if(!store.selectedFile || !store.status) return;
+        const changedFiles = [...store.status.conflicted,...store.status.staged,...store.status.unstaged];
+        const existInStatus = changedFiles.some(x=> x.path === store.selectedFile?.path 
+            && x.changeType === store.selectedFile.changeType 
+            && x.changeGroup === store.selectedFile.changeGroup);
+        if(!existInStatus)
+            dispatch(ActionChanges.updateData({selectedFile:undefined}));        
     },[store.status])
 
     const getAdjustedSize = (adjustedX: number) => {
@@ -64,8 +66,11 @@ function ChangesComponent() {
         e.preventDefault();
         if(!dragData.current.initialX) dragData.current.initialX = e.pageX;
         function resize(e: MouseEvent) {
+            const deltaX = e.pageX - dragData.current.initialX;
+            if(deltaX < -100 || deltaX > 500)
+                return;
             dragData.current.currentX = e.pageX;
-            setState({adjustedX:dragData.current.currentX-dragData.current.initialX});        
+            setState({adjustedX:deltaX});        
         }
         function stopResize() {
             window.removeEventListener('mousemove', resize);

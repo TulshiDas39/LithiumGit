@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react"
-import { GraphUtils, useDrag, useMultiState } from "../../../../lib";
+import { GraphUtils, NumUtils, useDrag, useMultiState } from "../../../../lib";
 import { ICommitInfo, IFile } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { CommitFileList } from "./CommitFileList";
@@ -29,13 +29,16 @@ function CommitChangeViewComponent(){
     },[state.selectedCommitHash])
 
     const rightWidth = useMemo(()=>{
+        const curWidth = rightWidthRef.current - positionRef.current;
+        const width = NumUtils.between(100,600,curWidth);
         if(!position){
-            rightWidthRef.current -= positionRef.current;
+            rightWidthRef.current = width;
             positionRef.current = 0;
-            return rightWidthRef.current;
         }
-        positionRef.current = position.x;
-        return rightWidthRef.current - positionRef.current;
+        else{
+            positionRef.current = position.x;
+        }
+        return width;
     },[position?.x])
     
     useEffect(()=>{

@@ -4,7 +4,7 @@ import { FileManager } from './FileManager';
 
 export class ConflictResolver{
 
-    private readonly currentMarker = "<<<<<<< HEAD";
+    private readonly currentMarker = "<<<<<<<";
     private readonly endingMarker = ">>>>>>>";
     private readonly separator = "=======";
 

@@ -12,15 +12,21 @@ function ChangeNavigatorComponent(){
     const dispatch = useDispatch();
 
     const onNextClick=()=>{
-        if(store.currentStep >= store.totalStep)
-            return;
-        dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
+        if(store.currentStep == store.totalStep){
+            dispatch(ActionChanges.increamentStepRefreshVersion());
+        }
+        else{
+            dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
+        }
     }
 
     const onPreviousClick = ()=>{
-        if(store.currentStep <= 1)
-            return;
-        dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1}));
+        if(store.currentStep == 1){
+            dispatch(ActionChanges.increamentStepRefreshVersion());
+        }
+        else{
+            dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1}));
+        }
     }
 
     useEffect(()=>{
@@ -35,17 +41,17 @@ function ChangeNavigatorComponent(){
         {store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&
             <ModifiedChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
-            onPreviousClick={onPreviousClick}/>}
+            onPreviousClick={onPreviousClick} stepResetVersion={store.stepRefreshVersion}/>}
 
             {store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&
             <StagedChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
-            onPreviousClick={onPreviousClick}/>}
+            onPreviousClick={onPreviousClick} stepResetVersion={store.stepRefreshVersion}/>}
 
             {store.selectedFile.changeGroup === EnumChangeGroup.CONFLICTED &&
             <ConflictChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
-            onPreviousClick={onPreviousClick}/>}
+            onPreviousClick={onPreviousClick} stepResetVersion={store.stepRefreshVersion}/>}
     </div>
 }
 

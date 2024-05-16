@@ -321,6 +321,7 @@ export class GitManager{
     }
 
     private async cloneRepository(folderPath:string,url:string){
+        new FileManager().createPathIfNotExist(folderPath);
         const git = this.getGitRunner(folderPath,(data)=>{
             AppData.mainWindow?.webContents.send(RendererEvents.cloneProgress,data.progress,data.stage);
         });        
@@ -634,8 +635,7 @@ export class GitManager{
         const git = this.getGitRunner(repoPath);
         
         try {                       
-            const result = await git.push(options);
-            if(this.hasChangesInPush(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)           
+            await git.push(options);
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }
