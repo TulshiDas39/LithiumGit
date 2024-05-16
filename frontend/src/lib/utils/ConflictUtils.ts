@@ -57,7 +57,7 @@ export class ConflictUtils{
     }
     
     static GetUiLinesOfConflict(contentLines: string[]) {
-        const currentMarker = "<<<<<<< HEAD";
+        const currentMarker = "<<<<<<<";
         const endingMarker = ">>>>>>>";
         
     

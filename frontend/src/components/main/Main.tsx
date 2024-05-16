@@ -40,6 +40,12 @@ function MainComponent(){
             dispatch(ActionUI.setLoader(payload));
         }
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
+        if(!savedData){
+            batch(()=>{
+                dispatch(ActionSavedData.deSelectRepo());
+                dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
+            });
+        }
         dispatch(ActionSavedData.updateAutoStaging(savedData.configInfo.autoStage));
         const repos = savedData.recentRepositories;
         if(!repos?.length){
