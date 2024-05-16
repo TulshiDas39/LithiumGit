@@ -3,6 +3,15 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    private static removeJSPartFromError(err:string){
+        if(!err)
+            return err;
+        const prefix = "error: error invoking remote method";
+        if(err.toLowerCase().startsWith(prefix)){
+            return err.substring(err.lastIndexOf('Error:'))
+        }
+        return err;
+    }
     static async getLastUpdatedDate(path: string) {
         const fullPath = await this.joinPathAsync(RepoUtils.repositoryDetails.repoInfo.path,path);
         const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
@@ -167,9 +176,11 @@ export class IpcUtils{
             result.result = r;
             return result;
         }).catch((e)=>{
-            const err = e?.toString() as string;
+            let err = e?.toString() as string;
+            err = IpcUtils.removeJSPartFromError(err);
+
             if(!disableErrorDisplay){
-                IpcUtils.showError?.(err);                
+                IpcUtils.showError?.(err);
             }
             result.error = err;
             return result;
