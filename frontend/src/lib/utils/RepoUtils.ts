@@ -67,9 +67,7 @@ export class RepoUtils{
 
         const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
         if(!!branches.length){
-            const maxOffset = ArrayUtils.findMax(branches.map(_=>_.verticalOffset));
-
-            for(let offset = 2; offset <= maxOffset ; offset++){
+            for(let offset = branchesWithoutParent.length + 1; offset <= repoDetails.resolvedBranches.length ; offset++){
                 const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
                 branchesOfThisOffset.forEach(_ => setHeight(_));
             }   
