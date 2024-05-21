@@ -16,7 +16,8 @@ interface IState{
 function CommitBoxComponent(){
     const store = useSelectorTyped(state=>({
         autoStagingEnabled:state.savedData.autoStagingEnabled,
-        isMergingState:!!state.ui.status?.mergingCommitHash
+        isMergingState:!!state.ui.status?.mergingCommitHash,
+        repoPath:state.savedData?.recentRepositories.find(_=> _.isSelected)?.path,
     }),shallowEqual);
     const dispatch = useDispatch();
 
@@ -50,8 +51,11 @@ function CommitBoxComponent(){
     useEffect(()=>{
         if(store.isMergingState){            
             setState({value:RepoUtils.generateMergeCommit()});
-        }        
-    },[store.isMergingState])
+        }
+        else{
+            setState({value:""});
+        }
+    },[store.isMergingState,store.repoPath])
 
     useEffect(()=>{
         if(!state.amend || !!state.value)
