@@ -32,8 +32,8 @@ function SingleFile(props:ISingleFileProps){
         title={props.item.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
             onClick={_=> props.handleSelect(props.item)}>
         <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
-            <span className={`pe-1 flex-shrink-0 ${props.item.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{props.item.fileName}</span>
-            <span className="small text-secondary">{props.item.path}</span>
+            <span className={`pe-1 flex-shrink-0 text-nowrap ${props.item.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{props.item.fileName}</span>
+            <span className="small text-secondary text-nowrap">{props.item.path}</span>
         </div>
         
         <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end pe-1">
