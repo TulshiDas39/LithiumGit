@@ -364,9 +364,13 @@ export class GraphUtils{
             const newRefs = newStatus.headCommit.refValues;        
             if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
             let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
-            const hasNew = commits.list.some(c => !RepoUtils.repositoryDetails.allCommits.some(c2=>c2.hash === c.hash));
-            if(hasNew)
-                return true;
+            for(let c of commits.list){
+                const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
+                if(!existingCm)
+                    return true;
+                if(existingCm.refValues.some(_=> !c.refValues.includes(_)))
+                    return true;
+            }            
             return false;
         }catch(e){
             return false;

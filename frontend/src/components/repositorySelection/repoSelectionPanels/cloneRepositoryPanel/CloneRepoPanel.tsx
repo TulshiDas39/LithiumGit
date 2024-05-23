@@ -36,7 +36,7 @@ function CloneRepoPanelRepository(){
     useEffect(()=>{
         if(store.cloningState === CloneState.InProgress && !DataUtils.clone.timer){
             DataUtils.clone.timer = setInterval(()=>{
-                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress === 100){            
+                if(DataUtils.clone.stage === FetchState.Resolving && DataUtils.clone.progress >= 100){            
                     clearInterval(DataUtils.clone.timer);
                     DataUtils.clone.timer = null!;
                     dispatch(ActionClone.updateData({cloningState:CloneState.Finished,progress:100}));
@@ -45,6 +45,7 @@ function CloneRepoPanelRepository(){
                 let progress = 0;                
                 if(DataUtils.clone.stage === FetchState.Resolving){
                     progress = 100;
+                    DataUtils.clone.progress = 100;
                 }
                 else if(DataUtils.clone.stage === FetchState.Receiving){
                     progress = DataUtils.clone.progress;
