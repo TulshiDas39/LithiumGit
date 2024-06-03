@@ -36,8 +36,8 @@ function PullFromModalComponent(){
     const handlePull=()=>{
         if(!state.branch)
             return ;
-        //const originName = BranchUtils.activeOriginName;
-        const options:string[] = [];
+        const originName = RepoUtils.activeOriginName;
+        const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         IpcUtils.trigerPull(options).then(()=>{
             IpcUtils.getRepoStatus().finally(()=>{                
