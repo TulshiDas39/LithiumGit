@@ -3,6 +3,7 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    
     static getStashes() {
         return IpcUtils.runGitCommand<IStash[]>(RendererEvents.stashes,[]);
     }
