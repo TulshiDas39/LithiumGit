@@ -2,6 +2,8 @@ import { IStash } from "common_library";
 import React, { useEffect, useMemo, useRef } from "react";
 import { useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { CommitProperty } from "../branches/CommitProperty";
+import { StashProperty } from "./StashProperty";
 
 interface IState{
     stashes:IStash[];
@@ -41,12 +43,18 @@ function StashesComponent(){
     },[position?.y])
 
     return <div className="px-2 pt-2 h-100 w-100">
-        <div className="w-100" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
-            {state.stashes.map((st,i)=>(
-                <div key={i} className="hover" onClick={()=> setState({selectedItem:st})}>
-                    {`{${i}} ${st.message}`}
-                </div>
-            ))}
+        <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
+            <div className="h-100 w-75">
+                {state.stashes.map((st,i)=>(
+                    <div key={i} className={`hover ${st.hash === state.selectedItem?.hash?'selected':''}`} onClick={()=> setState({selectedItem:st})}>
+                        {`{${i}} ${st.message}`}
+                    </div>
+                ))}
+            </div>
+            <div className="h-100 w-25 border-start">
+                {!!state.selectedItem && <StashProperty stash={state.selectedItem} />}
+            </div>
+            
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
         <div className="w-100 bg-success" style={{height:`${bottomHeight}px`}}>

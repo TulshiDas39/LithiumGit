@@ -611,10 +611,15 @@ export class GitManager{
         const r = await git.stashList(options);
         const stashList:IStash[] = r?.all?.map(_=> ({
             message:_.message,
+            body:_.body,
             authEmail:_.author_email,
             authorName:_.author_name,
-            date:_.date
+            date:_.date,
+            hash:_.hash,
+            avrebHash:_.hash.substring(0,7),
         }));
+
+        //aa5fd4f
 
         return stashList;      
     }
