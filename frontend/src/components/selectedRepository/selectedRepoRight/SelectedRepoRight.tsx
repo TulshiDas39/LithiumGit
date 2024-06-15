@@ -6,6 +6,7 @@ import { shallowEqual } from "react-redux"
 import { EnumSelectedRepoTab } from "../../../lib"
 import { RemoteList } from "./remotes"
 import { Commits } from "./commits"
+import { Stashes } from "./stashes"
 
 function SelectedRepoRightComponent(){
     const store = useSelectorTyped(state=>({
@@ -19,6 +20,8 @@ function SelectedRepoRightComponent(){
             <RemoteList />}
         {store.tab === EnumSelectedRepoTab.COMMITS &&
             <Commits />}
+        {store.tab === EnumSelectedRepoTab.STASHES &&
+            <Stashes />}
     </div>    
 }
 

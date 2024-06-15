@@ -14,3 +14,4 @@ export * from './ILogFilterOptions';
 export * from './IPaginated';
 export * from './IGitCommandInfo';
 export * from './IActionTaken';
+export * from './IStash';

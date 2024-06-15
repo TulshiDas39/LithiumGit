@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -46,6 +46,7 @@ export class GitManager{
         this.addRebaseHandler();
         this.addCherryPickHandler();
         this.addConflictResolveHandler();
+        this.addGetStashListHandler();
     }
 
 
@@ -520,6 +521,12 @@ export class GitManager{
         });
     }
 
+    private async addGetStashListHandler(){
+        ipcMain.handle(RendererEvents.stashes,async (e,repoPath:string,options:string[])=>{
+            return await this.getStashList(repoPath,options);
+        });
+    }
+
     private addPushHandler(){
         ipcMain.handle(RendererEvents.push().channel,async (e,repoPath:string,options:string[])=>{
             await this.givePush(repoPath ,options);
@@ -597,6 +604,19 @@ export class GitManager{
         if(result.summary.deletions) return true;
         if(result.summary.insertions) return true;
         return false;
+    }
+
+    private async getStashList(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        const r = await git.stashList(options);
+        const stashList:IStash[] = r?.all?.map(_=> ({
+            message:_.message,
+            authEmail:_.author_email,
+            authorName:_.author_name,
+            date:_.date
+        }));
+
+        return stashList;      
     }
 
     private async takePull(repoPath:string,options:string[]){

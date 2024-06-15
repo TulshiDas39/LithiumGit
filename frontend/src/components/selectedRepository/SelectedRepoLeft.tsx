@@ -23,7 +23,8 @@ function SelectedRepoLeftComponent(){
             {text:"Changes",type:EnumSelectedRepoTab.CHANGES,marked:store.hasChanges},
             {text:"Graph",type:EnumSelectedRepoTab.GRAPH},
             {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
-            {text:"Remotes",type: EnumSelectedRepoTab.REMOTES}
+            {text:"Stashes",type: EnumSelectedRepoTab.STASHES},
+            {text:"Remotes",type: EnumSelectedRepoTab.REMOTES},            
         ];
         return items;
     },[store.hasChanges]);
