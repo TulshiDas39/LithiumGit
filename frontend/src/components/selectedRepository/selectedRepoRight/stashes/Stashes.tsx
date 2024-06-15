@@ -58,8 +58,8 @@ function StashesComponent(){
             
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
-        <div className="w-100 bg-success" style={{height:`${bottomHeight}px`}}>
-                <StashChangeView />
+        <div className="w-100" style={{height:`${bottomHeight}px`}}>
+                <StashChangeView stash={state.selectedItem} />
         </div>
         
     </div>

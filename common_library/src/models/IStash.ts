@@ -8,6 +8,5 @@ export interface IStash{
     authEmail:string;
     hash:string;
     avrebHash:string;
-    changedFiles:IFile[];
     changedCount:number;
 }
