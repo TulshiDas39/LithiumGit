@@ -16,19 +16,18 @@ interface IModifiedChangesProps{
 
 interface IState{
     hoveredFile?:IFile;
-    firstPaneHeight?:number;
-    containerHeight?:number;
+    lastUpdated:string;
 }
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
-    const [state,setState] = useMultiState<IState>({});
+    const [state,setState] = useMultiState<IState>({lastUpdated:""});
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
+        focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
-    const dispatch = useDispatch();
-    const ref = useRef<HTMLDivElement>();
-    const refData = useRef({selectedFileContent:[] as string[]});
+    const dispatch = useDispatch();    
+    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -89,99 +88,121 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         ModalData.confirmationModal.YesHandler = yesHandler;
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }    
-    
-    useEffect(()=>{
-        const setContainerHeight=()=>{
-            UiUtils.resolveHeight(EnumHtmlIds.modifiedChangesPanel).then(height=>{
-                setState({containerHeight:height});
-            })
-        }
-        setContainerHeight();
 
-        window.addEventListener("resize",setContainerHeight);
-        return ()=>{
-            window.removeEventListener("resize",setContainerHeight);
-        }
-    },[])
-
-    useEffect(()=>{
-        if(!state.containerHeight || props.changes?.length === 0)
-            return;                
-        UiUtils.resolveHeight(EnumHtmlIds.stage_unstage_allPanel).then(height=>{
-            setState({firstPaneHeight:height});
-        })
-    },[state.containerHeight,props.changes?.length === 0]);
-
-    useEffect(()=>{
-        if(!store.selectedFile)
-            return ;
-        ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,store.selectedFile.path);
-        if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getFileContent(joinedPath).then(lines=>{
-                const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
-                if(!hasChanges) return;
-                refData.current.selectedFileContent = lines;
-                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                    DiffUtils.getDiff(store.selectedFile.path).then(str=>{
-                        let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                        ChangeUtils.currentLines = lineConfigs.currentLines;
-                        ChangeUtils.previousLines = lineConfigs.previousLines;
+    const displayChanges = async(path:string)=>{
+        return new Promise<boolean>((res)=>{
+            ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+            const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,path);
+            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
+                IpcUtils.getFileContent(joinedPath).then(lines=>{
+                    refData.current.selectedFileContent = lines;
+                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                        DiffUtils.getDiff(store.selectedFile.path).then(str=>{
+                            let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
+                            ChangeUtils.currentLines = lineConfigs.currentLines;
+                            ChangeUtils.previousLines = lineConfigs.previousLines;
+                            ChangeUtils.showChanges();
+                            res(true);                            
+                        });
+                    }
+                    if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
+                        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
+                        ChangeUtils.currentLines = lineConfigs;
+                        ChangeUtils.previousLines = null!;
                         ChangeUtils.showChanges();
-                        dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
-                    });
-                }
-                if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
+                        res(true);
+                    }
+                })
+            }
+            else{            
+                IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
+                    const lines = StringUtils.getLines(content);
+                    const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
+                    if(!hasChanges) return;
+                    refData.current.selectedFileContent = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = lineConfigs;
-                    ChangeUtils.previousLines = null!;
+                    ChangeUtils.currentLines = null!;
+                    ChangeUtils.previousLines = lineConfigs!;
                     ChangeUtils.showChanges();
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
-                }
-            })
-        }
-        else{            
-            IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
-                const lines = StringUtils.getLines(content);
-                const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
-                if(!hasChanges) return;
-                refData.current.selectedFileContent = lines;
-                const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = null!;
-                ChangeUtils.previousLines = lineConfigs!;
-                ChangeUtils.showChanges();
-                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));                    
-            })
-        }
+                    res(true);
+                })
+            }
+        })
+    }
 
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return ;
+        
+        displayChanges(store.selectedFile.path).then(()=>{
+            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));            
+        })
         ChangeUtils.file = store.selectedFile;
+
+        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{
+            refData.current.lastUpdated = date;
+        })
                 
-    },[store.selectedFile])
+    },[store.selectedFile]);
+
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;
+        displayChanges(store.selectedFile.path).then(()=>{
+            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.increamentStepRefreshVersion());
+        });                
+    },[state.lastUpdated]);
+
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;     
+        if(store.selectedFile.changeType === EnumChangeType.DELETED)
+            return;
+        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{            
+            if(date !== refData.current.lastUpdated){
+                refData.current.lastUpdated = date;
+                setState({lastUpdated:date});
+            }
+            else{
+                refData.current.lastUpdated = date;
+            }
+        });        
+    },[store.focusVersion])
 
     const handleFileSelect = (file:IFile)=>{
-        dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
+        if(store.selectedFile?.path !== file.path){
+            IpcUtils.getLastUpdatedDate(file.path).then(date=>{
+                
+                dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
+            })
+        }
     }
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
     
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
-            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex align-items-center pt-2 ps-2">
-                <span className="h4 hover-brighter bg-danger py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
+                <span className="d-flex align-items-center hover-brighter bg-danger px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>
                 <span className="px-2" />
-                <span className="h4 hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
+                <span className="d-flex align-items-center hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
                     <FaPlus />
                 </span>
             </div>}        
-            {!!state.firstPaneHeight &&
-                <div className="container ps-2 border overflow-auto" style={{height:`${state.containerHeight! - state.firstPaneHeight}px`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
+            
+            <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
                     {props.changes?.map(f=>(
                         <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                             className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
                             >
                             <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
                             style={{textOverflow:'ellipsis'}}>
-                                <span className={`pe-1 flex-shrink-0 ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
-                                <span className="small text-secondary">
+                                <span className={`pe-1 flex-shrink-0 text-nowrap ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
+                                <span className="small text-secondary text-nowrap">
                                     <span>{f.path}</span>
                                 </span>
                             </div>                            
@@ -198,7 +219,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                             </div>
                         </div>
                     ))}                                                                
-            </div>}
+            </div>
     </div>
 }
 

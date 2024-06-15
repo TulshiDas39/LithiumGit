@@ -41,8 +41,8 @@ function ChangesTabPaneComponent(){
     if(!store.status)
         return <div></div>;
 
-    return <div className="flex-grow-1 d-flex flex-column">
-        <div className="row g-0 flex-nowrap overflow-auto">
+    return <div className="d-flex flex-column" style={{height:`calc(100% - 116px)`}}>
+        <div className="row g-0 flex-nowrap overflow-auto" style={{height:40}}>
             <div className={`col border cur-default text-center ${store.selectedTab === EnumChangeGroup.UN_STAGED ?"bg-select-color":""}`}
             onClick={_=> setTab(EnumChangeGroup.UN_STAGED)}>
                 <span className="px-1">Modified</span><br/>
@@ -58,7 +58,7 @@ function ChangesTabPaneComponent(){
                 <span>({store.status?.totalConflictedItem || 0})</span>
             </div>}
         </div>
-        <div className="flex-grow-1">            
+        <div className="" style={{height:`calc(100% - 40px)`}}>            
             {store.selectedTab === EnumChangeGroup.UN_STAGED && <ModifiedChanges changes={store.status?.unstaged!} 
              repoInfoInfo={repoInfo} />}
             {store.selectedTab === EnumChangeGroup.STAGED &&

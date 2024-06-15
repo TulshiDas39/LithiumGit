@@ -7,4 +7,6 @@ export interface IFile{
     changeGroup:EnumChangeGroup;
     addCount?:number;
     deleteCount?:number;
+    oldPath?:string;
+    oldFileName?:string;
 }

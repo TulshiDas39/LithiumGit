@@ -3,6 +3,20 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    private static removeJSPartFromError(err:string){
+        if(!err)
+            return err;
+        const prefix = "error: error invoking remote method";
+        if(err.toLowerCase().startsWith(prefix)){
+            return err.substring(err.lastIndexOf('Error:'))
+        }
+        return err;
+    }
+    static async getLastUpdatedDate(path: string) {
+        const fullPath = await this.joinPathAsync(RepoUtils.repositoryDetails.repoInfo.path,path);
+        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
+        return r.result || "";
+    }
     static resolveConflict(path: string, actions:IActionTaken[]) {
         return IpcUtils.runGitCommand(RendererEvents.ResolveConflict,[path,actions]);
     }
@@ -140,7 +154,8 @@ export class IpcUtils{
         return window.ipcRenderer.sendSync(RendererEvents.isValidRepoPath, path) as boolean
     }
     static isValidPath(path:string){
-        return IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
+        const r = IpcUtils.executeSync<boolean>(RendererEvents.isValidPath,[path]);
+        return !!r.result;
     }
     
     static async removeRecentRepo(repoId:string){
@@ -161,9 +176,11 @@ export class IpcUtils{
             result.result = r;
             return result;
         }).catch((e)=>{
-            const err = e?.toString() as string;
+            let err = e?.toString() as string;
+            err = IpcUtils.removeJSPartFromError(err);
+
             if(!disableErrorDisplay){
-                IpcUtils.showError?.(err);                
+                IpcUtils.showError?.(err);
             }
             result.error = err;
             return result;
@@ -197,4 +214,13 @@ export class IpcUtils{
     }
 
     static showError:(err:string)=>void;
+
+    static joinPath(...path:string[]){
+        const r = this.executeSync<string>(RendererEvents.joinPath().channel,path);
+        return r.result || "";
+    }
+    static async joinPathAsync(...path:string[]){
+        const r = await this.execute<string>(RendererEvents.joinPathAsync,path);
+        return r.result || "";
+    }
 }

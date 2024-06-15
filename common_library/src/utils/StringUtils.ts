@@ -37,6 +37,8 @@ export class StringUtils{
             return "Modified";
         if(type === EnumChangeType.DELETED)
             return "Deleted";
+        if(type === EnumChangeType.RENAMED)
+            return "Renamed";
 
         return "Conflicted";
     }

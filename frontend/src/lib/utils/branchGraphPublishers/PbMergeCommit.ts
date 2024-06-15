@@ -18,9 +18,10 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     }
 
     private updateMergingStateUi(){
-        // if(this.prevValue)
-        //     this.removeMergingStateUi();
-        this.createMerginStategUi();
+        if(this.prevValue)
+            this.removeMergingStateUi();
+        if(this.value)
+            this.createMerginStategUi();
     }
 
     private createMerginStategUi(){

@@ -36,9 +36,8 @@ function PullFromModalComponent(){
     const handlePull=()=>{
         if(!state.branch)
             return ;
-        closeModal();
-        //const originName = BranchUtils.activeOriginName;
-        const options:string[] = [];
+        const originName = RepoUtils.activeOriginName;
+        const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
         IpcUtils.trigerPull(options).then(()=>{
             IpcUtils.getRepoStatus().finally(()=>{                
@@ -52,7 +51,7 @@ function PullFromModalComponent(){
                 dispatch(ActionSavedData.updateRepository(repo));
             }
         })
-        
+        closeModal();        
     }
 
     useEffect(()=>{
@@ -81,7 +80,7 @@ function PullFromModalComponent(){
             </div>
             <div className="row g-0">
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
-                    <AppButton text="Pull" type="success" onClick={handlePull} />
+                    <AppButton text="Pull" type="success" onClick={()=>handlePull()} />
                 </div>
             </div>
 

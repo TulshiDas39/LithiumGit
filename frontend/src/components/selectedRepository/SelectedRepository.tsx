@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState } from "../../lib";
+import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -27,11 +27,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         remoteListRefreshVersion:state.ui.versions.remoteList,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
-    const leftWidthRef = useRef(100);
+    const refData = useRef({repo:props.repo,leftMinWidth:100});
+    const leftWidthRef = useRef(refData.current.leftMinWidth);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     const dispatch = useDispatch();
-    const refData = useRef({repo:props.repo});
     
     const getRepoDetails = async ()=>{            
         const res:IRepositoryDetails = await window.ipcRenderer.invoke(RendererEvents.getRepositoryDetails().channel,props.repo);
@@ -83,9 +83,11 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{        
         if(!store.status || !RepoUtils.repositoryDetails)
             return;
-        const requiredReload = GraphUtils.isRequiredReload();
-        if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
-        else GraphUtils.checkForUiUpdate(store.status);
+        GraphUtils.isRequiredReload().then(requiredReload => {
+            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+            else GraphUtils.checkForUiUpdate(store.status!);
+        });
+        
         ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 
@@ -116,13 +118,16 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[store.focusVersion]);
 
     const leftWidth = useMemo(()=>{
+        const curWidth = leftWidthRef.current + positionRef.current;
+        const width = NumUtils.between(refData.current.leftMinWidth, 500, curWidth);
         if(!position){
-            leftWidthRef.current += positionRef.current;
+            leftWidthRef.current = width;
             positionRef.current = 0;
-            return leftWidthRef.current;
         }
-        positionRef.current = position.x;
-        return leftWidthRef.current + positionRef.current;
+        else{
+            positionRef.current = position.x;
+        }
+        return width;
     },[position?.x])
 
     useEffect(()=>{
