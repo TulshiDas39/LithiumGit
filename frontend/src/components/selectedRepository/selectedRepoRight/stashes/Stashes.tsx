@@ -4,6 +4,7 @@ import { useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { CommitProperty } from "../branches/CommitProperty";
 import { StashProperty } from "./StashProperty";
+import { StashChangeView } from "./StashChangeView";
 
 interface IState{
     stashes:IStash[];
@@ -58,7 +59,7 @@ function StashesComponent(){
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
         <div className="w-100 bg-success" style={{height:`${bottomHeight}px`}}>
-
+                <StashChangeView />
         </div>
         
     </div>

@@ -609,17 +609,23 @@ export class GitManager{
     private async getStashList(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
         const r = await git.stashList(options);
-        const stashList:IStash[] = r?.all?.map(_=> ({
-            message:_.message,
-            body:_.body,
-            authEmail:_.author_email,
-            authorName:_.author_name,
-            date:_.date,
-            hash:_.hash,
-            avrebHash:_.hash.substring(0,7),
-        }));
-
-        //aa5fd4f
+        const stashList:IStash[] = [];
+        for(let item of r.all){
+            const st:IStash = {
+                message:item.message,
+                body:item.body,
+                authEmail:item.author_email,
+                authorName:item.author_name,
+                date:item.date,
+                hash:item.hash,
+                avrebHash:item.hash.substring(0,7),
+                changedCount:0,
+            };
+            if(item.diff){
+                st.changedCount = item.diff.changed + item.diff.insertions + item.diff.deletions;
+            }            
+            stashList.push(st);
+        }        
 
         return stashList;      
     }

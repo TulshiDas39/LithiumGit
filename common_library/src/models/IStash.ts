@@ -1,3 +1,5 @@
+import { IFile } from "./IFile";
+
 export interface IStash{
     message:string;
     body:string;
@@ -6,4 +8,6 @@ export interface IStash{
     authEmail:string;
     hash:string;
     avrebHash:string;
+    changedFiles:IFile[];
+    changedCount:number;
 }
