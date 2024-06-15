@@ -18,10 +18,8 @@ function StashesComponent(){
 
     useEffect(()=>{
         IpcUtils.getStashes().then(res=>{
-            console.log("res",res);
             if(res.result){
-                console.log("res",res.result);
-                setState({stashes:res.result});
+                setState({stashes:res.result,selectedItem:res.result?.[0]});
             }
         });
     },[])

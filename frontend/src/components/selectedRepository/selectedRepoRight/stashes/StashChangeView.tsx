@@ -3,6 +3,7 @@ import { NumUtils, useDrag, useMultiState } from "../../../../lib";
 import { StashFileList } from "./StashFileList";
 import { IFile, IStash } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { StashDiffView } from "./StashDiffView";
 
 interface IProps{
     stash?:IStash;
@@ -45,7 +46,7 @@ function StashChangeViewComponent(props:IProps){
 
     return <div className="d-flex w-100 h-100">
         <div style={{width:`calc(100% - ${rightWidth+3}px)`}}>
-            {/* <CommitDiffView file={state.selectedFile} /> */}
+            <StashDiffView stash={props.stash} file={state.selectedFile} />
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{width:`3px`}}></div>
         <StashFileList files={state?.changedFiles} width={rightWidth} onFileSelect={_=>setState({selectedFile:_})}
