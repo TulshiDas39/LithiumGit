@@ -165,7 +165,7 @@ function PullPushMenuComponent(){
         <div className="col-auto ps-1 pe-1">
             <div className="row g-0 align-items-stretch h-100 bg-success">
                 <div className="col-auto d-flex">
-                    <AppButton title={`Push To ${upStreamBranch}`} className="text-white" text="Push" type="success" onClick={handlePush} /> 
+                    <AppButton title={`Push To ${upStreamBranch}`} className="text-white" text="Push" type="success" onClick={()=>handlePush()} /> 
                 </div>                
                 <div className="border-secondary border-start border-end col-auto d-flex position-relative" 
                     onMouseEnter={()=> {refData.current.onHoverPushTo = true}} onMouseLeave={()=>{refData.current.onHoverPushTo = false}}>

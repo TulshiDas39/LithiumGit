@@ -1,7 +1,7 @@
 import { RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useRef  } from "react"
 import { Form } from "react-bootstrap";
-import { FaCheck } from "react-icons/fa";
+import { FaCaretDown, FaCheck } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -11,6 +11,7 @@ import { AppButton } from "../../../common";
 interface IState{
     value:string;
     amend:boolean;
+    showStash:boolean;
 }
 
 function CommitBoxComponent(){
@@ -27,14 +28,28 @@ function CommitBoxComponent(){
         }
         window.ipcRenderer.on(RendererEvents.commit().replyChannel,commitReplyLisenter);
 
+        const handler = ()=>{
+            if(!refData.current.onHoverStash){
+                setState({showStash:false})    
+            }                      
+        }
+        
+        document.addEventListener("click",handler);   
+
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.commit().replyChannel],[commitReplyLisenter]);
+            document.removeEventListener("click",handler);
         }
     },[])
 
+    const refData = useRef({onHoverStash:false});
     const ref = useRef<HTMLDivElement>();
 
-    const [state,setState]= useMultiState({value:"",autoStatingEnabled:store.autoStagingEnabled,amend:false} as IState);
+    const [state,setState]= useMultiState<IState>({
+        value:"",
+        amend:false,
+        showStash:false,
+    });
 
     const handleCommit=()=>{
         const options:string[] = [];
@@ -69,7 +84,19 @@ function CommitBoxComponent(){
         setState({value:msg});
     },[state.amend])
 
+    const handleStashCaretClick=()=>{        
+        setState({showStash:!state.showStash});
+    }
     
+    const handleStash = ()=>{
+        setState({showStash:false});
+        const options = ["-u"];
+        if(state.value)
+            options.push("-m",state.value);
+        IpcUtils.runStash(options).then(()=>{
+            IpcUtils.getRepoStatus();
+        })
+    }
 
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
@@ -78,15 +105,32 @@ function CommitBoxComponent(){
             </div>
             
             <div className="col d-flex pt-1">
-                <div className="row w-100 h-100 g-0 justify-content-center flex-nowrap overflow-hidden">  
+                <div className="row w-100 h-100 g-0 justify-content-center flex-nowrap">  
                     <div className="col-3 pe-1"></div>
                     <div className="col-6">
-                        <AppButton type="success" onClick={handleCommit} className="h-100">
-                            <span className="pe-2">
-                                <FaCheck className="ps-2 h5 m-0"/>
-                            </span>
-                            <span className="">Commit</span>                    
-                        </AppButton>
+                        <div className="row g-0">
+                            <div className="col-auto">
+                                <AppButton type="success" onClick={handleCommit} className="h-100 py-2">
+                                    <span className="pe-2">
+                                        <FaCheck className="ps-2 h5 m-0"/>
+                                    </span>
+                                    <span className="">Commit</span>                    
+                                </AppButton>
+                            </div>
+                            <div className="border-secondary border-start border-end col-auto d-flex position-relative" 
+                                onMouseEnter={()=> {refData.current.onHoverStash = true}} onMouseLeave={()=>{refData.current.onHoverStash = false}}>
+                                <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                                    onClick={()=>handleStashCaretClick()}>
+                                    <FaCaretDown />
+                                </AppButton>
+                                {state.showStash && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                                    onClick={()=>handleStash()}>
+                                    <span className="text-nowrap text-light">Stash all</span>
+                                </div>}                    
+                            </div>
+                            
+                        </div>
+                        
                     </div>                    
                     <div className="col-3"></div>
                 </div>                
