@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react"
-import { NumUtils, useDrag, useMultiState } from "../../../../lib";
+import { NumUtils, RepoUtils, useDrag, useMultiState } from "../../../../lib";
 import { StashFileList } from "./StashFileList";
 import { IFile, IStash } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
@@ -38,8 +38,8 @@ function StashChangeViewComponent(props:IProps){
             setState({changedFiles:[],selectedFile:undefined});
             return;
         }
-        
-        GitUtils.GetFileListByCommit(props.stash?.hash).then(res=>{
+        const head = RepoUtils.repositoryDetails.headCommit?.hash;        
+        GitUtils.GetFileListByCommit(props.stash?.hash,[head]).then(res=>{
             setState({changedFiles:res,selectedFile:res[0]});
         });
     },[props.stash?.hash])

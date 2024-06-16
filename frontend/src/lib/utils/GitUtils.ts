@@ -8,9 +8,12 @@ import { ModalData } from "../../components/modals/ModalData";
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
 
-    static async GetFileListByCommit(commitHash:string){
+    static async GetFileListByCommit(commitHash:string,opts?:string[]){
         const files:IFile[]  = [];
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r", "-m"];
+        if(opts?.length){
+            options.push(...opts);
+        }
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
             return files;
