@@ -21,12 +21,16 @@ function StashesComponent(){
         stashes:[],
     });
 
-    useEffect(()=>{
+    const getAll = ()=>{
         IpcUtils.getStashes().then(res=>{
             if(res.result){
                 setState({stashes:res.result,selectedItem:res.result?.[0]});
             }
         });
+    }
+
+    useEffect(()=>{
+        getAll();
     },[])
     
     const bottomHeightRef = useRef(200);
@@ -71,12 +75,12 @@ function StashesComponent(){
         
     }
 
-    const deleteItem = (item:IStash)=>{
+    const deleteItem = (index:number)=>{
         ModalData.confirmationModal.message = "Delete the stash?";
         ModalData.confirmationModal.YesHandler = ()=>{
-            const options:string[] = ["drop",item.hash];
+            const options:string[] = ["drop",`stash@{${index}}`];
             IpcUtils.runStash(options).then(()=>{
-                IpcUtils.getRepoStatus();
+                getAll();
             });
         }
 
@@ -86,12 +90,12 @@ function StashesComponent(){
     return <div className="px-2 pt-2 h-100 w-100">
         <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
             <div className="w-75 container" onMouseLeave={()=> setState({hoveredItem:undefined})}>
-                {state.stashes.map((st,i)=>(
-                    <div key={i} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}
+                {state.stashes.map((st,index)=>(
+                    <div key={index} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}
                         onMouseEnter= {_ => setState({hoveredItem:st})} >
                         <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={()=> setState({selectedItem:st})}
                         style={{textOverflow:'ellipsis'}}>
-                            <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${i}} ${st.message}`}</span>                            
+                            <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${index}} ${st.message}`}</span>                            
                         </div>
                         <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden text-end">                        
                                 {state.hoveredItem?.hash === st.hash && <Fragment>
@@ -99,7 +103,7 @@ function StashesComponent(){
                                     <span className="px-1" />
                                     <span className="hover" title="apply" onClick={_=>applyItem(st)}><FaPlus /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="delete" onClick={_=>deleteItem(st)}><FaTrash /></span>                                                 
+                                    <span className="hover" title="delete" onClick={_=>deleteItem(index)}><FaTrash /></span>                                                 
                                 </Fragment>}                                
                         </div>
                     </div>
