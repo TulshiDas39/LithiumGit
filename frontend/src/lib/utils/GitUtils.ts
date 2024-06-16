@@ -26,6 +26,8 @@ export class GitUtils{
             if(files.some(_=> _.path === path))
                 continue;
             const stat = statResult.find(_=> _.path === path);
+            if(!stat)
+                continue;
             const addCount = stat?.addCount;
             const deleteCount = stat?.deleteCount;
             const file = {
