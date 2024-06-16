@@ -47,6 +47,7 @@ export class GitManager{
         this.addCherryPickHandler();
         this.addConflictResolveHandler();
         this.addGetStashListHandler();
+        this.addStashHandler();
     }
 
 
@@ -527,6 +528,12 @@ export class GitManager{
         });
     }
 
+    private async addStashHandler(){
+        ipcMain.handle(RendererEvents.stash,async (e,repoPath:string,options:string[])=>{
+            await this.stash(repoPath,options);
+        });
+    }
+
     private addPushHandler(){
         ipcMain.handle(RendererEvents.push().channel,async (e,repoPath:string,options:string[])=>{
             await this.givePush(repoPath ,options);
@@ -605,6 +612,7 @@ export class GitManager{
         if(result.summary.insertions) return true;
         return false;
     }
+    
 
     private async getStashList(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
@@ -628,6 +636,11 @@ export class GitManager{
         }        
 
         return stashList;      
+    }
+
+    private async stash(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.stash(options);             
     }
 
     private async takePull(repoPath:string,options:string[]){

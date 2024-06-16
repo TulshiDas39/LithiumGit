@@ -1,17 +1,22 @@
 import { IStash } from "common_library";
-import React, { useEffect, useMemo, useRef } from "react";
-import { useDrag, useMultiState } from "../../../../lib";
+import React, { Fragment, useEffect, useMemo, useRef } from "react";
+import { EnumModals, useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { CommitProperty } from "../branches/CommitProperty";
 import { StashProperty } from "./StashProperty";
 import { StashChangeView } from "./StashChangeView";
+import { FaPlus, FaStore, FaTrash } from "react-icons/fa";
+import { ModalData } from "../../../modals/ModalData";
+import { useDispatch } from "react-redux";
+import { ActionModals } from "../../../../store";
 
 interface IState{
     stashes:IStash[];
     selectedItem?:IStash;
+    hoveredItem?:IStash;
 }
 
 function StashesComponent(){
+    const dispatch = useDispatch();
     const [state,setState] = useMultiState<IState>({
         stashes:[],
     });
@@ -41,12 +46,62 @@ function StashesComponent(){
         return height;
     },[position?.y])
 
+    const popItem = (item:IStash)=>{
+        ModalData.confirmationModal.message = "Pop the stash?";
+        ModalData.confirmationModal.YesHandler = ()=>{
+            const options:string[] = ["pop",item.hash];
+            IpcUtils.runStash(options).then(()=>{
+                IpcUtils.getRepoStatus();
+            });
+        }
+
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+    }
+
+    const applyItem = (item:IStash)=>{
+        ModalData.confirmationModal.message = "Apply the stash?";
+        ModalData.confirmationModal.YesHandler = ()=>{
+            const options:string[] = ["apply",item.hash];
+            IpcUtils.runStash(options).then(()=>{
+                IpcUtils.getRepoStatus();
+            });
+        }
+
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        
+    }
+
+    const deleteItem = (item:IStash)=>{
+        ModalData.confirmationModal.message = "Delete the stash?";
+        ModalData.confirmationModal.YesHandler = ()=>{
+            const options:string[] = ["drop",item.hash];
+            IpcUtils.runStash(options).then(()=>{
+                IpcUtils.getRepoStatus();
+            });
+        }
+
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+    }
+
     return <div className="px-2 pt-2 h-100 w-100">
-        <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
-            <div className="h-100 w-75">
+        <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
+            <div className="w-75 container" onMouseLeave={()=> setState({hoveredItem:undefined})}>
                 {state.stashes.map((st,i)=>(
-                    <div key={i} className={`hover ${st.hash === state.selectedItem?.hash?'selected':''}`} onClick={()=> setState({selectedItem:st})}>
-                        {`{${i}} ${st.message}`}
+                    <div key={i} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}
+                        onMouseEnter= {_ => setState({hoveredItem:st})} >
+                        <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={()=> setState({selectedItem:st})}
+                        style={{textOverflow:'ellipsis'}}>
+                            <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${i}} ${st.message}`}</span>                            
+                        </div>
+                        <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden text-end">                        
+                                {state.hoveredItem?.hash === st.hash && <Fragment>
+                                    <span className="hover" title="pop" onClick={_=> popItem(st)}><FaStore /></span>
+                                    <span className="px-1" />
+                                    <span className="hover" title="apply" onClick={_=>applyItem(st)}><FaPlus /></span>
+                                    <span className="px-1" />
+                                    <span className="hover" title="delete" onClick={_=>deleteItem(st)}><FaTrash /></span>                                                 
+                                </Fragment>}                                
+                        </div>
                     </div>
                 ))}
             </div>

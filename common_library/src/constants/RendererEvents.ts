@@ -272,6 +272,6 @@ export class RendererEvents{
     static readonly lastUpdatedDate = "lastUpdatedDate";
     static readonly joinPathAsync = "joinPathAsync";
     static readonly stashes = "stashes";
-    
+    static readonly stash = "stash";    
 }
 
