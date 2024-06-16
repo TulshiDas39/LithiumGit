@@ -50,23 +50,32 @@ function StashesComponent(){
         return height;
     },[position?.y])
 
-    const popItem = (item:IStash)=>{
+    const popItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>, index:number)=>{
+        e.preventDefault();
         ModalData.confirmationModal.message = "Pop the stash?";
         ModalData.confirmationModal.YesHandler = ()=>{
-            const options:string[] = ["pop",item.hash];
-            IpcUtils.runStash(options).then(()=>{
-                IpcUtils.getRepoStatus();
+            executeApply(index).then((r)=>{
+                if(!r.error){
+                    executeDelete(index).then(()=>{
+                        IpcUtils.getRepoStatus();
+                    });
+                }
             });
         }
 
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }
 
-    const applyItem = (item:IStash)=>{
+    const executeApply = (index:number)=>{
+        const options:string[] = ["apply",`stash@{${index}}`];
+        return IpcUtils.runStash(options);
+    }
+
+    const applyItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>,index:number)=>{
+        e.preventDefault();
         ModalData.confirmationModal.message = "Apply the stash?";
         ModalData.confirmationModal.YesHandler = ()=>{
-            const options:string[] = ["apply",item.hash];
-            IpcUtils.runStash(options).then(()=>{
+            executeApply(index).then(()=>{
                 IpcUtils.getRepoStatus();
             });
         }
@@ -75,11 +84,16 @@ function StashesComponent(){
         
     }
 
-    const deleteItem = (index:number)=>{
+    const executeDelete=(index:number)=>{
+        const options:string[] = ["drop",`stash@{${index}}`];
+        return IpcUtils.runStash(options);
+    }
+
+    const deleteItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>,index:number)=>{
+        e.preventDefault();
         ModalData.confirmationModal.message = "Delete the stash?";
         ModalData.confirmationModal.YesHandler = ()=>{
-            const options:string[] = ["drop",`stash@{${index}}`];
-            IpcUtils.runStash(options).then(()=>{
+            executeDelete(index).then(()=>{
                 getAll();
             });
         }
@@ -92,18 +106,18 @@ function StashesComponent(){
             <div className="w-75 container" onMouseLeave={()=> setState({hoveredItem:undefined})}>
                 {state.stashes.map((st,index)=>(
                     <div key={index} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}
-                        onMouseEnter= {_ => setState({hoveredItem:st})} >
-                        <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={()=> setState({selectedItem:st})}
+                        onMouseEnter= {_ => setState({hoveredItem:st})} onClick={()=> setState({selectedItem:st})} >
+                        <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`}
                         style={{textOverflow:'ellipsis'}}>
                             <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${index}} ${st.message}`}</span>                            
                         </div>
                         <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden text-end">                        
                                 {state.hoveredItem?.hash === st.hash && <Fragment>
-                                    <span className="hover" title="pop" onClick={_=> popItem(st)}><FaStore /></span>
+                                    <span className="hover" title="pop" onClick={_=> popItem(_,index)}><FaStore /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="apply" onClick={_=>applyItem(st)}><FaPlus /></span>
+                                    <span className="hover" title="apply" onClick={_=>applyItem(_,index)}><FaPlus /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="delete" onClick={_=>deleteItem(index)}><FaTrash /></span>                                                 
+                                    <span className="hover" title="delete" onClick={_=>deleteItem(_,index)}><FaTrash /></span>                                                 
                                 </Fragment>}                                
                         </div>
                     </div>

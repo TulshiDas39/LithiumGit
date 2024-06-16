@@ -89,7 +89,7 @@ function CommitBoxComponent(){
     }
     
     const handleStash = ()=>{
-        setState({showStash:false});
+        setState({showStash:false,value:""});
         const options = ["-u"];
         if(state.value)
             options.push("-m",state.value);
