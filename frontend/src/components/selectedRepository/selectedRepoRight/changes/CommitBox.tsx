@@ -108,7 +108,7 @@ function CommitBoxComponent(){
                 <div className="row w-100 h-100 g-0 justify-content-center flex-nowrap">  
                     <div className="col-3 pe-1"></div>
                     <div className="col-6">
-                        <div className="row g-0">
+                        <div className="row g-0 flex-nowrap">
                             <div className="col-auto">
                                 <AppButton type="success" onClick={handleCommit} className="h-100 py-2">
                                     <span className="pe-2">
@@ -123,7 +123,7 @@ function CommitBoxComponent(){
                                     onClick={()=>handleStashCaretClick()}>
                                     <FaCaretDown />
                                 </AppButton>
-                                {state.showStash && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                                {state.showStash && <div className="position-absolute bg-success py-2 px-2 button-effect" style={{top:'105%', right:0}}
                                     onClick={()=>handleStash()}>
                                     <span className="text-nowrap text-light">Stash all</span>
                                 </div>}                    

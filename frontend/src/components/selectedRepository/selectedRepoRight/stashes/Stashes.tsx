@@ -21,6 +21,7 @@ function StashesComponent(){
         stashes:[],
     });
 
+    const refData = useRef({hoverToolBar:false});
     const getAll = ()=>{
         IpcUtils.getStashes().then(res=>{
             if(res.result){
@@ -50,13 +51,13 @@ function StashesComponent(){
         return height;
     },[position?.y])
 
-    const popItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>, index:number)=>{
-        e.preventDefault();
-        ModalData.confirmationModal.message = "Pop the stash?";
+    const popItem = ( index:number)=>{
+        ModalData.confirmationModal.message = `Pop the stash {${index}}?`;
         ModalData.confirmationModal.YesHandler = ()=>{
             executeApply(index).then((r)=>{
                 if(!r.error){
                     executeDelete(index).then(()=>{
+                        getAll();
                         IpcUtils.getRepoStatus();
                     });
                 }
@@ -71,9 +72,8 @@ function StashesComponent(){
         return IpcUtils.runStash(options);
     }
 
-    const applyItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>,index:number)=>{
-        e.preventDefault();
-        ModalData.confirmationModal.message = "Apply the stash?";
+    const applyItem = (index:number)=>{        
+        ModalData.confirmationModal.message = `Apply the stash {${index}}?`;
         ModalData.confirmationModal.YesHandler = ()=>{
             executeApply(index).then(()=>{
                 IpcUtils.getRepoStatus();
@@ -89,9 +89,8 @@ function StashesComponent(){
         return IpcUtils.runStash(options);
     }
 
-    const deleteItem = (e:React.MouseEvent<HTMLSpanElement, MouseEvent>,index:number)=>{
-        e.preventDefault();
-        ModalData.confirmationModal.message = "Delete the stash?";
+    const deleteItem = (index:number)=>{        
+        ModalData.confirmationModal.message = `Delete the stash {${index}} ?`;
         ModalData.confirmationModal.YesHandler = ()=>{
             executeDelete(index).then(()=>{
                 getAll();
@@ -101,24 +100,29 @@ function StashesComponent(){
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }
 
+    const handleSelect=(item:IStash)=>{
+        if(!refData.current.hoverToolBar)
+            setState({selectedItem:item});
+    }
+
     return <div className="px-2 pt-2 h-100 w-100">
         <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
             <div className="w-75 container" onMouseLeave={()=> setState({hoveredItem:undefined})}>
                 {state.stashes.map((st,index)=>(
                     <div key={index} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}
-                        onMouseEnter= {_ => setState({hoveredItem:st})} onClick={()=> setState({selectedItem:st})} >
+                        onMouseEnter= {_ => setState({hoveredItem:st})} onClick={()=> handleSelect(st)} >
                         <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`}
                         style={{textOverflow:'ellipsis'}}>
                             <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${index}} ${st.message}`}</span>                            
                         </div>
-                        <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden text-end">                        
-                                {state.hoveredItem?.hash === st.hash && <Fragment>
-                                    <span className="hover" title="pop" onClick={_=> popItem(_,index)}><FaStore /></span>
+                        <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden d-flex justify-content-end">                        
+                                {state.hoveredItem?.hash === st.hash && <div onMouseEnter={()=>{refData.current.hoverToolBar = true}} onMouseLeave={()=>{refData.current.hoverToolBar = false}}>
+                                    <span className="hover" title="pop" onClick={_=> popItem(index)}><FaStore /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="apply" onClick={_=>applyItem(_,index)}><FaPlus /></span>
+                                    <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaPlus /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="delete" onClick={_=>deleteItem(_,index)}><FaTrash /></span>                                                 
-                                </Fragment>}                                
+                                    <span className="hover" title="delete" onClick={_=>deleteItem(index)}><FaTrash /></span>                                                 
+                                </div>}                                
                         </div>
                     </div>
                 ))}
