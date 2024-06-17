@@ -80,7 +80,7 @@ function PushToModalComponent(){
             </div>
             <div className="row g-0">
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
-                    <AppButton text="Push" type="success" onClick={handlePush} />
+                    <AppButton text="Push" type="success" onClick={()=>handlePush()} />
                 </div>
             </div>            
         </div>

@@ -1,8 +1,15 @@
-import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static runStash(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.stash,[options]);
+    }
+    
+    static getStashes() {
+        return IpcUtils.runGitCommand<IStash[]>(RendererEvents.stashes,[]);
+    }
     private static removeJSPartFromError(err:string){
         if(!err)
             return err;

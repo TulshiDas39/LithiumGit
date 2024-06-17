@@ -6,9 +6,9 @@ import { RepositoryDB } from './RepositoryDB';
 
 export class DBPath{
     static rootFolderName = "db";
-    static root = path.join(AppData.appPath,DBPath.rootFolderName);
-    static repository = path.join(AppData.appPath,DBPath.rootFolderName,"repository.db");
-    static config = path.join(AppData.appPath,DBPath.rootFolderName,"config.db");
+    static root = path.join(AppData.dataPath,DBPath.rootFolderName);
+    static repository = path.join(AppData.dataPath,DBPath.rootFolderName,"repository.db");
+    static config = path.join(AppData.dataPath,DBPath.rootFolderName,"config.db");
 }
 
 export class DB{

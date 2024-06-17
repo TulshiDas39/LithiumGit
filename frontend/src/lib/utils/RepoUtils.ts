@@ -526,4 +526,17 @@ export class RepoUtils{
         }
         return orignName;
     }
+
+    static enSureUpdate(repoPath:string){
+        return new Promise((res)=>{
+            let trycount = 0;
+            const timer = setInterval(()=>{
+                if(RepoUtils.repositoryDetails.repoInfo.path == repoPath || trycount > 5){
+                    clearInterval(timer);
+                    res(true);
+                }
+                trycount++;
+            },1000)
+        })
+    }
 }
