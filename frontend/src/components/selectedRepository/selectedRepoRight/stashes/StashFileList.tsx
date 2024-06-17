@@ -34,7 +34,7 @@ function StashFileListComponent(props:IProps){
                         </span>
                     </div>
                     <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">
-                        <span className={`px-2 fw-bold cur-default ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span>
+                        {/* <span className={`px-2 fw-bold cur-default ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{StringUtils.getChangeTypeHint(f.changeType)}</span> */}
                     </div>                        
                 </div>
             ))

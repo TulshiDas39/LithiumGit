@@ -1,4 +1,4 @@
-import { EnumChangeGroup, IFile, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -25,20 +25,12 @@ export class GitUtils{
             const path = words[words.length-1];
             if(files.some(_=> _.path === path))
                 continue;
-            const stat = statResult.find(_=> _.path === path);
-            if(!stat)
-                continue;
-            const addCount = stat?.addCount;
-            const deleteCount = stat?.deleteCount;
-            const file = {
-                changeGroup:EnumChangeGroup.REVISION
-                ,path,
-                fileName:StringUtils.getFileName(words[words.length-1]),
-                changeType:StringUtils.getChangeType(words[words.length-2]),
-                addCount,
-                deleteCount
+            const file = statResult.find(_=> _.path === path);
+            if(!file)
+                continue;            
 
-            } as IFile;
+            file.changeType = StringUtils.getChangeType(words[words.length-2]);
+            file.changeGroup = EnumChangeGroup.REVISION;
             files.push(file);
         }
 
@@ -49,7 +41,7 @@ export class GitUtils{
     }
 
     static async getNumStat(commitHash:string){
-        const files:{path:string;addCount:number;deleteCount:number}[]  = [];
+        const files:IFile[]  = [];
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r","-m","--numstat"];
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
@@ -60,7 +52,14 @@ export class GitUtils{
             const words = StringUtils.getWords(line);
             const path = words[2];
             if(!files.some(_=> path === _.path)){
-                files.push({addCount:Number(words[0]),deleteCount:Number(words[1]),path});
+                files.push({
+                    addCount:Number(words[0]),
+                    deleteCount:Number(words[1]),
+                    path,
+                    changeGroup:EnumChangeGroup.REVISION,
+                    changeType:EnumChangeType.MODIFIED,
+                    fileName:StringUtils.getFileName(path),
+                });
             }
             
         }
