@@ -1,24 +1,31 @@
 import { IStash } from "common_library";
 import React, { Fragment, useEffect, useMemo, useRef } from "react";
-import { EnumModals, useDrag, useMultiState } from "../../../../lib";
+import { EnumModals, RepoUtils, useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StashProperty } from "./StashProperty";
 import { StashChangeView } from "./StashChangeView";
 import { FaPlus, FaStore, FaTrash } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
-import { useDispatch } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
+import { useSelectorTyped } from "../../../../store/rootReducer";
 
 interface IState{
     stashes:IStash[];
     selectedItem?:IStash;
     hoveredItem?:IStash;
+    refreshKey:string;
 }
 
 function StashesComponent(){
+    const store = useSelectorTyped(state=>({
+        repo:state.savedData.recentRepositories.find(_=>_.isSelected)?.path,
+    }),shallowEqual);
+    
     const dispatch = useDispatch();
     const [state,setState] = useMultiState<IState>({
         stashes:[],
+        refreshKey:"",
     });
 
     const refData = useRef({hoverToolBar:false});
@@ -32,7 +39,7 @@ function StashesComponent(){
 
     useEffect(()=>{
         getAll();
-    },[])
+    },[state.refreshKey])
     
     const bottomHeightRef = useRef(200);
     const positionRef = useRef(0);
@@ -104,6 +111,12 @@ function StashesComponent(){
         if(!refData.current.hoverToolBar)
             setState({selectedItem:item});
     }
+    
+    useEffect(()=>{
+        RepoUtils.enSureUpdate(store.repo!).then((r)=>{
+            setState({refreshKey:new Date().toISOString()});
+        })
+    },[store.repo])
 
     return <div className="px-2 pt-2 h-100 w-100">
         <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
