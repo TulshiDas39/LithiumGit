@@ -4,7 +4,7 @@ import { EnumModals, RepoUtils, useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StashProperty } from "./StashProperty";
 import { StashChangeView } from "./StashChangeView";
-import { FaPlus, FaStore, FaTrash } from "react-icons/fa";
+import { FaPlus, FaRegPaperPlane, FaReplyAll, FaStore, FaTrash } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
@@ -130,9 +130,9 @@ function StashesComponent(){
                         </div>
                         <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden d-flex justify-content-end">                        
                                 {state.hoveredItem?.hash === st.hash && <div onMouseEnter={()=>{refData.current.hoverToolBar = true}} onMouseLeave={()=>{refData.current.hoverToolBar = false}}>
-                                    <span className="hover" title="pop" onClick={_=> popItem(index)}><FaStore /></span>
+                                    <span className="hover" title="pop" onClick={_=> popItem(index)}><FaReplyAll /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaPlus /></span>
+                                    <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaRegPaperPlane /></span>
                                     <span className="px-1" />
                                     <span className="hover" title="delete" onClick={_=>deleteItem(index)}><FaTrash /></span>                                                 
                                 </div>}                                
