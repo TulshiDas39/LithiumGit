@@ -15,5 +15,6 @@ export enum EnumHtmlIds{
     ConflictEditorTopPanel = "ConflictEditorTopPanel",
     ConflictEditorBottomPanel = "ConflictEditorBottomPanel",
     accept_all_incoming = "accept_all_incoming",
-    accept_all_current = "accept_all_current"
+    accept_all_current = "accept_all_current",
+    StashDiff = "StashDiff",
 }

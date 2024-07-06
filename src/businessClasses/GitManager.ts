@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -46,6 +46,8 @@ export class GitManager{
         this.addRebaseHandler();
         this.addCherryPickHandler();
         this.addConflictResolveHandler();
+        this.addGetStashListHandler();
+        this.addStashHandler();
     }
 
 
@@ -520,6 +522,18 @@ export class GitManager{
         });
     }
 
+    private async addGetStashListHandler(){
+        ipcMain.handle(RendererEvents.stashes,async (e,repoPath:string,options:string[])=>{
+            return await this.getStashList(repoPath,options);
+        });
+    }
+
+    private async addStashHandler(){
+        ipcMain.handle(RendererEvents.stash,async (e,repoPath:string,options:string[])=>{
+            await this.stash(repoPath,options);
+        });
+    }
+
     private addPushHandler(){
         ipcMain.handle(RendererEvents.push().channel,async (e,repoPath:string,options:string[])=>{
             await this.givePush(repoPath ,options);
@@ -597,6 +611,36 @@ export class GitManager{
         if(result.summary.deletions) return true;
         if(result.summary.insertions) return true;
         return false;
+    }
+    
+
+    private async getStashList(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        const r = await git.stashList(options);
+        const stashList:IStash[] = [];
+        for(let item of r.all){
+            const st:IStash = {
+                message:item.message,
+                body:item.body,
+                authEmail:item.author_email,
+                authorName:item.author_name,
+                date:item.date,
+                hash:item.hash,
+                avrebHash:item.hash.substring(0,7),
+                changedCount:0,
+            };
+            if(item.diff){
+                st.changedCount = item.diff.changed + item.diff.insertions + item.diff.deletions;
+            }            
+            stashList.push(st);
+        }        
+
+        return stashList;      
+    }
+
+    private async stash(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        await git.stash(options);             
     }
 
     private async takePull(repoPath:string,options:string[]){

@@ -1,10 +1,12 @@
 import React, { useEffect } from "react"
-import { useMultiState } from "../../../../lib";
+import { RepoUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
 import { Paginator } from "../../../common";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ICommitInfo, ILogFilterOptions } from "common_library";
 import { CommitFilter } from "./CommitFilter";
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { shallowEqual } from "react-redux";
 
 
 interface ISingleCommitProps{
@@ -49,15 +51,21 @@ interface IState{
     loading:boolean;
     searchText:string;
     selectedBranch?:string;
+    refreshKey:string;
 }
 
 function CommitsComponent(){
+    const store = useSelectorTyped(state=>({
+        repo:state.savedData.recentRepositories.find(_=>_.isSelected)?.path,
+    }),shallowEqual);
+
     const [state,setState]=useMultiState<IState>({pageIndex:0,
         pageSize:500,
         total:0,
         commits:[],
         loading:true,
         searchText:"",
+        refreshKey: new Date().toISOString(),
     });
 
     useEffect(()=>{
@@ -76,7 +84,13 @@ function CommitsComponent(){
             setState({commits:result.list.reverse(),total:result.count,loading:false});
         });
         
-    },[state.pageIndex,state.pageSize,state.searchText,state.selectedBranch]);
+    },[state.pageIndex,state.pageSize,state.searchText,state.selectedBranch,state.refreshKey]);
+
+    useEffect(()=>{
+        RepoUtils.enSureUpdate(store.repo!).then((r)=>{
+            setState({pageIndex:0,refreshKey:new Date().toISOString()});
+        })
+    },[store.repo])
 
     const handleSearch = (text:string)=>{
         setState({searchText:text});
