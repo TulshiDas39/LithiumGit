@@ -67,6 +67,33 @@ export class GitUtils{
         return files;
     }
 
+    static async getChangedFileOfStatsh(index:number){
+        const files:IFile[]  = [];
+        const options = ["stash", "show", `stash@{${index}}`, "-u", "-r","-m","--numstat"];
+        const result = await IpcUtils.getRaw(options);
+        if(!result.result)
+            return files;
+
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+        for(let line of lines){
+            const words = StringUtils.getWords(line);
+            const path = words[2];
+            if(!files.some(_=> path === _.path)){
+                files.push({
+                    addCount:Number(words[0]),
+                    deleteCount:Number(words[1]),
+                    path,
+                    changeGroup:EnumChangeGroup.REVISION,
+                    changeType:EnumChangeType.MODIFIED,
+                    fileName:StringUtils.getFileName(path),
+                });
+            }
+            
+        }
+
+        return files;
+    }
+
     static OpenRepository(path:string){
         const isValidPath = IpcUtils.isValidRepositoryPath(path);
         if(!isValidPath) {

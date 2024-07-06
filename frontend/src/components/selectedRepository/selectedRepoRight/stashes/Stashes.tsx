@@ -32,6 +32,7 @@ function StashesComponent(){
     const getAll = ()=>{
         IpcUtils.getStashes().then(res=>{
             if(res.result){
+                console.log(res.result);
                 setState({stashes:res.result,selectedItem:res.result?.[0]});
             }
         });
@@ -108,8 +109,10 @@ function StashesComponent(){
     }
 
     const handleSelect=(item:IStash)=>{
-        if(!refData.current.hoverToolBar)
+        if(!refData.current.hoverToolBar){
             setState({selectedItem:item});
+        }
+            
     }
     
     useEffect(()=>{

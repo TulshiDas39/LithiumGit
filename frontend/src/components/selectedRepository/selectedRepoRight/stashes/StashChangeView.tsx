@@ -38,8 +38,7 @@ function StashChangeViewComponent(props:IProps){
             setState({changedFiles:[],selectedFile:undefined});
             return;
         }
-        const head = RepoUtils.repositoryDetails.headCommit?.hash;        
-        GitUtils.getNumStat(props.stash?.hash).then(res=>{
+        GitUtils.getChangedFileOfStatsh(props.stash.index!).then(res=>{
             setState({changedFiles:res,selectedFile:res[0]});
         });
     },[props.stash?.hash])
