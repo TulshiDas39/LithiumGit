@@ -4,6 +4,7 @@ import { useMultiState, DiffUtils, EnumHtmlIds, ILine } from "../../../../lib";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IProps{
     file?:IFile;
@@ -31,8 +32,8 @@ function StashDiffViewComponent(props:IProps){
         }
         ChangeUtils.containerId = EnumHtmlIds.StashDiff;
         if(props.file.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getFileContentAtSpecificCommit(selectedStash.hash, props.file.path).then(res=>{
-                const content = res.result || "";
+            GitUtils.GetFileContentOfStash(selectedStash, props.file).then(res=>{
+                const content = res || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
                     const options =  ["HEAD",`stash@{${selectedStash.index}}`,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",props.file.path];            

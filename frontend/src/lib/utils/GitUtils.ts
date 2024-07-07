@@ -1,4 +1,4 @@
-import { EnumChangeGroup, EnumChangeType, IFile, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, IStash, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -138,6 +138,19 @@ export class GitUtils{
                 path:path
             });
             ReduxUtils.dispatch(ActionSavedData.setSelectedRepository(newRepoInfo));
+        }
+    }
+
+    static async GetFileContentOfStash(stash:IStash,file:IFile){
+        if(file.changeType === EnumChangeType.CREATED){
+            //git show 'stash@{0}^3:<path/to/file>'
+            const options = [`stash@{${stash.index}}^3:${file.path}`];
+            let r = await IpcUtils.getGitShowResult(options);
+            return r;
+        }
+        else{
+            const r = await IpcUtils.getFileContentAtSpecificCommit(stash.hash,file.path);
+            return r.result!;
         }
     }
 }
