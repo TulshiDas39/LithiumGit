@@ -67,6 +67,31 @@ export class GitUtils{
         return files;
     }
 
+    private static async getFileStatusOfStash(index:number){
+        const files:IFile[]  = [];
+        const options = ["stash", "show", `stash@{${index}}`, "-u", "-r","-m","--name-status"];
+        const result = await IpcUtils.getRaw(options);
+        if(!result.result)
+            return files;
+
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+        for(let line of lines){
+            const words = StringUtils.getWords(line);
+            const path = words[1];
+            if(!files.some(_=> path === _.path)){
+                files.push({                                        
+                    path,
+                    changeGroup:EnumChangeGroup.REVISION,
+                    changeType:StringUtils.getChangeType(words[0]),
+                    fileName:StringUtils.getFileName(path),
+                });
+            }
+            
+        }
+
+        return files;
+    }
+
     static async getChangedFileOfStatsh(index:number){
         const files:IFile[]  = [];
         const options = ["stash", "show", `stash@{${index}}`, "-u", "-r","-m","--numstat"];
@@ -75,16 +100,23 @@ export class GitUtils{
             return files;
 
         const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+
+        let fileStatus:IFile[] = [];
+        try{
+           fileStatus = await GitUtils.getFileStatusOfStash(index);
+        }catch(e){
+        }
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const path = words[2];
+            const changeType = fileStatus.find(_=> _.path == path)?.changeType || EnumChangeType.MODIFIED;
             if(!files.some(_=> path === _.path)){
                 files.push({
                     addCount:Number(words[0]),
                     deleteCount:Number(words[1]),
                     path,
                     changeGroup:EnumChangeGroup.REVISION,
-                    changeType:EnumChangeType.MODIFIED,
+                    changeType,
                     fileName:StringUtils.getFileName(path),
                 });
             }
