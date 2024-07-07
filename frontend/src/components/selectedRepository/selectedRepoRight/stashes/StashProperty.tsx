@@ -22,7 +22,7 @@ function StashPropertyComponent(props:IProps){
     return <div id="commit_property" className="d-flex flex-column w-100 ps-1 overflow-hidden border">
         <b>Stash properties</b>
         {!!props.stash.hash && <span>Sha: {props.stash.avrebHash}</span>}
-        <span>Date: {moment(props.stash.date).format("D MMM,YYYY") }</span>
+        <span>Date: {moment(props.stash.date).format("D MMM,YYYY hh:mm a") }</span>
         {!!props.stash.hash && <div className="w-100 overflow-hidden d-flex">
             <span>Author: </span>
             <div><InputText text={props.stash.authorName}/></div>
