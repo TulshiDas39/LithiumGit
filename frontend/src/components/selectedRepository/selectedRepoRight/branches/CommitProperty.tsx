@@ -35,6 +35,10 @@ function CommitPropertyComponent(){
         UiUtils.copy(state.selectedCommit?.hash!);
     }
 
+    const timeZoneOffset = useMemo(()=>{
+        return UiUtils.getTimeZonOffsetStr();
+    },[]);
+
     if(!state.selectedCommit) return null;
     return <div id="commit_property" className="d-flex flex-column w-100 ps-1 overflow-hidden border">
         <b>Commit properties</b>
@@ -42,7 +46,7 @@ function CommitPropertyComponent(){
             <span>Sha: {state.selectedCommit.avrebHash}</span> 
             <span title="Copy" className="ps-2 d-flex align-items-center hover click-effect" onClick={() => handleCopy()}><FaCopy className="click-effect" /> </span>
         </span>}
-        <span>Date: {moment(state.selectedCommit.date).format("D MMM,YYYY hh:mm a") }</span>
+        <span title={timeZoneOffset}>Date: {moment(state.selectedCommit.date).format("D MMM,YYYY hh:mm a") }</span>
         {!!state.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">
             <span>Author: </span>
             <div><InputText text={state.selectedCommit.author_name}/></div>

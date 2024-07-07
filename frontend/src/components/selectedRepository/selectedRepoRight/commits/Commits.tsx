@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { RepoUtils, useMultiState } from "../../../../lib";
+import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
 import { Paginator } from "../../../common";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
@@ -15,9 +15,7 @@ interface ISingleCommitProps{
 
 function SingleCommit(props:ISingleCommitProps){
     const getTimeZonOffsetStr = ()=>{
-        const offset = - new Date().getTimezoneOffset()/60;
-        const sign = offset < 0?"-" : "+";
-        return `UTC ${sign} ${offset}`;
+        return UiUtils.getTimeZonOffsetStr();
     }
     return <div className="py-1 w-100 overflow-auto">
      <div className="border border-primary ps-2">
