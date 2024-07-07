@@ -1,9 +1,10 @@
-import { DiffUtils, IEditorLineColor, ILine, ILineHighlight } from "../../../../lib";
+import { DiffUtils, ILine } from "../../../../lib";
 
 interface ISingleDiffProps{
-    line:ILine;
-    color:ILineHighlight;
+    line:ILine;    
     maxLineWidth:number;
+    backGroupColorCss:string;
+    forGroupColorCss:string;
 }
 
 function SingleDiff(props:ISingleDiffProps){
@@ -19,15 +20,15 @@ function SingleDiff(props:ISingleDiffProps){
             let insertedUptoIndex = -1;
             props.line.textHightlightIndex.forEach((range,i)=>{                        
                 if(range.fromIndex > insertedUptoIndex+1 ){
-                    const elem = <span key={i} className="py-1" style={{background:props.color.background}}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
+                    const elem = <span key={i} className={`py-1 ${props.backGroupColorCss}`}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
                     childElems.push(elem);                    
                 }
-                const elem = <span key={i} className="py-1" style={{background:props.color.forground}}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
+                const elem = <span key={i} className={`py-1 ${props.forGroupColorCss}`}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
                 childElems.push(elem);
                 insertedUptoIndex = range.fromIndex+range.count-1;
             });
             if(insertedUptoIndex < props.line.text.length-1){
-                const elem = <span key={props.line.textHightlightIndex.length} className="py-1" style={{background:props.color.background}}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
+                const elem = <span key={props.line.textHightlightIndex.length} className={`py-1 ${props.backGroupColorCss}`}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
                 childElems.push(elem);
             }
         }        
@@ -35,7 +36,7 @@ function SingleDiff(props:ISingleDiffProps){
             if(props.line.text) childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
             else childElems.push(<br key={1}/>);
         }
-        return <p className="" style={{...paragraphStyle, background:props.line.hightLightBackground? props.color.background:undefined}}>{childElems}</p>
+        return <p className={`${props.line.hightLightBackground? props.backGroupColorCss:""}`} style={{...paragraphStyle}}>{childElems}</p>
     }
 
     return <p className="transparent-background noselect" style={{...paragraphStyle}}> </p>
@@ -43,7 +44,7 @@ function SingleDiff(props:ISingleDiffProps){
 
 interface IProps{
     lines:ILine[];
-    color:ILineHighlight;
+    changeType:"current" | "previous";
 }
 export function DiffView(props:IProps){
     const editorWidth = DiffUtils.getEditorWidth(props.lines.map(x=>x.text?x.text:""));
@@ -70,7 +71,7 @@ export function DiffView(props:IProps){
         </div>
         <div className="ps-1 content" style={{width:`calc(100% - ${lineDivWidth}ch)`,overflowY:'hidden'}}>
             {props.lines.map((l, i)=>(
-                <SingleDiff key={i} line={l} color={props.color} maxLineWidth={editorWidth}  />
+                <SingleDiff key={i} line={l} backGroupColorCss={`bg-${props.changeType}-change`} forGroupColorCss={`bg-${props.changeType}-change-deep`} maxLineWidth={editorWidth}  />
             ))}
         </div>
     </div>

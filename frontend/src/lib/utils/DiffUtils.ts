@@ -1,4 +1,3 @@
-import { ILineHighlight } from "../editor";
 import { ILine } from "../interfaces";
 import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
@@ -270,71 +269,71 @@ export class DiffUtils{
     
     }
 
-    static getDeltaFromLineConfig(lines:ILine[],color:ILineHighlight,maxLineWidth:number){        
-        const operations:DeltaOperation[]=[];        
-        const delta = {
-            ops:operations,
-        } as DeltaStatic;
+    // static getDeltaFromLineConfig(lines:ILine[],maxLineWidth:number){        
+    //     const operations:DeltaOperation[]=[];        
+    //     const delta = {
+    //         ops:operations,
+    //     } as DeltaStatic;
         
-        if(!lines.length) 
-            return delta;
+    //     if(!lines.length) 
+    //         return delta;
         
-        let createOperation=(line:ILine)=>{            
-            if(line.text != undefined){                
-                const heightLightCount = line.textHightlightIndex.length;
-                if(!!heightLightCount){
-                    let insertedUptoIndex = -1;                    
-                    line.textHightlightIndex.forEach((range)=>{                        
-                        if(range.fromIndex > insertedUptoIndex+1 ){                            
-                            operations.push({
-                                insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
-                                attributes:{
-                                    background:color.background,
-                                }
-                            });                            
-                        }
-                        operations.push({
-                            insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
-                            attributes:{
-                                background:color.forground,
-                            }
-                        })                        
+    //     let createOperation=(line:ILine)=>{            
+    //         if(line.text != undefined){                
+    //             const heightLightCount = line.textHightlightIndex.length;
+    //             if(!!heightLightCount){
+    //                 let insertedUptoIndex = -1;                    
+    //                 line.textHightlightIndex.forEach((range)=>{                        
+    //                     if(range.fromIndex > insertedUptoIndex+1 ){                            
+    //                         operations.push({
+    //                             insert:line.text!.substring(insertedUptoIndex+1,range.fromIndex),
+    //                             attributes:{
+    //                                 background:color.background,
+    //                             }
+    //                         });                            
+    //                     }
+    //                     operations.push({
+    //                         insert:line.text!.substring(range.fromIndex, range.fromIndex+range.count),
+    //                         attributes:{
+    //                             background:color.forground,
+    //                         }
+    //                     })                        
     
-                        insertedUptoIndex = range.fromIndex+range.count-1;
-                    })
-                    if(insertedUptoIndex < line.text.length-1){
-                        operations.push({
-                            insert: line.text.substring(insertedUptoIndex+1),
-                            attributes:{
-                                background:color.background,
-                            } 
-                        })
-                    }                    
-                } 
-                else{
-                    operations.push({
-                        insert:line.text,                        
-                    })
-                }                
-            }
-        }
+    //                     insertedUptoIndex = range.fromIndex+range.count-1;
+    //                 })
+    //                 if(insertedUptoIndex < line.text.length-1){
+    //                     operations.push({
+    //                         insert: line.text.substring(insertedUptoIndex+1),
+    //                         attributes:{
+    //                             background:color.background,
+    //                         } 
+    //                     })
+    //                 }                    
+    //             } 
+    //             else{
+    //                 operations.push({
+    //                     insert:line.text,                        
+    //                 })
+    //             }                
+    //         }
+    //     }
 
-        createOperation(lines[0]);
+    //     createOperation(lines[0]);
 
-        lines.slice(1).forEach((line)=>{
-            operations.push({
-                insert:`\n`
-            })
-            createOperation(line);
-        })
-        if(!lines[lines.length-1].text){
-            operations.push({
-                insert:`\n`
-            })
-        }
+    //     lines.slice(1).forEach((line)=>{
+    //         operations.push({
+    //             insert:`\n`
+    //         })
+    //         createOperation(line);
+    //     })
+    //     if(!lines[lines.length-1].text){
+    //         operations.push({
+    //             insert:`\n`
+    //         })
+    //     }
         
-        return delta;        
-    }
+    //     return delta;        
+    // }
 
     static getDeltaForLineNumber(lines:ILine[]){
         const operations:DeltaOperation[]=[];
