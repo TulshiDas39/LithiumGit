@@ -32,6 +32,7 @@ function StashesComponent(){
     const getAll = ()=>{
         IpcUtils.getStashes().then(res=>{
             if(res.result){
+                console.log(res.result);
                 setState({stashes:res.result,selectedItem:res.result?.[0]});
             }
         });
@@ -108,8 +109,10 @@ function StashesComponent(){
     }
 
     const handleSelect=(item:IStash)=>{
-        if(!refData.current.hoverToolBar)
+        if(!refData.current.hoverToolBar){
             setState({selectedItem:item});
+        }
+            
     }
     
     useEffect(()=>{
@@ -119,7 +122,7 @@ function StashesComponent(){
     },[store.repo])
 
     return <div className="px-2 pt-2 h-100 w-100">
-        <div className="w-100 d-flex" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
+        <div className="w-100 d-flex overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}} >
             <div className="w-75 container" onMouseLeave={()=> setState({hoveredItem:undefined})}>
                 {state.stashes.map((st,index)=>(
                     <div key={index} className={`row g-0 align-items-center flex-nowrap w-100 hover ${st.hash === state.selectedItem?.hash?'selected':''}`}

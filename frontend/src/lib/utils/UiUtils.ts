@@ -137,6 +137,10 @@ export class UiUtils {
         return false;
     }
 
+    static copy(value:string){
+        navigator.clipboard.writeText(value);
+    }
+
     static resolveHeight(id:string){        
         return new Promise<number>((res)=>{
             let tryCount = 0;

@@ -367,3 +367,7 @@ html {
 .no-radius{
   border-radius: 0 !important;
 }
+
+.click-effect:active{
+  transform: translate(1px,1px);
+}

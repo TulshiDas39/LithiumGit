@@ -618,6 +618,7 @@ export class GitManager{
         const git = this.getGitRunner(repoPath);
         const r = await git.stashList(options);
         const stashList:IStash[] = [];
+        let index = 0;        
         for(let item of r.all){
             const st:IStash = {
                 message:item.message,
@@ -628,11 +629,17 @@ export class GitManager{
                 hash:item.hash,
                 avrebHash:item.hash.substring(0,7),
                 changedCount:0,
+                index:index,
+                insertion:0,
+                deletion:0
             };
             if(item.diff){
-                st.changedCount = item.diff.changed + item.diff.insertions + item.diff.deletions;
+                st.changedCount = item.diff.changed + item.diff.insertions + item.diff.deletions;                
+                st.insertion = item.diff.insertions;
+                st.deletion = item.diff.deletions;
             }            
             stashList.push(st);
+            index++;
         }        
 
         return stashList;      
