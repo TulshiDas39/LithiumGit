@@ -11,7 +11,7 @@ html {
 html {
     --font-color: #282828;   
     --hover: #0bc59c;
-    --bg-color:white;
+    --bg-color:rgb(241, 236, 236);
     --gs-normal: white;
     --gs-primary: blue;
     --gs-secondary: rgb(82, 82, 124);
@@ -35,8 +35,8 @@ html {
     --shadow-1: rgba(0, 0, 0, 0.1);
     --dropdown-background: #ffff;
     --colorBlue: #1CD0A8;
-    --bg-current-change: #EBF1DD;
-    --bg-current-change-deep: #e2f4b8;
+    --bg-current-change: #d6e7b1;
+    --bg-current-change-deep: #caed77;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#afadad;
@@ -79,6 +79,14 @@ html {
   p,span,div,i,h1,h2,h3,h4,h5,h6{
     color: var(--font-color);
     font-family: 'Consolas';
+  }
+
+  input[type="text"],textarea,input[type="text"]:focus,textarea:focus{
+    background-color: var(--bg-color);
+  }
+
+  .form-control:focus{
+    background-color: var(--bg-color);
   }
 
   .font-color{

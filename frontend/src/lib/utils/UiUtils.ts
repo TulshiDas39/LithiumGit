@@ -198,5 +198,11 @@ export class UiUtils {
         return wrapper.firstChild as T;
     }
 
+    static getTimeZonOffsetStr(){
+        const offset = - new Date().getTimezoneOffset()/60;
+        const sign = offset < 0?"-" : "+";
+        return `UTC ${sign} ${offset}`;
+    }
+
 
 }
