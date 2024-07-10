@@ -56,7 +56,12 @@ function CommitBoxComponent(){
         if(state.amend)
             options.push("--amend");
         const messages = StringUtils.getLines(state.value);        
-        IpcUtils.doCommit(messages,options).finally(()=>{
+        IpcUtils.doCommit(messages,options).then(r=>{
+            if(!r.error){
+                if(state.amend)
+                    setState({amend:false});
+            }
+        }).finally(()=>{
             setState({value:""});
             IpcUtils.getRepoStatus();
         })
