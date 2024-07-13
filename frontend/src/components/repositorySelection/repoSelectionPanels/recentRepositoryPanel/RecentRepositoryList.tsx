@@ -39,10 +39,10 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
     return <div id="recentRepoList" className="w-75 h-100 d-flex flex-column">
         <h4 className="px-1 py-2 m-0">Recent Repositories</h4>
         <hr className="m-0" />
-        <div className="d-flex flex-column align-items-center pt-2">
+        <div className="d-flex flex-column align-items-center pt-2 overflow-auto">
             {
                 store.recentRepos.map(repo=>(
-                    <div key={repo._id} className={`repoItem hover  ${props.selectedItem?._id === repo._id?"selected":""}`}                        
+                    <div key={repo._id} className={`repoItem hover border-bottom pt-2 ${props.selectedItem?._id === repo._id?"selected":""}`}                        
                         onClick={()=>handleSelect(repo)}>
                         <div className="d-flex flex-column px-1 w-100" onDoubleClick={()=>handleDoubleClick(repo)}>
                             <h6>{repo.name}</h6>
