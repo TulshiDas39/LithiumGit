@@ -226,7 +226,7 @@ function CommitContextModalComponent(){
             })
         }
         ModalData.confirmationModal.YesHandler = handler;
-        ModalData.confirmationModal.message = `Delete local branch ${branchName}?`;
+        ModalData.confirmationModal.message = `Delete local branch '${branchName}'?`;
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));        
     }
 

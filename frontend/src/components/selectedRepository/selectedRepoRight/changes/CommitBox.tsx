@@ -56,7 +56,12 @@ function CommitBoxComponent(){
         if(state.amend)
             options.push("--amend");
         const messages = StringUtils.getLines(state.value);        
-        IpcUtils.doCommit(messages,options).finally(()=>{
+        IpcUtils.doCommit(messages,options).then(r=>{
+            if(!r.error){
+                if(state.amend)
+                    setState({amend:false});
+            }
+        }).finally(()=>{
             setState({value:""});
             IpcUtils.getRepoStatus();
         })
@@ -101,7 +106,7 @@ function CommitBoxComponent(){
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
                 <Form.Control as="textarea" rows={2} value={state.value} onChange={e => setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
-                    type="textarea" className="w-100 h-100 rounded-0 no-resize" placeholder="Commit message" />
+                    type="textarea" className="w-100 h-100 rounded-0 no-resize bg-color" placeholder="Commit message" />
             </div>
             
             <div className="col d-flex pt-1">

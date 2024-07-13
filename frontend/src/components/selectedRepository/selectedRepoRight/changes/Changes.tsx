@@ -94,7 +94,7 @@ function ChangesComponent() {
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
 
-        <div className="ps-2 bg-white" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
+        <div className="ps-2" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
             {store.selectedFile?.changeType !== EnumChangeType.CONFLICTED && <div id={EnumHtmlIds.diffview_container} className="h-100">
 

@@ -1,4 +1,4 @@
-import { EnumChangeGroup, EnumChangeType, IFile, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, IStash, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -67,6 +67,65 @@ export class GitUtils{
         return files;
     }
 
+    private static async getFileStatusOfStash(index:number){
+        const files:IFile[]  = [];
+        const options = ["stash", "show", `stash@{${index}}`, "-u", "-r","-m","--name-status"];
+        const result = await IpcUtils.getRaw(options);
+        if(!result.result)
+            return files;
+
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+        for(let line of lines){
+            const words = StringUtils.getWords(line);
+            const path = words[1];
+            if(!files.some(_=> path === _.path)){
+                files.push({                                        
+                    path,
+                    changeGroup:EnumChangeGroup.REVISION,
+                    changeType:StringUtils.getChangeType(words[0]),
+                    fileName:StringUtils.getFileName(path),
+                });
+            }
+            
+        }
+
+        return files;
+    }
+
+    static async getChangedFileOfStatsh(index:number){
+        const files:IFile[]  = [];
+        const options = ["stash", "show", `stash@{${index}}`, "-u", "-r","-m","--numstat"];
+        const result = await IpcUtils.getRaw(options);
+        if(!result.result)
+            return files;
+
+        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+
+        let fileStatus:IFile[] = [];
+        try{
+           fileStatus = await GitUtils.getFileStatusOfStash(index);
+        }catch(e){
+        }
+        for(let line of lines){
+            const words = StringUtils.getWords(line);
+            const path = words[2];
+            const changeType = fileStatus.find(_=> _.path == path)?.changeType || EnumChangeType.MODIFIED;
+            if(!files.some(_=> path === _.path)){
+                files.push({
+                    addCount:Number(words[0]),
+                    deleteCount:Number(words[1]),
+                    path,
+                    changeGroup:EnumChangeGroup.REVISION,
+                    changeType,
+                    fileName:StringUtils.getFileName(path),
+                });
+            }
+            
+        }
+
+        return files;
+    }
+
     static OpenRepository(path:string){
         const isValidPath = IpcUtils.isValidRepositoryPath(path);
         if(!isValidPath) {
@@ -79,6 +138,19 @@ export class GitUtils{
                 path:path
             });
             ReduxUtils.dispatch(ActionSavedData.setSelectedRepository(newRepoInfo));
+        }
+    }
+
+    static async GetFileContentOfStash(stash:IStash,file:IFile){
+        if(file.changeType === EnumChangeType.CREATED){
+            //git show 'stash@{0}^3:<path/to/file>'
+            const options = [`stash@{${stash.index}}^3:${file.path}`];
+            let r = await IpcUtils.getGitShowResult(options);
+            return r;
+        }
+        else{
+            const r = await IpcUtils.getFileContentAtSpecificCommit(stash.hash,file.path);
+            return r.result!;
         }
     }
 }

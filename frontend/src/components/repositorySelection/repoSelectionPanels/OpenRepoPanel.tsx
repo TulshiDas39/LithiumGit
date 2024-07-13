@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { ActionSavedData } from "../../../store/slices";
 import { GitUtils } from "../../../lib/utils/GitUtils";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { AppButton } from "../../common";
 
 function OpenRepoPanelComponent(){
     const [state,setState] = useMultiState({path:"",error:""});
@@ -23,12 +24,12 @@ function OpenRepoPanelComponent(){
         <div className="d-flex justify-content-center w-75">
             <Form.Control value={state.path} onChange={e=>setState({path:e.target.value,error:""})} placeholder="Enter path"></Form.Control>
             <span className="px-1"/>
-            <Button onClick={handleOpen} disabled={!state.path}>Open</Button>
+            <AppButton type="success" className="text-white" onClick={handleOpen} disabled={!state.path}>Open</AppButton>
         </div>
         {!!state.error && <span className="text-danger">{state.error}</span>}
         <span>or</span>
         <div>
-            <Button onClick={handleBrowse}>Browse</Button>
+            <AppButton onClick={handleBrowse}>Browse</AppButton>
         </div>
     </div>
 }

@@ -11,7 +11,7 @@ function getButtonConfigs(type:ButtonType){
     const configs:IConfig[]=[
         {
             type:"default",
-            bgColor:"white",
+            bgColor:"",
         },
         {
             type:"primary",
@@ -35,7 +35,7 @@ function getButtonConfigs(type:ButtonType){
 }
 
 interface IProps{
-    type:ButtonType;
+    type?:ButtonType;
     onClick?:(e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>void;
     text?:string;
     borderSize?:number;
@@ -48,13 +48,14 @@ interface IProps{
 
 
 function AppButtonComponent(props:PropsWithChildren<IProps>){
-    const config = getButtonConfigs(props.type);
+    const type = props.type || "default";
+    const config = getButtonConfigs(type);
     const getBorderSize = ()=>{
         if(props.borderSize !== undefined)
             return props.borderSize;
-        if(props.type === "text")
+        if(type === "text")
             return 0;
-        if(props.type === "default")
+        if(type === "default")
             return 1;
         return 0;
     }
@@ -63,7 +64,7 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
         if(props.disabled){
             return "";
         }
-        if(props.type === "text"){
+        if(type === "text"){
             return "hover-color cur-point";
         }
         return "hover-brighter hover-shadow cur-default";
@@ -83,7 +84,7 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
         return style;
     },[props.style])
 
-    return <div title={props.title} className={`${config.bgColor} ${getHoverClasses()} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+    return <div title={props.title} className={`${config.bgColor} ${getHoverClasses()} ${props.disabled?'disabled':''} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
         style={styles}>
         {props.children || props.text}
     </div>

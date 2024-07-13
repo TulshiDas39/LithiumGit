@@ -9,4 +9,7 @@ export interface IStash{
     hash:string;
     avrebHash:string;
     changedCount:number;
+    index:number;
+    insertion:number;
+    deletion:number;
 }

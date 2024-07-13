@@ -137,6 +137,10 @@ export class UiUtils {
         return false;
     }
 
+    static copy(value:string){
+        navigator.clipboard.writeText(value);
+    }
+
     static resolveHeight(id:string){        
         return new Promise<number>((res)=>{
             let tryCount = 0;
@@ -192,6 +196,12 @@ export class UiUtils {
         var wrapper= document.createElement('div');
         wrapper.innerHTML= ReactDOMServer.renderToStaticMarkup(jsx);
         return wrapper.firstChild as T;
+    }
+
+    static getTimeZonOffsetStr(){
+        const offset = - new Date().getTimezoneOffset()/60;
+        const sign = offset < 0?"-" : "+";
+        return `UTC ${sign} ${offset}`;
     }
 
 
