@@ -85,7 +85,7 @@ html {
     background-color: var(--bg-color);
   }
 
-  .form-control:focus{
+  .form-control, .form-control:focus{
     background-color: var(--bg-color);
   }
 
