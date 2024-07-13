@@ -7,6 +7,7 @@ import { ActionModals, ActionSavedData } from "../../../../store/slices";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { EnumModals } from "../../../../lib";
+import { AppButton } from "../../../common";
 
 interface ISelectedRecentRepoPropertiesProps{
     selectedItem?:RepositoryInfo;
@@ -47,10 +48,10 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
         <hr className="m-0" />
         <div className="py-2 d-flex justify-content-around flex-wrap">
             <div className="py-1">
-                <Button className="px-5" onClick={handleOpen}>Open</Button>
+                <AppButton className="px-5 py-2" onClick={handleOpen}>Open</AppButton>
             </div>
             <div className="py-1">
-                <Button className="px" onClick={handleOpenInExplorer}>Open in explorer</Button>
+                <AppButton className="py-2" onClick={handleOpenInExplorer}>Open in explorer</AppButton>
             </div>            
         </div>
         {!!props.selectedItem.lastOpenedAt &&
