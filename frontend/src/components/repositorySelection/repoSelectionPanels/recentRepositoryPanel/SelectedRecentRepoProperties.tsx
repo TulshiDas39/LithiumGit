@@ -48,7 +48,7 @@ function SelectedRecentRepoPropertiesComponent(props:ISelectedRecentRepoProperti
         <hr className="m-0" />
         <div className="py-2 d-flex justify-content-around flex-wrap">
             <div className="py-1">
-                <AppButton className="px-5 py-2" onClick={handleOpen}>Open</AppButton>
+                <AppButton type="success" className="px-5 py-2" onClick={handleOpen}>Open</AppButton>
             </div>
             <div className="py-1">
                 <AppButton className="py-2" onClick={handleOpenInExplorer}>Open in explorer</AppButton>
