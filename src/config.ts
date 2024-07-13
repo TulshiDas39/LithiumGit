@@ -1,4 +1,4 @@
 export class Config{
     static readonly env:'development'|'production'='development';
-    static readonly FRONTEND_PORT = 57631;
+    static readonly FRONTEND_PORT = 56278;
 }
