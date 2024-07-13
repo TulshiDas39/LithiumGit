@@ -11,7 +11,7 @@ function getButtonConfigs(type:ButtonType){
     const configs:IConfig[]=[
         {
             type:"default",
-            bgColor:"white",
+            bgColor:"",
         },
         {
             type:"primary",

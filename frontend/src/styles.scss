@@ -12,6 +12,8 @@ html {
     --font-color: #282828;   
     --hover: #56a696;
     --bg-color:rgb(241, 236, 236);
+    --bg-default-button:rgb(192, 193, 201);
+    --border-color:rgba(0,0,0,.2);
     --gs-normal: white;
     --gs-primary: blue;
     --gs-secondary: rgb(82, 82, 124);
@@ -46,6 +48,8 @@ html {
   html[data-theme='dark'] {
     --font-color: #e4e6eb;
     --bg-color: #1E1E1E;
+    --bg-default-button:#76a198;
+    --border-color:rgba(0,0,0,.2);
     --gs-normal: black;
     --gs-primary: rgb(81, 165, 144);
     --gs-secondary: rgb(86, 86, 230);
@@ -162,7 +166,7 @@ html {
   }
 
   .hover-brighter:hover{
-    filter: brightness(150%);
+    filter: brightness(105%);
   }
 
   .hover-shadow:hover{
@@ -382,4 +386,18 @@ html {
 
 .click-effect:active{
   transform: translate(1px,1px);
+}
+
+.bg-default-button{
+  background-color: var(--bg-default-button);
+}
+.border-default-color{
+  border-color: var(--border-color);
+}
+.default-button, .default-button:hover, .default-button:active, .default-button:focus, .default-button.btn-primary:active,.default-button.btn-primary:focus
+,.default-button.btn-primary:hover{
+  background-color: var(--bg-default-button);
+  cursor:default;
+  border-color: var(--border-color);
+  color: var(--font-color);
 }

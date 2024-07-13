@@ -163,58 +163,58 @@ function PullPushMenuComponent(){
 
         </div>
         <div className="col-auto ps-1 pe-1">
-            <div className="row g-0 align-items-stretch h-100 bg-success">
+            <div className="row g-0 align-items-stretch h-100">
                 <div className="col-auto d-flex">
-                    <AppButton title={`Push To ${upStreamBranch}`} className="text-white" text="Push" type="success" onClick={()=>handlePush()} /> 
+                    <AppButton title={`Push To ${upStreamBranch}`} className="default-button" text="Push" type="default" onClick={()=>handlePush()} /> 
                 </div>                
-                <div className="border-secondary border-start border-end col-auto d-flex position-relative" 
+                <div className="border-secondary col-auto d-flex position-relative" 
                     onMouseEnter={()=> {refData.current.onHoverPushTo = true}} onMouseLeave={()=>{refData.current.onHoverPushTo = false}}>
-                        <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                        <AppButton type="default" className="default-button " style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
                             onClick={handlePushCaretClick}>
-                            <FaCaretDown />
+                            <span className=""><FaCaretDown /></span> 
                         </AppButton>
-                        {state.showPushTo && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                        {state.showPushTo && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
                             onClick={handlePushTo}>
-                            <span className="text-nowrap text-light">Push To &gt;</span>
+                            <span className="text-nowrap">Push To &gt;</span>
                         </div>}
                     
                 </div>
             </div>
         </div>
         <div className="col-auto ps-1 pe-1">
-            <div className="row g-0 align-items-stretch h-100 bg-success">
+            <div className="row g-0 align-items-stretch h-100">
                 <div className="col-auto d-flex">
-                    <AppButton title={`Pull from ${upStreamBranch}`} text="Pull" type="success" className="text-white" onClick={handlePull} />
+                    <AppButton title={`Pull from ${upStreamBranch}`} text="Pull" type="default" className="default-button" onClick={handlePull} />
                 </div>
-                <div className="border-secondary border-start border-end col-auto d-flex position-relative"
+                <div className="border-secondary border-start-0 col-auto d-flex position-relative"
                     onMouseEnter={()=> {refData.current.onHoverPullFrom = true}} onMouseLeave={()=>{refData.current.onHoverPullFrom = false}}>
-                    <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                    <AppButton type="default" className="default-button" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
                         onClick={handlePullCaretClick}>
-                        <FaCaretDown />
+                        <span> <FaCaretDown /></span>
                     </AppButton>
                 
-                    {state.showPullFrom && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                    {state.showPullFrom && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
                         onClick={handlePullFrom}>
-                        <span className="text-nowrap text-light">Pull From &gt;</span>
+                        <span className="text-nowrap">Pull From &gt;</span>
                     </div>}
                 </div>
             </div>
         </div>
 
         <div className="col-auto ps-1 pe-1">
-            <div className="row g-0 align-items-stretch h-100 bg-success">
+            <div className="row g-0 align-items-stretch h-100">
                 <div className="col-auto d-flex ">
-                    <AppButton title={`Fetch from ${upStreamBranch}`} text="Fetch" type="success" className="text-white" onClick={()=> handleFetch(false)} />
+                    <AppButton title={`Fetch from ${upStreamBranch}`} text="Fetch" type="default" className="default-button" onClick={()=> handleFetch(false)} />
                 </div>
-                <div className="border-secondary border-start border-end col-auto d-flex position-relative"
+                <div className="border-secondary col-auto d-flex position-relative"
                     onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>                    
-                    <AppButton type="success" className="" style={{width:15,paddingLeft:'2px', paddingRight:'2px'}}
+                    <AppButton type="default" className="" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
                         onClick={handleFetchCaretClick}>
-                        <FaCaretDown />
+                        <span> <FaCaretDown /></span>
                     </AppButton>
-                    {state.showFetchAll && <div className="position-absolute bg-success py-1 px-2 button-effect" style={{top:'105%', right:0}}
+                    {state.showFetchAll && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
                         onClick={_=> handleFetch(true)}>
-                        <span className="text-nowrap text-light">Fetch all</span>
+                        <span className="text-nowrap">Fetch all</span>
                     </div>}
                 </div>
             </div>
