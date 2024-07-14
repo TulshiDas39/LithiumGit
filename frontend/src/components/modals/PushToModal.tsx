@@ -3,12 +3,12 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { RepoUtils, EnumModals, useMultiState, Data } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
-import { Annotation, createAnnotation, EnumAnnotationType } from "common_library";
+import { createAnnotation, EnumAnnotationType } from "common_library";
 
 interface IState{
     branch:string;
@@ -22,9 +22,11 @@ function PushToModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.PUSH_TO),        
     }),shallowEqual);
 
-    const annotations = Data.annotations;
-
-    console.log("annotations",annotations);
+    const annotations = useMemo(()=>{
+        if(!store.show)
+            return [];
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo);
+    },[store.show])
 
     const [state,setState] = useMultiState<IState>({
         branch:"",
