@@ -9,6 +9,7 @@ import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
 import { createAnnotation, EnumAnnotationType } from "common_library";
+import { ModalData } from "./ModalData";
 
 interface IState{
     branch:string;
@@ -70,11 +71,13 @@ function PushToModalComponent(){
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
         dispatch(ActionUI.setLoader({text:"Push in progress..."}));
-        IpcUtils.trigerPush(options).then((r)=>{
+        IpcUtils.trigerPush(options).then((r)=>{            
             IpcUtils.getRepoStatus().finally(()=>{                
                 dispatch(ActionUI.setLoader(undefined));
             })
             if(!r.error){
+                ModalData.appToast.message = "Push succeeded.";
+                dispatch(ActionModals.showModal(EnumModals.TOAST));
                 updateAnnotation();
             }
         }).finally(()=>{
