@@ -10,8 +10,10 @@ html {
 
 html {
     --font-color: #282828;   
-    --hover: #0bc59c;
+    --hover: #56a696;
     --bg-color:rgb(241, 236, 236);
+    --bg-default-button:rgb(192, 193, 201);
+    --border-color:rgba(0,0,0,.2);
     --gs-normal: white;
     --gs-primary: blue;
     --gs-secondary: rgb(82, 82, 124);
@@ -36,7 +38,7 @@ html {
     --dropdown-background: #ffff;
     --colorBlue: #1CD0A8;
     --bg-current-change: #d6e7b1;
-    --bg-current-change-deep: #caed77;
+    --bg-current-change-deep: #bdd780;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#afadad;
@@ -46,6 +48,8 @@ html {
   html[data-theme='dark'] {
     --font-color: #e4e6eb;
     --bg-color: #1E1E1E;
+    --bg-default-button:#76a198;
+    --border-color:rgba(0,0,0,.2);
     --gs-normal: black;
     --gs-primary: rgb(81, 165, 144);
     --gs-secondary: rgb(86, 86, 230);
@@ -59,7 +63,7 @@ html {
     --active-color: #333333;
     --white: #181818;
     --svg-lite: #E5E6EB;
-    --hover: #0bc59c;        
+    --hover: #56a696;        
     --search-bg: #181818;
     --svg-dark: #909090;
     --scrollbar-color: #636363;
@@ -85,7 +89,11 @@ html {
     background-color: var(--bg-color);
   }
 
-  .form-control:focus{
+  .form-control, .form-control:focus{
+    background-color: var(--bg-color);
+  }
+
+  .modal-content{
     background-color: var(--bg-color);
   }
 
@@ -150,7 +158,7 @@ html {
   .hover:hover, .hover:hover *{
     cursor: default;
     //opacity: 0.6;
-    color: #0bc59c;
+    color: var(--hover);
   }
 
   .hover-color:hover{
@@ -158,7 +166,7 @@ html {
   }
 
   .hover-brighter:hover{
-    filter: brightness(150%);
+    filter: brightness(105%);
   }
 
   .hover-shadow:hover{
@@ -378,4 +386,22 @@ html {
 
 .click-effect:active{
   transform: translate(1px,1px);
+}
+
+.bg-default-button{
+  background-color: var(--bg-default-button);
+}
+.border-default-color{
+  border-color: var(--border-color);
+}
+.default-button, .default-button:hover, .default-button:active, .default-button:focus, .default-button.btn-primary:active,.default-button.btn-primary:focus
+,.default-button.btn-primary:hover{
+  background-color: var(--bg-default-button);
+  cursor:default;
+  border-color: var(--border-color);
+  color: var(--font-color);
+}
+
+.disabled{
+  opacity: 0.6;
 }

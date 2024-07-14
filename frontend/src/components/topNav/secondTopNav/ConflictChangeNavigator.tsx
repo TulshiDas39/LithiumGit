@@ -30,10 +30,14 @@ function ConflictChangeNavigatorComponent(props:IProps){
 
     const handleApply=()=>{
         const actions = ConflictUtils.Actions;
-        IpcUtils.resolveConflict(props.selectedFile.path,actions).then(()=>{
-            IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
-                IpcUtils.getRepoStatus();
-            });
+        IpcUtils.resolveConflict(props.selectedFile.path,actions).then((r)=>{
+            if(!r.error){
+                ConflictUtils.resetData();
+                IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
+                    IpcUtils.getRepoStatus();
+                });
+            }
+            
         });
     }
 
