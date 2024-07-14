@@ -6,6 +6,7 @@ import { ConfirmationModal } from "./ConfirmationModal";
 import { PushToModal } from "./PushToModal";
 import { PullFromModal } from "./PullFromModal";
 import { CheckoutBranchModal } from "./CheckoutBranchModal";
+import { AppToast } from "./AppToast";
 
 function ModalsComponent(){
     return(
@@ -17,6 +18,7 @@ function ModalsComponent(){
             <PushToModal />
             <PullFromModal />
             <CheckoutBranchModal />
+            <AppToast />
         </Fragment>
     )
 }

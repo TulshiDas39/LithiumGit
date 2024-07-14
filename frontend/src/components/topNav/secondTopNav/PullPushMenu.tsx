@@ -9,6 +9,7 @@ import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
 import { AppButton } from "../../common";
+import { ModalData } from "../../modals/ModalData";
 
 interface IStatus{
     showPushTo:boolean;
@@ -72,6 +73,8 @@ function PullPushMenuComponent(){
             options.push(originName,upStreamBranch);
         }
         IpcUtils.trigerPush(options).then(()=>{
+            ModalData.appToast.message = "Push succeeded.";
+            dispatch(ActionModals.showModal(EnumModals.TOAST));
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
             IpcUtils.getRepoStatus().finally(()=>{                
                 dispatch(ActionUI.setLoader(undefined));

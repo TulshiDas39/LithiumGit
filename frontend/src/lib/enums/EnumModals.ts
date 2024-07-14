@@ -6,4 +6,5 @@ export enum EnumModals{
     PUSH_TO="PUSH_TO",
     PULL_FROM="PULL_FROM",
     CHECKOUT="CHECKOUT",
+    TOAST="TOAST",
 }
