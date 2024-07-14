@@ -47,6 +47,33 @@ export class BaseDB<T extends BaseSchema>{
     getByQuery(query:Partial<T>,callback: (err: Error, document: T) => void){
         this.dataStore.findOne(query,null,callback)
     }
+
+    findOneAsync(query:Partial<T>){
+        return new Promise<T>((res,rej)=>{
+            this.dataStore.findOne(query,{},(err,doc)=>{
+                if(!err){
+                    res(doc);
+                }
+                else{
+                    rej(err);
+                }
+            })
+        })
+    }
+
+    findAsync(query:Partial<T>){
+        return new Promise<T[]>((res,rej)=>{
+            this.dataStore.find(query,{},(err,doc)=>{
+                if(!err){
+                    res(doc);
+                }
+                else{
+                    rej(err);
+                }
+            })
+        })
+    }
+
     getManyByQuery(query:Partial<T>,callback: (err: Error, document: T[]) => void){
         this.dataStore.find(query,null,callback)
     }

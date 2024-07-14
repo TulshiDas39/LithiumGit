@@ -18,6 +18,7 @@ interface EventVersions{
     branchPanelHome:number;
     repoDetails:number;
     remoteList:number;
+    annotations:number;
 }
 
 export interface ILoaderInfo{
@@ -44,6 +45,7 @@ const initialState:IUIState={
         branchPanelHome:0,
         repoDetails:0,
         remoteList:0,
+        annotations:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],

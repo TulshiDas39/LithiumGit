@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils } from "../../lib";
+import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils, Data } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -10,6 +10,7 @@ import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";
+import { ActionSavedData } from "../../store";
 
 
 interface ISelectedRepositoryProps{
@@ -25,6 +26,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         status:state.ui.status,
         focusVersion:state.ui.versions.appFocused,
         remoteListRefreshVersion:state.ui.versions.remoteList,
+        annotVersion:state.ui.versions.annotations,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
     const refData = useRef({repo:props.repo,leftMinWidth:100});
@@ -135,6 +137,18 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             return;
         GraphUtils.resizeHandler();
     },[leftWidth])
+
+    const getAnnotations = (repoId:string)=>{
+        IpcUtils.getAnnotations(repoId).then(r=>{
+            if(!r.error){
+                Data.annotations = r.result || [];
+            }
+        });
+    }
+
+    useEffect(()=>{        
+        getAnnotations(props.repo._id);
+    },[store.annotVersion,props.repo])
 
     useEffect(()=>{
         refData.current.repo = props.repo;

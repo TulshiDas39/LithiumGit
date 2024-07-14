@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
 import { ipcMain } from "electron";
 import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
@@ -15,6 +15,8 @@ export class DataManager{
         this.handleRemoveRepository();
         this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
+        this.handleAnnotationsRequest();
+        this.handleAnnotationAdd();
 
     }
 
@@ -27,6 +29,22 @@ export class DataManager{
     private handleRecentRepositoriesRequest(){
         ipcMain.handle(RendererEvents.getRecentRepositoires, async() => {            
             return await DB.repository.getAll();            
+        });
+    }
+
+    private handleAnnotationsRequest(){
+        ipcMain.handle(RendererEvents.annotations, async(e,repoId:string) => {            
+            const r = await DB.annotation.findAsync({repoId});
+            return r;
+        });
+    }
+
+    private handleAnnotationAdd(){
+        ipcMain.handle(RendererEvents.addAnnotation, async(e,annot:Annotation) => {
+            const existing = await DB.annotation.findOneAsync({repoId:annot.repoId,type:annot.type,value:annot.value});
+            if(existing)
+                return;
+            await DB.annotation.insertOne(annot);
         });
     }
 
