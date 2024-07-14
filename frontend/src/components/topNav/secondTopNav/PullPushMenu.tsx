@@ -58,6 +58,8 @@ function PullPushMenuComponent(){
             options.push(originName,upStreamBranch);
         }
         IpcUtils.trigerPull(options).then(()=>{
+            ModalData.appToast.message = "Pull succeeded.";
+            dispatch(ActionModals.showModal(EnumModals.TOAST));
             dispatch(ActionUI.setLoader({text:"Checking status..."}));
             IpcUtils.getRepoStatus().finally(()=>{
                 dispatch(ActionUI.setLoader(undefined));
@@ -88,6 +90,8 @@ function PullPushMenuComponent(){
         }
         dispatch(ActionUI.setLoader({text:"Fetching..."}));
         IpcUtils.fetch(isAll).then(_=>{
+            ModalData.appToast.message = "Fetch complete.";
+            dispatch(ActionModals.showModal(EnumModals.TOAST));
             dispatch(ActionUI.setLoader(undefined));
             IpcUtils.getRepoStatus();
         })
