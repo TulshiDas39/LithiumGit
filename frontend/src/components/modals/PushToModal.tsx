@@ -10,6 +10,7 @@ import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
 import { createAnnotation, EnumAnnotationType } from "common_library";
 import { ModalData } from "./ModalData";
+import { Messages } from "../../lib/constants";
 
 interface IState{
     branch:string;
@@ -70,13 +71,15 @@ function PushToModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
-        dispatch(ActionUI.setLoader({text:"Push in progress..."}));
-        IpcUtils.trigerPush(options).then((r)=>{            
+        dispatch(ActionUI.setLoader({text:Messages.push}));
+        IpcUtils.trigerPush(options).then((r)=>{
+            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.setSync({text:Messages.getStatus}));            
             IpcUtils.getRepoStatus().finally(()=>{                
-                dispatch(ActionUI.setLoader(undefined));
+                dispatch(ActionUI.setSync(undefined));
             })
             if(!r.error){
-                ModalData.appToast.message = "Push succeeded.";
+                ModalData.appToast.message = Messages.pushSuccess;
                 dispatch(ActionModals.showModal(EnumModals.TOAST));
                 updateAnnotation();
             }

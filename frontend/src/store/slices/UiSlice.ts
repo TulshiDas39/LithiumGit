@@ -25,11 +25,16 @@ export interface ILoaderInfo{
     text:string;
 }
 
+export interface ILocalSyncInfo{
+    text:string;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
+    synch?:ILocalSyncInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
     remotes:IRemoteInfo[];
@@ -84,6 +89,9 @@ const UISlice = createSlice({
         },
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;
+        },
+        setSync(state,action:PayloadAction<ILocalSyncInfo|undefined>){
+            state.synch = action.payload;
         },
         setMergerCommitMessage(state,action:PayloadAction<string>){
             state.mergerCommitMessage = action.payload;

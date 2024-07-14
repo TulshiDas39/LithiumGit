@@ -11,6 +11,7 @@ import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";
 import { ActionSavedData } from "../../store";
+import { Messages } from "../../lib/constants";
 
 
 interface ISelectedRepositoryProps{
@@ -41,9 +42,9 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     }
 
     const updateStatus = ()=>{
-        dispatch(ActionUI.setLoader({text:"Updating status..."}));
+        dispatch(ActionUI.setSync({text:Messages.getStatus}));
         IpcUtils.getRepoStatus().finally(()=>{
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.setSync(undefined));
         });
     }
 
