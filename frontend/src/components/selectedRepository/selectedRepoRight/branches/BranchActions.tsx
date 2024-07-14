@@ -10,7 +10,7 @@ function BranchActionsComponent(){
     const dispatch = useDispatch();
     
     const handleRefresh = ()=>{
-        //dispatch(ActionUI.setLoader({text:Messages.refreshing}));
+        dispatch(ActionUI.setGraphRefresh(true));
         dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
     }
 
