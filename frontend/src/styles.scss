@@ -406,7 +406,8 @@ html {
   opacity: 0.6;
 }
 .appToast{
-  left: 50%;
-  top:45%;
+  width: 250px;
+  left:calc(50% - 125px);
+  bottom:50px;
   z-index: 100;
 }

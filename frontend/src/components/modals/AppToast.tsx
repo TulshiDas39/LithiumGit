@@ -20,16 +20,16 @@ function AppToastComponent(){
         dispatch(ActionModals.hideModal(EnumModals.TOAST));
     }
     useEffect(()=>{
-        dispatch(ActionModals.showModal(EnumModals.TOAST));
+        //dispatch(ActionModals.showModal(EnumModals.TOAST));
     },[])
     return (
         <Toast onClose={closeToast} show={store.show} delay={3000} autohide animation 
           className={`appToast position-absolute bg-success text-center ${ModalData.appToast.customClass?ModalData.appToast.customClass:''}`}>
          {ModalData.appToast.title && <Toast.Header>
-             <strong className="mr-auto">{ModalData.appToast.title}</strong>
+             <strong className="mr-auto text-light">{ModalData.appToast.title}</strong>
           </Toast.Header>}
           <Toast.Body>
-            <p className="mb-0 ">{ ModalData.appToast.message}</p>
+            <p className="mb-0 text-light">{ ModalData.appToast.message}</p>
           </Toast.Body>
         </Toast>
     )
