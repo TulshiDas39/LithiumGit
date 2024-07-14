@@ -39,6 +39,7 @@ interface IUIState{
     status?:IStatus;
     remotes:IRemoteInfo[];
     branchList:string[];
+    refreshingGraph:boolean;
 }
 
 const initialState:IUIState={
@@ -55,6 +56,7 @@ const initialState:IUIState={
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],
     branchList:[],
+    refreshingGraph:false,
 }
 
 const UISlice = createSlice({
@@ -104,6 +106,9 @@ const UISlice = createSlice({
         },
         setBranchList(state,action:PayloadAction<string[]>){
             state.branchList = action.payload;
+        },
+        setGraphRefresh(state,action:PayloadAction<boolean>){
+            state.refreshingGraph = action.payload;
         }
     }
 });

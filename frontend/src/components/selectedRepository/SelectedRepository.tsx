@@ -96,12 +96,14 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
+        dispatch(ActionUI.setGraphRefresh(true));
         updateRepoData(true).then(()=>{
             GraphUtils.createBranchPanel();                
             dispatch(ActionUI.setLoader(undefined));
             ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(RepoUtils.repositoryDetails.remotes)));
             dispatch(ActionUI.setBranchList(RepoUtils.repositoryDetails.branchList.slice()));
+            dispatch(ActionUI.setGraphRefresh(false));
         });
     },[store.branchPanelRefreshVersion]);
 
