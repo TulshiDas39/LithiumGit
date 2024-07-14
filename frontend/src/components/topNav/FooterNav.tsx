@@ -3,6 +3,7 @@ import { shallowEqual } from "react-redux";
 import { BarLoader } from "react-spinners";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { FaSpinner } from "react-icons/fa";
+import { ProgressBar } from "react-bootstrap";
 
 function FooterNavComponent(){
     const store = useSelectorTyped(state=>({
@@ -24,7 +25,7 @@ function FooterNavComponent(){
         </div>      
         <div className="col-auto text-center">
             <div className="text-center">                
-                    {store.loader && <BarLoader />}                
+                    {!!store.loader && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
             </div>
         </div>
         <div className="col-auto ps-3">
