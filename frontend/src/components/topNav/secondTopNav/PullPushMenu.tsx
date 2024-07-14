@@ -70,7 +70,7 @@ function PullPushMenuComponent(){
     }
 
     const handlePush=()=>{
-        dispatch(ActionUI.setLoader({text:Messages.pull}));
+        dispatch(ActionUI.setLoader({text:Messages.push}));
         const options:string[] = [];
         if(upStreamBranch){
             const originName = RepoUtils.activeOriginName;
