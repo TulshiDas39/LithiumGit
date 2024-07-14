@@ -49,7 +49,6 @@ function PushToModalComponent(){
     const updateAnnotation=()=>{
         if(annotations.some(_=> _.value == state.branch))
             return;
-        debugger;
         const newAnnot= createAnnotation({
             repoId:RepoUtils.repositoryDetails.repoInfo._id,
             type:EnumAnnotationType.PushTo,
@@ -58,7 +57,6 @@ function PushToModalComponent(){
         IpcUtils.addAnnotation(newAnnot).then(r=>{
             if(!r.error){
                 const annots =[...annotations,newAnnot];
-                //dispatch(ActionSavedData.setAnnotations(annots));
                 Data.annotations = annots;
             }
         })
@@ -92,7 +90,7 @@ function PushToModalComponent(){
         if(!store.show)
             return ;
         const pushToBranch = RepoUtils.repositoryDetails.repoInfo.pushToBranch || "";        
-        setState({options:[],isSelected:false,branch:pushToBranch});        
+        setState({options:[],isSelected:!!pushToBranch,branch:pushToBranch});        
     },[store.show])
 
     const handleSelect=(option:string)=>{
@@ -100,15 +98,19 @@ function PushToModalComponent(){
     }
 
     useEffect(()=>{
-        // let options:string[] = store.annotations.map(_=> _.value);
-        // if(!state.isSelected && state.inputFocused){            
-        //     if(state.branch){            
-        //         options = options.filter(_ => _.includes(state.branch));
-        //     }
-        // }
+        const allOptions = annotations.map(_=>_.value);
+        let options:string[] = [];
+        if(!state.isSelected && state.inputFocused){                                  
+            options = allOptions.filter(_ => _.includes(state.branch));            
+        }
         
-        // setState({options});
+        setState({options});
     },[state.branch,state.isSelected,state.inputFocused])
+    const handleBlur = ()=>{
+        if(refData.current.hoverOptions)
+            return;
+        setState({inputFocused:false});
+    }
 
     return <Modal show={store.show} centered size="sm" backdrop={false}>
     <Modal.Body>
@@ -123,10 +125,11 @@ function PushToModalComponent(){
             </div>
             <hr />
             <div className="row g-0">
-                <div className="col-12 text-break overflow-auto" style={{maxWidth:600,maxHeight:500}}>
+                <div className="col-12 text-break overflow-x-auto" style={{maxWidth:600,maxHeight:500}}>
                     <div className="position-relative w-100">
-                        <Form.Control type="text" placeholder="Branch name" value={state.branch} onChange={e=>setState({branch:e.target.value})} />
-                        {!!state.options.length && <div className="position-absolute bg-white border px-2 overflow-y-auto"
+                        <Form.Control type="text" placeholder="Branch name" value={state.branch} onChange={e=>setState({branch:e.target.value,isSelected:false})}
+                         onFocus={()=> setState({inputFocused:true})} onBlur={()=>handleBlur()} />
+                        {!!state.options.length && <div className="position-absolute bg-color border px-2 overflow-y-auto"
                             style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}
                             onMouseEnter={()=> {refData.current.hoverOptions = true}} onMouseLeave={()=>{refData.current.hoverOptions = false}}>
                             {
@@ -138,19 +141,7 @@ function PushToModalComponent(){
                                     ))
                                 }
                         </div>
-                        }
-                        {/* {!!state.options.length && <div className="position-absolute bg-white border px-2 overflow-y-auto" 
-                                style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}
-                                onMouseEnter={()=> {refData.current.hoverOptions = true}} onMouseLeave={()=>{refData.current.hoverOptions = false}}>
-                                {
-                                    state.options.map(br=>(
-                                        <div title={br} key={br} className="border-bottom py-1 hover overflow-hidden text-nowrap" style={{textOverflow:'ellipsis'}}
-                                            onClick={()=>handleSelect(br)}>
-                                            {br}
-                                        </div>
-                                    ))
-                                }
-                            </div>} */}
+                        }                        
                     </div>                    
                 </div>
             </div>
