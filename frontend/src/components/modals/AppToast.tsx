@@ -24,7 +24,7 @@ function AppToastComponent(){
     },[])
     return (
         <Toast onClose={closeToast} show={store.show} delay={3000} autohide animation 
-          className={`appToast position-absolute bg-success ${ModalData.appToast.customClass?ModalData.appToast.customClass:''}`}>
+          className={`appToast position-absolute bg-success text-center ${ModalData.appToast.customClass?ModalData.appToast.customClass:''}`}>
          {ModalData.appToast.title && <Toast.Header>
              <strong className="mr-auto">{ModalData.appToast.title}</strong>
           </Toast.Header>}
