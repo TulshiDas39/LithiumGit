@@ -25,15 +25,21 @@ export interface ILoaderInfo{
     text:string;
 }
 
+export interface ILocalSyncInfo{
+    text:string;
+}
+
 interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
     selectedRepoTab:EnumSelectedRepoTab;
     loader?:ILoaderInfo;
+    synch?:ILocalSyncInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
     remotes:IRemoteInfo[];
     branchList:string[];
+    refreshingGraph:boolean;
 }
 
 const initialState:IUIState={
@@ -50,6 +56,7 @@ const initialState:IUIState={
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],
     branchList:[],
+    refreshingGraph:false,
 }
 
 const UISlice = createSlice({
@@ -85,6 +92,9 @@ const UISlice = createSlice({
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;
         },
+        setSync(state,action:PayloadAction<ILocalSyncInfo|undefined>){
+            state.synch = action.payload;
+        },
         setMergerCommitMessage(state,action:PayloadAction<string>){
             state.mergerCommitMessage = action.payload;
         },
@@ -96,6 +106,9 @@ const UISlice = createSlice({
         },
         setBranchList(state,action:PayloadAction<string[]>){
             state.branchList = action.payload;
+        },
+        setGraphRefresh(state,action:PayloadAction<boolean>){
+            state.refreshingGraph = action.payload;
         }
     }
 });

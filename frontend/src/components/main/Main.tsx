@@ -30,6 +30,7 @@ function MainComponent(){
             const str = typeof message === 'string'?message:JSON.stringify(message);
             ModalData.errorModal.message = str;
             dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.setSync(undefined));
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
@@ -69,7 +70,7 @@ function MainComponent(){
         })
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
-            dispatch(ActionUI.setLoader({text:"Refreshing..."}));
+            dispatch(ActionUI.setSync({text:"Refreshing..."}));
             dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
         })
 

@@ -8,6 +8,8 @@ import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
+import { ModalData } from "./ModalData";
+import { Messages } from "../../lib/constants";
 
 interface IState{
     branch:string;
@@ -38,10 +40,16 @@ function PullFromModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
-        dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
-        IpcUtils.trigerPull(options).then(()=>{
+        dispatch(ActionUI.setLoader({text:Messages.pull}));
+        IpcUtils.trigerPull(options).then((r)=>{
+            if(!r.error){
+                ModalData.appToast.message = "Pull succeeded.";
+                dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.setSync({text:Messages.getStatus}));
             IpcUtils.getRepoStatus().finally(()=>{                
-                dispatch(ActionUI.setLoader(undefined));
+                dispatch(ActionUI.setSync(undefined));
             })
         }).finally(()=>{
             const newPullFrom = state.branch;
