@@ -76,14 +76,14 @@ function PullPushMenuComponent(){
             const originName = RepoUtils.activeOriginName;
             options.push(originName,upStreamBranch);
         }
-        IpcUtils.trigerPush(options).then(()=>{
-            ModalData.appToast.message = Messages.pushSuccess;
-            dispatch(ActionModals.showModal(EnumModals.TOAST));
+        IpcUtils.trigerPush(options).then((r)=>{
+            if(!r.error){
+                ModalData.appToast.message = Messages.pushSuccess;
+                dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            
             dispatch(ActionUI.setLoader(undefined));
-            dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            GitUtils.getStatus().finally(()=>{                
-                dispatch(ActionUI.setSync(undefined));
-            })
+            GitUtils.getStatus();
         })
     }
 

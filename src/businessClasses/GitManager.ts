@@ -667,12 +667,7 @@ export class GitManager{
 
     private async givePush(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
-        
-        try {                       
-            await git.push(options);
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+        await git.push(options);        
     }
 
 
