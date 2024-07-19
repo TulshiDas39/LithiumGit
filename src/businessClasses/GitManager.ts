@@ -651,13 +651,8 @@ export class GitManager{
     }
 
     private async takePull(repoPath:string,options:string[]){
-        const git = this.getGitRunner(repoPath);        
-        try {
-            const result = await git.pull(options);
-            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)            
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+        const git = this.getGitRunner(repoPath);    
+        await git.pull(options);
     }
 
     private async takeFetch(repoPath:string,options:string[]){
