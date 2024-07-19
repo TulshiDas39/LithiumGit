@@ -8,6 +8,7 @@ import { ModalData } from "../../../modals/ModalData";
 import { FaEllipsisH } from "react-icons/fa";
 import { Dropdown } from "react-bootstrap";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -89,7 +90,7 @@ function ConflictedChangesComponent(props:IProps){
             applyCommonMerge(paths,action).then(resolvedPaths=>{
                 if(resolvedPaths.length) {
                     IpcUtils.stageItems(resolvedPaths).then(()=>{
-                        IpcUtils.getRepoStatus();
+                        GitUtils.getStatus();
                     });
                 }
             });
@@ -108,7 +109,7 @@ function ConflictedChangesComponent(props:IProps){
             applyCommonMerge(paths,action).then(resolvedPaths=>{
                 if(resolvedPaths.length) {
                     IpcUtils.stageItems(resolvedPaths).then(()=>{
-                        IpcUtils.getRepoStatus();
+                        GitUtils.getStatus();
                     })
                 }
             });

@@ -8,6 +8,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ActionChanges } from "../../../../store";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface ISingleFileProps{
     item:IFile
@@ -70,14 +71,14 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const handleUnstageItem = (item:IFile)=>{
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });
     }
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
         IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });        
     }
 

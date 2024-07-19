@@ -4,6 +4,9 @@ import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumModals } from "../enums";
 import { ModalData } from "../../components/modals/ModalData";
+import { Messages } from "../constants";
+import { ActionUI } from "../../store/slices/UiSlice";
+import { RepoUtils } from "./RepoUtils";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
@@ -153,4 +156,37 @@ export class GitUtils{
             return r.result!;
         }
     }
+
+    static fetch(isAll:boolean){
+        const options:string[] = [];
+        if(isAll){
+            options.push("--all");
+        }
+        else{
+            const origin = RepoUtils.activeOriginName;
+            options.push(origin, RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        ReduxUtils.dispatch(ActionUI.setLoader({text:Messages.fetch}));
+        return IpcUtils.fetch(options).then(r=>{
+            if(!r.error){
+                ModalData.appToast.message = Messages.fetchComplete;
+                ReduxUtils.dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            ReduxUtils.dispatch(ActionUI.setLoader(undefined));
+            return r;            
+        })
+    }
+
+    static getStatus(){
+        ReduxUtils.dispatch(ActionUI.setSync({text:Messages.getStatus}));
+        return IpcUtils.getRepoStatus().then(r=>{
+            return r;
+        }).finally(()=>{
+            ReduxUtils.dispatch(ActionUI.setSync(undefined));
+        });
+    }
+
+    
+
+    
 }

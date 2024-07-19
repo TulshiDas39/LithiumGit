@@ -541,8 +541,8 @@ export class GitManager{
     }
 
     private  addFetchHandler(){
-        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
-            await this.takeFetch(repoDetails,all);
+        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
+            await this.takeFetch(repoPath,options);
         });
     }
 
@@ -660,21 +660,9 @@ export class GitManager{
         }
     }
 
-    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean){
-        const git = this.getGitRunner(repoDetails.repoInfo);
-        
-        try {
-            const options:string[]=[];
-            if(all){
-                options.push("--all");
-            }
-            else{
-                options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
-            }
-            await git.fetch(options);                        
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+    private async takeFetch(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
+        await git.fetch(options);                
     }
 
     private hasChangesInPush(result:PushResult){

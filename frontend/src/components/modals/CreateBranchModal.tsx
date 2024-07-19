@@ -9,6 +9,7 @@ import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 interface IState{
     branchName:string;
@@ -44,7 +45,7 @@ function CreateBranchModalComponent(){
         const branchNames = RepoUtils.getAllBranchNames();
         if(branchNames.includes(state.branchName)) return;
         IpcUtils.createBranch(state.branchName,Data.sourceCommit,state.checkout).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });        
         dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
     }

@@ -11,6 +11,7 @@ import { FaTimes } from "react-icons/fa";
 import { createAnnotation, EnumAnnotationType } from "common_library";
 import { ModalData } from "./ModalData";
 import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 interface IState{
     branch:string;
@@ -75,7 +76,7 @@ function PushToModalComponent(){
         IpcUtils.trigerPush(options).then((r)=>{
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));            
-            IpcUtils.getRepoStatus().finally(()=>{                
+            GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));
             })
             if(!r.error){

@@ -10,6 +10,7 @@ import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
 import { ModalData } from "./ModalData";
 import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 interface IState{
     branch:string;
@@ -48,7 +49,7 @@ function PullFromModalComponent(){
             }
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            IpcUtils.getRepoStatus().finally(()=>{                
+            GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));
             })
         }).finally(()=>{

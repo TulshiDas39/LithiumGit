@@ -107,8 +107,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,RepoUtils.repositoryDetails,branchName,checkout);
     }
 
-    static fetch(isAll:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,RepoUtils.repositoryDetails,isAll);
+    static fetch(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.fetch().channel,[options]);
     }
 
     static async getFileContent(path:string){

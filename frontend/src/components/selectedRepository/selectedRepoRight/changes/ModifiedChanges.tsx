@@ -8,6 +8,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -38,14 +39,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const handleStage=(file:IFile)=>{
         IpcUtils.stageItems([file.path]).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });        
     }
 
@@ -56,7 +57,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             text = `Delete ${item.fileName}?`;
             yesHandler= ()=>{
                 IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             }
         }
@@ -64,7 +65,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             text = `Discard the changes of ${item.fileName}?`;
             yesHandler = () =>{
                 IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             }            
         }
@@ -80,7 +81,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         const yesHandler = ()=>{
             IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
                 IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             });
         }

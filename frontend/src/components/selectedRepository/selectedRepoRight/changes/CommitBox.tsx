@@ -7,6 +7,7 @@ import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { AppButton } from "../../../common";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IState{
     value:string;
@@ -63,7 +64,7 @@ function CommitBoxComponent(){
             }
         }).finally(()=>{
             setState({value:""});
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         })
         
     }
@@ -99,7 +100,7 @@ function CommitBoxComponent(){
         if(state.value)
             options.push("-m",state.value);
         IpcUtils.runStash(options).then(()=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         })
     }
 

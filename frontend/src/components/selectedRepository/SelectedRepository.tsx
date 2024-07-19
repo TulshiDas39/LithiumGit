@@ -12,6 +12,7 @@ import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";
 import { ActionSavedData } from "../../store";
 import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 
 interface ISelectedRepositoryProps{
@@ -43,7 +44,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     const updateStatus = ()=>{
         dispatch(ActionUI.setSync({text:Messages.getStatus}));
-        IpcUtils.getRepoStatus().finally(()=>{
+        GitUtils.getStatus().finally(()=>{
             dispatch(ActionUI.setSync(undefined));
         });
     }

@@ -6,6 +6,7 @@ import { ConflictUtils } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { GitUtils } from "../../../lib/utils/GitUtils";
 
 interface IProps{
     selectedFile:IFile;
@@ -34,7 +35,7 @@ function ConflictChangeNavigatorComponent(props:IProps){
             if(!r.error){
                 ConflictUtils.resetData();
                 IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             }
             

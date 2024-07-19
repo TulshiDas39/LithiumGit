@@ -11,6 +11,7 @@ import { ActionModals } from "../../../store";
 import { AppButton } from "../../common";
 import { ModalData } from "../../modals/ModalData";
 import { Messages } from "../../../lib/constants";
+import { GitUtils } from "../../../lib/utils/GitUtils";
 
 interface IStatus{
     showPushTo:boolean;
@@ -63,7 +64,7 @@ function PullPushMenuComponent(){
             dispatch(ActionModals.showModal(EnumModals.TOAST));
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            IpcUtils.getRepoStatus().finally(()=>{
+            GitUtils.getStatus().finally(()=>{
                 dispatch(ActionUI.setSync(undefined));
             })
         })
@@ -81,7 +82,7 @@ function PullPushMenuComponent(){
             dispatch(ActionModals.showModal(EnumModals.TOAST));
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            IpcUtils.getRepoStatus().finally(()=>{                
+            GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));
             })
         })
@@ -91,16 +92,11 @@ function PullPushMenuComponent(){
         if(isAll){
             setState({showFetchAll:false});
         }
-        dispatch(ActionUI.setLoader({text:Messages.fetch}));
-        IpcUtils.fetch(isAll).then(_=>{
-            ModalData.appToast.message = Messages.fetchComplete;
-            dispatch(ActionModals.showModal(EnumModals.TOAST));
-            dispatch(ActionUI.setLoader(undefined));
-            dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            IpcUtils.getRepoStatus().finally(()=>{
-                dispatch(ActionUI.setSync(undefined));
-            });
-        })
+        GitUtils.fetch(isAll).then(r=>{
+            if(!r.error){
+                GitUtils.getStatus();
+            }
+        });
     }
 
     const handlePushCaretClick=()=>{        
