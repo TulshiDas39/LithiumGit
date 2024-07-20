@@ -482,25 +482,7 @@ export class GitManager{
 
     private async checkoutCommit(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
-        try {            
-            await git.checkout(options);  
-            // const status = await this.getStatus(repoPath);
-            // return status;
-        }catch (error) {
-            const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
-            const errorMsg:string = error?.toString() || "";
-            let errorToShow = errorMsg;
-            if(errorMsg.includes(errorSubStr)){
-                errorToShow ="There exist uncommited changes having conflicting state with checkout.";
-            }
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errorToShow); 
-            return;
-        }
-        
-
-        // commit.isHead = true;
-        // const status = await this.getStatus(repoDetails.repoInfo);
-        // e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
+        await git.checkout(options);  
     }
 
     private async createBranch(sourceCommit:ICommitInfo,repoDetails:IRepositoryDetails,newBranchName:string,checkout:boolean){
