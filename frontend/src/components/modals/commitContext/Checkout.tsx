@@ -7,7 +7,8 @@ import { ContextData, IBaseProps, Option } from "./ContextData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 interface IProps extends IBaseProps{
-    mouseOver?: Option;    
+    mouseOver?: Option;
+    referredLocalBranches:string[];
 }
 
 function CheckoutComponent(props:IProps){
@@ -19,18 +20,10 @@ function CheckoutComponent(props:IProps){
 
     const Data = ModalData.commitContextModal;
 
-    const referredLocalBranches = useMemo(()=>{
-        if(!store.show || !Data.selectedCommit?.refValues.length)
-            return [];        
-        const branchList = RepoUtils.repositoryDetails.branchList;
-        const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
-        return referredBranches;
-    },[store.show,Data.selectedCommit])
-
     const branchNamesForCheckout = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];
-        const branches = referredLocalBranches.slice();
+        const branches = props.referredLocalBranches.slice();
         for(let ref of Data.selectedCommit.refValues){
             if(!RepoUtils.isOriginBranch(ref) || RepoUtils.hasLocalBranch(ref))
                 continue;
@@ -39,7 +32,7 @@ function CheckoutComponent(props:IProps){
                 branches.push(localBranch);
         }
         return branches;
-    },[referredLocalBranches,store.show,Data.selectedCommit])
+    },[props.referredLocalBranches,store.show,Data.selectedCommit])
 
     const checkOutCommit=(destination:string)=>{
         const options:string[]=[destination];

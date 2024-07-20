@@ -121,7 +121,8 @@ function CommitContextModalComponent(){
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
-                    <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})} />
+                    <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
+                        referredLocalBranches={referredLocalBranches} />
                     <CreateBranch hideModal={() => hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />
                     <MergeBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
                     <RebaseBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
