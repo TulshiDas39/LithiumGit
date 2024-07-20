@@ -16,6 +16,7 @@ import { CreateBranch } from "./CreateBranch";
 import { MergeBranch } from "./MergeBranch";
 import { RebaseBranch } from "./RebaseBranch";
 import { CherryPick } from "./CherryPick";
+import { ShowMore } from "./ShowMore";
 
 
 interface IState{
@@ -250,11 +251,7 @@ function CommitContextModalComponent(){
                     <MergeBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
                     <RebaseBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
                     <CherryPick hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} />
-                    
-                    {!!moreOptionList.length && !state.showMore && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}
-                        onClick={_=> setState({showMore:true})}>
-                        <div className="col-12 hover cur-default ">Show More</div>
-                    </div>}
+                    {!!moreOptionList.length && !state.showMore && <ShowMore onClick={()=> setState({showMore:true})} hideModal={()=>hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />}                    
                     {
                         state.showMore && <Fragment>                        
                             {moreOptionList.includes(Option.SoftReset) && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
