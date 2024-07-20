@@ -4,6 +4,7 @@ import { ContextData } from "./ContextData";
 import { useDispatch } from "react-redux";
 import { ActionModals } from "../../../store";
 import { EnumModals } from "../../../lib";
+import { GitUtils } from "../../../lib/utils/GitUtils";
 
 interface IProps{
 
@@ -14,6 +15,7 @@ function MeregingCommitOptionsComponent(){
     const dispatch = useDispatch();
     const abortMerge = ()=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
+        GitUtils.abortMerge();
     }
 
     if(!Data.selectedCommit.inMergingState)

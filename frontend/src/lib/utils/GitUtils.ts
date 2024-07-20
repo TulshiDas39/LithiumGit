@@ -186,5 +186,12 @@ export class GitUtils{
         });
     }
 
+    static abortMerge(){
+        ReduxUtils.dispatch(ActionUI.setSync({text:Messages.abortingMerge}));
+        const options = ["--abort"];
+        IpcUtils.merge(options).then(()=>{
+            GitUtils.getStatus();
+        })
+    }
     
 }
