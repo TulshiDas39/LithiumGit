@@ -14,6 +14,7 @@ import { Option} from "./ContextData";
 import { Checkout } from "./Checkout";
 import { CreateBranch } from "./CreateBranch";
 import { MergeBranch } from "./MergeBranch";
+import { RebaseBranch } from "./RebaseBranch";
 
 
 interface IState{
@@ -246,31 +247,8 @@ function CommitContextModalComponent(){
                     <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})} />
                     <CreateBranch hideModal={() => hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />
                     <MergeBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
-
-                    {
-                        !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 &&
-                            <div className={`row g-0 ${optionClasses}`}>
-                                {
-                                    referredLocalBranches.length > 1 ? <div className="col-12 cur-default position-relative">
-                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Merge}))}>
-                                            <span className="flex-grow-1">Rebase branch</span>
-                                            <span>&gt;</span>
-                                        </div>
-                                        
-                                        {(state.mouseOver === Option.Rebase) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
-                                            {
-                                                referredLocalBranches.map((br=>(
-                                                    <div key={br} className="border-bottom py-1 px-3">
-                                                        <span className="hover" onClick={() => rebaseBranch(br)}>{br}</span>
-                                                    </div>
-                                                )))
-                                            }
-                                        </div>}
-                                    </div>:
-                                    <div className="col-12 hover cur-default " onClick={() => rebaseBranch(referredLocalBranches[0])}>Rebase branch '{referredLocalBranches[0]}'</div>
-                                }                                
-                            </div>                        
-                    }
+                    <RebaseBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
+                        
 
                     {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={cherryPick}>
