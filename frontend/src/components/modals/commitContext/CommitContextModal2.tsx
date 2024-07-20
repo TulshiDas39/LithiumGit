@@ -55,83 +55,7 @@ function CommitContextModalComponent(){
     const hideModal=()=>{
         ModalData.commitContextModal = InitialModalData.commitContextModal;
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-    }
-
-    const checkOutCommit=(destination:string)=>{
-        const options:string[]=[destination];
-        IpcUtils.checkout(options).then(()=>{
-            IpcUtils.getRepoStatusSync().then(status=>{
-                GraphUtils.handleCheckout(Data.selectedCommit,status);            
-            })
-        });
-        hideModal();
-    }
-    const handleCreateNewBranchClick=()=>{
-        ModalData.createBranchModal.sourceCommit = Data.selectedCommit;
-        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        dispatch(ActionModals.showModal(EnumModals.CREATE_BRANCH));
-    }
-
-    const mergeCommit=(hash:string)=>{
-        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
-        const options = [hash,"--no-commit","--no-ff"];
-        IpcUtils.merge(options).then((r)=>{            
-            GitUtils.getStatus().then(r=>{
-                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-                if(r.conflicted?.length){
-                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
-                }
-                else if(r.staged?.length){
-                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
-                }
-            });
-        });        
-    }
-
-    const cherryPick=()=>{
-        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));        
-        const options = [Data.selectedCommit.hash];
-        IpcUtils.cherryPick(options).then(r=>{
-            GitUtils.getStatus().then(r=>{
-                if(r.conflicted?.length){
-                    dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
-                }
-            });
-        }).catch(e=>{
-            const message = e?.toString() || "Failed to perform cherry-pick.";
-            ModalData.errorModal.message = message;
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
-        });
-    }
-
-    const mergeBranch=(branch:string)=>{
-        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
-        const options = [branch,"--no-commit","--no-ff"];
-        IpcUtils.merge(options).then(()=>{
-            GitUtils.getStatus().then((r)=>{
-                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-                if(r.conflicted?.length){
-                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
-                }
-                else if(r.staged?.length){
-                    dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
-                }
-            });
-        })
-    }
-
-    const rebaseBranch=(branch:string)=>{
-        dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        IpcUtils.rebaseBranch(branch).then(_=>{
-            GitUtils.getStatus();
-        }).catch(e=>{
-            ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
-        })        
-    }
+    }    
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
@@ -170,63 +94,14 @@ function CommitContextModalComponent(){
         const branchList = RepoUtils.repositoryDetails.branchList;
         const referredBranches = Data.selectedCommit.refValues.filter(_=> branchList.includes(_));
         return referredBranches;
-    },[store.show,Data.selectedCommit])
-    
-    const branchNamesForCheckout = useMemo(()=>{
-        if(!store.show || !Data.selectedCommit?.refValues.length)
-            return [];
-        const branches = referredLocalBranches.slice();
-        for(let ref of Data.selectedCommit.refValues){
-            if(!RepoUtils.isOriginBranch(ref) || RepoUtils.hasLocalBranch(ref))
-                continue;
-            const localBranch = RepoUtils.getLocalBranch(ref);
-            if(localBranch)
-                branches.push(localBranch);
-        }
-        return branches;
-    },[referredLocalBranches,store.show,Data.selectedCommit])
+    },[store.show,Data.selectedCommit])   
 
     const branchNamesForDelete = useMemo(()=>{
         if(!store.show || !Data.selectedCommit?.refValues.length)
             return [];
         const branches = referredLocalBranches.slice();        
         return branches;
-    },[referredLocalBranches,store.show,Data.selectedCommit])
-
-    const softReset=()=>{
-        hideModal();
-        const options:string[]=["--soft","HEAD~1"];
-        IpcUtils.reset(options).then(r=>{
-            GitUtils.getStatus();
-        })
-    }
-
-    const hardReset=()=>{
-        hideModal();
-        const handler = ()=>{
-            const options:string[]=["--hard","HEAD~1"];
-            IpcUtils.reset(options).then(r=>{
-                GitUtils.getStatus();
-            })
-        }
-        ModalData.confirmationModal.YesHandler = handler;
-        ModalData.confirmationModal.message = `Hard reset ${Data.selectedCommit.avrebHash}?`;
-        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));        
-    }
-
-    const deleteBranch=(branchName:string)=>{
-        hideModal();
-        const handler = ()=>{
-            IpcUtils.getRaw(["branch","-D",branchName]).then(r=>{
-                if(r.result){
-                    dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
-                }
-            })
-        }
-        ModalData.confirmationModal.YesHandler = handler;
-        ModalData.confirmationModal.message = `Delete local branch '${branchName}'?`;
-        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));        
-    }
+    },[referredLocalBranches,store.show,Data.selectedCommit])            
 
     const moreOptionList = useMemo(()=>{
         const options:Option[] = [];
@@ -241,7 +116,6 @@ function CommitContextModalComponent(){
         return options;
     },[store.show,Data.selectedCommit])
 
-    const optionClasses = "border-bottom context-option";
 
     return (
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
