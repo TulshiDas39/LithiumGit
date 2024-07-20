@@ -7,7 +7,7 @@ import { ContextData, IBaseProps, Option } from "./ContextData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 
 interface IProps extends IBaseProps{
-    mouseOver: Option;    
+    mouseOver?: Option;    
 }
 
 function CheckoutComponent(props:IProps){

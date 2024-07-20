@@ -11,6 +11,7 @@ import { useSelectorTyped } from "../../../store/rootReducer";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { ModalData, InitialModalData } from "../ModalData";
 import { Option} from "./ContextData";
+import { Checkout } from "./Checkout";
 
 
 interface IState{
@@ -240,35 +241,7 @@ function CommitContextModalComponent(){
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
-                    {
-                        branchNamesForCheckout.length > 0 && <div>
-                            <div className={`row g-0 border-bottom ${optionClasses}`}>
-                                {
-                                    branchNamesForCheckout.length > 1 ? <div className="col-12 cur-default position-relative">
-                                        <div className="d-flex hover" onMouseEnter={()=> setState(({mouseOver:Option.Checkout}))}>
-                                            <span className="flex-grow-1">Checkout branch</span>
-                                            <span>&gt;</span>
-                                        </div>
-                                        
-                                        {(state.mouseOver === Option.Checkout) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
-                                            {
-                                                branchNamesForCheckout.map((br=>(
-                                                    <div key={br} className="border-bottom py-1 px-3">
-                                                        <span className="hover" onClick={() => checkOutCommit(br)}>{br}</span>
-                                                    </div>
-                                                )))
-                                            }
-                                        </div>}
-                                    </div>:
-                                    <div className="col-12 hover cur-default " onClick={() => checkOutCommit(branchNamesForCheckout[0])}>Checkout branch '{branchNamesForCheckout[0]}'</div>
-                                }                                
-                            </div>
-                        </div>
-                    }
-
-                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={()=>checkOutCommit(Data.selectedCommit.hash)}>Checkout this commit</div> 
-                    </div>
+                    <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})} />
                     <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
                         <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>
                             Create branch from this commit <FaCodeBranch />
