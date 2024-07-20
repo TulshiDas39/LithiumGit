@@ -492,7 +492,7 @@ export class GraphUtils{
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.hash){            
+        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
             if(newStatus.mergingCommitHash){
                 const head = RepoUtils.repositoryDetails.headCommit;
@@ -505,7 +505,8 @@ export class GraphUtils{
                 const allCommits = RepoUtils.repositoryDetails.allCommits;
                 const latestCommit = allCommits[allCommits.length-1];
                 dummyCommit.x = latestCommit.x + RepoUtils.distanceBetweenCommits; 
-                dummyCommit.inMergingState = true;               
+                dummyCommit.inMergingState = true; 
+                dummyCommit.parentHashes = [head.hash,newStatus.mergingCommitHash];
                 GraphUtils.state.mergingCommit.publish(dummyCommit);
             }
             else{

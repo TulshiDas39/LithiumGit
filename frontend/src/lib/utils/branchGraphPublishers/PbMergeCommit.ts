@@ -71,10 +71,10 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         if(RepoUtils.repositoryDetails.status.mergingCommitHash)return;
 
         const head = RepoUtils.repositoryDetails.headCommit;
-        const allCommits = RepoUtils.repositoryDetails.allCommits;
-        const latestCommit = allCommits[allCommits.length-1];
-        const endX = latestCommit.x;
-        const y = head.ownerBranch.y;
+        const firstParent = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === this.prevValue?.parentHashes[0])!;
+        if(!firstParent)
+            return;
+        const endX = firstParent.x;
 
         const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
         //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
