@@ -3,6 +3,8 @@ import { EnumIdPrefix } from "../../enums";
 import { DerivedState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 import { RepoUtils } from "../RepoUtils";
+import { UiUtils } from "../UiUtils";
+import { ModalData } from "../../../components/modals/ModalData";
 
 export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     protected getDerivedValue(): ICommitInfo|undefined {
@@ -47,7 +49,22 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         gElem.appendChild(line);
         const commitBox = GraphUtils.createMergeCommit(head, endX,this.value!);
         gElem.appendChild(commitBox);
+        this.addEventListener();
+    }
 
+    private addEventListener(){        
+
+        const contextEventListener=(_:HTMLElement,event:MouseEvent)=>{            
+            ModalData.commitContextModal.selectedCommit = this.value!;            
+            ModalData.commitContextModal.position = {
+                x:event.clientX,
+                y:event.clientY,
+            }
+
+            GraphUtils.openContextModal();
+        }
+        
+        UiUtils.addEventListenderByClassName("mergingState","contextmenu",contextEventListener)
     }
 
     private removeMergingStateUi(){

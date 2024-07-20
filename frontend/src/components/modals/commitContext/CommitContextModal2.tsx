@@ -19,6 +19,7 @@ import { CherryPick } from "./CherryPick";
 import { ShowMore } from "./ShowMore";
 import { MoreOptions } from "./MoreOptions";
 import { CommitOptions } from "./CommitOptions";
+import { MeregingCommitOptions } from "./MeregingCommitOptions";
 
 
 interface IState{
@@ -28,7 +29,7 @@ interface IState{
 }
 
 function CommitContextModalComponent(){
-    const Data = ModalData.commitContextModal;
+    const Data = ModalData.commitContextModal;    
     const dispatch = useDispatch();
     const store = useSelectorTyped((state)=>({
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
@@ -122,9 +123,12 @@ function CommitContextModalComponent(){
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
-                    <CommitOptions hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
+                    {!Data.selectedCommit?.inMergingState && <CommitOptions hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
                         referredLocalBranches={referredLocalBranches} moreOptionList={moreOptionList} onShowMore={()=> setState({showMore:true})} 
-                        showMore={state.showMore} />
+                        showMore={state.showMore} />}
+                    {
+                        !!Data.selectedCommit?.inMergingState && <MeregingCommitOptions />
+                    }
                     
                 </div>
             </Modal.Body>
