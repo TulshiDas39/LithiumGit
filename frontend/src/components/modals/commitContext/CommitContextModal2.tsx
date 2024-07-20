@@ -12,6 +12,7 @@ import { ActionUI } from "../../../store/slices/UiSlice";
 import { ModalData, InitialModalData } from "../ModalData";
 import { Option} from "./ContextData";
 import { Checkout } from "./Checkout";
+import { CreateBranch } from "./CreateBranch";
 
 
 interface IState{
@@ -242,11 +243,7 @@ function CommitContextModalComponent(){
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
                     <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})} />
-                    <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={handleCreateNewBranchClick}>
-                            Create branch from this commit <FaCodeBranch />
-                        </div>
-                    </div>
+                    <CreateBranch hideModal={() => hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />
                     {
                         !Data.selectedCommit?.isHead && referredLocalBranches.length > 0 && 
                             <div className={`row g-0 ${optionClasses}`}>
