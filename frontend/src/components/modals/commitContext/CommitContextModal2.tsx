@@ -18,6 +18,7 @@ import { RebaseBranch } from "./RebaseBranch";
 import { CherryPick } from "./CherryPick";
 import { ShowMore } from "./ShowMore";
 import { MoreOptions } from "./MoreOptions";
+import { CommitOptions } from "./CommitOptions";
 
 
 interface IState{
@@ -121,7 +122,11 @@ function CommitContextModalComponent(){
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
-                    <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
+                    <CommitOptions hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
+                        referredLocalBranches={referredLocalBranches} moreOptionList={moreOptionList} onShowMore={()=> setState({showMore:true})} 
+                        showMore={state.showMore} />
+
+                    {/* <Checkout hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
                         referredLocalBranches={referredLocalBranches} />
                     <CreateBranch hideModal={() => hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />
                     <MergeBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
@@ -129,7 +134,7 @@ function CommitContextModalComponent(){
                     <CherryPick hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} />
                     {!!moreOptionList.length && !state.showMore && <ShowMore onClick={()=> setState({showMore:true})} hideModal={()=>hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />}
                     <MoreOptions hideModal={()=> hideModal()} moreOptionList={moreOptionList} onMouseHover={(o) => setState({mouseOver:o})} mouseOver={state.mouseOver} referredLocalBranches={referredLocalBranches}
-                        showMore={state.showMore} />                                 
+                        showMore={state.showMore} />                                  */}
                 </div>
             </Modal.Body>
         </Modal>

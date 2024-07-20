@@ -64,41 +64,37 @@ function MoreOptionsComponent(props:IProps){
     }
 
     return <Fragment>
-        {
-                        props.showMore && <Fragment>                        
-                            {props.moreOptionList.includes(Option.SoftReset) && <div className={`row g-0 ${ContextData.optionClasses}`} onMouseEnter={()=> props.onMouseHover(null!)}>
-                                <div className="col-12 hover cur-default " onClick={softReset}>Soft reset this commit</div>
-                            </div>}
-                            {props.moreOptionList.includes(Option.HardReset) && <div className={`row g-0 ${ContextData.optionClasses}`} onMouseEnter={()=> props.onMouseHover(null!)}>
-                                <div className="col-12 hover cur-default " onClick={hardReset}>Hard reset this commit</div>
-                            </div>}                        
-                            {
-                            props.moreOptionList.includes(Option.DeleteBranch) && 
-                            <div className={`row g-0 ${ContextData.optionClasses}`}>
-                                {
-                                    branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
-                                        <div className="d-flex hover" onMouseEnter={()=> props.onMouseHover(Option.DeleteBranch)}>
-                                            <span className="flex-grow-1 text-danger">Delete branch</span>
-                                            <span>&gt;</span>
-                                        </div>
-                                        
-                                        {(props.mouseOver === Option.DeleteBranch) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
-                                            {
-                                                branchNamesForDelete.map((br=>(
-                                                    <div key={br} className="border-bottom py-1 px-3 ">
-                                                        <span className="hover" onClick={() => deleteBranch(br)}>{br}</span>
-                                                    </div>
-                                                )))
-                                            }
-                                        </div>}
-                                    </div>:
-                                    <div className="col-12 hover cur-default text-danger" onClick={() => deleteBranch(branchNamesForDelete[0])}>Delete branch '{branchNamesForDelete[0]}'</div>
-                                }                                
+                {props.moreOptionList.includes(Option.SoftReset) && <div className={`row g-0 ${ContextData.optionClasses}`} onMouseEnter={()=> props.onMouseHover(null!)}>
+                    <div className="col-12 hover cur-default " onClick={softReset}>Soft reset this commit</div>
+                </div>}
+                {props.moreOptionList.includes(Option.HardReset) && <div className={`row g-0 ${ContextData.optionClasses}`} onMouseEnter={()=> props.onMouseHover(null!)}>
+                    <div className="col-12 hover cur-default " onClick={hardReset}>Hard reset this commit</div>
+                </div>}                        
+                {
+                props.moreOptionList.includes(Option.DeleteBranch) && 
+                <div className={`row g-0 ${ContextData.optionClasses}`}>
+                    {
+                        branchNamesForDelete.length > 1 ? <div className="col-12 cur-default position-relative">
+                            <div className="d-flex hover" onMouseEnter={()=> props.onMouseHover(Option.DeleteBranch)}>
+                                <span className="flex-grow-1 text-danger">Delete branch</span>
+                                <span>&gt;</span>
                             </div>
-                    }
+                            
+                            {(props.mouseOver === Option.DeleteBranch) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                {
+                                    branchNamesForDelete.map((br=>(
+                                        <div key={br} className="border-bottom py-1 px-3 ">
+                                            <span className="hover" onClick={() => deleteBranch(br)}>{br}</span>
+                                        </div>
+                                    )))
+                                }
+                            </div>}
+                        </div>:
+                        <div className="col-12 hover cur-default text-danger" onClick={() => deleteBranch(branchNamesForDelete[0])}>Delete branch '{branchNamesForDelete[0]}'</div>
+                    }                                
+                </div>
+        }
                         
-                        </Fragment>
-                    }
     </Fragment>
 }
 
