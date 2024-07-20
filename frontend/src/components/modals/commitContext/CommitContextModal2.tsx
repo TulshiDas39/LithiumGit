@@ -15,6 +15,7 @@ import { Checkout } from "./Checkout";
 import { CreateBranch } from "./CreateBranch";
 import { MergeBranch } from "./MergeBranch";
 import { RebaseBranch } from "./RebaseBranch";
+import { CherryPick } from "./CherryPick";
 
 
 interface IState{
@@ -248,13 +249,8 @@ function CommitContextModalComponent(){
                     <CreateBranch hideModal={() => hideModal()} onMouseHover={(o)=> setState({mouseOver:o})} />
                     <MergeBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
                     <RebaseBranch hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} referredLocalBranches={referredLocalBranches} mouseOver={state.mouseOver} />
-                        
-
-                    {!Data.selectedCommit?.isHead && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}>
-                        <div className="col-12 hover cur-default " onClick={cherryPick}>
-                            Cherry-Pick this commit <FaRegPaperPlane />
-                        </div>
-                    </div>}
+                    <CherryPick hideModal={()=> hideModal()} onMouseHover={(op) => setState({mouseOver:op})} />
+                    
                     {!!moreOptionList.length && !state.showMore && <div className={`row g-0 ${optionClasses}`} onMouseEnter={()=> setState(({mouseOver:null!}))}
                         onClick={_=> setState({showMore:true})}>
                         <div className="col-12 hover cur-default ">Show More</div>
