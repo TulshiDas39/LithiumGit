@@ -123,7 +123,7 @@ function CommitContextModalComponent(){
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container" onMouseLeave={() => setState({mouseOver:undefined})}>
-                    {!Data.selectedCommit?.inMergingState && <CommitOptions hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
+                    {!!Data.selectedCommit && !Data.selectedCommit.inMergingState && <CommitOptions hideModal={()=>hideModal()} mouseOver={state.mouseOver} onMouseHover={(op) => setState({mouseOver:op})}
                         referredLocalBranches={referredLocalBranches} moreOptionList={moreOptionList} onShowMore={()=> setState({showMore:true})} 
                         showMore={state.showMore} />}
                     {
