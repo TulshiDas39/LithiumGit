@@ -4,47 +4,56 @@ import { Difference } from "../../components/selectedRepository/selectedRepoRigh
 import { EnumChangeGroup, IFile, IStatus } from "common_library";
 
 export class ChangeUtils{
-    static containerId = "";
-    static file?:IFile;
-    static currentLines:ILine[];
-    static previousLines:ILine[];
-    private static heighlightedLineIndexes:number[]=[];
+    private containerId = "";
+    file?:IFile;
+    currentLines:ILine[]=[];
+    previousLines:ILine[]=[];
+    private heighlightedLineIndexes:number[]=[];
 
-    static showChanges(){
+    constructor(containerId:string){
+        this.containerId = containerId;
+    }
+
+    get ContainerId(){
+        return this.containerId;
+    }
+
+    showChanges(){
         console.log("showing changes");
-        const container = document.getElementById(`${ChangeUtils.containerId}`)!;
+        const container = document.getElementById(`${this.containerId}`)!;
 
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
-            linesAfterChange:ChangeUtils.currentLines,
-            linesBeforeChange:ChangeUtils.previousLines
+            linesAfterChange:this.currentLines,
+            linesBeforeChange:this.previousLines
         }));
         container.innerHTML = innerHtml;
-        ChangeUtils.HandleScrolling();
-        ChangeUtils.SetHeighlightedLines();        
+        this.HandleScrolling();
+        this.SetHeighlightedLines();
 
         // ReduxUtils.resetChangeNavigation();
     }
 
-    static FocusHightlightedLine(step:number){
-        if(!ChangeUtils.containerId)
+    FocusHightlightedLine(step:number){
+        if(!this.containerId)
             return;
-        const container = document.querySelector("#"+ChangeUtils.containerId);
-        if(!ChangeUtils.heighlightedLineIndexes.length)
+        const container = document.querySelector("#"+this.containerId);
+        console.log("container id:"+this.containerId);
+        if(!this.heighlightedLineIndexes.length)
             return;
-        const focusElem = container?.querySelector('.line_numbers')?.children[ChangeUtils.heighlightedLineIndexes[step-1]];
+        const focusElem = container?.querySelector('.content')?.children[this.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
     }
 
-    private static SetHeighlightedLines(){
-        ChangeUtils.heighlightedLineIndexes = [];
+    private SetHeighlightedLines(){
+        this.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;
-        if(!ChangeUtils.currentLines?.length || !ChangeUtils.previousLines?.length)
+        if(!this.currentLines?.length || !this.previousLines?.length)
             return;
-        const lenght = ChangeUtils.currentLines?.length;
+        const lenght = this.currentLines?.length;
         for(let i = 0;i < lenght; i++){
-            if(ChangeUtils.currentLines?.[i].hightLightBackground || ChangeUtils.currentLines?.[i].text === undefined){
+            if(this.currentLines?.[i].hightLightBackground || this.currentLines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
-                    ChangeUtils.heighlightedLineIndexes.push(i);
+                    this.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
                 }
             }
@@ -53,12 +62,12 @@ export class ChangeUtils{
         }
     }
 
-    static get totalChangeCount(){
-        return ChangeUtils.heighlightedLineIndexes.length;
+    get totalChangeCount(){
+        return this.heighlightedLineIndexes.length;
     } 
 
-    private static HandleScrolling(){
-        if(ChangeUtils.previousLines !== null && ChangeUtils.currentLines !== null){
+    private HandleScrolling(){
+        if(this.previousLines !== null && this.currentLines !== null){
             const previousChangeScroll = document.querySelector(".difference .previous .content-container");
             const currentChangeScroll = document.querySelector(".difference .current .content-container");        
             const currentLineNumberScroll = document.querySelector(".difference .current .line_numbers");        
@@ -92,24 +101,11 @@ export class ChangeUtils{
         }
     }
 
-    static ClearView(){
-        const container = document.getElementById(`${ChangeUtils.containerId}`)!;
+    ClearView(){
+        const container = document.getElementById(`${this.containerId}`)!;
         if(container)
             container.innerHTML = "";
-        ChangeUtils.file = undefined;
+        this.file = undefined;
         //ReduxUtils.resetChangeNavigation();
-    }
-
-    static handleStatusChange(status:IStatus){
-        const file = ChangeUtils.file!;
-        if(!file || !ChangeUtils.containerId)
-            return;
-
-        if(file.changeGroup === EnumChangeGroup.UN_STAGED && !status.unstaged.some(_=>_.path === file.path)){
-            ChangeUtils.ClearView();
-        }
-        else if(file.changeGroup === EnumChangeGroup.STAGED && !status.staged.some(_=>_.path === file.path)){
-            ChangeUtils.ClearView();
-        }
-    }
+    }   
 }

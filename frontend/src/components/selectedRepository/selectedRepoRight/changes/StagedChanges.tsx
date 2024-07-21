@@ -9,6 +9,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ActionChanges } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { ChangesData } from "../../../../lib/data/ChangesData";
 
 interface ISingleFileProps{
     item:IFile
@@ -83,8 +84,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     }
 
     const showChanges=()=>{                    
-        return new Promise<boolean>((resolve)=>{
-            ChangeUtils.containerId = EnumHtmlIds.diffview_container;
+        return new Promise<boolean>((resolve)=>{            
             if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
                 IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
                     const lines = StringUtils.getLines(res.result!);
@@ -98,9 +98,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
                         IpcUtils.getDiff(options).then(res=>{
                             let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                            ChangeUtils.currentLines = lineConfigs.currentLines;
-                            ChangeUtils.previousLines = lineConfigs.previousLines;
-                            ChangeUtils.showChanges();                            
+                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
+                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
+                            ChangesData.changeUtils.showChanges();                            
                             resolve(true);
                         })
                     }
@@ -108,17 +108,17 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
                         IpcUtils.getDiff(options).then(res=>{
                             let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                            ChangeUtils.currentLines = lineConfigs.currentLines;
-                            ChangeUtils.previousLines = lineConfigs.previousLines;
-                            ChangeUtils.showChanges();
+                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
+                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
+                            ChangesData.changeUtils.showChanges();
                             resolve(true);
                         })                    
                     }
                     else{
                         const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                        ChangeUtils.currentLines = lineConfigs;
-                        ChangeUtils.previousLines = null!;
-                        ChangeUtils.showChanges();
+                        ChangesData.changeUtils.currentLines = lineConfigs;
+                        ChangesData.changeUtils.previousLines = null!;
+                        ChangesData.changeUtils.showChanges();
                         resolve(true);
                     }
                                         
@@ -131,13 +131,13 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     if(!hasChanges) return;
                     refData.current.fileContentAfterChange = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = null!;
-                    ChangeUtils.previousLines = lineConfigs!;
-                    ChangeUtils.showChanges();
+                    ChangesData.changeUtils.currentLines = null!;
+                    ChangesData.changeUtils.previousLines = lineConfigs!;
+                    ChangesData.changeUtils.showChanges();
                     resolve(true);
                 })
             }
-            ChangeUtils.file = store.selectedFile;
+            ChangesData.changeUtils.file = store.selectedFile;
         })
     }
 
@@ -145,7 +145,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         if(!store.selectedFile || !refData.current.isMounted)
             return ;
         showChanges().then(()=>{
-            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));
         })
     },[store.selectedFile])
 
@@ -155,7 +155,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;
         showChanges().then(()=>{
-            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
             dispatch(ActionChanges.increamentStepRefreshVersion());
         })
     },[store.focusVersion])

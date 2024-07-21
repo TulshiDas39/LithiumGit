@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
+import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState, DiffData } from "../../../../lib";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
@@ -17,18 +17,19 @@ interface IState{
 
 function CommitDiffViewComponent(props:IProps){
     const [state,setState] = useMultiState<IState>({currentStep:0,totalStep:0,stepResetVersion:0,});
+    const changeUtils = DiffData.changeUtils;
     const resetStepNavigation = ()=>{
-        const totalChange = ChangeUtils.totalChangeCount;
-        const currentStep = ChangeUtils.totalChangeCount > 0 ? 1:0;
+        const totalChange = changeUtils.totalChangeCount;
+        const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
         setState({totalStep:totalChange,currentStep,stepResetVersion:state.stepResetVersion+1});
     }
     useEffect(()=>{
         const selectedCommit = GraphUtils.state.selectedCommit;
         if(!props.file || !selectedCommit.value){
-            ChangeUtils.ClearView();
+            changeUtils.ClearView();
             return;
         }
-        ChangeUtils.containerId = EnumHtmlIds.CommitDiff;
+        
         if(props.file.changeType !== EnumChangeType.DELETED){
             IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
                 const content = res.result || "";
@@ -37,17 +38,17 @@ function CommitDiffViewComponent(props:IProps){
                     const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",props.file.path];            
                     IpcUtils.getGitShowResult(options).then(res=>{
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
-                        ChangeUtils.currentLines = lineConfigs.currentLines;
-                        ChangeUtils.previousLines = lineConfigs.previousLines;
-                        ChangeUtils.showChanges();
+                        changeUtils.currentLines = lineConfigs.currentLines;
+                        changeUtils.previousLines = lineConfigs.previousLines;
+                        changeUtils.showChanges();
                         resetStepNavigation();
                     })
                 }
                 else{
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = lineConfigs;
-                    ChangeUtils.previousLines = null!;
-                    ChangeUtils.showChanges();
+                    changeUtils.currentLines = lineConfigs;
+                    changeUtils.previousLines = null!;
+                    changeUtils.showChanges();
                     resetStepNavigation();
                 }
                 
@@ -57,9 +58,9 @@ function CommitDiffViewComponent(props:IProps){
             IpcUtils.getGitShowResult([`${selectedCommit.value.hash}^:${props.file.path}`]).then(content=>{                
                 const lines = StringUtils.getLines(content);                
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = null!;
-                ChangeUtils.previousLines = lineConfigs!;
-                ChangeUtils.showChanges();
+                changeUtils.currentLines = null!;
+                changeUtils.previousLines = lineConfigs!;
+                changeUtils.showChanges();
                 resetStepNavigation();
             })            
         }
@@ -67,7 +68,7 @@ function CommitDiffViewComponent(props:IProps){
     },[props.file])
 
     useEffect(()=>{
-        ChangeUtils.FocusHightlightedLine(state.currentStep);
+        changeUtils.FocusHightlightedLine(state.currentStep);
     },[state.currentStep,state.stepResetVersion])
 
     const handleNext=()=>{

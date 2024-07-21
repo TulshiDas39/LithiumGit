@@ -92,7 +92,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             else GraphUtils.checkForUiUpdate(store.status!);
         });
         
-        ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 
     useEffect(()=>{

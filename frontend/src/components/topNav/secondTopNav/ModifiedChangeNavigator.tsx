@@ -1,8 +1,8 @@
 import { EnumChangeType, IFile } from "common_library";
-import React, { Fragment, useEffect } from "react"
+import React, {  useEffect } from "react"
 import { FaArrowsAltH } from "react-icons/fa";
 import { StepNavigation } from "../../common";
-import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
+import { ChangesData } from "../../../lib";
 
 interface IProps{
     selectedFile:IFile;
@@ -17,7 +17,7 @@ function ModifiedChangeNavigatorComponent(props:IProps){
     useEffect(()=>{
         if(!props.currentStep)
             return;
-        ChangeUtils.FocusHightlightedLine(props.currentStep);
+        ChangesData.changeUtils.FocusHightlightedLine(props.currentStep);
     },[props.currentStep,props.stepResetVersion])
     
     return <div className="w-100 h-100 d-flex align-items-center">
