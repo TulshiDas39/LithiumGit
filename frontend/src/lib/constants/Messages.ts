@@ -8,4 +8,5 @@ export class Messages{
     static readonly pushSuccess = "Push succeeded.";
     static readonly refreshing = "Refreshing...";
     static readonly abortingMerge = "Aborting merge...";
+    static readonly branchExist = "Branch already exists...";
 }
