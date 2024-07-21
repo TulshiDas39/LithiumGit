@@ -1,7 +1,7 @@
 import { RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useRef  } from "react"
-import { Form } from "react-bootstrap";
-import { FaCaretDown, FaCheck } from "react-icons/fa";
+import { Dropdown, Form } from "react-bootstrap";
+import { FaCaretDown, FaCheck, FaEllipsisH } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -104,6 +104,10 @@ function CommitBoxComponent(){
         })
     }
 
+    const abortMerge = ()=>{
+        GitUtils.abortMerge();
+    }
+
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
                 <Form.Control as="textarea" rows={2} value={state.value} onChange={e => setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
@@ -142,9 +146,29 @@ function CommitBoxComponent(){
                 </div>                
             </div>
             <div className="col-auto">
-                <div className="d-flex align-items-center justify-content-center pt-1">
-                    <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
-                    <label htmlFor="amend" className="ps-1">Amend</label>
+                <div className="row g-0">
+                    <div className="col-2">
+
+                    </div>
+                    <div className="col-8 d-flex align-items-center justify-content-center pt-1">
+                        <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
+                        <label htmlFor="amend" className="ps-1">Amend</label>
+                    </div>
+                    <div className="col-2 d-flex justify-content-end pe-1">
+                        {store.isMergingState && <Dropdown>
+                            <Dropdown.Toggle variant="link" id="abor_merge" className="rounded-0 no-caret">
+                                <FaEllipsisH />
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu className="no-radius">
+                                <Dropdown.Item onClick={()=>abortMerge()} className="">Abort merge</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>}
+                    </div>                    
+                </div>
+
+                
+                <div className="">
+
                 </div>
             </div>                        
     </div>
