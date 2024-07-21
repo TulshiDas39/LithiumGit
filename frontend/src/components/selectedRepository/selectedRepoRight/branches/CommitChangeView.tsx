@@ -9,10 +9,11 @@ interface IState{
     selectedCommitHash?:string;
     files:IFile[];
     selectedFile?:IFile;
+    fileCount:number;
 }
 
 function CommitChangeViewComponent(){
-    const [state, setState] = useMultiState<IState>({files:[]});
+    const [state, setState] = useMultiState<IState>({files:[],fileCount:0});
     const rightWidthRef = useRef(300);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
@@ -23,7 +24,7 @@ function CommitChangeViewComponent(){
         }
         
         GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
-            setState({files:res,selectedFile:res[0]});
+            setState({files:res.files,selectedFile:res.files[0],fileCount:res.total});
         });
 
     },[state.selectedCommitHash])
@@ -57,7 +58,7 @@ function CommitChangeViewComponent(){
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{width:`3px`}}></div>
         <CommitFileList files={state.files} width={rightWidth} onFileSelect={_=>setState({selectedFile:_})}
-            selectedFile={state.selectedFile} />
+            selectedFile={state.selectedFile} fileCount={state.fileCount} />
     </div>
 }
 

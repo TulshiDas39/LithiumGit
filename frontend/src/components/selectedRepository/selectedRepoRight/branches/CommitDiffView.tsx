@@ -1,6 +1,5 @@
 import React, { useEffect } from "react"
-import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, UiUtils, useMultiState, DiffData } from "../../../../lib";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
+import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../../../lib";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";

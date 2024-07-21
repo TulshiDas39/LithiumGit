@@ -19,7 +19,7 @@ export class GitUtils{
         }
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
-            return files;
+            return {files,total:0};
 
         const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         const statResult = await GitUtils.getNumStat(commitHash);
@@ -28,7 +28,7 @@ export class GitUtils{
             const path = words[words.length-1];
             if(files.some(_=> _.path === path))
                 continue;
-            const file = statResult.find(_=> _.path === path);
+            const file = statResult.files.find(_=> _.path === path);
             if(!file)
                 continue;            
 
@@ -40,7 +40,7 @@ export class GitUtils{
 
 
 
-        return files;
+        return {files,total:statResult.total};
     }
 
     static async getNumStat(commitHash:string){
@@ -48,9 +48,10 @@ export class GitUtils{
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r","-m","--numstat"];
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
-            return files;
+            return {files,total:0};
 
-        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+        const allFiles = StringUtils.getLines(result.result).filter(l => !!l);
+        const lines = allFiles.slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const path = words[2];
@@ -67,7 +68,7 @@ export class GitUtils{
             
         }
 
-        return files;
+        return {files,total:allFiles.length};
     }
 
     private static async getFileStatusOfStash(index:number){
