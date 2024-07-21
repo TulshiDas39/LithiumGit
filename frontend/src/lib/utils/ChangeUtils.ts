@@ -19,7 +19,6 @@ export class ChangeUtils{
     }
 
     showChanges(){
-        console.log("showing changes");
         const container = document.getElementById(`${this.containerId}`)!;
 
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
@@ -37,7 +36,6 @@ export class ChangeUtils{
         if(!this.containerId)
             return;
         const container = document.querySelector("#"+this.containerId);
-        console.log("container id:"+this.containerId);
         if(!this.heighlightedLineIndexes.length)
             return;
         const focusElem = container?.querySelector('.content')?.children[this.heighlightedLineIndexes[step-1]];
