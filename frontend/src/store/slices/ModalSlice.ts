@@ -19,7 +19,10 @@ const slice = createSlice({
         },
         hideModal(state,action:PayloadAction<EnumModals>){
             state.openedModals = state.openedModals.filter(m=>m !== action.payload);
-        }
+        },
+        showToast(state){
+            state.openedModals.push(EnumModals.TOAST);
+        },
     }
 });
 
