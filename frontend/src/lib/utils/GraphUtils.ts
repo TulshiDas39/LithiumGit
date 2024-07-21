@@ -408,11 +408,21 @@ export class GraphUtils{
         // circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
         circleElem.setAttribute("cx",x+"")
         circleElem.setAttribute("cy",head.ownerBranch.y+"")
-        circleElem.setAttribute("r",RepoUtils.commitRadius+"")
+        circleElem.setAttribute("r",(RepoUtils.commitRadius+2)+"")
         circleElem.setAttribute("stroke","red")
-        circleElem.setAttribute("strokeWidth","3")
+        circleElem.setAttribute("stroke-width","3");
         circleElem.setAttribute("fill",GraphUtils.commitColor)
         circleElem.classList.add("mergingState");
+
+        const circleElem2 = document.createElementNS(this.svgLnk, "circle");
+        circleElem2.setAttribute("cx",x+"")
+        circleElem2.setAttribute("cy",head.ownerBranch.y+"")
+        circleElem2.setAttribute("r",(RepoUtils.commitRadius+15)+"")
+        circleElem2.setAttribute("stroke","green");
+        circleElem2.setAttribute("stroke-width","2");
+        circleElem2.setAttribute("stroke-dasharray", "5");
+        circleElem2.setAttribute("fill","none");
+        circleElem2.classList.add("mergingState");
 
 
         // const clickListener = (target:HTMLElement)=>{
@@ -438,7 +448,7 @@ export class GraphUtils{
         }
 
         circleElem.addEventListener("click",clickListener);
-        return circleElem;
+        return [circleElem,circleElem2];
     }
 
     static createMergedStateLine(x1:number,y1:number,x2:number,y2:number){
