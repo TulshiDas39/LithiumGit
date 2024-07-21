@@ -114,7 +114,7 @@ function CommitBoxComponent(){
                 <div className="row w-100 h-100 g-0 justify-content-center flex-nowrap">  
                     <div className="col-3 pe-1"></div>
                     <div className="col-6">
-                        <div className="row g-0 flex-nowrap">
+                        <div className="row g-0 flex-nowrap justify-content-center">
                             <div className="col-auto">
                                 <AppButton type="success" onClick={handleCommit} className="h-100 py-2">
                                     <span className="pe-2">
