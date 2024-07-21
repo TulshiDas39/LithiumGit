@@ -59,19 +59,30 @@ export class ChangeUtils{
 
     private static HandleScrolling(){
         if(ChangeUtils.previousLines !== null && ChangeUtils.currentLines !== null){
-            const previousChangeScroll = document.querySelector(".difference .previous .content");
-            const currentChangeScroll = document.querySelector(".difference .current .content");        
-        
+            const previousChangeScroll = document.querySelector(".difference .previous .content-container");
+            const currentChangeScroll = document.querySelector(".difference .current .content-container");        
+            const currentLineNumberScroll = document.querySelector(".difference .current .line_numbers");        
+            const previousLineNumberScroll = document.querySelector(".difference .previous .line_numbers");
+            const group1 = [currentChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
+            const group2 = [previousChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
+        //line_numbers
             let handler1 = (e:Event)=>{
-                currentChangeScroll?.scrollTo({
-                    left:previousChangeScroll?.scrollLeft,
-                });
+                for(let g of group1){
+                    g?.scrollTo({
+                        left:previousChangeScroll?.scrollLeft,
+                        top:previousChangeScroll?.scrollTop,
+                    });
+                }
+                
             }
 
             let handler2 = (e:Event)=>{
-                previousChangeScroll?.scrollTo({                    
-                    left:currentChangeScroll?.scrollLeft,
-                });
+                for(let g of group2){
+                    g?.scrollTo({
+                        left:currentChangeScroll?.scrollLeft,
+                        top:currentChangeScroll?.scrollTop,
+                    });
+                }
             }
 
             if(previousChangeScroll && currentChangeScroll){
