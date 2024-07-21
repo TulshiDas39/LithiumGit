@@ -20,7 +20,7 @@ function CommitDiffViewComponent(props:IProps){
     const resetStepNavigation = ()=>{
         const totalChange = ChangeUtils.totalChangeCount;
         const currentStep = ChangeUtils.totalChangeCount > 0 ? 1:0;
-        setState({totalStep:totalChange,currentStep});
+        setState({totalStep:totalChange,currentStep,stepResetVersion:state.stepResetVersion+1});
     }
     useEffect(()=>{
         const selectedCommit = GraphUtils.state.selectedCommit;
