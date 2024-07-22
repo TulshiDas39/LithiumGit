@@ -9,32 +9,23 @@ import { copy } from "fs-extra";
 import { ModalData } from "../../../modals/ModalData";
 import { ActionModals } from "../../../../store";
 
-interface IState{
+interface IProps{
     selectedCommit?:ICommitInfo;
 }
 
-function CommitPropertyComponent(){
-    const [state,setState]=useMultiState({} as IState);
 
-    useEffect(()=>{        
-        const selectListener = (commit:ICommitInfo)=>{
-            setState({selectedCommit:commit});
-        }
-        GraphUtils.state.selectedCommit.subscribe(selectListener);
-        return ()=>{
-            GraphUtils.state.selectedCommit.unSubscribe(selectListener);
-        }
-    },[])
+function CommitPropertyComponent(props:IProps){
+
     const textFieldValue = useMemo(()=>{
-        let value = state.selectedCommit?.message;
-        if(state.selectedCommit?.body){
-            value += "\n\n"+state.selectedCommit?.body;
+        let value = props.selectedCommit?.message;
+        if(props.selectedCommit?.body){
+            value += "\n\n"+props.selectedCommit?.body;
         }
         return value;
-    },[state.selectedCommit?.message,state.selectedCommit?.body])
+    },[props.selectedCommit?.message,props.selectedCommit?.body])
 
     const handleCopy = ()=>{
-        UiUtils.copy(state.selectedCommit?.hash!);
+        UiUtils.copy(props.selectedCommit?.hash!);
         ModalData.appToast.message = "Copied.";
         ReduxUtils.dispatch(ActionModals.showToast());
     }
@@ -43,19 +34,19 @@ function CommitPropertyComponent(){
         return UiUtils.getTimeZonOffsetStr();
     },[]);
 
-    if(!state.selectedCommit) return null;
+    if(!props.selectedCommit) return null;
     return <div id="commit_property" className="d-flex flex-column w-100 ps-1 overflow-hidden border">
         <b>Commit properties</b>
-        {!!state.selectedCommit.hash && <span className="d-flex align-items-center">
-            <span>Sha: {state.selectedCommit.avrebHash}</span> 
+        {!!props.selectedCommit.hash && <span className="d-flex align-items-center">
+            <span>Sha: {props.selectedCommit.avrebHash}</span> 
             <span title="Copy" className="ps-2 d-flex align-items-center hover click-effect" onClick={() => handleCopy()}><FaCopy className="click-effect" /> </span>
         </span>}
-        <span title={timeZoneOffset}>Date: {moment(state.selectedCommit.date).format("D MMM,YYYY hh:mm a") }</span>
-        {!!state.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">
+        <span title={timeZoneOffset}>Date: {moment(props.selectedCommit.date).format("D MMM,YYYY hh:mm a") }</span>
+        {!!props.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">
             <span>Author: </span>
-            <div><InputText text={state.selectedCommit.author_name}/></div>
+            <div><InputText text={props.selectedCommit.author_name}/></div>
             <span>&lt;</span>            
-            <div><InputText text={state.selectedCommit.author_email} /></div>
+            <div><InputText text={props.selectedCommit.author_email} /></div>
             <span>&gt;</span>
         </div>}
         {/* <span className="w-100 overflow-hidden d-flex">Author: <InputText text={props.selectedCommit.author_name}/> &lt;<InputText text={props.selectedCommit.author_email} />&gt;</span> */}

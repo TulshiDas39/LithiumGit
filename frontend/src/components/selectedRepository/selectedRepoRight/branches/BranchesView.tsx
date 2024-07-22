@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { shallowEqual } from "react-redux";
-import { EnumHtmlIds, EnumSelectedRepoTab, useDrag } from "../../../../lib";
+import { EnumHtmlIds, EnumSelectedRepoTab, useDrag, useMultiState } from "../../../../lib";
 import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
@@ -8,12 +8,19 @@ import { CommitProperty } from "./CommitProperty";
 import { CommitChangeView } from "./CommitChangeView";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { BiLoader } from "react-icons/bi";
+import { ICommitInfo } from "common_library";
+
+interface IState{
+    selectedCommit?:ICommitInfo;
+}
 
 function BranchesViewComponent() {
     const store = useSelectorTyped(state => ({
         show: state.ui.selectedRepoTab === EnumSelectedRepoTab.GRAPH,
         graphRefresh:state.ui.refreshingGraph,
     }), shallowEqual);
+
+    const [state,setState]=useMultiState<IState>({});
 
     useEffect(()=>{
         if(GraphUtils.svgElement)
@@ -38,8 +45,14 @@ function BranchesViewComponent() {
     },[position?.y])
 
     useEffect(()=>{        
+        const selectListener = (commit:ICommitInfo)=>{
+            setState({selectedCommit:commit});
+        }
+        GraphUtils.state.selectedCommit.subscribe(selectListener);
+        
         return ()=>{
-            window.removeEventListener("resize",GraphUtils.resizeHandler);    
+            window.removeEventListener("resize",GraphUtils.resizeHandler);
+            GraphUtils.state.selectedCommit.unSubscribe(selectListener);
         }
     },[])
 
@@ -69,7 +82,7 @@ function BranchesViewComponent() {
                     </div> 
                 </div>
                 <div className="w-25 ps-2">
-                    <CommitProperty />
+                    {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit}/>}
                 </div>
             </div>
         </div>        

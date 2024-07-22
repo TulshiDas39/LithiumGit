@@ -5,13 +5,15 @@ import React from "react";
 
 interface ISingleCommitProps{
     commit:ICommitInfo;
+    isSelected:boolean;
+    onSelect:(commit:ICommitInfo)=>void;
 }
 
 function SingleCommitComponent(props:ISingleCommitProps){
     const getTimeZonOffsetStr = ()=>{
         return UiUtils.getTimeZonOffsetStr();
     }
-    return <div className="py-1 w-100 overflow-auto">
+    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''}`} onClick={()=>props.onSelect(props.commit)}>
      <div className="border border-primary ps-2">
         <div>
             <span>Sha: </span>

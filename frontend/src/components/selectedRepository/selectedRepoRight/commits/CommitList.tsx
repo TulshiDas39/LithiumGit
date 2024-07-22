@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useCallback, useEffect } from "react";
 import { SingleCommit } from "./SingleCommit";
 import { ICommitInfo, ILogFilterOptions } from "common_library";
 import { Paginator } from "../../../common";
@@ -10,6 +10,8 @@ import { shallowEqual } from "react-redux";
 interface IProps{
     searchText:string;
     selectedBranch?:string;
+    onCommitSelect:(commit:ICommitInfo)=>void;
+    selectedCommit?:ICommitInfo;
 }
 
 interface IState{
@@ -60,6 +62,10 @@ function CommitListComponent(props:IProps){
         })
     },[store.repo])
 
+    const handleSelect = useCallback((commit:ICommitInfo)=>{
+        props.onCommitSelect(commit);
+    },[props.onCommitSelect])
+
     return <Fragment>
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
             {state.loading && <div className="w-100 d-flex justify-content-center">
@@ -69,7 +75,8 @@ function CommitListComponent(props:IProps){
             {!state.loading && <div className="w-100 px-2">
                 {
                     state.commits.map(commit=>(
-                        <SingleCommit key={commit.avrebHash} commit={commit} />
+                        <SingleCommit key={commit.avrebHash} commit={commit} 
+                            isSelected={props.selectedCommit?.hash === commit.hash} onSelect={handleSelect} />
                     ))
                 }
             </div> }           
