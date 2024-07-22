@@ -4,4 +4,5 @@ export enum EnumSelectedRepoTab{
     COMMITS="COMMITS",
     REMOTES="REMOTES",
     STASHES="STASHES",
+    CONFIG="CONFIG",
 }
