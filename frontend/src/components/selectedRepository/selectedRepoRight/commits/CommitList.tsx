@@ -69,7 +69,7 @@ function CommitListComponent(props:IProps){
     },[props.onCommitSelect])
 
     return <Fragment>
-        <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
+        <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'90%'}}>
             {state.loading && <div className="w-100 d-flex justify-content-center">
                 <span>Loading...</span> 
             </div>
