@@ -51,7 +51,9 @@ function CommitListComponent(props:IProps){
         }
         
         IpcUtils.getCommitList(filterOptions).then(result=>{
-            setState({commits:result.list.reverse(),total:result.count,loading:false});
+            result.list.reverse();
+            setState({commits:result.list,total:result.count,loading:false});
+            props.onCommitSelect(result.list[0]);
         });
         
     },[state.pageIndex,state.pageSize,props.searchText,props.selectedBranch,state.refreshKey]);
