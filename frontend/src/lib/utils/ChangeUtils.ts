@@ -20,7 +20,8 @@ export class ChangeUtils{
 
     showChanges(){
         const container = document.getElementById(`${this.containerId}`)!;
-
+        if(!container)
+            return;
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
             linesAfterChange:this.currentLines,
             linesBeforeChange:this.previousLines
