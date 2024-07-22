@@ -7,6 +7,7 @@ import { EnumSelectedRepoTab } from "../../../lib"
 import { RemoteList } from "./remotes"
 import { Commits } from "./commits"
 import { Stashes } from "./stashes"
+import { Configs } from "./configs"
 
 function SelectedRepoRightComponent(){
     const store = useSelectorTyped(state=>({
@@ -22,6 +23,8 @@ function SelectedRepoRightComponent(){
             <Commits />}
         {store.tab === EnumSelectedRepoTab.STASHES &&
             <Stashes />}
+        {store.tab === EnumSelectedRepoTab.CONFIG &&
+        <Configs />}
     </div>    
 }
 
