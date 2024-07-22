@@ -31,7 +31,7 @@ function CommitListComponent(props:IProps){
         pageIndex:0,
         pageSize:500,
         commits:[],
-        loading:false,
+        loading:true,
         total:0,
         refreshKey:new Date().toISOString(),
     });
