@@ -88,7 +88,7 @@ function BranchesViewComponent() {
         </div>        
         <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
         <div className="w-100" style={{height:`${bottomHeight}px`}}>
-            <CommitChangeView />
+            {!!state.selectedCommit && <CommitChangeView selectedCommit={state.selectedCommit} containerId={EnumHtmlIds.CommitDiff} />}
         </div>
 
     </div>

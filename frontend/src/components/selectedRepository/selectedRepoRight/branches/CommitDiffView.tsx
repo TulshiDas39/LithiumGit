@@ -1,11 +1,12 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../../../lib";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";
 
 interface IProps{
-    file?:IFile
+    file?:IFile;
+    containerId:EnumHtmlIds;
 }
 
 interface IState{
@@ -16,7 +17,10 @@ interface IState{
 
 function CommitDiffViewComponent(props:IProps){
     const [state,setState] = useMultiState<IState>({currentStep:0,totalStep:0,stepResetVersion:0,});
-    const changeUtils = DiffData.changeUtils;
+    const changeUtils = useMemo(()=>{
+        return DiffData.ResolveObjectUtils(props.containerId)!;
+    },[props.containerId]);
+    
     const resetStepNavigation = ()=>{
         const totalChange = changeUtils.totalChangeCount;
         const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
@@ -91,7 +95,7 @@ function CommitDiffViewComponent(props:IProps){
     return <div className="h-100 w-100">
         <StepNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
             onNextClick={handleNext} onPreviousClick={handlePrevious} />
-        <div id={EnumHtmlIds.CommitDiff} className="w-100" style={{height:`calc(100% - 30px)`}}>
+        <div id={props.containerId} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>
     </div>

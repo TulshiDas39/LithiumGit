@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo, useRef } from "react"
-import { useDrag, useMultiState } from "../../../../lib";
+import { EnumHtmlIds, useDrag, useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
 import { CommitList } from "./CommitList";
 import { ICommitInfo } from "common_library";
 import { CommitProperty } from "../branches/CommitProperty";
+import { CommitChangeView } from "../branches/CommitChangeView";
 
 interface IState{
     searchText:string;
@@ -59,7 +60,7 @@ function CommitsComponent(){
             </div>
             <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
             <div className="w-100" style={{height:`${bottomHeight}px`}}>
-
+                {!!state.selectedCommit && <CommitChangeView selectedCommit={state.selectedCommit} containerId={EnumHtmlIds.CommitDiffFromList} />}
             </div>
         </div>
         
