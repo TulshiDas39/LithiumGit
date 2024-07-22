@@ -99,10 +99,15 @@ export class GraphUtils{
         GraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         GraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
         GraphUtils.addEventListeners();
+        GraphUtils.resetStates();
         GraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
-    }  
+    }
+    
+    static resetStates(){
+        GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);
+    }
 
     static setReduxData(){
         ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
@@ -484,7 +489,7 @@ export class GraphUtils{
         GraphUtils.state.panelHeight.update();
         GraphUtils.state.horizontalScrollWidth.update();
         GraphUtils.state.verticalScrollHeight.update();
-        GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
+        //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
         GraphUtils.state.headCommit.publish(RepoUtils.repositoryDetails.headCommit);
     }
 

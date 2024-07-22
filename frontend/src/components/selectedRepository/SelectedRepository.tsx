@@ -111,7 +111,9 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{
         if(!store.remoteListRefreshVersion) return;
         IpcUtils.getRemoteList().then(list=>{
-            RepoUtils.repositoryDetails.remotes = list;
+            if(RepoUtils.repositoryDetails){
+                RepoUtils.repositoryDetails.remotes = list;
+            }
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(list)));
         })
     },[store.remoteListRefreshVersion]);
