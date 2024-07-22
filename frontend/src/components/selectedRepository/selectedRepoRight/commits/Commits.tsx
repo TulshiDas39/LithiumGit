@@ -1,10 +1,14 @@
-import React, { useCallback, useMemo, useRef } from "react"
+import React, { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
 import { EnumHtmlIds, useDrag, useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
 import { CommitList } from "./CommitList";
 import { ICommitInfo } from "common_library";
 import { CommitProperty } from "../branches/CommitProperty";
 import { CommitChangeView } from "../branches/CommitChangeView";
+
+interface IRefData{
+    selectedCommit?:ICommitInfo;
+}
 
 interface IState{
     searchText:string;
@@ -16,14 +20,25 @@ function CommitsComponent(){
 
     const [state,setState]=useMultiState<IState>({                
         searchText:"",
-    });   
+    });
+    
+    const refData = useRef<IRefData>({});
 
     const handleSearch = (text:string)=>{
         setState({searchText:text});
     }
 
+    useEffect(()=>{
+        refData.current.selectedCommit = state.selectedCommit;
+    },[state.selectedCommit]);
+
     const handleSelect = useCallback((commit:ICommitInfo)=>{
-        setState({selectedCommit:commit});
+        if(commit?.hash === refData.current.selectedCommit?.hash){
+            setState({selectedCommit:null!});
+        }
+        else{
+            setState({selectedCommit:commit});
+        }
     },[]);
     
     const bottomHeightRef = useRef(200);
@@ -32,6 +47,8 @@ function CommitsComponent(){
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
     const bottomHeight = useMemo(()=>{
+        if(!state.selectedCommit)
+            return -3;
         const curHeight = bottomHeightRef.current - positionRef.current;
         const height = Math.max(50, curHeight);
         if(!position){
@@ -42,7 +59,7 @@ function CommitsComponent(){
             positionRef.current = position.y;
         }
         return height;
-    },[position?.y])
+    },[position?.y,state.selectedCommit])
 
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
@@ -58,10 +75,13 @@ function CommitsComponent(){
                     {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit}  />}
                 </div>
             </div>
-            <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
-            <div className="w-100" style={{height:`${bottomHeight}px`}}>
-                {!!state.selectedCommit && <CommitChangeView selectedCommit={state.selectedCommit} containerId={EnumHtmlIds.CommitDiffFromList} />}
-            </div>
+            {!!state.selectedCommit && <Fragment>
+                <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
+                <div className="w-100" style={{height:`${bottomHeight}px`}}>
+                    {!!state.selectedCommit && <CommitChangeView selectedCommit={state.selectedCommit} containerId={EnumHtmlIds.CommitDiffFromList} />}
+                </div>
+            </Fragment>}
+            
         </div>
         
     </div>
