@@ -1,12 +1,6 @@
-import React, { useEffect } from "react"
-import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
-import moment from "moment";
-import { Paginator } from "../../../common";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ICommitInfo, ILogFilterOptions } from "common_library";
+import React from "react"
+import { useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
-import { useSelectorTyped } from "../../../../store/rootReducer";
-import { shallowEqual } from "react-redux";
 import { CommitList } from "./CommitList";
 
 interface IState{
@@ -28,7 +22,19 @@ function CommitsComponent(){
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
-        <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch} />        
+        <div className="w-100 h-100">
+            <div className="d-flex h-75 w-100">
+                <div className="w-75 h-100">
+                    <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch} />
+                </div>
+                <div className="w-25">
+
+                </div>
+            </div>
+            <div>
+
+            </div>
+        </div>
         
     </div>
 }
