@@ -2,6 +2,7 @@ import { ICommitInfo } from "common_library";
 import { UiUtils } from "../../../../lib";
 import moment from "moment";
 import React from "react";
+import { FaCircle, FaDotCircle, FaHashtag, FaKey, FaKeybase, FaKeycdn, FaUser } from "react-icons/fa";
 
 interface ISingleCommitProps{
     commit:ICommitInfo;
@@ -16,22 +17,19 @@ function SingleCommitComponent(props:ISingleCommitProps){
     return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''}`} onClick={()=>props.onSelect(props.commit)}>
      <div className="border border-primary ps-2">
         <div>
-            <span>Sha: </span>
+            <span><FaHashtag /> </span>
             <span>{props.commit.hash}</span>
             {!!props.commit.refs && 
              <b className="text-danger"> ({props.commit.refs})</b>}
-        </div>
-        <div>
-            <span>Date: </span>
+        </div>        
+        <div className="d-flex align-items-center">
+            <span className="pe-2" style={{fontSize:'0.9em'}}><FaUser /> </span>
+            <span>{props.commit.author_name}({props.commit.author_email}). </span>
+            <span className="px-1" style={{fontSize:'0.5em'}}><FaCircle /> </span>
             <span title={getTimeZonOffsetStr()}>{moment(props.commit.date).format("MMMM Do YYYY, h:mm:ss a") }</span>
         </div>
-        <div>
-            <span>Author: </span>
-            <span>{props.commit.author_name}({props.commit.author_email})</span>
-        </div>
-        <div>
-            <span>Message: </span>
-            <span>{props.commit.message}</span>
+        <div className="w-100 overflow-ellipsis">
+            <span className="no-wrap" title={props.commit.message}>{props.commit.message}</span>
         </div>
     </div>
     </div>
