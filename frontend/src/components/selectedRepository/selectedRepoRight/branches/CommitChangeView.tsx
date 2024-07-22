@@ -52,7 +52,7 @@ function CommitChangeViewComponent(props:IProps){
 
     return <div className="d-flex w-100 h-100">
         <div style={{width:`calc(100% - ${rightWidth+3}px)`}}>
-            <CommitDiffView file={state.selectedFile} containerId={props.containerId} />
+            <CommitDiffView file={state.selectedFile} commit={props.selectedCommit} containerId={props.containerId} />
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{width:`3px`}}></div>
         <CommitFileList files={state.files} width={rightWidth} onFileSelect={_=>setState({selectedFile:_})}

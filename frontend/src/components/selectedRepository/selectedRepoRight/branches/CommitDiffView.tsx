@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo } from "react"
-import { GraphUtils, DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../../../lib";
-import { EnumChangeType, IFile, StringUtils } from "common_library";
+import { DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../../../lib";
+import { EnumChangeType, ICommitInfo, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";
 
 interface IProps{
     file?:IFile;
     containerId:EnumHtmlIds;
+    commit:ICommitInfo;
 }
 
 interface IState{
@@ -27,18 +28,18 @@ function CommitDiffViewComponent(props:IProps){
         setState({totalStep:totalChange,currentStep,stepResetVersion:state.stepResetVersion+1});
     }
     useEffect(()=>{
-        const selectedCommit = GraphUtils.state.selectedCommit;
-        if(!props.file || !selectedCommit.value){
+        const selectedCommit = props.commit;
+        if(!props.file || !selectedCommit){
             changeUtils.ClearView();
             return;
         }
         
         if(props.file.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getFileContentAtSpecificCommit(selectedCommit.value.hash, props.file.path).then(res=>{
+            IpcUtils.getFileContentAtSpecificCommit(selectedCommit.hash, props.file.path).then(res=>{
                 const content = res.result || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
-                    const options =  [selectedCommit.value.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",props.file.path];            
+                    const options =  [selectedCommit.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",props.file.path];            
                     IpcUtils.getGitShowResult(options).then(res=>{
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
                         changeUtils.currentLines = lineConfigs.currentLines;
@@ -58,7 +59,7 @@ function CommitDiffViewComponent(props:IProps){
             })
         }
         else{            
-            IpcUtils.getGitShowResult([`${selectedCommit.value.hash}^:${props.file.path}`]).then(content=>{                
+            IpcUtils.getGitShowResult([`${selectedCommit.hash}^:${props.file.path}`]).then(content=>{                
                 const lines = StringUtils.getLines(content);                
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 changeUtils.currentLines = null!;
