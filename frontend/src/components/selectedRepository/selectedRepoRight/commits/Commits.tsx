@@ -48,7 +48,7 @@ function CommitsComponent(){
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
-        <div className="w-100 h-100">
+        <div className="w-100" style={{height:'90%'}}>
             <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
                 <div className="w-75 h-100">
                     <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch}
