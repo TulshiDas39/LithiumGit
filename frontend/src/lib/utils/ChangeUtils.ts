@@ -66,10 +66,10 @@ export class ChangeUtils{
 
     private HandleScrolling(){
         if(this.previousLines !== null && this.currentLines !== null){
-            const previousChangeScroll = document.querySelector(".difference .previous .content-container");
-            const currentChangeScroll = document.querySelector(".difference .current .content-container");        
-            const currentLineNumberScroll = document.querySelector(".difference .current .line_numbers");        
-            const previousLineNumberScroll = document.querySelector(".difference .previous .line_numbers");
+            const previousChangeScroll = document.querySelector(`#${this.containerId} .difference .previous .content-container`);
+            const currentChangeScroll = document.querySelector(`#${this.containerId} .difference .current .content-container`);
+            const currentLineNumberScroll = document.querySelector(`#${this.containerId} .difference .current .line_numbers`);        
+            const previousLineNumberScroll = document.querySelector(`#${this.containerId} .difference .previous .line_numbers`);
             const group1 = [currentChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
             const group2 = [previousChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
         //line_numbers
