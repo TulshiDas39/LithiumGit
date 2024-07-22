@@ -7,6 +7,7 @@ import { ICommitInfo, ILogFilterOptions } from "common_library";
 import { CommitFilter } from "./CommitFilter";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
+import { CommitList } from "./CommitList";
 
 
 interface ISingleCommitProps{
@@ -98,23 +99,8 @@ function CommitsComponent(){
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
-        <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
-            {state.loading && <div className="w-100 d-flex justify-content-center">
-                <span>Loading...</span> 
-            </div>
-            }
-            {!state.loading && <div className="w-100 px-2">
-                {
-                    state.commits.map(commit=>(
-                        <SingleCommit key={commit.avrebHash} commit={commit} />
-                    ))
-                }
-            </div> }           
-        </div>
-        <div className="pt-2 d-flex justify-content-center align-items-start" style={{height:'10%'}}>
-            <Paginator total={state.total} pageIndex={state.pageIndex} pageSize={state.pageSize}
-                onPageChange={(pageIndex) => setState({pageIndex})} />
-        </div>
+        <CommitList commits={state.commits}  loading={state.loading} onPageChange={(pageIndex)=> setState({pageIndex})}
+        pageIndex={state.pageIndex} pageSize={state.pageSize} total={state.total} />        
         
     </div>
 }
