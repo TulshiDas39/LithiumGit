@@ -25,7 +25,7 @@ function ConfigLeftComponent(){
         ];
         return items;
     },[])
-    return <div className="d-flex flex-column border-end" style={{width:`100px`}} >
+    return <div className="d-flex flex-column border-end pt-1" style={{width:`100px`}} >
             {menus.map((t)=>(
                 <div key={t.type} title={t.title || ""}
                 className={`tabItem w-100 py-2 hover ps-1 border-bottom 
