@@ -11,6 +11,7 @@ interface IProps{
     searchText:string;
     selectedBranch?:string;
     onCommitSelect:(commit:ICommitInfo)=>void;
+    onRightClick:(e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>void;
     selectedCommit?:ICommitInfo;
 }
 
@@ -67,6 +68,10 @@ function CommitListComponent(props:IProps){
         props.onCommitSelect(commit);
     },[props.onCommitSelect])
 
+    const handleRightClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>{
+        props.onRightClick(e,commit);
+    },[props.onCommitSelect]);
+
     return <Fragment>
         <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'90%'}}>
             {state.loading && <div className="w-100 d-flex justify-content-center">
@@ -77,7 +82,7 @@ function CommitListComponent(props:IProps){
                 {
                     state.commits.map(commit=>(
                         <SingleCommit key={commit.avrebHash} commit={commit} 
-                            isSelected={props.selectedCommit?.hash === commit.hash} onSelect={handleSelect} />
+                            isSelected={props.selectedCommit?.hash === commit.hash} onSelect={handleSelect} onRightClick={handleRightClick} />
                     ))
                 }
             </div> }           

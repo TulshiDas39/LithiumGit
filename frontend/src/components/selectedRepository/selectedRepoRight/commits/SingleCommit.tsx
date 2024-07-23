@@ -8,13 +8,14 @@ interface ISingleCommitProps{
     commit:ICommitInfo;
     isSelected:boolean;
     onSelect:(commit:ICommitInfo)=>void;
+    onRightClick:(e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>void;
 }
 
 function SingleCommitComponent(props:ISingleCommitProps){
     const getTimeZonOffsetStr = ()=>{
         return UiUtils.getTimeZonOffsetStr();
     }
-    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''}`} onClick={()=>props.onSelect(props.commit)}>
+    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''}`} onClick={()=>props.onSelect(props.commit)} onContextMenu={e=>props.onRightClick(e,props.commit)}>
      <div className="border border-primary ps-2">
         <div>
             <span><FaHashtag /> </span>

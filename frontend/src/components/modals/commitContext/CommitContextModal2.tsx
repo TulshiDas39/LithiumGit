@@ -66,6 +66,7 @@ function CommitContextModalComponent(){
         }
 
         GraphUtils.openContextModal = modalOpenEventListener;                
+        UiUtils.openContextModal = modalOpenEventListener;                
 
         const mergeListener = (e:any,status:IStatus)=>{
             dispatch(ActionUI.setLoader())

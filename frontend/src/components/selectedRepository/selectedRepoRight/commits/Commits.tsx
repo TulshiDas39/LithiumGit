@@ -1,10 +1,11 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
-import { EnumHtmlIds, useDrag, useMultiState } from "../../../../lib";
+import { EnumHtmlIds, UiUtils, useDrag, useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
 import { CommitList } from "./CommitList";
 import { ICommitInfo } from "common_library";
 import { CommitProperty } from "../branches/CommitProperty";
 import { CommitChangeView } from "../branches/CommitChangeView";
+import { ModalData } from "../../../modals/ModalData";
 
 interface IRefData{
     selectedCommit?:ICommitInfo;
@@ -41,6 +42,24 @@ function CommitsComponent(){
         }
     },[]);
     
+    const handleRightClick = useCallback((commit:ICommitInfo)=>{
+        if(commit?.hash === refData.current.selectedCommit?.hash){
+            setState({selectedCommit:null!});
+        }
+        else{
+            setState({selectedCommit:commit});
+        }
+    },[]);
+
+    const handleContext = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>{
+        ModalData.commitContextModal.selectedCommit=commit!;            
+        ModalData.commitContextModal.position = {
+            x:e.clientX,
+            y:e.clientY,
+        };
+        UiUtils.openContextModal();
+    },[]);
+    
     const bottomHeightRef = useRef(200);
     const positionRef = useRef(0);
     
@@ -69,7 +88,7 @@ function CommitsComponent(){
             <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
                 <div className="w-75 h-100">
                     <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch}
-                     onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} />
+                     onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} onRightClick={handleContext} />
                 </div>
                 <div className="w-25">
                     {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit}  />}
