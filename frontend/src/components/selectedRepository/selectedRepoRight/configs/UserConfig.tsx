@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from "react"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { IScopedValue, ObjectUtils, useMultiState } from "../../../../lib";
+import { useMultiState } from "../../../../lib";
 import { ITypedConfig, IUserConfig } from "common_library";
 import { Form } from "react-bootstrap";
+import { ModalData } from "../../../modals/ModalData";
+import { useDispatch } from "react-redux";
+import { ActionModals } from "../../../../store";
 
 
 interface IRefData{
-    user?:ITypedConfig<IUserConfig>;
+    isMounted:boolean;
 }
 
 interface IState{
@@ -18,29 +21,40 @@ interface IState{
 function UserConfigComponent(){
     const initialState:IState = {showingGlobal:false};
     const [state,setState] = useMultiState<IState>(initialState);
-
-    const refData = useRef<IRefData>({})
-        
-    useEffect(()=>{
-        IpcUtils.getUserConfig().then(r=>{
-            if(!r.error){
-                refData.current.user = r.result;
-                setState({user:r.result});
-            }
-        });
-    },[])
+    const dispatch = useDispatch();
+    const refData = useRef<IRefData>({isMounted:false});    
 
     const getValue = (key:keyof IUserConfig)=>{
         if(state.showingGlobal)
             return state.user?.global[key];
         return state.user?.local[key] || state.user?.global[key];
-    }    
+    }
+    
+    const toogleGlobalMode=()=>{
+        setState({showingGlobal:!state.showingGlobal});
+    }
+
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return;
+        ModalData.appToast.message = `Global mode is turned ${state.showingGlobal?'on':'off'}`;
+        dispatch(ActionModals.showToast());
+    },[state.showingGlobal]);
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+        IpcUtils.getUserConfig().then(r=>{
+            if(!r.error){
+                setState({user:r.result});
+            }
+        });
+    },[])
 
     return <div className="p-2 h-100 w-100">
         <div className="d-flex align-items-center justify-content-end">
             <span className="">Show global configs</span>
             <span className="ps-2">
-                <Form.Switch checked={state.showingGlobal} onChange={_=> setState({showingGlobal:!state.showingGlobal})} />
+                <Form.Switch checked={state.showingGlobal} onChange={_=> toogleGlobalMode()} />
             </span>
         </div>
         <div className="d-flex config-item">
