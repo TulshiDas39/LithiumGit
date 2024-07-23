@@ -1,14 +1,14 @@
 import React, { useEffect } from "react"
-import { useSelectorTyped } from "../../../../store/rootReducer";
+import { useSelectorTyped } from "../../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AddRemote } from "./AddRemote";
-import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ActionUI } from "../../../../../store/slices/UiSlice";
 import { FaTrash } from "react-icons/fa";
 import { IRemoteInfo } from "common_library";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ModalData } from "../../../modals/ModalData";
-import { ActionModals } from "../../../../store";
-import { EnumModals } from "../../../../lib";
+import { IpcUtils } from "../../../../../lib/utils/IpcUtils";
+import { ModalData } from "../../../../modals/ModalData";
+import { ActionModals } from "../../../../../store";
+import { EnumModals } from "../../../../../lib";
 
 function RemoteListComponent(){
     const store = useSelectorTyped(state=>({

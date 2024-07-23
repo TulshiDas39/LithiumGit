@@ -4,7 +4,7 @@ import { Changes } from "./changes"
 import { useSelectorTyped } from "../../../store/rootReducer"
 import { shallowEqual } from "react-redux"
 import { EnumSelectedRepoTab } from "../../../lib"
-import { RemoteList } from "./remotes"
+import { RemoteList } from "./configs/remotes"
 import { Commits } from "./commits"
 import { Stashes } from "./stashes"
 import { Configs } from "./configs"
@@ -17,8 +17,6 @@ function SelectedRepoRightComponent(){
     return <div className="d-flex w-100 h-100">
         <Changes />
         <BranchesView />
-        {store.tab === EnumSelectedRepoTab.REMOTES && 
-            <RemoteList />}
         {store.tab === EnumSelectedRepoTab.COMMITS &&
             <Commits />}
         {store.tab === EnumSelectedRepoTab.STASHES &&

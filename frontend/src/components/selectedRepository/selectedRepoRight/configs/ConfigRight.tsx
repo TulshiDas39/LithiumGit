@@ -3,6 +3,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 import { EnumConfigTab } from "../../../../lib";
 import { UserConfig } from "./UserConfig";
+import { RemoteList } from "./remotes";
 
 function ConfigRightComponent(){
     const store = useSelectorTyped((state)=>({
@@ -11,6 +12,7 @@ function ConfigRightComponent(){
 
     return <div className="h-100 w-100">
         {store.tab === EnumConfigTab.USER && <UserConfig />}
+        {store.tab === EnumConfigTab.REMOTES && <RemoteList />}
     </div>
 }
 

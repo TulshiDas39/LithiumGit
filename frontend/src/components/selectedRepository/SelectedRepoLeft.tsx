@@ -28,7 +28,6 @@ function SelectedRepoLeftComponent(){
             {text:"Graph",type:EnumSelectedRepoTab.GRAPH},
             {text:"Commits",type:EnumSelectedRepoTab.COMMITS},
             {text:"Stashes",type: EnumSelectedRepoTab.STASHES},
-            {text:"Remotes",type: EnumSelectedRepoTab.REMOTES},                       
         ];
         return items;
     },[store.hasChanges]);

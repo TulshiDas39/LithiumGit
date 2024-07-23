@@ -1,12 +1,12 @@
 import React from "react";
-import { useMultiState } from "../../../../lib";
-import { AppButton } from "../../../common";
+import { useMultiState } from "../../../../../lib";
+import { AppButton } from "../../../../common";
 import { Form } from "react-bootstrap";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { IpcUtils } from "../../../../../lib/utils/IpcUtils";
 import { IRemoteInfo } from "common_library";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionUI } from "../../../../store/slices/UiSlice";
-import { useSelectorTyped } from "../../../../store/rootReducer";
+import { ActionUI } from "../../../../../store/slices/UiSlice";
+import { useSelectorTyped } from "../../../../../store/rootReducer";
 
 interface IState{
     adding:boolean;
