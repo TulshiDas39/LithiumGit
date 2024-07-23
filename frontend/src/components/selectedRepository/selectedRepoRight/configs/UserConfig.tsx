@@ -6,6 +6,7 @@ import { Form } from "react-bootstrap";
 import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
+import { SingleProperty } from "./SingleProperty";
 
 
 interface IRefData{
@@ -26,8 +27,8 @@ function UserConfigComponent(){
 
     const getValue = (key:keyof IUserConfig)=>{
         if(state.showingGlobal)
-            return state.user?.global[key];
-        return state.user?.local[key] || state.user?.global[key];
+            return state.user?.global[key] || "";
+        return state.user?.local[key] || state.user?.global[key] || "";
     }
     
     const toogleGlobalMode=()=>{
@@ -52,30 +53,13 @@ function UserConfigComponent(){
 
     return <div className="p-2 h-100 w-100">
         <div className="d-flex align-items-center justify-content-end">
-            <span className="">Show global configs</span>
+            <span className="">Show global values</span>
             <span className="ps-2">
                 <Form.Switch checked={state.showingGlobal} onChange={_=> toogleGlobalMode()} />
             </span>
         </div>
-        <div className="d-flex config-item">
-            <span className="config-header">
-                User name:
-            </span>
-            <span className="config-value">
-                <span>{getValue("name")}</span>
-            </span>
-        </div>
-        <div className="d-flex config-item">
-            <span className="config-header">
-                Email:
-            </span>
-            <span className="config-value">
-                <span>
-                    {getValue("email")}
-                </span>
-
-            </span>
-        </div>
+        <SingleProperty name="User name" value={getValue("name")} />
+        <SingleProperty name="Email" value={getValue("email")} />        
     </div>
 }
 
