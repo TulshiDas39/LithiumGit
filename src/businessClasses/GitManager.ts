@@ -50,6 +50,7 @@ export class GitManager{
         this.addStashHandler();
         this.addGitUserConfigHandler();
         this.addUserNameUpdateHandler();
+        this.addUserEmailUpdateHandler();
     }
 
 
@@ -86,6 +87,13 @@ export class GitManager{
         })
     }
 
+    private addUserEmailUpdateHandler(){
+        ipcMain.handle(RendererEvents.updateUserEmail, async (e,repoPath:string,value:string,isGlobal?:boolean)=>{
+            const result = await this.updateUserEmail(repoPath,value,isGlobal);
+            return result;
+        })
+    }
+
     private addRawHandler(){
         ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
             const result = await this.getRawResult(repoPath,options);
@@ -105,7 +113,12 @@ export class GitManager{
 
     async updateUserName(repoPath:string,value:string,isGlobal?:boolean){
         const git = this.getGitRunner(repoPath);
-        git.addConfig("user.name",value,false, isGlobal?"global":"local");
+        await git.addConfig("user.name",value,false, isGlobal?"global":"local");
+    }
+
+    async updateUserEmail(repoPath:string,value:string,isGlobal?:boolean){
+        const git = this.getGitRunner(repoPath);
+        await git.addConfig("user.email",value,false, isGlobal?"global":"local");
     }
 
     async getUserConfig(repoPath:string){
@@ -120,7 +133,7 @@ export class GitManager{
         const globalUser = {} as IUserConfig;
         result = await git.getConfig("user.name","global");
         globalUser.name = result.value;
-        result = await git.getConfig("user.email","local");
+        result = await git.getConfig("user.email","global");
         globalUser.email = result.value;
         const userConfig:ITypedConfig<IUserConfig> = {
             local:localUser,

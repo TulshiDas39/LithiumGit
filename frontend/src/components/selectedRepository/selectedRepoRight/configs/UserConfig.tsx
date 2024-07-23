@@ -64,7 +64,11 @@ function UserConfigComponent(){
     }
 
     const updateEmail=(value:string)=>{
-
+        IpcUtils.updateUserEmail(value,state.showingGlobal).then((r)=>{
+            if(!r.error){
+                getData();
+            }
+        });
     }
 
     return <div className="p-2 h-100 w-100">
