@@ -9,7 +9,7 @@ function ConfigRightComponent(){
         tab:state.ui.configTab,
     }),shallowEqual);
 
-    return <div>
+    return <div className="h-100 w-100">
         {store.tab === EnumConfigTab.USER && <UserConfig />}
     </div>
 }

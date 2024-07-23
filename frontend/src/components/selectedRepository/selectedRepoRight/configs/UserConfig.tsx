@@ -23,18 +23,20 @@ function UserConfigComponent(){
         });
     },[])
 
-    return <div>
-        <div className="d-flex">
-            <span>
+    const headerWidth = 100;
+
+    return <div className="p-2 h-100 w-100">
+        <div className="d-flex config-item">
+            <span className="config-header" style={{width:`${headerWidth}px`}}>
                 User name:
             </span>
-            <span>{state.name.value}</span>
+            <span className="config-value">{state.name.value}</span>
         </div>
-        <div className="d-flex">
-            <span>
+        <div className="d-flex config-item">
+            <span className="config-header">
                 Email:
             </span>
-            <span>{state.email.value}</span>
+            <span className="config-value">{state.email.value}</span>
         </div>
         <div>
 
