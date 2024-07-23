@@ -27,6 +27,10 @@ function SinglePropertyComponent(props:IProps){
         props.onUpdate(state.value);
     }
 
+    const handleCancel=()=>{
+        setState({editing:false,value:props.value});
+    }
+
     return <div className="d-flex align-items-center config-item">
             <span className="config-header">
                 {props.name}:
@@ -44,7 +48,7 @@ function SinglePropertyComponent(props:IProps){
                         <AppButton type="success" className="" onClick={()=> handleSave()}>Save</AppButton>
                     </div>
                     <div>
-                        <AppButton type="danger" className="" onClick={()=> setState({editing:false})}>Cancel</AppButton>
+                        <AppButton type="danger" className="" onClick={()=> handleCancel()}>Cancel</AppButton>
                     </div>
                 </div> }
             </span>
