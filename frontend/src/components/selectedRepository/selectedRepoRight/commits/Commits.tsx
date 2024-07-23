@@ -41,15 +41,6 @@ function CommitsComponent(){
             setState({selectedCommit:commit});
         }
     },[]);
-    
-    const handleRightClick = useCallback((commit:ICommitInfo)=>{
-        if(commit?.hash === refData.current.selectedCommit?.hash){
-            setState({selectedCommit:null!});
-        }
-        else{
-            setState({selectedCommit:commit});
-        }
-    },[]);
 
     const handleContext = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>{
         ModalData.commitContextModal.selectedCommit=commit!;            
