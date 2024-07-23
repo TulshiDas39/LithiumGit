@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -48,6 +48,7 @@ export class GitManager{
         this.addConflictResolveHandler();
         this.addGetStashListHandler();
         this.addStashHandler();
+        this.addGitUserConfigHandler();
     }
 
 
@@ -70,6 +71,13 @@ export class GitManager{
         })
     }
 
+    private addGitUserConfigHandler(){
+        ipcMain.handle(RendererEvents.getUserConfig, async (e,repoPath:string)=>{
+            const result = await this.getUserConfig(repoPath);
+            return result;
+        })
+    }
+
     private addRawHandler(){
         ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
             const result = await this.getRawResult(repoPath,options);
@@ -85,6 +93,28 @@ export class GitManager{
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
+    }
+
+    async getUserConfig(repoPath:string){
+        const git = this.getGitRunner(repoPath);
+        
+        const localUser = {} as IUserConfig;
+        let result = await git.getConfig("user.name","local");
+        localUser.name = result.value;
+        result = await git.getConfig("user.email","local");
+        localUser.email = result.value;
+
+        const globalUser = {} as IUserConfig;
+        result = await git.getConfig("user.name","global");
+        globalUser.name = result.value;
+        result = await git.getConfig("user.email","local");
+        globalUser.email = result.value;
+        const userConfig:ITypedConfig<IUserConfig> = {
+            local:localUser,
+            global:globalUser
+        }
+
+        return userConfig;              
     }
 
     async getRawResult(repoPath:string, options:string[]){

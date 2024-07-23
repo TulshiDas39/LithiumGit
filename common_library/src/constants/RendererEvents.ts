@@ -274,6 +274,7 @@ export class RendererEvents{
     static readonly stashes = "stashes";
     static readonly stash = "stash";    
     static readonly annotations = "annotations";    
-    static readonly addAnnotation = "addAnnotation";    
+    static readonly addAnnotation = "addAnnotation";
+    static readonly getUserConfig = "getUserConfig";
 }
 

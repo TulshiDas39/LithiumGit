@@ -1,8 +1,11 @@
-import { Annotation, IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static getUserConfig() {
+        return IpcUtils.runGitCommand<ITypedConfig<IUserConfig>>(RendererEvents.getUserConfig,[]);
+    }
     static runStash(options: string[]) {
         return IpcUtils.runGitCommand(RendererEvents.stash,[options]);
     }
