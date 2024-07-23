@@ -3,6 +3,9 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static updateUserName(value: string,isGlobal?:boolean) {
+        return IpcUtils.runGitCommand<any>(RendererEvents.updateUserName,[value,isGlobal]);
+    }
     static getUserConfig() {
         return IpcUtils.runGitCommand<ITypedConfig<IUserConfig>>(RendererEvents.getUserConfig,[]);
     }

@@ -49,6 +49,7 @@ export class GitManager{
         this.addGetStashListHandler();
         this.addStashHandler();
         this.addGitUserConfigHandler();
+        this.addUserNameUpdateHandler();
     }
 
 
@@ -78,6 +79,13 @@ export class GitManager{
         })
     }
 
+    private addUserNameUpdateHandler(){
+        ipcMain.handle(RendererEvents.updateUserName, async (e,repoPath:string,value:string,isGlobal?:boolean)=>{
+            const result = await this.updateUserName(repoPath,value,isGlobal);
+            return result;
+        })
+    }
+
     private addRawHandler(){
         ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
             const result = await this.getRawResult(repoPath,options);
@@ -93,6 +101,11 @@ export class GitManager{
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
+    }
+
+    async updateUserName(repoPath:string,value:string,isGlobal?:boolean){
+        const git = this.getGitRunner(repoPath);
+        git.addConfig("user.name",value,false, isGlobal?"global":"local");
     }
 
     async getUserConfig(repoPath:string){

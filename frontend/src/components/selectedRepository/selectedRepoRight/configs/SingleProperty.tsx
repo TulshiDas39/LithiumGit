@@ -7,6 +7,7 @@ import { AppButton } from "../../../common";
 interface IProps{
     name:string;
     value:string
+    onUpdate:(value:string)=>void;
 }
 
 interface IState{
@@ -20,6 +21,11 @@ function SinglePropertyComponent(props:IProps){
     useEffect(()=>{
         setState({value:props.value});
     },[props.value]);
+
+    const handleSave=()=>{
+        setState({editing:false});
+        props.onUpdate(state.value);
+    }
 
     return <div className="d-flex align-items-center config-item">
             <span className="config-header">
@@ -35,7 +41,7 @@ function SinglePropertyComponent(props:IProps){
                 {!state.editing && <span className="hover" onClick={()=> setState({editing:true})}><FaPencilAlt /></span>}
                 {state.editing && <div className="ps-3 pe-1 d-flex align-items-center">
                     <div className="pe-1">
-                        <AppButton type="success" className="" onClick={()=> setState({editing:false})}>Save</AppButton>
+                        <AppButton type="success" className="" onClick={()=> handleSave()}>Save</AppButton>
                     </div>
                     <div>
                         <AppButton type="danger" className="" onClick={()=> setState({editing:false})}>Cancel</AppButton>

@@ -42,14 +42,30 @@ function UserConfigComponent(){
         dispatch(ActionModals.showToast());
     },[state.showingGlobal]);
 
-    useEffect(()=>{
-        refData.current.isMounted = true;
+    const getData = ()=>{
         IpcUtils.getUserConfig().then(r=>{
             if(!r.error){
                 setState({user:r.result});
             }
         });
+    }
+    useEffect(()=>{
+        refData.current.isMounted = true;
+        getData();
     },[])
+
+    const updateName=(value:string)=>{
+        IpcUtils.updateUserName(value,state.showingGlobal).then((r)=>{
+            if(!r.error){
+                getData();
+            }
+        });
+
+    }
+
+    const updateEmail=(value:string)=>{
+
+    }
 
     return <div className="p-2 h-100 w-100">
         <div className="d-flex align-items-center justify-content-end">
@@ -58,8 +74,8 @@ function UserConfigComponent(){
                 <Form.Switch checked={state.showingGlobal} onChange={_=> toogleGlobalMode()} />
             </span>
         </div>
-        <SingleProperty name="User name" value={getValue("name")} />
-        <SingleProperty name="Email" value={getValue("email")} />        
+        <SingleProperty name="User name" value={getValue("name")} onUpdate={v=>updateName(v)} />
+        <SingleProperty name="Email" value={getValue("email")} onUpdate={v=> updateEmail(v)} />
     </div>
 }
 

@@ -276,5 +276,6 @@ export class RendererEvents{
     static readonly annotations = "annotations";    
     static readonly addAnnotation = "addAnnotation";
     static readonly getUserConfig = "getUserConfig";
+    static readonly updateUserName = "updateUserName";
 }
 
