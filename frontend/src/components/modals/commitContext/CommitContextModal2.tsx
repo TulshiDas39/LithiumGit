@@ -61,6 +61,7 @@ function CommitContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
+            console.log("opening context:",Data.position);
             setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
@@ -118,7 +119,7 @@ function CommitContextModalComponent(){
         }
         return options;
     },[store.show,Data.selectedCommit])
-
+    
 
     return (
         <Modal dialogClassName="commitContext" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
