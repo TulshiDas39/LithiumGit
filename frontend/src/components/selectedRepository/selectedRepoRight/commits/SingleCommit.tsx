@@ -8,6 +8,7 @@ import { ModalData } from "../../../modals/ModalData";
 interface ISingleCommitProps{
     commit:ICommitInfo;
     isSelected:boolean;
+    highlighted:boolean;
     onSelect:(commit:ICommitInfo)=>void;
     onRightClick:(e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>void;
 }
@@ -35,8 +36,8 @@ function SingleCommitComponent(props:ISingleCommitProps){
             return ;
         props.onSelect(props.commit);
     }
-    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''}`} onClick={()=>handleDivClick()} onContextMenu={e=>props.onRightClick(e,props.commit)}>
-     <div className="border border-primary ps-2">
+    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''} ${props.highlighted?'highlighted':''}`} onClick={()=>handleDivClick()} onContextMenu={e=>props.onRightClick(e,props.commit)}>
+     <div className="border border-secondary ps-2">
         <div className="d-flex">
             <div className="flex-grow-1">
                 <span><FaHashtag /> </span>

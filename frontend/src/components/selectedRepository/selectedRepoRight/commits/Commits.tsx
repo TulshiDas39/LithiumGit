@@ -1,11 +1,13 @@
 import React, { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
-import { EnumHtmlIds, UiUtils, useDrag, useMultiState } from "../../../../lib";
+import { EnumHtmlIds, EnumModals, UiUtils, useDrag, useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
 import { CommitList } from "./CommitList";
 import { ICommitInfo } from "common_library";
 import { CommitProperty } from "../branches/CommitProperty";
 import { CommitChangeView } from "../branches/CommitChangeView";
 import { ModalData } from "../../../modals/ModalData";
+import { useSelectorTyped } from "../../../../store/rootReducer";
+import { shallowEqual } from "react-redux";
 
 interface IRefData{
     selectedCommit?:ICommitInfo;
@@ -15,9 +17,13 @@ interface IState{
     searchText:string;
     selectedBranch?:string;
     selectedCommit?:ICommitInfo;
+    contextCommit?:ICommitInfo;
 }
 
-function CommitsComponent(){    
+function CommitsComponent(){
+    const store = useSelectorTyped((state)=>({
+        contextVisible:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
+    }),shallowEqual);
 
     const [state,setState]=useMultiState<IState>({                
         searchText:"",
@@ -49,6 +55,7 @@ function CommitsComponent(){
             y:e.clientY,
         };
         UiUtils.openContextModal();
+        setState({contextCommit:commit});
     },[]);
     
     const bottomHeightRef = useRef(200);
@@ -71,6 +78,12 @@ function CommitsComponent(){
         return height;
     },[position?.y,state.selectedCommit])
 
+    useEffect(()=>{        
+        if(!store.contextVisible && !!state.contextCommit){
+            setState({contextCommit:undefined});
+        }
+    },[store.contextVisible])
+
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
@@ -79,7 +92,7 @@ function CommitsComponent(){
             <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
                 <div className="w-75 h-100">
                     <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch}
-                     onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} onRightClick={handleContext} />
+                     onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} contextCommit={state.contextCommit} onRightClick={handleContext} />
                 </div>
                 <div className="w-25">
                     {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit}  />}

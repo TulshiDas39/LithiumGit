@@ -13,6 +13,7 @@ interface IProps{
     onCommitSelect:(commit:ICommitInfo)=>void;
     onRightClick:(e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>void;
     selectedCommit?:ICommitInfo;
+    contextCommit?:ICommitInfo;
 }
 
 interface IState{
@@ -82,7 +83,8 @@ function CommitListComponent(props:IProps){
                 {
                     state.commits.map(commit=>(
                         <SingleCommit key={commit.avrebHash} commit={commit} 
-                            isSelected={props.selectedCommit?.hash === commit.hash} onSelect={handleSelect} onRightClick={handleRightClick} />
+                            isSelected={props.selectedCommit?.hash === commit.hash} onSelect={handleSelect} onRightClick={handleRightClick}
+                            highlighted={props.contextCommit?.hash === commit.hash} />
                     ))
                 }
             </div> }           

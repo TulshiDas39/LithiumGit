@@ -26,6 +26,7 @@ html {
     --bg-select-color: rgb(192, 193, 201);
     --active-color: #ffff;
     --white: #ffff;
+    --highlight-color:rgb(92, 92, 243);
     --search-bg: #ffff;
     --svg-dark: #606060;
     --scrollbar-color: #b7b7b7;
@@ -62,6 +63,7 @@ html {
     --bg-select-color: rgb(130, 124, 212);
     --active-color: #333333;
     --white: #181818;
+    --highlight-color:rgb(92, 92, 243);
     --svg-lite: #E5E6EB;
     --hover: #56a696;        
     --search-bg: #181818;
@@ -177,6 +179,10 @@ html {
     cursor: default;
     filter: brightness(150%);
     box-shadow: 0 0 2px rgb(104, 104, 237);
+  }
+
+  .highlighted{
+    box-shadow: 0 0 2px var(--highlight-color)
   }
 
   .no-resize{
