@@ -35,7 +35,7 @@ function CommitFilterComponent(props:IProps){
     return <div className="w-100 d-flex py-2 px-2 align-items-center">
         <div>
             <Form.Control type="text" value={state.searchText} onChange={e=>setState({searchText:e.target.value})} style={{maxWidth:'300px',minWidth:'200px'}}
-                placeholder="Search by commit message" />
+                placeholder="Enter commit hash" />
         </div>
         
         <div className="ps-2 d-flex align-items-center">

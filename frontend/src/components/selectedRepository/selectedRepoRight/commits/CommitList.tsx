@@ -46,7 +46,9 @@ function CommitListComponent(props:IProps){
             pageSize:state.pageSize,            
         }
         if(props.searchText){
-            filterOptions.message = props.searchText;
+            filterOptions.hash = props.searchText;
+            filterOptions.pageIndex = 0;
+            filterOptions.pageSize = 1;
         }
         if(props.selectedBranch){
             filterOptions.branchName = props.selectedBranch;
