@@ -451,8 +451,6 @@ to {
   box-sizing: border-box;  
   *{
     border-radius: 0px !important;
-    // background-color: var(--bg-color);
-    // color: var(--font-color) !important;
   }
   .css-1xc3v61-indicatorContainer{
     padding-top: 0px !important;
@@ -472,6 +470,10 @@ to {
 
   .css-1hb7zxy-IndicatorsContainer{
     max-height: 100%;
+  }
+
+  .css-1nmdiq5-menu{
+    background-color: var(--bg-color);
   }
 
 }
