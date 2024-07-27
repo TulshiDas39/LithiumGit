@@ -443,3 +443,18 @@ to {
 .config-value{
   width: calc(100% - 100px);
 }
+
+.commit-list-filter{
+  .css-1xc3v61-indicatorContainer{
+    padding-top: 0px;
+    padding-bottom: 0px;    
+  }
+  *{
+    border-radius: 0 !important;
+  }
+  .css-13cymwt-control{
+    min-height: 15px;
+    border-radius: 0px;
+  }  
+  
+}
