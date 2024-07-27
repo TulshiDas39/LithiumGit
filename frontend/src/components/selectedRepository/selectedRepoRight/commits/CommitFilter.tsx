@@ -43,8 +43,8 @@ function CommitFilterComponent(props:IProps){
                 <AppButton text="Search" type="default" onClick={()=>props.onSearch(state.searchText)}  />
             </div>
             
-        <div className="ps-5 d-flex align-items-stretch" style={{height:commonHeight+2}}>
-            <Select options={state.branchList} className="h-100" placeholder="Select branch" onChange={o=> props.onBranchSelect(o?.value)}
+        <div className="ps-5 d-flex align-items-center" style={{height:commonHeight,maxHeight:commonHeight}}>
+            <Select options={state.branchList} placeholder="Select branch" onChange={o=> props.onBranchSelect(o?.value)}
              />
         </div>
     </div>
