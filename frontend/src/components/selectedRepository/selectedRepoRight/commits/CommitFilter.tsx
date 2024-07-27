@@ -32,17 +32,20 @@ function CommitFilterComponent(props:IProps){
         setState({branchList:options});
     },[store.branchList]);
 
-    return <div className="w-100 d-flex py-2 px-2 align-items-center commit-list-filter">
-        <div>
-            <Form.Control type="text" value={state.searchText} onChange={e=>setState({searchText:e.target.value})} style={{maxWidth:'300px',minWidth:'200px'}}
-                placeholder="Enter commit hash" />
-        </div>
-        
-        <div className="ps-2 d-flex align-items-center">
-            <AppButton text="Search" type="default" onClick={()=>props.onSearch(state.searchText)}  />
-        </div>
-        <div className="ps-5" style={{}}>
-            <Select options={state.branchList} className="h-100" placeholder="Select branch" onChange={o=> props.onBranchSelect(o?.value)} />
+    const commonHeight = 30;
+
+    return <div className="w-100 d-flex py-2 px-2 align-items-center commit-list-filter">        
+            <div className="d-flex align-items-stretch" style={{height:commonHeight}}>
+                <Form.Control type="text" value={state.searchText} onChange={e=>setState({searchText:e.target.value})} style={{maxWidth:'300px',minWidth:'200px'}}
+                            placeholder="Enter commit hash" />
+            </div>            
+            <div className="d-flex align-items-stretch ps-2" style={{height:commonHeight}}>
+                <AppButton text="Search" type="default" onClick={()=>props.onSearch(state.searchText)}  />
+            </div>
+            
+        <div className="ps-5 d-flex align-items-stretch" style={{height:commonHeight+2}}>
+            <Select options={state.branchList} className="h-100" placeholder="Select branch" onChange={o=> props.onBranchSelect(o?.value)}
+             />
         </div>
     </div>
 }
