@@ -1,10 +1,11 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useMemo } from "react"
 import { useMultiState } from "../../../../lib";
 import { Form } from "react-bootstrap";
 import { AppButton } from "../../../common";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 import Select from 'react-select'
+import { Constants } from "common_library";
 
 
 interface IProps{
@@ -22,6 +23,7 @@ interface IState{
 }
 
 function CommitFilterComponent(props:IProps){
+    const allBranch = "All branches";
     const store = useSelectorTyped(state=>({
         branchList:state.ui.branchList,
     }),shallowEqual);
@@ -31,6 +33,26 @@ function CommitFilterComponent(props:IProps){
         const options = store.branchList.map<IBranchOption>(br=> ({label:br,value:br}));
         setState({branchList:options});
     },[store.branchList]);
+
+    const branches = useMemo(()=>{
+        const list:IBranchOption[] = [{label: allBranch,value:allBranch}];
+        for(let br of store.branchList){
+            if(br.startsWith(Constants.originBranPrefix)){
+                br = br.substring(Constants.originBranPrefix.length);
+            }
+            list.push({label:br,value:br});
+        }
+        return list;
+    },[store.branchList])
+
+    const handleBranchSelect=(option:IBranchOption)=>{
+        if(option.value === allBranch){
+            props.onBranchSelect(undefined);
+        }
+        else{
+            props.onBranchSelect(option.value);
+        }
+    }
 
     const commonHeight = 30;
 
@@ -44,7 +66,7 @@ function CommitFilterComponent(props:IProps){
             </div>
             
         <div className="ps-5 d-flex align-items-center" style={{height:commonHeight,maxHeight:commonHeight}}>
-            <Select options={state.branchList} placeholder="Select branch" onChange={o=> props.onBranchSelect(o?.value)}
+            <Select options={branches} defaultValue={branches[0]} placeholder="Select branch" onChange={o=> handleBranchSelect(o as IBranchOption)}
              />
         </div>
     </div>
