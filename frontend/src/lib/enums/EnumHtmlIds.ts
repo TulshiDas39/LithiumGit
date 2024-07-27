@@ -12,6 +12,7 @@ export enum EnumHtmlIds{
     acceptIncomingCurrentAllPanel="acceptIncomingCurrentAllPanel",
     diffview_container = "diffview_container",
     CommitDiff = "CommitDiff",
+    CommitDiffFromList = "CommitDiffFromList",
     ConflictEditorTopPanel = "ConflictEditorTopPanel",
     ConflictEditorBottomPanel = "ConflictEditorBottomPanel",
     accept_all_incoming = "accept_all_incoming",

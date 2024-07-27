@@ -6,4 +6,5 @@ export interface ILogFilterOptions{
     branchName?:string;
     searchKey?:string;
     message?:string;
+    hash?:string;
 }

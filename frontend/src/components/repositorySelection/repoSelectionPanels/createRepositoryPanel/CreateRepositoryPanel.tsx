@@ -28,7 +28,6 @@ function CreateRepositoryPanelComponent(){
 
     const handleBrowse=()=>{
         IpcUtils.browseFolderPath().then((r)=>{
-            console.log("r",r);
             if(r.result){
                 setState({directory:r.result});
             }

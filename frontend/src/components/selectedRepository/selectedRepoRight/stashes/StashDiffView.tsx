@@ -5,6 +5,7 @@ import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { StashData } from "./StashData";
 
 interface IProps{
     file?:IFile;
@@ -19,18 +20,19 @@ interface IState{
 
 function StashDiffViewComponent(props:IProps){
     const [state,setState] = useMultiState<IState>({currentStep:0,totalStep:0,stepResetVersion:0,});
+    const changeUtils = StashData.changeUtils;
     const resetStepNavigation = ()=>{
-        const totalChange = ChangeUtils.totalChangeCount;
-        const currentStep = ChangeUtils.totalChangeCount > 0 ? 1:0;
+        const totalChange = changeUtils.totalChangeCount;
+        const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
         setState({totalStep:totalChange,currentStep});
     }
     useEffect(()=>{
         const selectedStash = props.stash!;
         if(!props.file || !props.stash){
-            ChangeUtils.ClearView();
+            changeUtils.ClearView();
             return;
         }
-        ChangeUtils.containerId = EnumHtmlIds.StashDiff;
+        
         if(props.file.changeType !== EnumChangeType.DELETED){
             GitUtils.GetFileContentOfStash(selectedStash, props.file).then(res=>{
                 const content = res || "";
@@ -39,17 +41,17 @@ function StashDiffViewComponent(props:IProps){
                     const options =  ["HEAD",`stash@{${selectedStash.index}}`,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",props.file.path];            
                     IpcUtils.getDiff(options).then(res=>{                        
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
-                        ChangeUtils.currentLines = lineConfigs.currentLines;
-                        ChangeUtils.previousLines = lineConfigs.previousLines;
-                        ChangeUtils.showChanges();
+                        changeUtils.currentLines = lineConfigs.currentLines;
+                        changeUtils.previousLines = lineConfigs.previousLines;
+                        changeUtils.showChanges();
                         resetStepNavigation();
                     })
                 }
                 else{
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = lineConfigs;
-                    ChangeUtils.previousLines = null!;
-                    ChangeUtils.showChanges();
+                    changeUtils.currentLines = lineConfigs;
+                    changeUtils.previousLines = null!;
+                    changeUtils.showChanges();
                     resetStepNavigation();
                 }
                 
@@ -59,9 +61,9 @@ function StashDiffViewComponent(props:IProps){
             IpcUtils.getGitShowResult([`${selectedStash.hash}^:${props.file.path}`]).then(content=>{                
                 const lines = StringUtils.getLines(content);                
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                ChangeUtils.currentLines = null!;
-                ChangeUtils.previousLines = lineConfigs!;
-                ChangeUtils.showChanges();
+                changeUtils.currentLines = null!;
+                changeUtils.previousLines = lineConfigs!;
+                changeUtils.showChanges();
                 resetStepNavigation();
             })            
         }
@@ -69,7 +71,7 @@ function StashDiffViewComponent(props:IProps){
     },[props.file])
 
     useEffect(()=>{
-        ChangeUtils.FocusHightlightedLine(state.currentStep);
+        changeUtils.FocusHightlightedLine(state.currentStep);
     },[state.currentStep,state.stepResetVersion])
 
     const handleNext=()=>{

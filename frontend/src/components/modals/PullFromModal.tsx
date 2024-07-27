@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { AppButton } from "../common";
 import { Modal, Form } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, useMultiState, RepoUtils } from "../../lib";
+import { EnumModals, useMultiState, RepoUtils, Data } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
@@ -10,9 +10,14 @@ import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
 import { ModalData } from "./ModalData";
 import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
+import { createAnnotation, EnumAnnotationType } from "common_library";
 
 interface IState{
     branch:string;
+    options:string[];
+    isSelected:boolean;
+    inputFocused:boolean;
 }
 
 function PullFromModalComponent(){
@@ -22,9 +27,19 @@ function PullFromModalComponent(){
 
     const [state,setState] = useMultiState<IState>({
         branch:"",
+        options:[],
+        isSelected:false,
+        inputFocused:false,
     });
 
     const dispatch = useDispatch();
+    const refData = useRef({hoverOptions:false});
+
+    const annotations = useMemo(()=>{
+        if(!store.show)
+            return [];
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom);
+    },[store.show])
 
     const closeModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.PULL_FROM));
@@ -33,6 +48,22 @@ function PullFromModalComponent(){
 
     const clearState = ()=>{
         setState({branch:""});;
+    }
+
+    const updateAnnotation=()=>{
+        if(annotations.some(_=> _.value == state.branch))
+            return;
+        const newAnnot= createAnnotation({
+            repoId:RepoUtils.repositoryDetails.repoInfo._id,
+            type:EnumAnnotationType.PullFrom,
+            value:state.branch
+        });
+        IpcUtils.addAnnotation(newAnnot).then(r=>{
+            if(!r.error){
+                const annots =[...annotations,newAnnot];
+                Data.annotations = annots;
+            }
+        })
     }
 
     const handlePull=()=>{
@@ -45,10 +76,11 @@ function PullFromModalComponent(){
             if(!r.error){
                 ModalData.appToast.message = "Pull succeeded.";
                 dispatch(ActionModals.showModal(EnumModals.TOAST));
+                updateAnnotation();
             }
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));
-            IpcUtils.getRepoStatus().finally(()=>{                
+            GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));
             })
         }).finally(()=>{
@@ -66,8 +98,28 @@ function PullFromModalComponent(){
         if(!store.show)
             return ;
         const pullFromBranch = RepoUtils.repositoryDetails.repoInfo.pullFromBranch || "";
-        setState({branch:pullFromBranch});
+        setState({options:[],isSelected:!!pullFromBranch,branch:pullFromBranch});
     },[store.show])
+
+    useEffect(()=>{
+        const allOptions = annotations.map(_=>_.value);
+        let options:string[] = [];
+        if(!state.isSelected && state.inputFocused){                                  
+            options = allOptions.filter(_ => _.includes(state.branch));            
+        }
+        
+        setState({options});
+    },[state.branch,state.isSelected,state.inputFocused])
+
+    const handleSelect=(option:string)=>{
+        setState({branch:option,isSelected:true,inputFocused:false});
+    }
+
+    const handleBlur = ()=>{
+        if(refData.current.hoverOptions)
+            return;
+        setState({inputFocused:false});
+    }
 
     return <Modal show={store.show} centered size="sm" backdrop={false}>
     <Modal.Body>
@@ -82,8 +134,25 @@ function PullFromModalComponent(){
             </div>
             <hr />
             <div className="row g-0">
-                <div className="col-12 text-break overflow-auto" style={{maxWidth:600,maxHeight:500}}>
-                    <Form.Control type="text" placeholder="Branch name" value={state.branch} onChange={e=>setState({branch:e.target.value})} />
+                <div className="col-12 text-break overflow-x-auto" style={{maxWidth:600,maxHeight:500}}>
+                <div className="position-relative w-100">
+                    <Form.Control type="text" placeholder="Branch name" value={state.branch} onChange={e=>setState({branch:e.target.value,isSelected:false})}
+                    onFocus={()=> setState({inputFocused:true})} onBlur={()=>handleBlur()} />
+                    {!!state.options.length && <div className="position-absolute bg-color border px-2 overflow-y-auto"
+                            style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}
+                            onMouseEnter={()=> {refData.current.hoverOptions = true}} onMouseLeave={()=>{refData.current.hoverOptions = false}}>
+                            {
+                                    state.options.map(br=>(
+                                        <div title={br} key={br} className="border-bottom py-1 hover overflow-hidden text-nowrap" style={{textOverflow:'ellipsis'}}
+                                            onClick={()=>handleSelect(br)}>
+                                            {br}
+                                        </div>
+                                    ))
+                                }
+                        </div>
+                        }
+                </div>                    
+
                 </div>
             </div>
             <div className="row g-0">

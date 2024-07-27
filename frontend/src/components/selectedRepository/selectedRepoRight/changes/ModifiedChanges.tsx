@@ -8,6 +8,8 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
 import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { ChangesData } from "../../../../lib/data/ChangesData";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -38,14 +40,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const handleStage=(file:IFile)=>{
         IpcUtils.stageItems([file.path]).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });        
     }
 
@@ -56,7 +58,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             text = `Delete ${item.fileName}?`;
             yesHandler= ()=>{
                 IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             }
         }
@@ -64,7 +66,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             text = `Discard the changes of ${item.fileName}?`;
             yesHandler = () =>{
                 IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             }            
         }
@@ -80,7 +82,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         const yesHandler = ()=>{
             IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
                 IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
-                    IpcUtils.getRepoStatus();
+                    GitUtils.getStatus();
                 });
             });
         }
@@ -91,7 +93,6 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const displayChanges = async(path:string)=>{
         return new Promise<boolean>((res)=>{
-            ChangeUtils.containerId = EnumHtmlIds.diffview_container;
             const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,path);
             if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
                 IpcUtils.getFileContent(joinedPath).then(lines=>{
@@ -99,17 +100,17 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                            ChangeUtils.currentLines = lineConfigs.currentLines;
-                            ChangeUtils.previousLines = lineConfigs.previousLines;
-                            ChangeUtils.showChanges();
+                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
+                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
+                            ChangesData.changeUtils.showChanges();
                             res(true);                            
                         });
                     }
                     if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
                         const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                        ChangeUtils.currentLines = lineConfigs;
-                        ChangeUtils.previousLines = null!;
-                        ChangeUtils.showChanges();
+                        ChangesData.changeUtils.currentLines = lineConfigs;
+                        ChangesData.changeUtils.previousLines = null!;
+                        ChangesData.changeUtils.showChanges();
                         res(true);
                     }
                 })
@@ -121,9 +122,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     if(!hasChanges) return;
                     refData.current.selectedFileContent = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                    ChangeUtils.currentLines = null!;
-                    ChangeUtils.previousLines = lineConfigs!;
-                    ChangeUtils.showChanges();
+                    ChangesData.changeUtils.currentLines = null!;
+                    ChangesData.changeUtils.previousLines = lineConfigs!;
+                    ChangesData.changeUtils.showChanges();
                     res(true);
                 })
             }
@@ -135,9 +136,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             return ;
         
         displayChanges(store.selectedFile.path).then(()=>{
-            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangeUtils.totalChangeCount}));            
+            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
         })
-        ChangeUtils.file = store.selectedFile;
+        ChangesData.changeUtils.file = store.selectedFile;
 
         IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{
             refData.current.lastUpdated = date;
@@ -149,7 +150,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!store.selectedFile || !refData.current.isMounted)
             return;
         displayChanges(store.selectedFile.path).then(()=>{
-            dispatch(ActionChanges.updateData({totalStep:ChangeUtils.totalChangeCount}));
+            dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
             dispatch(ActionChanges.increamentStepRefreshVersion());
         });                
     },[state.lastUpdated]);

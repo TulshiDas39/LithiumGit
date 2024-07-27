@@ -1,32 +1,37 @@
 import React, { useEffect, useMemo, useRef } from "react"
-import { GraphUtils, NumUtils, useDrag, useMultiState } from "../../../../lib";
+import { EnumHtmlIds, GraphUtils, NumUtils, useDrag, useMultiState } from "../../../../lib";
 import { ICommitInfo, IFile } from "common_library";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { CommitFileList } from "./CommitFileList";
 import { CommitDiffView } from "./CommitDiffView";
 
-interface IState{
-    selectedCommitHash?:string;
-    files:IFile[];
-    selectedFile?:IFile;
+interface IProps{
+    selectedCommit:ICommitInfo;
+    containerId:EnumHtmlIds;
 }
 
-function CommitChangeViewComponent(){
-    const [state, setState] = useMultiState<IState>({files:[]});
+interface IState{
+    files:IFile[];
+    selectedFile?:IFile;
+    fileCount:number;
+}
+
+function CommitChangeViewComponent(props:IProps){
+    const [state, setState] = useMultiState<IState>({files:[],fileCount:0});
     const rightWidthRef = useRef(300);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     useEffect(()=>{
-        if(!state.selectedCommitHash){
+        if(!props.selectedCommit){
             setState({files:[],selectedFile:undefined});
             return;
         }
         
-        GitUtils.GetFileListByCommit(state.selectedCommitHash).then(res=>{
-            setState({files:res,selectedFile:res[0]});
+        GitUtils.GetFileListByCommit(props.selectedCommit.hash).then(res=>{
+            setState({files:res.files,selectedFile:res.files[0],fileCount:res.total});
         });
 
-    },[state.selectedCommitHash])
+    },[props.selectedCommit.hash])
 
     const rightWidth = useMemo(()=>{
         const curWidth = rightWidthRef.current - positionRef.current;
@@ -42,22 +47,16 @@ function CommitChangeViewComponent(){
     },[position?.x])
     
     useEffect(()=>{
-        const listener = (commit?:ICommitInfo)=>{
-            setState({selectedCommitHash:commit?.hash});
-        }
-        GraphUtils.state.selectedCommit.subscribe(listener);
-        return ()=>{
-            GraphUtils.state.selectedCommit.unSubscribe(listener);
-        }
+        
     },[])
 
     return <div className="d-flex w-100 h-100">
         <div style={{width:`calc(100% - ${rightWidth+3}px)`}}>
-            <CommitDiffView file={state.selectedFile} />
+            <CommitDiffView file={state.selectedFile} commit={props.selectedCommit} containerId={props.containerId} />
         </div>
         <div ref={resizer as any} className="bg-second-color cur-resize" style={{width:`3px`}}></div>
         <CommitFileList files={state.files} width={rightWidth} onFileSelect={_=>setState({selectedFile:_})}
-            selectedFile={state.selectedFile} />
+            selectedFile={state.selectedFile} fileCount={state.fileCount} />
     </div>
 }
 

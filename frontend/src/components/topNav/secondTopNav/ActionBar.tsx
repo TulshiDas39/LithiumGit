@@ -4,6 +4,7 @@ import { useSelectorTyped } from "../../../store/rootReducer";
 import { ChangeNavigator } from "./ChangeNavigator";
 import { PullPushMenu } from "./PullPushMenu";
 import { RepoSelectionDropdown } from "./RepoSelectionDropdown";
+import { EnumSelectedRepoTab } from "../../../lib";
 
 function ActionBarComponent(){
     const store = useSelectorTyped(state=>({
@@ -14,7 +15,7 @@ function ActionBarComponent(){
     return <div className="d-flex">
             <RepoSelectionDropdown />
             <PullPushMenu />
-            {!!store.selectedFile && <ChangeNavigator /> }
+            {!!store.selectedFile && store.tab == EnumSelectedRepoTab.CHANGES && <ChangeNavigator /> }
     </div>;
 }
 

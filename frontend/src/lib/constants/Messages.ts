@@ -7,4 +7,6 @@ export class Messages{
     static readonly pullSuccess = "Pull succeeded.";
     static readonly pushSuccess = "Push succeeded.";
     static readonly refreshing = "Refreshing...";
+    static readonly abortingMerge = "Aborting merge...";
+    static readonly branchExist = "Branch already exists...";
 }

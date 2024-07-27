@@ -12,6 +12,7 @@ import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";
 import { ActionSavedData } from "../../store";
 import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 
 interface ISelectedRepositoryProps{
@@ -43,7 +44,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     const updateStatus = ()=>{
         dispatch(ActionUI.setSync({text:Messages.getStatus}));
-        IpcUtils.getRepoStatus().finally(()=>{
+        GitUtils.getStatus().finally(()=>{
             dispatch(ActionUI.setSync(undefined));
         });
     }
@@ -91,7 +92,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             else GraphUtils.checkForUiUpdate(store.status!);
         });
         
-        ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 
     useEffect(()=>{
@@ -111,7 +111,9 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     useEffect(()=>{
         if(!store.remoteListRefreshVersion) return;
         IpcUtils.getRemoteList().then(list=>{
-            RepoUtils.repositoryDetails.remotes = list;
+            if(RepoUtils.repositoryDetails){
+                RepoUtils.repositoryDetails.remotes = list;
+            }
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(list)));
         })
     },[store.remoteListRefreshVersion]);

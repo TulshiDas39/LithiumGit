@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -48,6 +48,9 @@ export class GitManager{
         this.addConflictResolveHandler();
         this.addGetStashListHandler();
         this.addStashHandler();
+        this.addGitUserConfigHandler();
+        this.addUserNameUpdateHandler();
+        this.addUserEmailUpdateHandler();
     }
 
 
@@ -70,6 +73,27 @@ export class GitManager{
         })
     }
 
+    private addGitUserConfigHandler(){
+        ipcMain.handle(RendererEvents.getUserConfig, async (e,repoPath:string)=>{
+            const result = await this.getUserConfig(repoPath);
+            return result;
+        })
+    }
+
+    private addUserNameUpdateHandler(){
+        ipcMain.handle(RendererEvents.updateUserName, async (e,repoPath:string,value:string,isGlobal?:boolean)=>{
+            const result = await this.updateUserName(repoPath,value,isGlobal);
+            return result;
+        })
+    }
+
+    private addUserEmailUpdateHandler(){
+        ipcMain.handle(RendererEvents.updateUserEmail, async (e,repoPath:string,value:string,isGlobal?:boolean)=>{
+            const result = await this.updateUserEmail(repoPath,value,isGlobal);
+            return result;
+        })
+    }
+
     private addRawHandler(){
         ipcMain.handle(RendererEvents.gitRaw, async (e,repoPath:string, options:string[])=>{
             const result = await this.getRawResult(repoPath,options);
@@ -85,6 +109,38 @@ export class GitManager{
         } catch (error) {
             AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
         }        
+    }
+
+    async updateUserName(repoPath:string,value:string,isGlobal?:boolean){
+        const git = this.getGitRunner(repoPath);
+        await git.addConfig("user.name",value,false, isGlobal?"global":"local");
+    }
+
+    async updateUserEmail(repoPath:string,value:string,isGlobal?:boolean){
+        const git = this.getGitRunner(repoPath);
+        await git.addConfig("user.email",value,false, isGlobal?"global":"local");
+    }
+
+    async getUserConfig(repoPath:string){
+        const git = this.getGitRunner(repoPath);
+        
+        const localUser = {} as IUserConfig;
+        let result = await git.getConfig("user.name","local");
+        localUser.name = result.value;
+        result = await git.getConfig("user.email","local");
+        localUser.email = result.value;
+
+        const globalUser = {} as IUserConfig;
+        result = await git.getConfig("user.name","global");
+        globalUser.name = result.value;
+        result = await git.getConfig("user.email","global");
+        globalUser.email = result.value;
+        const userConfig:ITypedConfig<IUserConfig> = {
+            local:localUser,
+            global:globalUser
+        }
+
+        return userConfig;              
     }
 
     async getRawResult(repoPath:string, options:string[]){
@@ -420,9 +476,12 @@ export class GitManager{
                 options.push(`--skip=${filterOption.pageIndex*filterOption.pageSize}`);
             }
         }
+        if(filterOption.hash){
+            options.push(filterOption.hash);
+        }
         if(filterOption.message){
             options.push(`--grep=${filterOption.message}`);
-        }
+        }        
         if(filterOption.branchName){
             options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
         }
@@ -443,6 +502,11 @@ export class GitManager{
             return result;
         }catch(e){
             console.error("error on get logs:", e);
+            const result:IPaginated<ICommitInfo>={
+                count:0,
+                list:[]
+            };
+            return result;
         }
     
     }
@@ -450,6 +514,9 @@ export class GitManager{
     private async getTotalCommitCount(repoInfo:RepositoryInfo,filterOption:ILogFilterOptions){
         const git = this.getGitRunner(repoInfo);
         const options = ["rev-list","--count","--exclude=refs/stash"];
+        if(filterOption.hash){
+            options.push(filterOption.hash,"-1");
+        }
         if(filterOption.message){
             options.push(`--grep=${filterOption.message}`);
         }
@@ -482,25 +549,7 @@ export class GitManager{
 
     private async checkoutCommit(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
-        try {            
-            await git.checkout(options);  
-            // const status = await this.getStatus(repoPath);
-            // return status;
-        }catch (error) {
-            const errorSubStr = "Your local changes to the following files would be overwritten by checkout";
-            const errorMsg:string = error?.toString() || "";
-            let errorToShow = errorMsg;
-            if(errorMsg.includes(errorSubStr)){
-                errorToShow ="There exist uncommited changes having conflicting state with checkout.";
-            }
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,errorToShow); 
-            return;
-        }
-        
-
-        // commit.isHead = true;
-        // const status = await this.getStatus(repoDetails.repoInfo);
-        // e.reply(RendererEvents.checkoutCommit().replyChannel,commit,status);
+        await git.checkout(options);  
     }
 
     private async createBranch(sourceCommit:ICommitInfo,repoDetails:IRepositoryDetails,newBranchName:string,checkout:boolean){
@@ -541,8 +590,8 @@ export class GitManager{
     }
 
     private  addFetchHandler(){
-        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoDetails:IRepositoryDetails,all:boolean)=>{
-            await this.takeFetch(repoDetails,all);
+        ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
+            await this.takeFetch(repoPath,options);
         });
     }
 
@@ -651,30 +700,13 @@ export class GitManager{
     }
 
     private async takePull(repoPath:string,options:string[]){
-        const git = this.getGitRunner(repoPath);        
-        try {
-            const result = await git.pull(options);
-            if(this.hasChangesInPull(result)) AppData.mainWindow?.webContents.send(RendererEvents.refreshBranchPanel().channel)            
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+        const git = this.getGitRunner(repoPath);    
+        await git.pull(options);
     }
 
-    private async takeFetch(repoDetails:IRepositoryDetails,all:boolean){
-        const git = this.getGitRunner(repoDetails.repoInfo);
-        
-        try {
-            const options:string[]=[];
-            if(all){
-                options.push("--all");
-            }
-            else{
-                options.push(repoDetails.remotes[0].name, repoDetails.headCommit.ownerBranch.name);
-            }
-            await git.fetch(options);                        
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+    private async takeFetch(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
+        await git.fetch(options);                
     }
 
     private hasChangesInPush(result:PushResult){
@@ -684,12 +716,7 @@ export class GitManager{
 
     private async givePush(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
-        
-        try {                       
-            await git.push(options);
-        } catch (error) {
-            AppData.mainWindow?.webContents.send(RendererEvents.showError().channel,error?.toString());
-        }
+        await git.push(options);        
     }
 
 

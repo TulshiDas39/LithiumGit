@@ -11,6 +11,7 @@ import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ConflictEditor } from "./ConflictEditor";
 import { ActionChanges } from "../../../../store";
+import { ChangesData } from "../../../../lib/data/ChangesData";
 
 
 interface IState {
@@ -32,7 +33,8 @@ function ChangesComponent() {
         selectedFile:state.changes.selectedFile,
     }),shallowEqual);
 
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
+    const changeUtils = ChangesData.changeUtils;
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
     const repoInfo = useMemo(()=>{
@@ -47,7 +49,21 @@ function ChangesComponent() {
         setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
 
+    const checkForDiifClear=()=>{
+        const file = changeUtils.file!;
+        if(!file || !changeUtils.ContainerId || !store.status || !!store.selectedFile)
+            return;
+
+        if(file.changeGroup === EnumChangeGroup.UN_STAGED && !store.status.unstaged.some(_=>_.path === file.path)){
+            changeUtils.ClearView();
+        }
+        else if(file.changeGroup === EnumChangeGroup.STAGED && !store.status.staged.some(_=>_.path === file.path)){
+            changeUtils.ClearView();
+        }
+    }
+
     useEffect(()=>{
+        checkForDiifClear();
         if(!store.selectedFile || !store.status) return;
         const changedFiles = [...store.status.conflicted,...store.status.staged,...store.status.unstaged];
         const existInStatus = changedFiles.some(x=> x.path === store.selectedFile?.path 

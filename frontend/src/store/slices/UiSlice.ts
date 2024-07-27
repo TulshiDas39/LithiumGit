@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IRemoteInfo, IStatus } from "common_library";
-import { EnumSelectedRepoTab } from "../../lib";
+import { EnumConfigTab, EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -33,6 +33,7 @@ interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
     selectedRepoTab:EnumSelectedRepoTab;
+    configTab:EnumConfigTab;
     loader?:ILoaderInfo;
     synch?:ILocalSyncInfo;
     mergerCommitMessage?:string;
@@ -57,6 +58,7 @@ const initialState:IUIState={
     remotes:[],
     branchList:[],
     refreshingGraph:false,
+    configTab:EnumConfigTab.USER,
 }
 
 const UISlice = createSlice({
@@ -88,6 +90,9 @@ const UISlice = createSlice({
         },
         setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
             state.selectedRepoTab = action.payload;
+        },
+        setConfigTab(state,action:PayloadAction<EnumConfigTab>){
+            state.configTab = action.payload;
         },
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;

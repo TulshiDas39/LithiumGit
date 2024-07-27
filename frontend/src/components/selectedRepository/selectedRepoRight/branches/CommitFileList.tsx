@@ -5,6 +5,7 @@ import { UiUtils } from "../../../../lib";
 
 interface IProps{
     files:IFile[];
+    fileCount:number;
     width:number;
     onFileSelect:(file:IFile)=>void;
     selectedFile?:IFile;
@@ -13,7 +14,7 @@ interface IProps{
 function CommitFileListComponent(props:IProps){
     return <div style={{width:props.width}} className="h-100">
         <div style={{height:30}} className="ps-1">
-            <b>Changed Files</b>
+            <b>Changed Files({props.fileCount})</b>
         </div>
         <div className="overflow-auto ps-1" style={{height:`calc(100% - 30px)`}}>
             {
