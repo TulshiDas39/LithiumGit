@@ -12,6 +12,7 @@ import { PbSvgContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, P
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
+import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 
 interface IState{
@@ -32,6 +33,10 @@ interface IState{
     viewBoxWidth:PbViewBoxWidth;
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
+    fromDate:Publisher<string | null>;
+    toDate:Publisher<string>;
+    limit:Publisher<number>;
+    filter:PbCommitFilter;
 }
 
 export class GraphUtils{
@@ -62,6 +67,9 @@ export class GraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
+        fromDate: new Publisher(null),
+        toDate: new Publisher(new Date().toISOString()),
+        limit : new Publisher(400),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -79,6 +87,7 @@ export class GraphUtils{
         GraphUtils.state.viewBoxX = new PbViewBoxX(0);
         GraphUtils.state.viewBoxY = new PbViewBoxY(0);
         GraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
+        GraphUtils.state.filter = new PbCommitFilter();
     }    
 
     static createBranchPanel(){
