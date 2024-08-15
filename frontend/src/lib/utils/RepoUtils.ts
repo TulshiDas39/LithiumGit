@@ -57,6 +57,9 @@ export class RepoUtils{
         }
 
         const setHeight = (branch:IBranchDetails)=>{
+            if(branch.name == 'preproduction'){
+                debugger;
+            }
             const upperOffset = branch.verticalOffset - 1;
             const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
             const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
@@ -67,7 +70,10 @@ export class RepoUtils{
 
         const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
         if(!!branches.length){
-            for(let offset = branchesWithoutParent.length + 1; offset <= repoDetails.resolvedBranches.length ; offset++){
+            debugger;
+            const startOffset = ArrayUtils.findMin(branches.map(_=>_.verticalOffset));
+            for(let offset = startOffset; offset <= repoDetails.resolvedBranches.length ; offset++){
+                debugger;
                 const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
                 branchesOfThisOffset.forEach(_ => setHeight(_));
             }   
@@ -135,6 +141,8 @@ export class RepoUtils{
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
         repoDetails.resolvedBranches.sort((x,y)=> x.serial > y.serial ?1:-1);
+        const br = repoDetails.resolvedBranches.find(_=> _.name === 'preproduction');
+        console.log("preprod",br);
     }
 
     private static specifySerialsOfBranch(repoDetails:IRepositoryDetails){

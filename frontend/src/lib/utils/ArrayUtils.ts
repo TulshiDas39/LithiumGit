@@ -12,4 +12,8 @@ export class ArrayUtils{
     static findMax(array:number[]){
         return array.reduce((acc,current) => Math.max(acc,current))
     }
+
+    static findMin(array:number[]){
+        return array.reduce((acc,current) => Math.min(acc,current))
+    }
 }
