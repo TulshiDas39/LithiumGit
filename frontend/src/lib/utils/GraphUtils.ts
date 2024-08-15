@@ -12,6 +12,7 @@ import { PbSvgContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, P
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
+import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 
 interface IState{
@@ -32,6 +33,10 @@ interface IState{
     viewBoxWidth:PbViewBoxWidth;
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
+    fromDate:Publisher<string | null>;
+    toDate:Publisher<string>;
+    limit:Publisher<number>;
+    filter:PbCommitFilter;
 }
 
 export class GraphUtils{
@@ -62,6 +67,9 @@ export class GraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
+        fromDate: new Publisher(null),
+        toDate: new Publisher(new Date().toISOString()),
+        limit : new Publisher(400),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -79,6 +87,7 @@ export class GraphUtils{
         GraphUtils.state.viewBoxX = new PbViewBoxX(0);
         GraphUtils.state.viewBoxY = new PbViewBoxY(0);
         GraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
+        GraphUtils.state.filter = new PbCommitFilter();
     }    
 
     static createBranchPanel(){
@@ -99,10 +108,15 @@ export class GraphUtils{
         GraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         GraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
         GraphUtils.addEventListeners();
+        GraphUtils.resetStates();
         GraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
-    }  
+    }
+    
+    static resetStates(){
+        GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);
+    }
 
     static setReduxData(){
         ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
@@ -408,11 +422,21 @@ export class GraphUtils{
         // circleElem.classList.add("commit");// = `${EnumIdPrefix.COMMIT_CIRCLE}merge` ;
         circleElem.setAttribute("cx",x+"")
         circleElem.setAttribute("cy",head.ownerBranch.y+"")
-        circleElem.setAttribute("r",RepoUtils.commitRadius+"")
+        circleElem.setAttribute("r",(RepoUtils.commitRadius+2)+"")
         circleElem.setAttribute("stroke","red")
-        circleElem.setAttribute("strokeWidth","3")
+        circleElem.setAttribute("stroke-width","3");
         circleElem.setAttribute("fill",GraphUtils.commitColor)
         circleElem.classList.add("mergingState");
+
+        const circleElem2 = document.createElementNS(this.svgLnk, "circle");
+        circleElem2.setAttribute("cx",x+"")
+        circleElem2.setAttribute("cy",head.ownerBranch.y+"")
+        circleElem2.setAttribute("r",(RepoUtils.commitRadius+15)+"")
+        circleElem2.setAttribute("stroke","green");
+        circleElem2.setAttribute("stroke-width","2");
+        circleElem2.setAttribute("stroke-dasharray", "5");
+        circleElem2.setAttribute("fill","none");
+        circleElem2.classList.add("mergingState");
 
 
         // const clickListener = (target:HTMLElement)=>{
@@ -438,7 +462,7 @@ export class GraphUtils{
         }
 
         circleElem.addEventListener("click",clickListener);
-        return circleElem;
+        return [circleElem,circleElem2];
     }
 
     static createMergedStateLine(x1:number,y1:number,x2:number,y2:number){
@@ -474,7 +498,7 @@ export class GraphUtils{
         GraphUtils.state.panelHeight.update();
         GraphUtils.state.horizontalScrollWidth.update();
         GraphUtils.state.verticalScrollHeight.update();
-        GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
+        //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
         GraphUtils.state.headCommit.publish(RepoUtils.repositoryDetails.headCommit);
     }
 
@@ -492,7 +516,7 @@ export class GraphUtils{
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.hash){            
+        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
             if(newStatus.mergingCommitHash){
                 const head = RepoUtils.repositoryDetails.headCommit;
@@ -505,7 +529,8 @@ export class GraphUtils{
                 const allCommits = RepoUtils.repositoryDetails.allCommits;
                 const latestCommit = allCommits[allCommits.length-1];
                 dummyCommit.x = latestCommit.x + RepoUtils.distanceBetweenCommits; 
-                dummyCommit.inMergingState = true;               
+                dummyCommit.inMergingState = true; 
+                dummyCommit.parentHashes = [head.hash,newStatus.mergingCommitHash];
                 GraphUtils.state.mergingCommit.publish(dummyCommit);
             }
             else{

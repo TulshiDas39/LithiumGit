@@ -20,6 +20,12 @@ interface IConfirmationModalData{
     NoHandler:()=>void;
 }
 
+export interface IToastData{
+    title?: string;
+    message: string;
+    customClass?: string;
+}
+
 export class InitialModalData{
     static readonly commitContextModal= {  } as ICommitContextModalData; 
     static get createBranchModal() {
@@ -36,6 +42,14 @@ export class InitialModalData{
         } as IConfirmationModalData;
     }
 
+    static get appToast(){
+        return {
+        message: "Successful",
+        customClass: "bg-success",
+    } as IToastData;
+    
+}
+
 }
 
 export class ModalData{
@@ -43,4 +57,5 @@ export class ModalData{
     static createBranchModal = InitialModalData.createBranchModal;
     static errorModal = InitialModalData.errorModal;
     static confirmationModal = InitialModalData.confirmationModal;
+    static appToast = InitialModalData.appToast;
 }

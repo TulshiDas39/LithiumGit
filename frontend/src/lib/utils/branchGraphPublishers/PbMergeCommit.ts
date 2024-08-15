@@ -3,6 +3,8 @@ import { EnumIdPrefix } from "../../enums";
 import { DerivedState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 import { RepoUtils } from "../RepoUtils";
+import { UiUtils } from "../UiUtils";
+import { ModalData } from "../../../components/modals/ModalData";
 
 export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     protected getDerivedValue(): ICommitInfo|undefined {
@@ -45,23 +47,39 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
         const pointFromCircle = GraphUtils.getStartingPointOfLineFromCommitCircle(srcCommit.x,srcCommit.ownerBranch.y,endX,y);
         const line = GraphUtils.createMergedStateLine(pointFromCircle.x,pointFromCircle.y, endX,y);
         gElem.appendChild(line);
-        const commitBox = GraphUtils.createMergeCommit(head, endX,this.value!);
-        gElem.appendChild(commitBox);
+        const circles = GraphUtils.createMergeCommit(head, endX,this.value!);
+        const mainCommitBox = circles[0];
+        gElem.appendChild(mainCommitBox);
+        gElem.appendChild(circles[1]);
+        this.addEventListener();
+    }
 
+    private addEventListener(){        
+
+        const contextEventListener=(_:HTMLElement,event:MouseEvent)=>{            
+            ModalData.commitContextModal.selectedCommit = this.value!;            
+            ModalData.commitContextModal.position = {
+                x:event.clientX,
+                y:event.clientY,
+            }
+
+            GraphUtils.openContextModal();
+        }
+        
+        UiUtils.addEventListenderByClassName("mergingState","contextmenu",contextEventListener)
     }
 
     private removeMergingStateUi(){
         if(RepoUtils.repositoryDetails.status.mergingCommitHash)return;
 
-        const head = RepoUtils.repositoryDetails.headCommit;
-        const allCommits = RepoUtils.repositoryDetails.allCommits;
-        const latestCommit = allCommits[allCommits.length-1];
-        const endX = latestCommit.x;
-        const y = head.ownerBranch.y;
+        const firstParent = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === this.prevValue?.parentHashes[0])!;
+        if(!firstParent)
+            return;
+        const endX = firstParent.x;
 
-        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${head.ownerBranch._id}`)!;
+        const branchLineElem = document.querySelector(`#${EnumIdPrefix.BRANCH_LINE}${firstParent.ownerBranch._id}`)!;
         //d={`M${data.startX},${data.startY} ${data.vLinePath} h${data.hLineLength}`}
-        const branchDetails = head.ownerBranch;
+        const branchDetails = firstParent.ownerBranch;
         const lineData = GraphUtils.getBranchLinePathData(branchDetails);
         const hLineLength = endX - lineData.startX;
         const linePath = GraphUtils.getBranchLinePath(lineData.startX,lineData.startY,lineData.vLinePath,hLineLength);

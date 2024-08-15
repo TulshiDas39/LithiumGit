@@ -9,6 +9,9 @@ import { ActionUI } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
 import { AppButton } from "../../common";
+import { ModalData } from "../../modals/ModalData";
+import { Messages } from "../../../lib/constants";
+import { GitUtils } from "../../../lib/utils/GitUtils";
 
 interface IStatus{
     showPushTo:boolean;
@@ -50,32 +53,37 @@ function PullPushMenuComponent(){
     },[store.isDetached,store.current,store.trackingBranch]);
 
     const handlePull=()=>{
-        dispatch(ActionUI.setLoader({text:"Pull in progress..."}));
+        dispatch(ActionUI.setLoader({text:Messages.pull}));
         const options:string[] = [];
         if(upStreamBranch){
             const originName = RepoUtils.activeOriginName;
             options.push(originName,upStreamBranch);
         }
-        IpcUtils.trigerPull(options).then(()=>{
-            dispatch(ActionUI.setLoader({text:"Checking status..."}));
-            IpcUtils.getRepoStatus().finally(()=>{
-                dispatch(ActionUI.setLoader(undefined));
-            })
+        IpcUtils.trigerPull(options).then((r)=>{
+            if(!r.error){
+                ModalData.appToast.message = Messages.pullSuccess;
+                dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            dispatch(ActionUI.setLoader(undefined));
+            GitUtils.getStatus();
         })
     }
 
     const handlePush=()=>{
-        dispatch(ActionUI.setLoader({text:"Push in progress..."}));
+        dispatch(ActionUI.setLoader({text:Messages.push}));
         const options:string[] = [];
         if(upStreamBranch){
             const originName = RepoUtils.activeOriginName;
             options.push(originName,upStreamBranch);
         }
-        IpcUtils.trigerPush(options).then(()=>{
-            dispatch(ActionUI.setLoader({text:"Checking status..."}));
-            IpcUtils.getRepoStatus().finally(()=>{                
-                dispatch(ActionUI.setLoader(undefined));
-            })
+        IpcUtils.trigerPush(options).then((r)=>{
+            if(!r.error){
+                ModalData.appToast.message = Messages.pushSuccess;
+                dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            
+            dispatch(ActionUI.setLoader(undefined));
+            GitUtils.getStatus();
         })
     }
 
@@ -83,11 +91,11 @@ function PullPushMenuComponent(){
         if(isAll){
             setState({showFetchAll:false});
         }
-        dispatch(ActionUI.setLoader({text:"Fetching..."}));
-        IpcUtils.fetch(isAll).then(_=>{
-            dispatch(ActionUI.setLoader(undefined));
-            IpcUtils.getRepoStatus();
-        })
+        GitUtils.fetch(isAll).then(r=>{
+            if(!r.error){
+                GitUtils.getStatus();
+            }
+        });
     }
 
     const handlePushCaretClick=()=>{        

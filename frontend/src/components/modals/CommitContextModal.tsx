@@ -10,6 +10,7 @@ import { ActionUI } from "../../store/slices/UiSlice";
 import { InitialModalData, ModalData } from "./ModalData";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { FaCodeBranch, FaRegPaperPlane } from "react-icons/fa";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 enum Option{
     Checkout,
@@ -79,7 +80,7 @@ function CommitContextModalComponent(){
         refData.current.mergerCommitMessage = RepoUtils.generateMergeCommitMessage(hash)!;      
         const options = [hash,"--no-commit","--no-ff"];
         IpcUtils.merge(options).then((r)=>{            
-            IpcUtils.getRepoStatus().then(r=>{
+            GitUtils.getStatus().then(r=>{
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                 if(r.conflicted?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
@@ -95,7 +96,7 @@ function CommitContextModalComponent(){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));        
         const options = [Data.selectedCommit.hash];
         IpcUtils.cherryPick(options).then(r=>{
-            IpcUtils.getRepoStatus().then(r=>{
+            GitUtils.getStatus().then(r=>{
                 if(r.conflicted?.length){
                     dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
@@ -113,7 +114,7 @@ function CommitContextModalComponent(){
         refData.current.mergerCommitMessage = RepoUtils.generateMergeBranchMessage(branch)!;      
         const options = [branch,"--no-commit","--no-ff"];
         IpcUtils.merge(options).then(()=>{
-            IpcUtils.getRepoStatus().then((r)=>{
+            GitUtils.getStatus().then((r)=>{
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                 if(r.conflicted?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
@@ -128,7 +129,7 @@ function CommitContextModalComponent(){
     const rebaseBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         IpcUtils.rebaseBranch(branch).then(_=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         }).catch(e=>{
             ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
             dispatch(ActionModals.showModal(EnumModals.ERROR));
@@ -199,7 +200,7 @@ function CommitContextModalComponent(){
         hideModal();
         const options:string[]=["--soft","HEAD~1"];
         IpcUtils.reset(options).then(r=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         })
     }
 
@@ -208,7 +209,7 @@ function CommitContextModalComponent(){
         const handler = ()=>{
             const options:string[]=["--hard","HEAD~1"];
             IpcUtils.reset(options).then(r=>{
-                IpcUtils.getRepoStatus();
+                GitUtils.getStatus();
             })
         }
         ModalData.confirmationModal.YesHandler = handler;

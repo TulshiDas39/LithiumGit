@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IRemoteInfo, IStatus } from "common_library";
-import { EnumSelectedRepoTab } from "../../lib";
+import { EnumConfigTab, EnumSelectedRepoTab } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -18,9 +18,14 @@ interface EventVersions{
     branchPanelHome:number;
     repoDetails:number;
     remoteList:number;
+    annotations:number;
 }
 
 export interface ILoaderInfo{
+    text:string;
+}
+
+export interface ILocalSyncInfo{
     text:string;
 }
 
@@ -28,11 +33,14 @@ interface IUIState{
     homePageTab:EnumHomePageTab;
     versions:EventVersions;
     selectedRepoTab:EnumSelectedRepoTab;
+    configTab:EnumConfigTab;
     loader?:ILoaderInfo;
+    synch?:ILocalSyncInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
     remotes:IRemoteInfo[];
     branchList:string[];
+    refreshingGraph:boolean;
 }
 
 const initialState:IUIState={
@@ -44,10 +52,13 @@ const initialState:IUIState={
         branchPanelHome:0,
         repoDetails:0,
         remoteList:0,
+        annotations:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],
     branchList:[],
+    refreshingGraph:false,
+    configTab:EnumConfigTab.USER,
 }
 
 const UISlice = createSlice({
@@ -80,8 +91,14 @@ const UISlice = createSlice({
         setSelectedRepoTab(state,action:PayloadAction<EnumSelectedRepoTab>){
             state.selectedRepoTab = action.payload;
         },
+        setConfigTab(state,action:PayloadAction<EnumConfigTab>){
+            state.configTab = action.payload;
+        },
         setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
             state.loader = action.payload;
+        },
+        setSync(state,action:PayloadAction<ILocalSyncInfo|undefined>){
+            state.synch = action.payload;
         },
         setMergerCommitMessage(state,action:PayloadAction<string>){
             state.mergerCommitMessage = action.payload;
@@ -94,6 +111,9 @@ const UISlice = createSlice({
         },
         setBranchList(state,action:PayloadAction<string[]>){
             state.branchList = action.payload;
+        },
+        setGraphRefresh(state,action:PayloadAction<boolean>){
+            state.refreshingGraph = action.payload;
         }
     }
 });

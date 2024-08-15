@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
-    autoStagingEnabled:boolean;
+    autoStagingEnabled:boolean;    
 }
 
 const initialState:ISavedData={
     recentRepositories:[],
-    autoStagingEnabled:false,
+    autoStagingEnabled:false,    
 }
 
 const SavedDataSlice = createSlice({
@@ -62,7 +62,7 @@ const SavedDataSlice = createSlice({
         },
         updateAutoStaging(state,action:PayloadAction<boolean>){
             state.autoStagingEnabled = action.payload;
-        }
+        },
 
     }
 });

@@ -4,6 +4,9 @@ import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumModals } from "../enums";
 import { ModalData } from "../../components/modals/ModalData";
+import { Messages } from "../constants";
+import { ActionUI } from "../../store/slices/UiSlice";
+import { RepoUtils } from "./RepoUtils";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
@@ -16,7 +19,7 @@ export class GitUtils{
         }
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
-            return files;
+            return {files,total:0};
 
         const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         const statResult = await GitUtils.getNumStat(commitHash);
@@ -25,7 +28,7 @@ export class GitUtils{
             const path = words[words.length-1];
             if(files.some(_=> _.path === path))
                 continue;
-            const file = statResult.find(_=> _.path === path);
+            const file = statResult.files.find(_=> _.path === path);
             if(!file)
                 continue;            
 
@@ -37,7 +40,7 @@ export class GitUtils{
 
 
 
-        return files;
+        return {files,total:statResult.total};
     }
 
     static async getNumStat(commitHash:string){
@@ -45,9 +48,10 @@ export class GitUtils{
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r","-m","--numstat"];
         const result = await IpcUtils.getRaw(options);
         if(!result.result)
-            return files;
+            return {files,total:0};
 
-        const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
+        const allFiles = StringUtils.getLines(result.result).filter(l => !!l);
+        const lines = allFiles.slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
             const path = words[2];
@@ -64,7 +68,7 @@ export class GitUtils{
             
         }
 
-        return files;
+        return {files,total:allFiles.length};
     }
 
     private static async getFileStatusOfStash(index:number){
@@ -153,4 +157,42 @@ export class GitUtils{
             return r.result!;
         }
     }
+
+    static fetch(isAll:boolean){
+        const options:string[] = [];
+        if(isAll){
+            options.push("--all");
+        }
+        else{
+            const origin = RepoUtils.activeOriginName;
+            options.push(origin, RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+        }
+        ReduxUtils.dispatch(ActionUI.setLoader({text:Messages.fetch}));
+        return IpcUtils.fetch(options).then(r=>{
+            if(!r.error){
+                ModalData.appToast.message = Messages.fetchComplete;
+                ReduxUtils.dispatch(ActionModals.showModal(EnumModals.TOAST));
+            }
+            ReduxUtils.dispatch(ActionUI.setLoader(undefined));
+            return r;            
+        })
+    }
+
+    static getStatus(){
+        ReduxUtils.dispatch(ActionUI.setSync({text:Messages.getStatus}));
+        return IpcUtils.getRepoStatus().then(r=>{
+            return r;
+        }).finally(()=>{
+            ReduxUtils.dispatch(ActionUI.setSync(undefined));
+        });
+    }
+
+    static abortMerge(){
+        ReduxUtils.dispatch(ActionUI.setSync({text:Messages.abortingMerge}));
+        const options = ["--abort"];
+        IpcUtils.merge(options).then(()=>{
+            GitUtils.getStatus();
+        })
+    }
+    
 }

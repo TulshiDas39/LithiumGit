@@ -1,119 +1,110 @@
-import React, { useEffect } from "react"
-import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
-import moment from "moment";
-import { Paginator } from "../../../common";
-import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ICommitInfo, ILogFilterOptions } from "common_library";
+import React, { Fragment, useCallback, useEffect, useMemo, useRef } from "react"
+import { EnumHtmlIds, EnumModals, UiUtils, useDrag, useMultiState } from "../../../../lib";
 import { CommitFilter } from "./CommitFilter";
+import { CommitList } from "./CommitList";
+import { ICommitInfo } from "common_library";
+import { CommitProperty } from "../branches/CommitProperty";
+import { CommitChangeView } from "../branches/CommitChangeView";
+import { ModalData } from "../../../modals/ModalData";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 
-
-interface ISingleCommitProps{
-    commit:ICommitInfo;
-}
-
-function SingleCommit(props:ISingleCommitProps){
-    const getTimeZonOffsetStr = ()=>{
-        return UiUtils.getTimeZonOffsetStr();
-    }
-    return <div className="py-1 w-100 overflow-auto">
-     <div className="border border-primary ps-2">
-        <div>
-            <span>Sha: </span>
-            <span>{props.commit.hash}</span>
-            {!!props.commit.refs && 
-             <b className="text-danger"> ({props.commit.refs})</b>}
-        </div>
-        <div>
-            <span>Date: </span>
-            <span title={getTimeZonOffsetStr()}>{moment(props.commit.date).format("MMMM Do YYYY, h:mm:ss a") }</span>
-        </div>
-        <div>
-            <span>Author: </span>
-            <span>{props.commit.author_name}({props.commit.author_email})</span>
-        </div>
-        <div>
-            <span>Message: </span>
-            <span>{props.commit.message}</span>
-        </div>
-    </div>
-    </div>
+interface IRefData{
+    selectedCommit?:ICommitInfo;
 }
 
 interface IState{
-    total:number;
-    pageIndex:number;
-    pageSize:number;
-    commits:ICommitInfo[];
-    loading:boolean;
     searchText:string;
     selectedBranch?:string;
-    refreshKey:string;
+    selectedCommit?:ICommitInfo;
+    contextCommit?:ICommitInfo;
 }
 
 function CommitsComponent(){
-    const store = useSelectorTyped(state=>({
-        repo:state.savedData.recentRepositories.find(_=>_.isSelected)?.path,
+    const store = useSelectorTyped((state)=>({
+        contextVisible:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
     }),shallowEqual);
 
-    const [state,setState]=useMultiState<IState>({pageIndex:0,
-        pageSize:500,
-        total:0,
-        commits:[],
-        loading:true,
+    const [state,setState]=useMultiState<IState>({                
         searchText:"",
-        refreshKey: new Date().toISOString(),
     });
-
-    useEffect(()=>{
-        const filterOptions:ILogFilterOptions = {
-            pageIndex:state.pageIndex,
-            pageSize:state.pageSize,            
-        }
-        if(state.searchText){
-            filterOptions.message = state.searchText;
-        }
-        if(state.selectedBranch){
-            filterOptions.branchName = state.selectedBranch;
-        }
-        
-        IpcUtils.getCommitList(filterOptions).then(result=>{
-            setState({commits:result.list.reverse(),total:result.count,loading:false});
-        });
-        
-    },[state.pageIndex,state.pageSize,state.searchText,state.selectedBranch,state.refreshKey]);
-
-    useEffect(()=>{
-        RepoUtils.enSureUpdate(store.repo!).then((r)=>{
-            setState({pageIndex:0,refreshKey:new Date().toISOString()});
-        })
-    },[store.repo])
+    
+    const refData = useRef<IRefData>({});
 
     const handleSearch = (text:string)=>{
         setState({searchText:text});
     }
 
+    useEffect(()=>{
+        refData.current.selectedCommit = state.selectedCommit;
+    },[state.selectedCommit]);
+
+    const handleSelect = useCallback((commit:ICommitInfo)=>{
+        if(commit?.hash === refData.current.selectedCommit?.hash){
+            setState({selectedCommit:null!});
+        }
+        else{
+            setState({selectedCommit:commit});
+        }
+    },[]);
+
+    const handleContext = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>,commit:ICommitInfo)=>{
+        ModalData.commitContextModal.selectedCommit=commit!;            
+        ModalData.commitContextModal.position = {
+            x:e.clientX,
+            y:e.clientY,
+        };
+        UiUtils.openContextModal();
+        setState({contextCommit:commit});
+    },[]);
+    
+    const bottomHeightRef = useRef(200);
+    const positionRef = useRef(0);
+    
+    const {currentMousePosition:position,elementRef:resizer} = useDrag();
+
+    const bottomHeight = useMemo(()=>{
+        if(!state.selectedCommit)
+            return -3;
+        const curHeight = bottomHeightRef.current - positionRef.current;
+        const height = Math.max(50, curHeight);
+        if(!position){
+            bottomHeightRef.current = height;
+            positionRef.current = 0;
+        }
+        else{
+            positionRef.current = position.y;
+        }
+        return height;
+    },[position?.y,state.selectedCommit])
+
+    useEffect(()=>{        
+        if(!store.contextVisible && !!state.contextCommit){
+            setState({contextCommit:undefined});
+        }
+    },[store.contextVisible])
+
     return <div className="h-100 w-100">
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
-        <div className="w-100 overflow-auto d-flex justify-content-center align-items-start" style={{height:'80%'}}>
-            {state.loading && <div className="w-100 d-flex justify-content-center">
-                <span>Loading...</span> 
+        <div className="w-100" style={{height:'90%'}}>
+            <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
+                <div className="w-75 h-100">
+                    <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch}
+                     onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} contextCommit={state.contextCommit} onRightClick={handleContext} />
+                </div>
+                <div className="w-25">
+                    {!!state.selectedCommit && <CommitProperty selectedCommit={state.selectedCommit}  />}
+                </div>
             </div>
-            }
-            {!state.loading && <div className="w-100 px-2">
-                {
-                    state.commits.map(commit=>(
-                        <SingleCommit key={commit.avrebHash} commit={commit} />
-                    ))
-                }
-            </div> }           
-        </div>
-        <div className="pt-2 d-flex justify-content-center align-items-start" style={{height:'10%'}}>
-            <Paginator total={state.total} pageIndex={state.pageIndex} pageSize={state.pageSize}
-                onPageChange={(pageIndex) => setState({pageIndex})} />
+            {!!state.selectedCommit && <Fragment>
+                <div ref={resizer as any} className="bg-second-color cur-resize-v" style={{ height: '3px' }} />
+                <div className="w-100" style={{height:`${bottomHeight}px`}}>
+                    {!!state.selectedCommit && <CommitChangeView selectedCommit={state.selectedCommit} containerId={EnumHtmlIds.CommitDiffFromList} />}
+                </div>
+            </Fragment>}
+            
         </div>
         
     </div>

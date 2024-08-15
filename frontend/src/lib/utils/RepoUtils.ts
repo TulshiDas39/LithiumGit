@@ -287,7 +287,7 @@ export class RepoUtils{
         repoDetails.branchTree = branchTree;
         repoDetails.resolvedBranches = branchDetails;
         repoDetails.lastReferencesByBranch = lastReferencesByBranch;
-        repoDetails.branchPanelWidth = x;
+        repoDetails.branchPanelWidth = x+50;
     }
 
     private static setX(commit:ICommitInfo,x:number){

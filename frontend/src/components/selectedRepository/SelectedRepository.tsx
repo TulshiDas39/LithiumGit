@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils } from "../../lib";
+import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils, Data } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -10,6 +10,9 @@ import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ChangeUtils } from "../../lib/utils/ChangeUtils";
+import { ActionSavedData } from "../../store";
+import { Messages } from "../../lib/constants";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 
 interface ISelectedRepositoryProps{
@@ -25,6 +28,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         status:state.ui.status,
         focusVersion:state.ui.versions.appFocused,
         remoteListRefreshVersion:state.ui.versions.remoteList,
+        annotVersion:state.ui.versions.annotations,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
     const refData = useRef({repo:props.repo,leftMinWidth:100});
@@ -39,9 +43,9 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     }
 
     const updateStatus = ()=>{
-        dispatch(ActionUI.setLoader({text:"Updating status..."}));
-        IpcUtils.getRepoStatus().finally(()=>{
-            dispatch(ActionUI.setLoader(undefined));
+        dispatch(ActionUI.setSync({text:Messages.getStatus}));
+        GitUtils.getStatus().finally(()=>{
+            dispatch(ActionUI.setSync(undefined));
         });
     }
 
@@ -88,24 +92,28 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             else GraphUtils.checkForUiUpdate(store.status!);
         });
         
-        ChangeUtils.handleStatusChange(store.status);
     },[store.status]);
 
     useEffect(()=>{
         if(!store.branchPanelRefreshVersion) return;
+        dispatch(ActionUI.setSync({text:Messages.refreshing}));
         updateRepoData(true).then(()=>{
             GraphUtils.createBranchPanel();                
             dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.setSync(undefined));
             ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(RepoUtils.repositoryDetails.remotes)));
             dispatch(ActionUI.setBranchList(RepoUtils.repositoryDetails.branchList.slice()));
+            dispatch(ActionUI.setGraphRefresh(false));
         });
     },[store.branchPanelRefreshVersion]);
 
     useEffect(()=>{
         if(!store.remoteListRefreshVersion) return;
         IpcUtils.getRemoteList().then(list=>{
-            RepoUtils.repositoryDetails.remotes = list;
+            if(RepoUtils.repositoryDetails){
+                RepoUtils.repositoryDetails.remotes = list;
+            }
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(list)));
         })
     },[store.remoteListRefreshVersion]);
@@ -135,6 +143,18 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             return;
         GraphUtils.resizeHandler();
     },[leftWidth])
+
+    const getAnnotations = (repoId:string)=>{
+        IpcUtils.getAnnotations(repoId).then(r=>{
+            if(!r.error){
+                Data.annotations = r.result || [];
+            }
+        });
+    }
+
+    useEffect(()=>{        
+        getAnnotations(props.repo._id);
+    },[store.annotVersion,props.repo])
 
     useEffect(()=>{
         refData.current.repo = props.repo;

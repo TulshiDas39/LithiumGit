@@ -9,6 +9,7 @@ import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IState{
     stashes:IStash[];
@@ -65,7 +66,7 @@ function StashesComponent(){
                 if(!r.error){
                     executeDelete(index).then(()=>{
                         getAll();
-                        IpcUtils.getRepoStatus();
+                        GitUtils.getStatus();
                     });
                 }
             });
@@ -83,7 +84,7 @@ function StashesComponent(){
         ModalData.confirmationModal.message = `Apply the stash {${index}}?`;
         ModalData.confirmationModal.YesHandler = ()=>{
             executeApply(index).then(()=>{
-                IpcUtils.getRepoStatus();
+                GitUtils.getStatus();
             });
         }
 

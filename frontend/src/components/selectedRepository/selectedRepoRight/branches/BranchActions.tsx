@@ -4,12 +4,13 @@ import { useDispatch } from "react-redux";
 import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { RepoUtils } from "../../../../lib";
+import { Messages } from "../../../../lib/constants";
 
 function BranchActionsComponent(){
     const dispatch = useDispatch();
     
     const handleRefresh = ()=>{
-        dispatch(ActionUI.setLoader({text:"Refreshing..."}));
+        dispatch(ActionUI.setGraphRefresh(true));
         dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
     }
 

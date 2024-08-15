@@ -1,8 +1,17 @@
-import { IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static updateUserEmail(value: string, isGlobal?:boolean) {
+        return IpcUtils.runGitCommand<any>(RendererEvents.updateUserEmail,[value,isGlobal]);
+    }
+    static updateUserName(value: string,isGlobal?:boolean) {
+        return IpcUtils.runGitCommand<any>(RendererEvents.updateUserName,[value,isGlobal]);
+    }
+    static getUserConfig() {
+        return IpcUtils.runGitCommand<ITypedConfig<IUserConfig>>(RendererEvents.getUserConfig,[]);
+    }
     static runStash(options: string[]) {
         return IpcUtils.runGitCommand(RendererEvents.stash,[options]);
     }
@@ -107,8 +116,8 @@ export class IpcUtils{
         return window.ipcRenderer.invoke(RendererEvents.createBranch().channel, sourceCommit,RepoUtils.repositoryDetails,branchName,checkout);
     }
 
-    static fetch(isAll:boolean){
-        return window.ipcRenderer.invoke(RendererEvents.fetch().channel,RepoUtils.repositoryDetails,isAll);
+    static fetch(options:string[]){
+        return IpcUtils.runGitCommand(RendererEvents.fetch().channel,[options]);
     }
 
     static async getFileContent(path:string){
@@ -229,5 +238,16 @@ export class IpcUtils{
     static async joinPathAsync(...path:string[]){
         const r = await this.execute<string>(RendererEvents.joinPathAsync,path);
         return r.result || "";
+    }
+    static async getAnnotations(repoId?:string){
+        if(!repoId)
+            repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        const r = await this.execute<Annotation[]>(RendererEvents.annotations,[repoId]);
+        return r;
+    }
+
+    static async addAnnotation(annot:Annotation){
+        const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
+        return r;
     }
 }
