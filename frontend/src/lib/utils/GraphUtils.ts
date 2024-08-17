@@ -383,11 +383,11 @@ export class GraphUtils{
             
             let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
             for(let c of commits.list){
-                // const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
-                // if(!existingCm)
-                //     return true;
-                // if(existingCm.refValues.some(_=> !c.refValues.includes(_)))
-                //     return true;
+                const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
+                if(!existingCm)
+                    return true;
+                if(existingCm.refValues.some(_=> !c.refValues.includes(_)))
+                    return true;
             }            
             return false;
         }catch(e){
