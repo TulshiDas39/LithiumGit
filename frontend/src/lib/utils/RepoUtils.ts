@@ -17,10 +17,10 @@ export class RepoUtils{
         RepoUtils.getBranchDetails(repoDetails);
         RepoUtils.enListSourceCommits(repoDetails);
         RepoUtils.finaliseSourceCommits(repoDetails);
-        RepoUtils.specifySerialsOfBranch(repoDetails);
+        RepoUtils.specifyDrawOrdersOfBranch(repoDetails);
         RepoUtils.setBranchVerticalOffset(repoDetails);
         RepoUtils.sortBranches(repoDetails);
-        RepoUtils.setBranchHeights2(repoDetails);
+        RepoUtils.setBranchHeights(repoDetails);
         RepoUtils.reversBranches(repoDetails);
         RepoUtils.createMergeLines(repoDetails);
 
@@ -48,7 +48,7 @@ export class RepoUtils{
         repoDetails.resolvedBranches.reverse();
     }        
 
-    private static setBranchHeights2(repoDetails:IRepositoryDetails){
+    private static setBranchHeights(repoDetails:IRepositoryDetails){
         let y = 30;
         const maxOffset = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.verticalOffset));
 
@@ -124,22 +124,22 @@ export class RepoUtils{
     }
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
-        repoDetails.resolvedBranches.sort((x,y)=> x.serial > y.serial ?1:-1);
+        repoDetails.resolvedBranches.sort((x,y)=> x.drawOrder > y.drawOrder ?1:-1);
     }
 
-    private static specifySerialsOfBranch(repoDetails:IRepositoryDetails){
-        const getSerial=(branch:IBranchDetails):number=>{
-            if(branch.serial != 0) return branch.serial;	  
-            let parentSerial = getSerial(branch.parentCommit?.ownerBranch!);
+    private static specifyDrawOrdersOfBranch(repoDetails:IRepositoryDetails){
+        const getDrawOrder=(branch:IBranchDetails):number=>{
+            if(branch.drawOrder != 0) return branch.drawOrder;	  
+            let parentDrawOrder = getDrawOrder(branch.parentCommit?.ownerBranch!);
             let commitInex=0;
             if(!!branch.name)commitInex = branch.parentCommit!.ownerBranch.commits.indexOf(branch.parentCommit!)+1;
             else commitInex = branch.parentCommit!.ownerBranch.commits.length+1;
-            let measuredSerial = parentSerial+ parentSerial * (1.0/(10.0*commitInex));
-            return measuredSerial;
+            let measuredDrawOrder = parentDrawOrder+ parentDrawOrder * (1.0/(10.0*commitInex));
+            return measuredDrawOrder;
         }
 
         repoDetails.resolvedBranches.forEach(br=>{
-            br.serial = getSerial(br);
+            br.drawOrder = getDrawOrder(br);
         });
     }
 
@@ -185,8 +185,8 @@ export class RepoUtils{
 			realOwnerBranch.parentCommit = currentOwnerBranch.parentCommit;
 			currentOwnerBranch.parentCommit = sourceCommit;	
 						
-			if(currentOwnerBranch.serial != 0.0) realOwnerBranch.serial = currentOwnerBranch.serial; 
-			currentOwnerBranch.serial = 0.0;
+			if(currentOwnerBranch.drawOrder != 0.0) realOwnerBranch.drawOrder = currentOwnerBranch.drawOrder; 
+			currentOwnerBranch.drawOrder = 0.0;
 			
 			let commitToMove = sourceCommit;
 			while (commitToMove != realOwnerBranch.parentCommit) {
@@ -211,7 +211,7 @@ export class RepoUtils{
           newOwnerBranch.parentCommit = parentCommit;          
           if(!parentCommit) {
         	  branchTree.push(newOwnerBranch);
-        	  newOwnerBranch.serial = branchTree.length;
+        	  newOwnerBranch.drawOrder = branchTree.length;
           }
           branchDetails.push(newOwnerBranch);
           return newOwnerBranch;
