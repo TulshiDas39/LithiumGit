@@ -84,6 +84,8 @@ export class RepoUtils{
     private static setBranchVerticalOffset(repoDetails:IRepositoryDetails){
 
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
+        const mainBranches = ["master","main"];
+        branchesWithoutParent.sort((a,_) => !mainBranches.includes(a.name) ? 1:-1);
         for(let i = 0; i < branchesWithoutParent.length; i++){
             const branch = branchesWithoutParent[i];
             branch.verticalOffset = i + 1;
