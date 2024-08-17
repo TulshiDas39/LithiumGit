@@ -504,7 +504,11 @@ export class GraphUtils{
     }     
 
     static refreshGraph(){
-        GraphUtils.state.filter.resetFilter();
+        const filter = {...GraphUtils.state.filter.value};
+        if(!filter.userModified){
+            filter.toDate = new Date().toISOString();
+        }
+        GraphUtils.state.filter.publishFilter(filter);
     }
 
     static checkForUiUpdate(newStatus:IStatus){

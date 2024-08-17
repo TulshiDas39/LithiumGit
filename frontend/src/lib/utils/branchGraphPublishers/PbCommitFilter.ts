@@ -4,6 +4,7 @@ import { ReduxUtils } from "../ReduxUtils";
 
 
 export class PbCommitFilter extends UiState<ICommitFilter>{
+    readonly defaultLimit = 400;
     constructor(filter:ICommitFilter){
         super(filter);
     }
@@ -14,14 +15,5 @@ export class PbCommitFilter extends UiState<ICommitFilter>{
 
     publishFilter(filter:Partial<ICommitFilter>){
         this.publish({...this.value,...filter});
-    }
-
-    resetFilter(){
-        const filter = {...this.value};
-        if(!filter.userModified){
-            filter.toDate = new Date().toISOString();
-        }
-
-        this.publishFilter(filter);
     }
 }

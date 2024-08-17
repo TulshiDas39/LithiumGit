@@ -3,14 +3,12 @@ import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMu
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
-import { IRepositoryDetails, IStatus, RendererEvents, RepositoryInfo } from "common_library";
+import { IStatus, RendererEvents, RepositoryInfo } from "common_library";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionUI } from "../../store/slices/UiSlice";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { ChangeUtils } from "../../lib/utils/ChangeUtils";
-import { ActionSavedData } from "../../store";
 import { Messages } from "../../lib/constants";
 import { GitUtils } from "../../lib/utils/GitUtils";
 
@@ -168,11 +166,10 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{
         refData.current.repo = props.repo;
-        updateRepoData().then(_=>{     
-            GraphUtils.createBranchPanel();
-            ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
-            dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(RepoUtils.repositoryDetails.remotes)));
-            dispatch(ActionUI.setBranchList(RepoUtils.repositoryDetails.branchList.slice()));
+        GraphUtils.state.filter.publishFilter({
+            userModified:false,
+            toDate:new Date().toISOString(),
+            limit:GraphUtils.state.filter.defaultLimit,
         });
     },[props.repo]);
 

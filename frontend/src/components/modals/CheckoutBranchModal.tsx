@@ -85,7 +85,7 @@ function CheckoutBranchModalComponent(){
             return;
         const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
-            GraphUtils.state.filter.resetFilter();
+            GraphUtils.refreshGraph();
         });
         hideModal();
     }

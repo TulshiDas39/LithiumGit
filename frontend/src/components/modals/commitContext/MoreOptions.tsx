@@ -54,7 +54,7 @@ function MoreOptionsComponent(props:IProps){
         const handler = ()=>{
             IpcUtils.getRaw(["branch","-D",branchName]).then(r=>{
                 if(r.result){
-                    GraphUtils.state.filter.resetFilter();
+                    GraphUtils.refreshGraph();
                 }
             })
         }

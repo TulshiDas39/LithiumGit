@@ -71,7 +71,7 @@ function MainComponent(){
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));
-            GraphUtils.state.filter.resetFilter();
+            GraphUtils.refreshGraph();
         })
 
         window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            
