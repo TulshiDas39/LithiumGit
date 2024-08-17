@@ -12,7 +12,7 @@ export class PbCommitFilter extends DerivedPublisher<ICommitFilter>{
         GraphUtils.state.fromDate.subscribe(this.update.bind(this));
         GraphUtils.state.toDate.subscribe(this.update.bind(this));
         GraphUtils.state.limit.subscribe(this.update.bind(this));
-        this.update();
+        this._val = this.getDerivedValue();
     }
 
     protected getDerivedValue(): ICommitFilter {

@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";
 import { EnumHtmlIds, EnumIdPrefix } from "../enums";
-import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
@@ -87,7 +87,7 @@ export class GraphUtils{
         GraphUtils.state.viewBoxX = new PbViewBoxX(0);
         GraphUtils.state.viewBoxY = new PbViewBoxY(0);
         GraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
-        GraphUtils.state.filter = new PbCommitFilter();
+        GraphUtils.state.filter = new PbCommitFilter();        
     }    
 
     static createBranchPanel(){
