@@ -2,7 +2,7 @@ import { ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, GraphUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
@@ -71,7 +71,7 @@ function MainComponent(){
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));
-            dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+            GraphUtils.state.filter.resetFilter();
         })
 
         window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            

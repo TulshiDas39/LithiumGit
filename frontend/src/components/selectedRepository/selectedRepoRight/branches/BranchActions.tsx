@@ -9,7 +9,7 @@ function BranchActionsComponent(){
     
     const handleRefresh = ()=>{
         dispatch(ActionUI.setGraphRefresh(true));
-        dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        GraphUtils.state.filter.resetFilter();
     }
 
     return <div className="d-flex py-2 align-items-center" style={{height:30}}>

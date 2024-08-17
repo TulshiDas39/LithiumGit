@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
-import { EnumModals, RepoUtils, useMultiState } from "../../lib";
+import { EnumModals, GraphUtils, RepoUtils, useMultiState } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { AppButton } from "../common";
@@ -85,7 +85,7 @@ function CheckoutBranchModalComponent(){
             return;
         const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
-            dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
+            GraphUtils.state.filter.resetFilter();
         });
         hideModal();
     }
