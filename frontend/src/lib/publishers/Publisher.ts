@@ -1,32 +1,15 @@
 import { IPublisher } from "../interfaces";
+import { Notifier } from "./Notifier";
 
-export class Publisher<T> implements IPublisher<T>{
-    protected _prevVal?:T;
-    protected _val:T;
-    protected events:((val: T) => void)[]=[];
+export class Publisher<T> extends Notifier<T> implements IPublisher<T>{
     constructor(value:T){
-        this._val = value;
-    }    
-    get value(){
-        return this._val;
-    }
+        super(value)
+    } 
 
-    get prevValue(){
-        return this._prevVal;
-    }
-    subscribe(callback: (val: T) => void){
-        if(!this.events.includes(callback))
-            this.events.push(callback);
-        return this;
-    }
-    unSubscribe(callback: (val: T) => void) {
-        this.events = this.events.filter( v =>  v != callback);
-    }
     publish(v:T){
         if(this._val == v)
             return;
-        this._prevVal = this._val;
-        this._val = v;        
-        this.events.forEach(f => f(this._val));
+        this.value = v;
+        this.notifyAll();
     }
 }

@@ -373,17 +373,21 @@ export class GraphUtils{
         try{
             const newStatus = RepoUtils.repositoryDetails?.status;
             if(!newStatus?.headCommit) return false;
-            if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value?.hash) return true;
-            const uiRefs = GraphUtils.state.headCommit.value.refValues;
-            const newRefs = newStatus.headCommit.refValues;        
-            if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+            
+            if(!!GraphUtils.state.headCommit.value){
+                if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value.hash) return true;
+                const uiRefs = GraphUtils.state.headCommit.value.refValues;
+                const newRefs = newStatus.headCommit.refValues;        
+                if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+            }
+            
             let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
             for(let c of commits.list){
-                const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
-                if(!existingCm)
-                    return true;
-                if(existingCm.refValues.some(_=> !c.refValues.includes(_)))
-                    return true;
+                // const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
+                // if(!existingCm)
+                //     return true;
+                // if(existingCm.refValues.some(_=> !c.refValues.includes(_)))
+                //     return true;
             }            
             return false;
         }catch(e){
@@ -499,20 +503,8 @@ export class GraphUtils{
         GraphUtils.state.horizontalScrollWidth.update();
         GraphUtils.state.verticalScrollHeight.update();
         //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
-        GraphUtils.state.headCommit.publish(RepoUtils.repositoryDetails.headCommit);
-    }
-
-    static updateHeadIdentifier(){
-        const currentHead = GraphUtils.state.headCommit.value;
-        if(currentHead != null){
-            const headElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${currentHead.hash}`)
-            headElem?.classList.remove("d-none");
-        }        
-        if(!GraphUtils.state.headCommit.prevValue)
-            return;
-        const prevHeadElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${GraphUtils.state.headCommit.prevValue!.hash}`);
-        prevHeadElem?.classList.add("d-none");
-    }    
+        GraphUtils.state.headCommit.update();
+    }     
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;

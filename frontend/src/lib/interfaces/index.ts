@@ -9,3 +9,4 @@ export * from './IPositionDiff';
 export * from './ICommitFlatInfo';
 export * from './IpcParams';
 export * from './IScopedValue';
+export * from './INotifiable';

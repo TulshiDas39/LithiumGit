@@ -10,6 +10,7 @@ export abstract class DerivedPublisher<T> extends Publisher<T>{
     protected abstract getDerivedValue():T;
 
     update(){
-        this.publish(this.getDerivedValue());
+        this.value = this.getDerivedValue();
+        this.notifyAll();
     }
 }
