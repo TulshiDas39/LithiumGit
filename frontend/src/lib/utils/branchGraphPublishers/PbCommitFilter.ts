@@ -1,6 +1,6 @@
 import { ICommitFilter } from "common_library";
 import { UiState } from "../../publishers";
-import { GraphUtils } from "../GraphUtils";
+import { ReduxUtils } from "../ReduxUtils";
 
 
 export class PbCommitFilter extends UiState<ICommitFilter>{
@@ -9,7 +9,7 @@ export class PbCommitFilter extends UiState<ICommitFilter>{
     }
 
     protected applyChange(): void {
-        throw new Error("Method not implemented.");
+        ReduxUtils.refreshGraph();
     }
 
     publishFilter(filter:Partial<ICommitFilter>){

@@ -37,6 +37,10 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     const dispatch = useDispatch();
     
+    ReduxUtils.refreshGraph = ()=>{
+        dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+    }
+
     const getRepoDetails = async ()=>{
         const filter = GraphUtils.state.filter.value;
         return IpcUtils.getRepoDetails(props.repo,filter).then(r=>{
@@ -79,11 +83,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             ReduxUtils.setStatus(res);
         })
 
-        const handleGraphFilterChange=()=>{
-            dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
-        }
-
-        GraphUtils.state.filter.subscribe(handleGraphFilterChange);
+        
        
        return ()=>{
         ReduxUtils.setStatus = ()=>{};
@@ -91,7 +91,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             RendererEvents.getStatus().replyChannel,            
         ]);
         dispatch(ActionUI.setStatus(undefined!));
-        GraphUtils.state.filter.unSubscribe(handleGraphFilterChange);
        }
     },[]);
 
