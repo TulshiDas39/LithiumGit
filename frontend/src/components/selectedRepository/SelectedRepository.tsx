@@ -65,7 +65,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             RepoUtils.repositoryDetails.status = status;            
         }
         CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-    }
+    }    
 
     useEffect(()=>{       
         ReduxUtils.setStatus = (status:IStatus)=>{            
@@ -78,6 +78,12 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
             ReduxUtils.setStatus(res);
         })
+
+        const handleGraphFilterChange=()=>{
+            dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+        }
+
+        GraphUtils.state.filter.subscribe(handleGraphFilterChange);
        
        return ()=>{
         ReduxUtils.setStatus = ()=>{};
@@ -85,6 +91,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             RendererEvents.getStatus().replyChannel,            
         ]);
         dispatch(ActionUI.setStatus(undefined!));
+        GraphUtils.state.filter.unSubscribe(handleGraphFilterChange);
        }
     },[]);
 
@@ -92,7 +99,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         if(!store.status || !RepoUtils.repositoryDetails)
             return;
         GraphUtils.isRequiredReload().then(requiredReload => {
-            if(requiredReload) dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+            if(requiredReload) GraphUtils.refreshGraph();
             else GraphUtils.checkForUiUpdate(store.status!);
         });
         

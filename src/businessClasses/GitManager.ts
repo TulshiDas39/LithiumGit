@@ -51,6 +51,7 @@ export class GitManager{
         this.addGitUserConfigHandler();
         this.addUserNameUpdateHandler();
         this.addUserEmailUpdateHandler();
+        this.addGraphCommitListHandler();
     }
 
 
@@ -284,6 +285,14 @@ export class GitManager{
             return repoDetails;
         });
     }
+
+    private addGraphCommitListHandler(){
+        ipcMain.handle(RendererEvents.getGraphCommits, async (e,repoPath:string,filter:ICommitFilter)=>{
+            const git = this.getGitRunner(repoPath);
+            const list = await this.getCommits(git,filter);
+            return list;
+        });
+    }    
 
     private addLogHandler(){
         ipcMain.handle(RendererEvents.gitLog, async (e,repoInfo:RepositoryInfo,filterOptions:ILogFilterOptions)=>{

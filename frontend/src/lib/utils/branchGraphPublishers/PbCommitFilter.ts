@@ -1,23 +1,27 @@
 import { ICommitFilter } from "common_library";
-import { DerivedPublisher } from "../../publishers";
+import { UiState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 
 
-export class PbCommitFilter extends DerivedPublisher<ICommitFilter>{
-    constructor(){
-        super();
-        GraphUtils.state.fromDate.subscribe(this.update.bind(this));
-        GraphUtils.state.toDate.subscribe(this.update.bind(this));
-        GraphUtils.state.limit.subscribe(this.update.bind(this));
-        this._val = this.getDerivedValue();
+export class PbCommitFilter extends UiState<ICommitFilter>{
+    constructor(filter:ICommitFilter){
+        super(filter);
     }
 
-    protected getDerivedValue(): ICommitFilter {
-        const data = {} as ICommitFilter;
-        data.fromDate = GraphUtils.state.fromDate.value!;
-        data.toDate = GraphUtils.state.toDate.value;
-        data.limit = GraphUtils.state.limit.value;
-        return data;
+    protected applyChange(): void {
+        throw new Error("Method not implemented.");
     }
 
+    publishFilter(filter:Partial<ICommitFilter>){
+        this.publish({...this.value,...filter});
+    }
+
+    resetFilter(){
+        const filter = {...this.value};
+        if(!filter.userModified){
+            filter.toDate = new Date().toISOString();
+        }
+
+        this.publishFilter(filter);
+    }
 }

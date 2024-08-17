@@ -15,7 +15,7 @@ export class PbHeadCommit extends DerivedState<ICommitInfo|undefined>{
         }        
         if(!this.prevValue)
             return;
-        const prevHeadElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${GraphUtils.state.headCommit.prevValue!.hash}`);
+        const prevHeadElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${this.prevValue!.hash}`);
         prevHeadElem?.classList.add("d-none");
     }
 

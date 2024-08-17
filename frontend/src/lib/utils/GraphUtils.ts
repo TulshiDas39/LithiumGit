@@ -33,9 +33,6 @@ interface IState{
     viewBoxWidth:PbViewBoxWidth;
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
-    fromDate:Publisher<string | null>;
-    toDate:Publisher<string>;
-    limit:Publisher<number>;
     filter:PbCommitFilter;
 }
 
@@ -67,9 +64,7 @@ export class GraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
-        fromDate: new Publisher(null),
-        toDate: new Publisher(new Date().toISOString()),
-        limit : new Publisher(400),
+        filter : new PbCommitFilter({limit:400,toDate: new Date().toISOString(),userModified:false}),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -87,7 +82,6 @@ export class GraphUtils{
         GraphUtils.state.viewBoxX = new PbViewBoxX(0);
         GraphUtils.state.viewBoxY = new PbViewBoxY(0);
         GraphUtils.state.viewBox = new PbViewBox({x:0,y:0,width:0,height:0});
-        GraphUtils.state.filter = new PbCommitFilter();        
     }    
 
     static createBranchPanel(){
@@ -378,11 +372,14 @@ export class GraphUtils{
                 if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value.hash) return true;
                 const uiRefs = GraphUtils.state.headCommit.value.refValues;
                 const newRefs = newStatus.headCommit.refValues;        
-                if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+                if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
             }
-            
-            let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
-            for(let c of commits.list){
+            let filter = GraphUtils.state.filter.value;
+            if(!filter.userModified){
+                filter = {...filter,toDate:new Date().toISOString()};
+            }
+            let commits = await IpcUtils.getGraphCommitList(filter);
+            for(let c of commits){
                 const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
                 if(!existingCm)
                     return true;
@@ -505,6 +502,10 @@ export class GraphUtils{
         //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
         GraphUtils.state.headCommit.update();
     }     
+
+    static refreshGraph(){
+        GraphUtils.state.filter.resetFilter();
+    }
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;

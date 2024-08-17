@@ -1,8 +1,15 @@
 import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
+import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 export class IpcUtils{
+    static async getGraphCommitList(filter: ICommitFilter) {
+        const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
+        if(!r.error)
+            return r.result!;
+        return [];
+    }
     static updateUserEmail(value: string, isGlobal?:boolean) {
         return IpcUtils.runGitCommand<any>(RendererEvents.updateUserEmail,[value,isGlobal]);
     }
