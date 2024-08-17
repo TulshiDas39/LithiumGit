@@ -49,37 +49,19 @@ export class RepoUtils{
     }        
 
     private static setBranchHeights2(repoDetails:IRepositoryDetails){
-        const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
         let y = 30;
-        for(let branch of branchesWithoutParent){
-            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
-            y = branch.y + RepoUtils.distanceBetweenBranchLine;
-        }
+        const maxOffset = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.verticalOffset));
 
-        const setHeight = (branch:IBranchDetails)=>{
-            if(branch.name == 'preproduction'){
-                debugger;
+        for(let offset = 1;offset <= maxOffset;offset++){
+            const branchesOfThisOffset = repoDetails.resolvedBranches.filter(_=> _.verticalOffset == offset);
+            for(let branch of branchesOfThisOffset){
+                branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
             }
-            const upperOffset = branch.verticalOffset - 1;
-            const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
-            const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
-            upperBranchesWithoutHeight.forEach(_ => setHeight(_));
-            const y = ArrayUtils.findMax(upperBranches.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
-            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
-        }
 
-        const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
-        if(!!branches.length){
-            debugger;
-            const startOffset = ArrayUtils.findMin(branches.map(_=>_.verticalOffset));
-            for(let offset = startOffset; offset <= repoDetails.resolvedBranches.length ; offset++){
-                debugger;
-                const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
-                branchesOfThisOffset.forEach(_ => setHeight(_));
-            }   
-        }        
-     
-        repoDetails.branchPanelHeight = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.y)) + 50;
+            y = ArrayUtils.findMax(branchesOfThisOffset.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
+        }
+        
+        repoDetails.branchPanelHeight = y + 50;
     }
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
@@ -141,8 +123,6 @@ export class RepoUtils{
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
         repoDetails.resolvedBranches.sort((x,y)=> x.serial > y.serial ?1:-1);
-        const br = repoDetails.resolvedBranches.find(_=> _.name === 'preproduction');
-        console.log("preprod",br);
     }
 
     private static specifySerialsOfBranch(repoDetails:IRepositoryDetails){

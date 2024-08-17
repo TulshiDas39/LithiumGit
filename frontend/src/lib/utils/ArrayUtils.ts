@@ -10,10 +10,14 @@ export class ArrayUtils{
     }
 
     static findMax(array:number[]){
+        if(!array.length)
+            return 0;
         return array.reduce((acc,current) => Math.max(acc,current))
     }
 
     static findMin(array:number[]){
+        if(!array.length)
+            return 0;
         return array.reduce((acc,current) => Math.min(acc,current))
     }
 }
