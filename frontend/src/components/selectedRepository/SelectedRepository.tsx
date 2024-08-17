@@ -37,9 +37,13 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     const dispatch = useDispatch();
     
-    const getRepoDetails = async ()=>{            
-        const res:IRepositoryDetails = await window.ipcRenderer.invoke(RendererEvents.getRepositoryDetails().channel,props.repo);
-        return res;
+    const getRepoDetails = async ()=>{
+        const filter = GraphUtils.state.filter.value;
+        return IpcUtils.getRepoDetails(props.repo,filter).then(r=>{
+            if(!r.error)
+                return r.result!;
+            throw "Can't load repo details";
+        });
     }
 
     const updateStatus = ()=>{

@@ -1,4 +1,4 @@
-import { Annotation, IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
@@ -219,7 +219,7 @@ export class IpcUtils{
         };
     }
 
-    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string|RepositoryInfo){      
         if(!repositoryPath)
             repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
@@ -250,4 +250,10 @@ export class IpcUtils{
         const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
         return r;
     }
+
+    static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
+        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],repoInfo);
+        return r;
+    }
+    
 }

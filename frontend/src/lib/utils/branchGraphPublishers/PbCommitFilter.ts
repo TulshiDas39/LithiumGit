@@ -1,11 +1,8 @@
+import { ICommitFilter } from "common_library";
 import { DerivedPublisher } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 
-export interface ICommitFilter{
-    fromDate?:string;
-    toDate:string;
-    limit:number;
-}
+
 export class PbCommitFilter extends DerivedPublisher<ICommitFilter>{
     constructor(){
         super();

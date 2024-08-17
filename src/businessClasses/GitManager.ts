@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
 import { ipcMain, ipcRenderer } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -279,8 +279,8 @@ export class GitManager{
     }
 
     private addRepoDetailsHandler(){
-        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const repoDetails = await this.repoDetails(repoInfo);
+        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo,filter:ICommitFilter)=>{
+            const repoDetails = await this.repoDetails(repoInfo,filter);
             return repoDetails;
         });
     }
@@ -346,11 +346,11 @@ export class GitManager{
         repoDetails.headCommit = head;        
     }
 
-    private async repoDetails(repoInfo:RepositoryInfo){
+    private async repoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
         const git = this.getGitRunner(repoInfo);
-        const commits = await this.getCommits(git);
+        const commits = await this.getCommits(git,filter);
         repoDetails.allCommits = commits;
         repoDetails.branchList = await this.getAllBranches(git);
         repoDetails.status = await this.getStatus(repoInfo);
@@ -454,11 +454,25 @@ export class GitManager{
         }
     }
 
-    private async getCommits(git: SimpleGit){
+    private getFilterOptions(filter:ICommitFilter){
+        const options = [`--before=${filter.toDate}`];
+        if(filter.fromDate){
+            options.push(`--after=${filter.fromDate}`);
+        }
+        else{
+            options.push(`--max-count=${filter.limit}`);
+        }
+        return options;
+    }
+
+    private async getCommits(git: SimpleGit,filter:ICommitFilter){
         const commitLimit=500;
         //const LogFormat = "--pretty="+logFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
-            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
+            //--`--skip=${0*commitLimit}`
+            const filterOptions = this.getFilterOptions(filter);
+            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];
+            let res = await git.raw(options);
             const commits = CommitParser.parse(res);
             return commits;
         }catch(e){
