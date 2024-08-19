@@ -263,6 +263,8 @@ export class GraphUtils{
     static updateUiForCheckout(){
         if(!this.svgElement) return;
         const headCommit = RepoUtils.repositoryDetails.headCommit;
+        if(!headCommit)
+            return;
         if(RepoUtils.repositoryDetails.status.isDetached){
             const commitElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${headCommit.hash}`);
             const headTextElem = this.CreateHeadTextElement(headCommit);        
@@ -279,6 +281,8 @@ export class GraphUtils{
     static revertUiOfExistingCheckout(){
         if(!this.svgElement) return;
         const headCommit = RepoUtils.repositoryDetails.headCommit;
+        if(!headCommit)
+            return;
         const headCommitTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
         if(!headCommitTextElem) return;
         headCommitTextElem.classList.add("d-none");
@@ -299,46 +303,52 @@ export class GraphUtils{
         const repoDetails = RepoUtils.repositoryDetails;
         this.revertUiOfExistingCheckout();
         const existingHead = repoDetails.headCommit;
-        existingHead.isHead = false;
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
-        if(!newHeadCommit) throw "New checkout commit not found";
-        repoDetails.headCommit = newHeadCommit;
-        newHeadCommit.isHead = true;        
+
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
 
         const existingStatus = repoDetails.status;
-        repoDetails.status = newStatus;                
+        repoDetails.status = newStatus; 
 
-        if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                existingHead.ownerBranch.increasedHeightForDetached = 0;
-            }            
-        }
-
-        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
-
-        if(newStatus.isDetached){
-            newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
-            newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
-        }
-        else{
-            if(!RepoUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
-                newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
-                newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
-                newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+        if(existingHead){
+            existingHead.isHead = false;
+            if(existingStatus.isDetached){
+                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
+                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                    existingHead.ownerBranch.increasedHeightForDetached = 0;
+                }            
             }
         }
-        if(newHeadCommit.refValues.length > existingMaxRefLength){
-            newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-            newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
-            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-            GraphUtils.refreshBranchPanelUi();
+        repoDetails.headCommit = newHeadCommit!;
+        
+        if(newHeadCommit){
+            repoDetails.headCommit = newHeadCommit;
+            newHeadCommit.isHead = true;
+            const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+
+            if(newStatus.isDetached){
+                newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
+                newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
+            }
+            else{
+                if(!RepoUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
+                    newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
+                    newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
+                    newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+                }
+            }
+            if(newHeadCommit.refValues.length > existingMaxRefLength){
+                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+                GraphUtils.refreshBranchPanelUi();
+            }
+            else {
+                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+                this.updateUiForCheckout();
+            }
         }
-        else {
-            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-            this.updateUiForCheckout();
-        }        
+                
     }
 
     static refreshBranchPanelUi(){
@@ -452,7 +462,7 @@ export class GraphUtils{
 
         const clickListener = (_e:MouseEvent)=>{
             let existingSelectedCommitElem:HTMLElement|null;
-            if(GraphUtils.state.selectedCommit.value.hash) {
+            if(GraphUtils.state.selectedCommit.value?.hash) {
                 existingSelectedCommitElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${GraphUtils.state.selectedCommit.value.hash}`);
                 existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
             }
@@ -513,10 +523,10 @@ export class GraphUtils{
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
+        const head = RepoUtils.repositoryDetails.headCommit;
+        if(!!head && newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
             if(newStatus.mergingCommitHash){
-                const head = RepoUtils.repositoryDetails.headCommit;
                 const dummyCommit = CreateCommitInfoObj();
                 dummyCommit.hash = null!;                
                 dummyCommit.date = new Date().toISOString();

@@ -80,8 +80,12 @@ export class IpcUtils{
     static trigerPush(options?:string[]){
         if(!options){
             options = [RepoUtils.activeOriginName];
-            if(!RepoUtils.repositoryDetails.status.trackingBranch)
-                options.push("-u",RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+            if(!RepoUtils.repositoryDetails.status.trackingBranch){
+                const br = RepoUtils.repositoryDetails.headCommit?.ownerBranch.name;
+                if(br){
+                    options.push("-u",br);
+                }
+            }
         }
         return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
     }
@@ -89,8 +93,12 @@ export class IpcUtils{
     static trigerPull(options?:string[]){
         if(!options){
             options = [RepoUtils.activeOriginName];
-            if(!RepoUtils.repositoryDetails.status.trackingBranch)
-                options.push(RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+            if(!RepoUtils.repositoryDetails.status.trackingBranch){
+                const br = RepoUtils.repositoryDetails.headCommit?.ownerBranch.name;
+                if(br){
+                    options.push(br);
+                }
+            }
         }
         return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }

@@ -406,35 +406,37 @@ export class RepoUtils{
     }
 
     static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
-        const existingHead = repoDetails.headCommit;
-        existingHead.isHead = false;
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
-        if(!newHeadCommit) throw "New checkout commit not found";
-        repoDetails.headCommit = newHeadCommit;
-        newHeadCommit.isHead = true;        
+        
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
 
         const existingStatus = repoDetails.status;
         repoDetails.status = newStatus;                
 
-        if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                existingHead.ownerBranch.increasedHeightForDetached = 0;
-            }            
-        }
-
-        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
-
-        if(newStatus.isDetached){
-            newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
-            if(newHeadCommit.refValues.length > existingMaxRefLength){
-                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+        const existingHead = repoDetails.headCommit;
+        
+        if(existingHead){
+            existingHead.isHead = false;
+            if(existingStatus.isDetached){
+                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
+                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                    existingHead.ownerBranch.increasedHeightForDetached = 0;
+                }            
             }
         }
 
-        
+        if(newHeadCommit){
+            repoDetails.headCommit = newHeadCommit;
+            newHeadCommit.isHead = true;
+            const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+            if(newStatus.isDetached){
+                newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
+                if(newHeadCommit.refValues.length > existingMaxRefLength){
+                    newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                    newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+                }
+            }
+        }
                 
     }
 

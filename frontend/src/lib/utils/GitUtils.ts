@@ -165,7 +165,11 @@ export class GitUtils{
         }
         else{
             const origin = RepoUtils.activeOriginName;
-            options.push(origin, RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+            options.push(origin);
+            const brName = RepoUtils.repositoryDetails.status.headCommit?.ownerBranch.name;
+            if(brName){
+                options.push(brName);
+            }
         }
         ReduxUtils.dispatch(ActionUI.setLoader({text:Messages.fetch}));
         return IpcUtils.fetch(options).then(r=>{

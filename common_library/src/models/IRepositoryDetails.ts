@@ -10,7 +10,7 @@ export interface IRepositoryDetails{
     remotes:IRemoteInfo[];
     branchTree:IBranchDetails[];
     resolvedBranches:IBranchDetails[];
-    headCommit:ICommitInfo;
+    headCommit?:ICommitInfo;
     mergeCommitMessages:string[];
     sourceCommits:ICommitInfo[];
     repoInfo:RepositoryInfo;

@@ -4,7 +4,7 @@ import { RepoUtils } from "../RepoUtils";
 import { GraphUtils } from "../GraphUtils";
 import { EnumIdPrefix } from "../../enums";
 
-export class PbSelectedCommit extends UiState<ICommitInfo>{
+export class PbSelectedCommit extends UiState<ICommitInfo|undefined>{
     protected applyChange(): void {   
         this.resetPrevious();
         this.highlight();
@@ -35,6 +35,8 @@ export class PbSelectedCommit extends UiState<ICommitInfo>{
     }
 
     focus(){
+        if(!this.value)
+            return;
         const horizontalRatio = this.value.x/RepoUtils.repositoryDetails.branchPanelWidth;
         const verticalRatio = this.value.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
         GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
