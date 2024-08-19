@@ -40,6 +40,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     }
 
     const getRepoDetails = async ()=>{
+        console.log("Getting repository details.");
         const filter = GraphUtils.state.filter.value;
         return IpcUtils.getRepoDetails(props.repo,filter).then(r=>{
             if(!r.error)
@@ -102,10 +103,8 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         
     },[store.status]);
 
-    useEffect(()=>{
-        if(!store.branchPanelRefreshVersion) return;
-        dispatch(ActionUI.setSync({text:Messages.refreshing}));
-        updateRepoData(true).then(()=>{
+    const updateGraph=(reloadData = false)=>{
+        return updateRepoData(reloadData).then(()=>{
             GraphUtils.createBranchPanel();                
             dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync(undefined));
@@ -114,6 +113,12 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             dispatch(ActionUI.setBranchList(RepoUtils.repositoryDetails.branchList.slice()));
             dispatch(ActionUI.setGraphRefresh(false));
         });
+    }
+
+    useEffect(()=>{
+        if(!store.branchPanelRefreshVersion) return;
+        dispatch(ActionUI.setSync({text:Messages.refreshing}));
+        updateGraph(true);
     },[store.branchPanelRefreshVersion]);
 
     useEffect(()=>{
@@ -166,11 +171,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
 
     useEffect(()=>{
         refData.current.repo = props.repo;
-        GraphUtils.state.filter.publishFilter({
-            userModified:false,
-            toDate:new Date().toISOString(),
-            limit:GraphUtils.state.filter.defaultLimit,
-        });
+        updateGraph();
     },[props.repo]);
 
     return <div id="SelectedRepository" className="d-flex h-100">
