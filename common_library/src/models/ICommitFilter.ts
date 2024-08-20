@@ -1,6 +1,7 @@
 export interface ICommitFilter{
     fromDate?:string;
-    toDate:string;
+    toDate?:string;
+    baseDate?:string;
     limit:number;
     userModified:boolean;
 }

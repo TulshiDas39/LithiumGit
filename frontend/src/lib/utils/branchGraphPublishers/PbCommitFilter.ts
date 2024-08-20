@@ -4,7 +4,6 @@ import { ReduxUtils } from "../ReduxUtils";
 
 
 export class PbCommitFilter extends UiState<ICommitFilter>{
-    readonly defaultLimit = 400;
     constructor(filter:ICommitFilter){
         super(filter);
     }

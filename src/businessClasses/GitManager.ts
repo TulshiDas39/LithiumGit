@@ -289,7 +289,7 @@ export class GitManager{
     private addGraphCommitListHandler(){
         ipcMain.handle(RendererEvents.getGraphCommits, async (e,repoPath:string,filter:ICommitFilter)=>{
             const git = this.getGitRunner(repoPath);
-            const list = await this.getCommits(git,filter);
+            const list = await this.getCommitsIteratively(git,filter);
             return list;
         });
     }    
@@ -359,10 +359,10 @@ export class GitManager{
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
         const git = this.getGitRunner(repoInfo);
-        const commits = await this.getCommits(git,filter);
+        repoDetails.status = await this.getStatus(repoInfo);        
+        const commits = await this.getCommitsIteratively(git,filter);
         repoDetails.allCommits = commits;
         repoDetails.branchList = await this.getAllBranches(git);
-        repoDetails.status = await this.getStatus(repoInfo);
         this.setHead(repoDetails);
         const remotes = await git.getRemotes(true);        
         remotes.forEach(r=>{
@@ -464,14 +464,68 @@ export class GitManager{
     }
 
     private getFilterOptions(filter:ICommitFilter){
-        const options = [`--before=${filter.toDate}`];
+        const options = [];
+        if(filter.toDate){
+           options.push(`--before=${filter.toDate}`);
+        }
         if(filter.fromDate){
             options.push(`--after=${filter.fromDate}`);
         }
-        else{
+        if(filter.limit){
             options.push(`--max-count=${filter.limit}`);
         }
         return options;
+    }
+
+    private async getCommitsIteratively(git: SimpleGit,filter:ICommitFilter){        
+        if(filter.fromDate || filter.toDate)
+            return await this.getCommits(git,filter);
+        
+        if(!filter.limit || !filter.baseDate)
+            throw "Limit or base date cannot be null.";
+
+        const date = new Date(filter.baseDate!);
+        date.setSeconds(date.getSeconds()+1);
+        const toDateStr = date.toISOString();
+        let newFilter:ICommitFilter = {
+            toDate:toDateStr,
+            limit:filter.limit,
+            userModified:false,
+        }
+
+        let preCommits = await this.getCommits(git,newFilter);
+        let newLimit = filter.limit/2;
+        if(preCommits.length < filter.limit / 2){
+            newLimit +=  (filter.limit / 2) - preCommits.length;
+        }
+
+        newFilter = {
+            fromDate:filter.baseDate,
+            limit:newLimit,
+            userModified:false,
+        };
+
+        
+        let postCommits = await this.getCommits(git,newFilter);
+        const preLastCommitHash = preCommits[preCommits.length -1].hash;
+        const postStartIndex = postCommits.findIndex(_=> _.hash === preLastCommitHash) + 1;
+        postCommits = postCommits.slice(postStartIndex);
+        const total = preCommits.length + postCommits.length;
+        if(total > filter.limit){
+            const extra = total - filter.limit;
+            if(preCommits.length > filter.limit / 2 ){
+                preCommits = preCommits.slice(extra);
+            }
+            else if(postCommits.length > filter.limit / 2 ){
+                postCommits = postCommits.slice(0, postCommits.length - extra);
+            }
+        }
+        
+
+        const allCommits = [...preCommits,...postCommits.slice(postStartIndex)];
+
+        return allCommits;
+
     }
 
     private async getCommits(git: SimpleGit,filter:ICommitFilter){
@@ -561,13 +615,6 @@ export class GitManager{
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
         return result.all;
-    }
-
-    private isDetachedCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails){
-        if(!commit.branchNameWithRemotes.length) return true;
-        if(commit.branchNameWithRemotes.some(br=>br.branchName === commit.ownerBranch.name && !br.remote)) return false;
-        if(repoDetails.branchList.includes(commit.ownerBranch.name)) return true;
-        return true;
     }
 
     private async checkoutCommit(repoPath:string,options:string[]){

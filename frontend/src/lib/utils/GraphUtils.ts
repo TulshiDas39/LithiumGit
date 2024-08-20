@@ -52,6 +52,7 @@ export class GraphUtils{
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     //static readonly scrollbarSize = 10;
     static readonly scrollBarSize = 10;
+    static readonly defaultLimit = 400;
 
     static openContextModal=()=>{};
    
@@ -385,9 +386,6 @@ export class GraphUtils{
                 if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
             }
             let filter = GraphUtils.state.filter.value;
-            if(!filter.userModified){
-                filter = {...filter,toDate:new Date().toISOString()};
-            }
             let commits = await IpcUtils.getGraphCommitList(filter);
             for(let c of commits){
                 const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
@@ -515,8 +513,14 @@ export class GraphUtils{
 
     static refreshGraph(){
         const filter = {...GraphUtils.state.filter.value};
-        if(!filter.userModified){
-            filter.toDate = new Date().toISOString();
+        if(!filter.userModified){        
+            const head = RepoUtils.repositoryDetails.status.headCommit;
+            if(!head)
+                return;
+            filter.fromDate = undefined;
+            filter.toDate = undefined;
+            filter.baseDate = new Date(head.date).toISOString();
+            filter.limit = GraphUtils.defaultLimit;
         }
         GraphUtils.state.filter.publishFilter(filter);
     }
