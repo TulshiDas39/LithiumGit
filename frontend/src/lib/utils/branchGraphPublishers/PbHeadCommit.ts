@@ -6,7 +6,7 @@ import { EnumIdPrefix } from "../../enums";
 
 export class PbHeadCommit extends DerivedState<ICommitInfo|undefined>{
     protected getDerivedValue(): ICommitInfo | undefined {  
-        const head = RepoUtils.repositoryDetails?.allCommits.find(_=>_.isHead);        
+        const head = RepoUtils.repositoryDetails?.allCommits.find(_=>_.isHead);
         return head;
     }
     protected applyChange(): void {

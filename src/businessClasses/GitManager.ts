@@ -1,15 +1,16 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
-import { ipcMain, ipcRenderer } from "electron";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
+import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
-import { AppData, LogFields, SavedData } from "../dataClasses";
+import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
+import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
-    private readonly logFields = LogFields.Fields();    
+    private readonly logFields = LogFields.Fields();
+    private logLine = 10;    
     private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
@@ -484,11 +485,8 @@ export class GitManager{
         if(!filter.limit || !filter.baseDate)
             throw "Limit or base date cannot be null.";
 
-        const date = new Date(filter.baseDate!);
-        date.setSeconds(date.getSeconds()+1);
-        const toDateStr = date.toISOString();
         let newFilter:ICommitFilter = {
-            toDate:toDateStr,
+            toDate:filter.baseDate!,
             limit:filter.limit,
             userModified:false,
         }
@@ -499,16 +497,20 @@ export class GitManager{
             newLimit +=  (filter.limit / 2) - preCommits.length;
         }
 
+        const toDate = new Date(filter.baseDate);
+        toDate.setMonth(toDate.getMonth()+5);
+
         newFilter = {
             fromDate:filter.baseDate,
-            limit:newLimit,
+            toDate:toDate.toISOString(),
             userModified:false,
+            firstItems:true,
         };
 
         
         let postCommits = await this.getCommits(git,newFilter);
         const preLastCommitHash = preCommits[preCommits.length -1].hash;
-        const postStartIndex = postCommits.findIndex(_=> _.hash === preLastCommitHash) + 1;
+        const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
         postCommits = postCommits.slice(postStartIndex);
         const total = preCommits.length + postCommits.length;
         if(total > filter.limit){
@@ -522,22 +524,21 @@ export class GitManager{
         }
         
 
-        const allCommits = [...preCommits,...postCommits.slice(postStartIndex)];
+        const allCommits = [...preCommits,...postCommits];
 
         return allCommits;
 
     }
 
     private async getCommits(git: SimpleGit,filter:ICommitFilter){
-        const commitLimit=500;
         //const LogFormat = "--pretty="+logFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
             //--`--skip=${0*commitLimit}`
             const filterOptions = this.getFilterOptions(filter);
-            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];
+            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];            
             let res = await git.raw(options);
             const commits = CommitParser.parse(res);
-            return commits;
+            return commits;            
         }catch(e){
             console.error("error on get logs:", e);
         }
