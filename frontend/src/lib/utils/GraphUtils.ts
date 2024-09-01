@@ -388,6 +388,7 @@ export class GraphUtils{
             }else if(!filter.userModified){
                 return true;
             }
+            filter = {...filter,limit:100};
             let commits = await IpcUtils.getGraphCommitList(filter);
             for(let c of commits){
                 const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
