@@ -78,7 +78,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             }            
             dispatch(ActionUI.setStatus(new ObjectUtils().deepClone(status)));
         }
-        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{
+        window.ipcRenderer.on(RendererEvents.getStatus().replyChannel,(e,res:IStatus)=>{            
             ReduxUtils.setStatus(res);
         })
 

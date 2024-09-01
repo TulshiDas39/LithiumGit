@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
-import { EnumModals, GraphUtils, RepoUtils, useMultiState } from "../../lib";
+import { EnumModals, RepoUtils, useMultiState } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 interface IState{
     options:string[];
@@ -85,7 +85,7 @@ function CheckoutBranchModalComponent(){
             return;
         const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
-            GraphUtils.refreshGraph();
+            GitUtils.getStatus();
         });
         hideModal();
     }

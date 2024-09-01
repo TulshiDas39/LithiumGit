@@ -378,14 +378,16 @@ export class GraphUtils{
         try{
             const newStatus = RepoUtils.repositoryDetails?.status;
             if(!newStatus?.headCommit) return false;
+            let filter = GraphUtils.state.filter.value;
             
             if(!!GraphUtils.state.headCommit.value){
                 if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value.hash) return true;
                 const uiRefs = GraphUtils.state.headCommit.value.refValues;
                 const newRefs = newStatus.headCommit.refValues;        
                 if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+            }else if(!filter.userModified){
+                return true;
             }
-            let filter = GraphUtils.state.filter.value;
             let commits = await IpcUtils.getGraphCommitList(filter);
             for(let c of commits){
                 const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
