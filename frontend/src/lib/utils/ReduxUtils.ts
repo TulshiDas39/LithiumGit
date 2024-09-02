@@ -5,4 +5,5 @@ export class ReduxUtils{
     static setStatus=(status:IStatus)=>{};
     static setLoader=(payload:ILoaderInfo|undefined)=>{};
     static dispatch:any = null;
+    static refreshGraph=() => {};
 }

@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";
 import { EnumHtmlIds, EnumIdPrefix } from "../enums";
-import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
@@ -12,6 +12,7 @@ import { PbSvgContainerWidth, PbHorizontalScrollLeft, PbHorizontalScrollWidth, P
 import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
+import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 
 interface IState{
@@ -32,6 +33,7 @@ interface IState{
     viewBoxWidth:PbViewBoxWidth;
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
+    filter:PbCommitFilter;
 }
 
 export class GraphUtils{
@@ -50,6 +52,7 @@ export class GraphUtils{
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     //static readonly scrollbarSize = 10;
     static readonly scrollBarSize = 10;
+    static readonly defaultLimit = 400;
 
     static openContextModal=()=>{};
    
@@ -62,6 +65,7 @@ export class GraphUtils{
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
+        filter : new PbCommitFilter({limit:400,toDate: new Date().toISOString(),userModified:false}),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -260,6 +264,8 @@ export class GraphUtils{
     static updateUiForCheckout(){
         if(!this.svgElement) return;
         const headCommit = RepoUtils.repositoryDetails.headCommit;
+        if(!headCommit)
+            return;
         if(RepoUtils.repositoryDetails.status.isDetached){
             const commitElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${headCommit.hash}`);
             const headTextElem = this.CreateHeadTextElement(headCommit);        
@@ -276,6 +282,8 @@ export class GraphUtils{
     static revertUiOfExistingCheckout(){
         if(!this.svgElement) return;
         const headCommit = RepoUtils.repositoryDetails.headCommit;
+        if(!headCommit)
+            return;
         const headCommitTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
         if(!headCommitTextElem) return;
         headCommitTextElem.classList.add("d-none");
@@ -296,46 +304,52 @@ export class GraphUtils{
         const repoDetails = RepoUtils.repositoryDetails;
         this.revertUiOfExistingCheckout();
         const existingHead = repoDetails.headCommit;
-        existingHead.isHead = false;
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
-        if(!newHeadCommit) throw "New checkout commit not found";
-        repoDetails.headCommit = newHeadCommit;
-        newHeadCommit.isHead = true;        
+
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
 
         const existingStatus = repoDetails.status;
-        repoDetails.status = newStatus;                
+        repoDetails.status = newStatus; 
 
-        if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                existingHead.ownerBranch.increasedHeightForDetached = 0;
-            }            
-        }
-
-        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
-
-        if(newStatus.isDetached){
-            newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
-            newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
-        }
-        else{
-            if(!RepoUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
-                newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
-                newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
-                newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+        if(existingHead){
+            existingHead.isHead = false;
+            if(existingStatus.isDetached){
+                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
+                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                    existingHead.ownerBranch.increasedHeightForDetached = 0;
+                }            
             }
         }
-        if(newHeadCommit.refValues.length > existingMaxRefLength){
-            newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-            newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
-            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-            GraphUtils.refreshBranchPanelUi();
+        repoDetails.headCommit = newHeadCommit!;
+        
+        if(newHeadCommit){
+            repoDetails.headCommit = newHeadCommit;
+            newHeadCommit.isHead = true;
+            const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+
+            if(newStatus.isDetached){
+                newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
+                newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
+            }
+            else{
+                if(!RepoUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
+                    newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
+                    newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
+                    newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+                }
+            }
+            if(newHeadCommit.refValues.length > existingMaxRefLength){
+                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+                GraphUtils.refreshBranchPanelUi();
+            }
+            else {
+                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+                this.updateUiForCheckout();
+            }
         }
-        else {
-            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-            this.updateUiForCheckout();
-        }        
+                
     }
 
     static refreshBranchPanelUi(){
@@ -364,12 +378,19 @@ export class GraphUtils{
         try{
             const newStatus = RepoUtils.repositoryDetails?.status;
             if(!newStatus?.headCommit) return false;
-            if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value?.hash) return true;
-            const uiRefs = GraphUtils.state.headCommit.value.refValues;
-            const newRefs = newStatus.headCommit.refValues;        
-            if(newRefs.some(ref=> !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
-            let commits = await IpcUtils.getCommitList({pageIndex:0,pageSize:50});
-            for(let c of commits.list){
+            let filter = GraphUtils.state.filter.value;
+            
+            if(!!GraphUtils.state.headCommit.value){
+                if(newStatus.headCommit.hash !== GraphUtils.state.headCommit.value.hash) return true;
+                const uiRefs = GraphUtils.state.headCommit.value.refValues;
+                const newRefs = newStatus.headCommit.refValues;        
+                if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+            }else if(!filter.userModified){
+                return true;
+            }
+            filter = {...filter,limit:100};
+            let commits = await IpcUtils.getGraphCommitList(filter);
+            for(let c of commits){
                 const existingCm = RepoUtils.repositoryDetails.allCommits.find(_=> _.hash === c.hash);
                 if(!existingCm)
                     return true;
@@ -442,7 +463,7 @@ export class GraphUtils{
 
         const clickListener = (_e:MouseEvent)=>{
             let existingSelectedCommitElem:HTMLElement|null;
-            if(GraphUtils.state.selectedCommit.value.hash) {
+            if(GraphUtils.state.selectedCommit.value?.hash) {
                 existingSelectedCommitElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${GraphUtils.state.selectedCommit.value.hash}`);
                 existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
             }
@@ -490,27 +511,29 @@ export class GraphUtils{
         GraphUtils.state.horizontalScrollWidth.update();
         GraphUtils.state.verticalScrollHeight.update();
         //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
-        GraphUtils.state.headCommit.publish(RepoUtils.repositoryDetails.headCommit);
-    }
+        GraphUtils.state.headCommit.update();
+    }     
 
-    static updateHeadIdentifier(){
-        const currentHead = GraphUtils.state.headCommit.value;
-        if(currentHead != null){
-            const headElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${currentHead.hash}`)
-            headElem?.classList.remove("d-none");
-        }        
-        if(!GraphUtils.state.headCommit.prevValue)
-            return;
-        const prevHeadElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${GraphUtils.state.headCommit.prevValue!.hash}`);
-        prevHeadElem?.classList.add("d-none");
-    }    
+    static refreshGraph(){
+        const filter = {...GraphUtils.state.filter.value};
+        if(!filter.userModified){        
+            const head = RepoUtils.repositoryDetails.status.headCommit;
+            if(!head)
+                return;
+            filter.fromDate = undefined;
+            filter.toDate = undefined;
+            filter.baseDate = new Date(head.date).toISOString();
+            filter.limit = GraphUtils.defaultLimit;
+        }
+        GraphUtils.state.filter.publishFilter(filter);
+    }
 
     static checkForUiUpdate(newStatus:IStatus){
         const existingStatus = RepoUtils.repositoryDetails?.status;
-        if(newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
+        const head = RepoUtils.repositoryDetails.headCommit;
+        if(!!head && newStatus.mergingCommitHash !== GraphUtils.state.mergingCommit.value?.parentHashes[1]){            
             existingStatus.mergingCommitHash = newStatus.mergingCommitHash;
             if(newStatus.mergingCommitHash){
-                const head = RepoUtils.repositoryDetails.headCommit;
                 const dummyCommit = CreateCommitInfoObj();
                 dummyCommit.hash = null!;                
                 dummyCommit.date = new Date().toISOString();

@@ -18,3 +18,4 @@ export * from './IStash';
 export * from './IUserConfig';
 export * from './ITypedConfig';
 export * from './IGitConfig';
+export * from './ICommitFilter';

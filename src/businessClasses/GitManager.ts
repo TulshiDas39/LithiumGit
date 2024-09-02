@@ -1,15 +1,16 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IChanges, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IGitCommandInfo, IActionTaken, IStash, IGitConfig, IUserConfig, ITypedConfig} from "common_library";
-import { ipcMain, ipcRenderer } from "electron";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
+import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, FetchResult, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
-import { AppData, LogFields, SavedData } from "../dataClasses";
+import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
+import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
-    private readonly logFields = LogFields.Fields();    
+    private readonly logFields = LogFields.Fields();
+    private logLine = 10;    
     private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
@@ -51,6 +52,7 @@ export class GitManager{
         this.addGitUserConfigHandler();
         this.addUserNameUpdateHandler();
         this.addUserEmailUpdateHandler();
+        this.addGraphCommitListHandler();
     }
 
 
@@ -279,11 +281,19 @@ export class GitManager{
     }
 
     private addRepoDetailsHandler(){
-        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const repoDetails = await this.repoDetails(repoInfo);
+        ipcMain.handle(RendererEvents.getRepositoryDetails().channel, async (e,repoInfo:RepositoryInfo,filter:ICommitFilter)=>{
+            const repoDetails = await this.repoDetails(repoInfo,filter);
             return repoDetails;
         });
     }
+
+    private addGraphCommitListHandler(){
+        ipcMain.handle(RendererEvents.getGraphCommits, async (e,repoPath:string,filter:ICommitFilter)=>{
+            const git = this.getGitRunner(repoPath);
+            const list = await this.getCommitsIteratively(git,filter);
+            return list;
+        });
+    }    
 
     private addLogHandler(){
         ipcMain.handle(RendererEvents.gitLog, async (e,repoInfo:RepositoryInfo,filterOptions:ILogFilterOptions)=>{
@@ -346,14 +356,14 @@ export class GitManager{
         repoDetails.headCommit = head;        
     }
 
-    private async repoDetails(repoInfo:RepositoryInfo){
+    private async repoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
         const repoDetails = CreateRepositoryDetails();
         repoDetails.repoInfo = repoInfo;
         const git = this.getGitRunner(repoInfo);
-        const commits = await this.getCommits(git);
+        repoDetails.status = await this.getStatus(repoInfo);        
+        const commits = await this.getCommitsIteratively(git,filter);
         repoDetails.allCommits = commits;
         repoDetails.branchList = await this.getAllBranches(git);
-        repoDetails.status = await this.getStatus(repoInfo);
         this.setHead(repoDetails);
         const remotes = await git.getRemotes(true);        
         remotes.forEach(r=>{
@@ -454,13 +464,81 @@ export class GitManager{
         }
     }
 
-    private async getCommits(git: SimpleGit){
-        const commitLimit=500;
+    private getFilterOptions(filter:ICommitFilter){
+        const options = [];
+        if(filter.toDate){
+           options.push(`--before=${filter.toDate}`);
+        }
+        if(filter.fromDate){
+            options.push(`--after=${filter.fromDate}`);
+        }
+        if(filter.limit){
+            options.push(`--max-count=${filter.limit}`);
+        }
+        return options;
+    }
+
+    private async getCommitsIteratively(git: SimpleGit,filter:ICommitFilter){        
+        if(filter.fromDate || filter.toDate)
+            return await this.getCommits(git,filter);
+        
+        if(!filter.limit || !filter.baseDate)
+            throw "Limit or base date cannot be null.";
+
+        let newFilter:ICommitFilter = {
+            toDate:filter.baseDate!,
+            limit:filter.limit,
+            userModified:false,
+        }
+
+        let preCommits = await this.getCommits(git,newFilter);
+        let newLimit = filter.limit/2;
+        if(preCommits.length < filter.limit / 2){
+            newLimit +=  (filter.limit / 2) - preCommits.length;
+        }
+
+        const toDate = new Date(filter.baseDate);
+        toDate.setMonth(toDate.getMonth()+5);
+
+        newFilter = {
+            fromDate:filter.baseDate,
+            toDate:toDate.toISOString(),
+            userModified:false,
+            firstItems:true,
+        };
+
+        
+        let postCommits = await this.getCommits(git,newFilter);
+        const preLastCommitHash = preCommits[preCommits.length -1].hash;
+        const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        postCommits = postCommits.slice(postStartIndex);
+        const total = preCommits.length + postCommits.length;
+        if(total > filter.limit){
+            const extra = total - filter.limit;
+            if(preCommits.length > filter.limit / 2 ){
+                preCommits = preCommits.slice(extra);
+            }
+            else if(postCommits.length > filter.limit / 2 ){
+                postCommits = postCommits.slice(0, postCommits.length - extra);
+            }
+        }
+        
+
+        const allCommits = [...preCommits,...postCommits];
+
+        return allCommits;
+
+    }
+
+    private async getCommits(git: SimpleGit,filter:ICommitFilter){
         //const LogFormat = "--pretty="+logFields.Hash+":%H%n"+LogFields.Abbrev_Hash+":%h%n"+LogFields.Parent_Hashes+":%p%n"+LogFields.Author_Name+":%an%n"+LogFields.Author_Email+":%ae%n"+LogFields.Date+":%ad%n"+LogFields.Ref+":%D%n"+LogFields.Message+":%s%n";
         try{
-            let res = await git.raw(["log","--exclude=refs/stash", "--all",`--max-count=${commitLimit}`,`--skip=${0*commitLimit}`,"--date=iso-strict","--topo-order", this.LogFormat]);
+            //--`--skip=${0*commitLimit}`
+            const filterOptions = this.getFilterOptions(filter);
+            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];            
+            let res = await git.raw(options);
             const commits = CommitParser.parse(res);
-            return commits;
+            return commits;            
         }catch(e){
             console.error("error on get logs:", e);
         }
@@ -538,13 +616,6 @@ export class GitManager{
     private async getAllBranches(git:SimpleGit){
         let result = await git.branch(["-av"]);
         return result.all;
-    }
-
-    private isDetachedCommit(commit:ICommitInfo,repoDetails:IRepositoryDetails){
-        if(!commit.branchNameWithRemotes.length) return true;
-        if(commit.branchNameWithRemotes.some(br=>br.branchName === commit.ownerBranch.name && !br.remote)) return false;
-        if(repoDetails.branchList.includes(commit.ownerBranch.name)) return true;
-        return true;
     }
 
     private async checkoutCommit(repoPath:string,options:string[]){

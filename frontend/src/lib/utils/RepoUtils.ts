@@ -17,10 +17,10 @@ export class RepoUtils{
         RepoUtils.getBranchDetails(repoDetails);
         RepoUtils.enListSourceCommits(repoDetails);
         RepoUtils.finaliseSourceCommits(repoDetails);
-        RepoUtils.specifySerialsOfBranch(repoDetails);
+        RepoUtils.specifyDrawOrdersOfBranch(repoDetails);
         RepoUtils.setBranchVerticalOffset(repoDetails);
         RepoUtils.sortBranches(repoDetails);
-        RepoUtils.setBranchHeights2(repoDetails);
+        RepoUtils.setBranchHeights(repoDetails);
         RepoUtils.reversBranches(repoDetails);
         RepoUtils.createMergeLines(repoDetails);
 
@@ -48,32 +48,20 @@ export class RepoUtils{
         repoDetails.resolvedBranches.reverse();
     }        
 
-    private static setBranchHeights2(repoDetails:IRepositoryDetails){
-        const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
+    private static setBranchHeights(repoDetails:IRepositoryDetails){
         let y = 30;
-        for(let branch of branchesWithoutParent){
-            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
-            y = branch.y + RepoUtils.distanceBetweenBranchLine;
-        }
+        const maxOffset = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.verticalOffset));
 
-        const setHeight = (branch:IBranchDetails)=>{
-            const upperOffset = branch.verticalOffset - 1;
-            const upperBranches = repoDetails.resolvedBranches.filter(_=> _.verticalOffset === upperOffset);
-            const upperBranchesWithoutHeight = upperBranches.filter(_=> !_.y);
-            upperBranchesWithoutHeight.forEach(_ => setHeight(_));
-            const y = ArrayUtils.findMax(upperBranches.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
-            branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
-        }
+        for(let offset = 1;offset <= maxOffset;offset++){
+            const branchesOfThisOffset = repoDetails.resolvedBranches.filter(_=> _.verticalOffset == offset);
+            for(let branch of branchesOfThisOffset){
+                branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
+            }
 
-        const branches = repoDetails.resolvedBranches.filter(_=> !!_.parentCommit);
-        if(!!branches.length){
-            for(let offset = branchesWithoutParent.length + 1; offset <= repoDetails.resolvedBranches.length ; offset++){
-                const branchesOfThisOffset = branches.filter(_ => _.verticalOffset === offset);
-                branchesOfThisOffset.forEach(_ => setHeight(_));
-            }   
-        }        
-     
-        repoDetails.branchPanelHeight = ArrayUtils.findMax(repoDetails.resolvedBranches.map(_=>_.y)) + 50;
+            y = ArrayUtils.findMax(branchesOfThisOffset.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
+        }
+        
+        repoDetails.branchPanelHeight = y + 50;
     }
 
     private static isOverlappingBranches(branch1:IBranchDetails,branch2:IBranchDetails){
@@ -96,6 +84,8 @@ export class RepoUtils{
     private static setBranchVerticalOffset(repoDetails:IRepositoryDetails){
 
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
+        const mainBranches = ["master","main"];
+        branchesWithoutParent.sort((a,_) => !mainBranches.includes(a.name) ? 1:-1);
         for(let i = 0; i < branchesWithoutParent.length; i++){
             const branch = branchesWithoutParent[i];
             branch.verticalOffset = i + 1;
@@ -134,22 +124,22 @@ export class RepoUtils{
     }
 
     private static sortBranches(repoDetails:IRepositoryDetails){        
-        repoDetails.resolvedBranches.sort((x,y)=> x.serial > y.serial ?1:-1);
+        repoDetails.resolvedBranches.sort((x,y)=> x.drawOrder > y.drawOrder ?1:-1);
     }
 
-    private static specifySerialsOfBranch(repoDetails:IRepositoryDetails){
-        const getSerial=(branch:IBranchDetails):number=>{
-            if(branch.serial != 0) return branch.serial;	  
-            let parentSerial = getSerial(branch.parentCommit?.ownerBranch!);
+    private static specifyDrawOrdersOfBranch(repoDetails:IRepositoryDetails){
+        const getDrawOrder=(branch:IBranchDetails):number=>{
+            if(branch.drawOrder != 0) return branch.drawOrder;	  
+            let parentDrawOrder = getDrawOrder(branch.parentCommit?.ownerBranch!);
             let commitInex=0;
             if(!!branch.name)commitInex = branch.parentCommit!.ownerBranch.commits.indexOf(branch.parentCommit!)+1;
             else commitInex = branch.parentCommit!.ownerBranch.commits.length+1;
-            let measuredSerial = parentSerial+ parentSerial * (1.0/(10.0*commitInex));
-            return measuredSerial;
+            let measuredDrawOrder = parentDrawOrder+ parentDrawOrder * (1.0/(10.0*commitInex));
+            return measuredDrawOrder;
         }
 
         repoDetails.resolvedBranches.forEach(br=>{
-            br.serial = getSerial(br);
+            br.drawOrder = getDrawOrder(br);
         });
     }
 
@@ -195,8 +185,8 @@ export class RepoUtils{
 			realOwnerBranch.parentCommit = currentOwnerBranch.parentCommit;
 			currentOwnerBranch.parentCommit = sourceCommit;	
 						
-			if(currentOwnerBranch.serial != 0.0) realOwnerBranch.serial = currentOwnerBranch.serial; 
-			currentOwnerBranch.serial = 0.0;
+			if(currentOwnerBranch.drawOrder != 0.0) realOwnerBranch.drawOrder = currentOwnerBranch.drawOrder; 
+			currentOwnerBranch.drawOrder = 0.0;
 			
 			let commitToMove = sourceCommit;
 			while (commitToMove != realOwnerBranch.parentCommit) {
@@ -221,7 +211,7 @@ export class RepoUtils{
           newOwnerBranch.parentCommit = parentCommit;          
           if(!parentCommit) {
         	  branchTree.push(newOwnerBranch);
-        	  newOwnerBranch.serial = branchTree.length;
+        	  newOwnerBranch.drawOrder = branchTree.length;
           }
           branchDetails.push(newOwnerBranch);
           return newOwnerBranch;
@@ -416,35 +406,37 @@ export class RepoUtils{
     }
 
     static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
-        const existingHead = repoDetails.headCommit;
-        existingHead.isHead = false;
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);
-        if(!newHeadCommit) throw "New checkout commit not found";
-        repoDetails.headCommit = newHeadCommit;
-        newHeadCommit.isHead = true;        
+        
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
 
         const existingStatus = repoDetails.status;
         repoDetails.status = newStatus;                
 
-        if(existingStatus.isDetached){
-            existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-            if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                existingHead.ownerBranch.increasedHeightForDetached = 0;
-            }            
-        }
-
-        const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
-
-        if(newStatus.isDetached){
-            newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
-            if(newHeadCommit.refValues.length > existingMaxRefLength){
-                newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-                newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+        const existingHead = repoDetails.headCommit;
+        
+        if(existingHead){
+            existingHead.isHead = false;
+            if(existingStatus.isDetached){
+                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
+                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
+                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
+                    existingHead.ownerBranch.increasedHeightForDetached = 0;
+                }            
             }
         }
 
-        
+        if(newHeadCommit){
+            repoDetails.headCommit = newHeadCommit;
+            newHeadCommit.isHead = true;
+            const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
+            if(newStatus.isDetached){
+                newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
+                if(newHeadCommit.refValues.length > existingMaxRefLength){
+                    newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
+                    newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
+                }
+            }
+        }
                 
     }
 
