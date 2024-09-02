@@ -6,7 +6,6 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { BranchActions } from "./BranchActions";
 import { CommitProperty } from "./CommitProperty";
 import { CommitChangeView } from "./CommitChangeView";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { BiLoader } from "react-icons/bi";
 import { ICommitInfo } from "common_library";
 
@@ -29,11 +28,15 @@ function BranchesViewComponent() {
 
     const bottomHeightRef = useRef(200);
     const positionRef = useRef(0);
+    const graphViewRef = useRef<HTMLDivElement>();
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
+    const prevBottomHeightRef = useRef(0);
+
     const bottomHeight = useMemo(()=>{
-        const curHeight = bottomHeightRef.current - positionRef.current;
-        const height = Math.max(50, curHeight);
+        let curHeight = bottomHeightRef.current - positionRef.current;
+        let height = Math.max(50, curHeight);
+        
         if(!position){
             bottomHeightRef.current = height;
             positionRef.current = 0;
@@ -41,8 +44,18 @@ function BranchesViewComponent() {
         else{
             positionRef.current = position.y;
         }
+
+        const graphViewHeight = graphViewRef.current?.getBoundingClientRect().height;
+        if(!!graphViewHeight && graphViewHeight <= 100 && curHeight > prevBottomHeightRef.current){
+            return prevBottomHeightRef.current;
+        }
         return height;
     },[position?.y])
+
+    useEffect(()=>{
+        prevBottomHeightRef.current = bottomHeight;
+    },[bottomHeight]);
+
 
     useEffect(()=>{        
         const selectListener = (commit?:ICommitInfo)=>{
@@ -63,7 +76,7 @@ function BranchesViewComponent() {
     },[bottomHeight])
 
     return <div id="selectedRepoRight" className={`d-flex w-100 flex-column ${store.show ? '' : 'd-none'}`}>
-        <div className="d-flex flex-column" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
+        <div ref={graphViewRef as any} className="d-flex flex-column" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
             <BranchActions />
             <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - 30px)`}}>
                 <div id={EnumHtmlIds.branchPanelContainer} className="overflow-hidden" style={{width:`75%`}}>
