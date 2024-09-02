@@ -81,7 +81,9 @@ function CommitBoxComponent(){
     useEffect(()=>{
         if(!state.amend || !!state.value)
             return;
-        const headCommit = RepoUtils.repositoryDetails.headCommit;
+        const headCommit = RepoUtils.repositoryDetails.status.headCommit;
+        if(!headCommit)
+            return ;
         let msg  = headCommit.message;
         if(headCommit.body){
             msg += `\n${headCommit.body}`;

@@ -19,7 +19,6 @@ export interface ICommitInfo{
     x:number;
     isHead:boolean;
     inMergingState?:boolean;
-    // SingleCommit UiObj;
 }
 
 export function CreateCommitInfoObj(){

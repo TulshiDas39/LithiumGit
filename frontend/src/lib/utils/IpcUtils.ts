@@ -1,8 +1,15 @@
-import { Annotation, IActionTaken, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
+import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 export class IpcUtils{
+    static async getGraphCommitList(filter: ICommitFilter) {
+        const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
+        if(!r.error)
+            return r.result!;
+        return [];
+    }
     static updateUserEmail(value: string, isGlobal?:boolean) {
         return IpcUtils.runGitCommand<any>(RendererEvents.updateUserEmail,[value,isGlobal]);
     }
@@ -73,8 +80,12 @@ export class IpcUtils{
     static trigerPush(options?:string[]){
         if(!options){
             options = [RepoUtils.activeOriginName];
-            if(!RepoUtils.repositoryDetails.status.trackingBranch)
-                options.push("-u",RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+            if(!RepoUtils.repositoryDetails.status.trackingBranch){
+                const br = RepoUtils.repositoryDetails.headCommit?.ownerBranch.name;
+                if(br){
+                    options.push("-u",br);
+                }
+            }
         }
         return IpcUtils.runGitCommand(RendererEvents.push().channel,[options])        
     }
@@ -82,8 +93,12 @@ export class IpcUtils{
     static trigerPull(options?:string[]){
         if(!options){
             options = [RepoUtils.activeOriginName];
-            if(!RepoUtils.repositoryDetails.status.trackingBranch)
-                options.push(RepoUtils.repositoryDetails.headCommit.ownerBranch.name);
+            if(!RepoUtils.repositoryDetails.status.trackingBranch){
+                const br = RepoUtils.repositoryDetails.headCommit?.ownerBranch.name;
+                if(br){
+                    options.push(br);
+                }
+            }
         }
         return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
@@ -219,7 +234,7 @@ export class IpcUtils{
         };
     }
 
-    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string|RepositoryInfo){      
         if(!repositoryPath)
             repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
@@ -250,4 +265,10 @@ export class IpcUtils{
         const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
         return r;
     }
+
+    static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
+        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],repoInfo);
+        return r;
+    }
+    
 }

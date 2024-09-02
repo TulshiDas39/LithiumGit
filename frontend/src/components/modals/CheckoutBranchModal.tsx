@@ -6,8 +6,8 @@ import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { ActionUI } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
+import { GitUtils } from "../../lib/utils/GitUtils";
 
 interface IState{
     options:string[];
@@ -85,7 +85,7 @@ function CheckoutBranchModalComponent(){
             return;
         const options = [state.searchText];
         IpcUtils.checkout(options).then(()=>{
-            dispatch(ActionUI.increamentVersion("branchPanelRefresh"))
+            GitUtils.getStatus();
         });
         hideModal();
     }

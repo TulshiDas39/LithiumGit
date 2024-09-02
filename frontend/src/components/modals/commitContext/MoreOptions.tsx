@@ -5,7 +5,7 @@ import { GitUtils } from "../../../lib/utils/GitUtils";
 import { ModalData } from "../ModalData";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals } from "../../../lib";
+import { EnumModals, GraphUtils } from "../../../lib";
 import { ActionModals } from "../../../store";
 import { ActionUI } from "../../../store/slices/UiSlice";
 interface IProps extends IBaseProps{
@@ -54,7 +54,7 @@ function MoreOptionsComponent(props:IProps){
         const handler = ()=>{
             IpcUtils.getRaw(["branch","-D",branchName]).then(r=>{
                 if(r.result){
-                    dispatch(ActionUI.increamentVersion("branchPanelRefresh"));
+                    GraphUtils.refreshGraph();
                 }
             })
         }

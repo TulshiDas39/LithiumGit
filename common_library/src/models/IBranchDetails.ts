@@ -8,13 +8,11 @@ export interface IBranchDetails{
     LastCommitsByRemotes:ILastCommitByRemote[];
     noDerivedCommits:boolean;
     parentCommit?:ICommitInfo;
-    serial:number;
+    drawOrder:number;
     y:number;
-    // commitWithMaxRefCount:ICommitInfo;
     maxRefCount:number;
     increasedHeightForDetached:number;
     verticalOffset:number;
-    // Group uiObj;
 }
 
 export function createBranchDetailsObj(){
@@ -24,7 +22,7 @@ export function createBranchDetailsObj(){
         LastCommitsByRemotes:[],
         commits:[],
         noDerivedCommits:false,
-        serial:0,
+        drawOrder:0,
         y:0,        
         maxRefCount:0,
         increasedHeightForDetached:0,

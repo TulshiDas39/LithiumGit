@@ -29,6 +29,8 @@ export class PbMergeCommit extends DerivedState<ICommitInfo|undefined>{
     private createMerginStategUi(){
         if(!GraphUtils.state.mergingCommit.value)return;
         const head = RepoUtils.repositoryDetails.headCommit;
+        if(!head)
+            return;
         const allCommits = RepoUtils.repositoryDetails.allCommits;
         const endX = this.value!.x;
         const y = this.value!.ownerBranch.y;
