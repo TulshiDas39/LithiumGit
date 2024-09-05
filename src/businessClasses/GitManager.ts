@@ -516,12 +516,13 @@ export class GitManager{
         postCommits = postCommits.slice(postStartIndex);
         const total = preCommits.length + postCommits.length;
         if(total > filter.limit){
-            const extra = total - filter.limit;
             if(preCommits.length > filter.limit / 2 ){
-                preCommits = preCommits.slice(extra);
+                const preCommitExtra = preCommits.length - (filter.limit / 2);
+                preCommits = preCommits.slice(preCommitExtra);
             }
-            else if(postCommits.length > filter.limit / 2 ){
-                postCommits = postCommits.slice(0, postCommits.length - extra);
+            if(postCommits.length > filter.limit / 2 ){
+                const postCommitExtra = postCommits.length - (filter.limit / 2);
+                postCommits = postCommits.slice(0, postCommits.length - postCommitExtra);
             }
         }
         
