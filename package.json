@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "0.5.0-alpha.1",
+  "version": "0.5.1-alpha.1",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
@@ -46,7 +46,7 @@
   },
   "build": {
     "productName": "LithiumGit",
-    "appId": "org.lithiumgit.electron",
+    "appId": "org.lithiumgit.opensource",
     "asar": false,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
