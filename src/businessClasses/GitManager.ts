@@ -514,14 +514,19 @@ export class GitManager{
         const preLastCommitHash = preCommits[preCommits.length -1].hash;
         const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
         postCommits = postCommits.slice(postStartIndex);
-        const total = preCommits.length + postCommits.length;
+        let total = preCommits.length + postCommits.length;
         if(total > filter.limit){
+            let extra = total - filter.limit;
             if(preCommits.length > filter.limit / 2 ){
-                const preCommitExtra = preCommits.length - (filter.limit / 2);
+                let preCommitExtra = preCommits.length - (filter.limit / 2);
+                preCommitExtra = Math.min(extra,preCommitExtra);
                 preCommits = preCommits.slice(preCommitExtra);
             }
+            total = preCommits.length + postCommits.length;
+            extra = total - filter.limit;
             if(postCommits.length > filter.limit / 2 ){
-                const postCommitExtra = postCommits.length - (filter.limit / 2);
+                let postCommitExtra = postCommits.length - (filter.limit / 2);
+                postCommitExtra = Math.min(extra,postCommitExtra);
                 postCommits = postCommits.slice(0, postCommits.length - postCommitExtra);
             }
         }
