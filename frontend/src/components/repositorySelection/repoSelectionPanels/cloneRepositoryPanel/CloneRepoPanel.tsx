@@ -79,14 +79,19 @@ function CloneRepoPanelRepository(){
             progressLabel:FetchState.Remote
         }));
         IpcUtils.cloneRepository(store.url,fullPath).then(r=>{
+            clearInterval(DataUtils.clone.timer);
+            DataUtils.clone.timer = null!;
+            let cloningState = CloneState.Finished;
+            let progress = 100;
             if(r.error){
-                clearInterval(DataUtils.clone.timer);
-                DataUtils.clone.timer = null!;
-                dispatch(ActionClone.updateData({cloningState:CloneState.NotStarted,
-                    progress:0,
-                    progressLabel:FetchState.Remote
-                }));
+                cloningState = CloneState.NotStarted;
+                progress = 0;
             }
+            dispatch(ActionClone.updateData({
+                cloningState,
+                progress,
+                progressLabel:FetchState.Remote
+            }));
         });
         
     }
