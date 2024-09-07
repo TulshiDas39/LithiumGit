@@ -14,6 +14,7 @@ export class RepoUtils{
     static getRepoDetails(repoDetails:IRepositoryDetails){
         if(!repoDetails.allCommits.length)
             return;
+        RepoUtils.enSureTopoOrder(repoDetails);
         RepoUtils.getBranchDetails(repoDetails);
         RepoUtils.enListSourceCommits(repoDetails);
         RepoUtils.finaliseSourceCommits(repoDetails);
@@ -199,6 +200,34 @@ export class RepoUtils{
         }
 	}
     
+    private static enSureTopoOrder(repoDetails:IRepositoryDetails){
+        const shippedCommitList:{
+            commit:ICommitInfo,
+            parent:ICommitInfo,
+        }[]=[];
+        
+        for(let i=0;i<repoDetails.allCommits.length;i++){
+            const commit = repoDetails.allCommits[i];
+            const parentHashes = commit.parentHashes;
+            const parents = repoDetails.allCommits.filter(_=> parentHashes.includes(_.avrebHash));            
+            if(parents.length){
+                const parentIndexes = parents.map(_ => ({p:_,index:repoDetails.allCommits.findIndex(_x=> _x.hash === _.hash)}));
+                const shippedIndexes = parentIndexes.filter(_ => _.index > i);
+                if(shippedIndexes.length){
+                    const maxIndex = Math.max(...shippedIndexes.map(_=>_.index));
+                    const parentWithMaxIndex = shippedIndexes.find(_=>_.index == maxIndex)!;
+                    shippedCommitList.push({commit,parent:parentWithMaxIndex.p});
+                }
+            }
+        }
+
+        for(let shippedCommit of shippedCommitList){
+            const commitIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.commit.hash);
+            repoDetails.allCommits.splice(commitIndex,1);
+            const parentIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.parent.hash);
+            repoDetails.allCommits.splice(parentIndex+1,0,shippedCommit.commit);
+        }
+    }
 
     private static getBranchDetails(repoDetails:IRepositoryDetails){
         let branchTree:IBranchDetails[] = [];

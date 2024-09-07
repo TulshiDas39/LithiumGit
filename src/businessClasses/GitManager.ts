@@ -543,7 +543,7 @@ export class GitManager{
         try{
             //--`--skip=${0*commitLimit}`
             const filterOptions = this.getFilterOptions(filter);
-            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];            
+            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--date-order", this.LogFormat];            
             let res = await git.raw(options);
             const commits = CommitParser.parse(res);
             return commits;            
