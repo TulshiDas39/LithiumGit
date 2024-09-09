@@ -212,22 +212,7 @@ export class RepoUtils{
                 repoDetails.allCommits.splice(rightMostParent.index+1,0,commit);
                 repoDetails.allCommits.splice(i,1);
             }
-        }
-
-
-        for(let shippedCommit of shippedCommitList){
-            const commitIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.commit.hash);
-            repoDetails.allCommits.splice(commitIndex,1);
-            const parentIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.parent.hash);
-            repoDetails.allCommits.splice(parentIndex+1,0,shippedCommit.commit);
-        }
-        
-        for(let shippedCommit of shippedCommitList){
-            const commitIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.commit.hash);
-            repoDetails.allCommits.splice(commitIndex,1);
-            const parentIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.parent.hash);
-            repoDetails.allCommits.splice(parentIndex+1,0,shippedCommit.commit);
-        }
+        }        
     }
 
     private static getBranchDetails(repoDetails:IRepositoryDetails){
