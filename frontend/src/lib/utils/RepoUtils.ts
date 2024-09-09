@@ -209,6 +209,7 @@ export class RepoUtils{
             const parentIndexes = parents.map(_ => ({p:_,index:repoDetails.allCommits.indexOf(_)}));
             const rightMostParent = parentIndexes.filter(_ => _.index > i).sort((_x,_y)=> _x.index > _y.index ? -1:1)[0];
             if(rightMostParent){
+                console.log("fixing shipped commit",rightMostParent.p.hash);
                 repoDetails.allCommits.splice(rightMostParent.index+1,0,commit);
                 repoDetails.allCommits.splice(i,1);
             }
@@ -241,7 +242,7 @@ export class RepoUtils{
             
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
             
-            if(!!previousCommit){
+            if(!!previousCommit?.ownerBranch){
             	currentCommit.previousCommit = previousCommit;
                 if(previousCommit.nextCommit || previousCommit.ownerBranch.name){            
                   ownerBranch = createNewBranch(previousCommit);
