@@ -201,26 +201,27 @@ export class RepoUtils{
 	}
     
     private static enSureTopoOrder(repoDetails:IRepositoryDetails){
-        const shippedCommitList:{
-            commit:ICommitInfo,
-            parent:ICommitInfo,
-        }[]=[];
-        
-        for(let i=0;i<repoDetails.allCommits.length;i++){
-            const commit = repoDetails.allCommits[i];
+        const mergeCommits = repoDetails.allCommits.filter(_=> _.parentHashes.length > 1);
+        for(let commit of mergeCommits){
+            const i = repoDetails.allCommits.indexOf(commit);
             const parentHashes = commit.parentHashes;
-            const parents = repoDetails.allCommits.filter(_=> parentHashes.includes(_.avrebHash));            
-            if(parents.length){
-                const parentIndexes = parents.map(_ => ({p:_,index:repoDetails.allCommits.findIndex(_x=> _x.hash === _.hash)}));
-                const shippedIndexes = parentIndexes.filter(_ => _.index > i);
-                if(shippedIndexes.length){
-                    const maxIndex = Math.max(...shippedIndexes.map(_=>_.index));
-                    const parentWithMaxIndex = shippedIndexes.find(_=>_.index == maxIndex)!;
-                    shippedCommitList.push({commit,parent:parentWithMaxIndex.p});
-                }
+            const parents = repoDetails.allCommits.filter(_=> parentHashes.includes(_.avrebHash));
+            const parentIndexes = parents.map(_ => ({p:_,index:repoDetails.allCommits.indexOf(_)}));
+            const rightMostParent = parentIndexes.filter(_ => _.index > i).sort((_x,_y)=> _x.index > _y.index ? -1:1)[0];
+            if(rightMostParent){
+                repoDetails.allCommits.splice(rightMostParent.index+1,0,commit);
+                repoDetails.allCommits.splice(i,1);
             }
         }
 
+
+        for(let shippedCommit of shippedCommitList){
+            const commitIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.commit.hash);
+            repoDetails.allCommits.splice(commitIndex,1);
+            const parentIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.parent.hash);
+            repoDetails.allCommits.splice(parentIndex+1,0,shippedCommit.commit);
+        }
+        
         for(let shippedCommit of shippedCommitList){
             const commitIndex = repoDetails.allCommits.findIndex(_=>_.hash == shippedCommit.commit.hash);
             repoDetails.allCommits.splice(commitIndex,1);
