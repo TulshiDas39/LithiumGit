@@ -561,7 +561,6 @@ export class ConflictUtils{
         let handler1 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            handler3(_);
             const ratio = UiUtils.getVerticalScrollRatio(topLeftPanel);
             const top = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
             topRightPanel?.scrollTo({
@@ -576,7 +575,6 @@ export class ConflictUtils{
         let handler2 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            handler3(_);
             const ratio = UiUtils.getVerticalScrollRatio(topRightPanel);
             const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
             topLeftPanel?.scrollTo({                    
@@ -591,9 +589,16 @@ export class ConflictUtils{
         let handler3 = (e:Event)=>{
             if(!ConflictUtils.hoverBottomPanel)
                 return;
-            console.log("handler3");            
-            handler1(e);
-            handler2(e);
+            console.log("handler3");
+            const ratio = UiUtils.getVerticalScrollRatio(bottomPanel);
+            const rtop = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
+            topRightPanel?.scrollTo({
+                top: rtop
+            });
+            const lTop = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
+            topLeftPanel?.scrollTo({
+                top: lTop
+            });            
         }
     
         topLeftPanel.addEventListener("scroll",handler1);
