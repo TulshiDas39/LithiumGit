@@ -554,18 +554,44 @@ export class ConflictUtils{
         const bottomPanel = ConflictUtils.bottomPanelElement;
         
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
+        const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
-        if(!topLeftPanel || !topRightPanel)
+        const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
+
+        
+        if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
+
+
+        const updateTopLeftScroll=(ratio:number)=>{
+            //line_numbers
+            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
+            topLeftPanel.scrollTo({                    
+                top,
+            });
+            const ntop = UiUtils.getVerticalScrollTop(topLeftNumberPanel, ratio);
+            topLeftNumberPanel.scrollTo({                    
+                top:ntop,
+            });
+        }
+
+        const updateTopRightScroll=(ratio:number)=>{
+            //line_numbers
+            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
+            topRightPanel.scrollTo({                    
+                top,
+            });
+            const ntop = UiUtils.getVerticalScrollTop(topRightNumberPanel, ratio);
+            topRightNumberPanel.scrollTo({                    
+                top:ntop,
+            });
+        }
 
         let handler1 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
             const ratio = UiUtils.getVerticalScrollRatio(topLeftPanel);
-            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
-            topRightPanel?.scrollTo({
-                top
-            });
+            updateTopRightScroll(ratio);
             const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
             bottomPanel?.scrollTo({                    
                 top:btop,
@@ -576,10 +602,7 @@ export class ConflictUtils{
             if(!ConflictUtils.hoverTopPanel)
                 return;
             const ratio = UiUtils.getVerticalScrollRatio(topRightPanel);
-            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
-            topLeftPanel?.scrollTo({                    
-                top,
-            });
+            updateTopLeftScroll(ratio);
             const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
             bottomPanel?.scrollTo({                    
                 top:btop,
@@ -628,7 +651,7 @@ export class ConflictUtils{
         const container = document.querySelector("#"+ConflictUtils.topPanelId);
         if(!ConflictUtils.heighlightedLineIndexes.length)
             return;
-        const focusElem = container?.querySelector('.line_numbers')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
+        const focusElem = container?.querySelector('.content')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
         ConflictUtils.setBottomPanelScrollPosition();
 
