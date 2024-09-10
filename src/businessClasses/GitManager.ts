@@ -10,7 +10,6 @@ import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
-    private logLine = 10;    
     private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
