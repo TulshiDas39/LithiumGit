@@ -552,31 +552,53 @@ export class ConflictUtils{
     private static HandleScrolling(){
         const topPanel = ConflictUtils.topPanelElement;
         const bottomPanel = ConflictUtils.bottomPanelElement;
-    
-        let handler1 = (e:Event)=>{
+        
+        const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
+        const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
+        if(!topLeftPanel || !topRightPanel)
+            return;
+
+        let handler1 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(topPanel);
-            const top = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
-            bottomPanel?.scrollTo({
+            handler3(_);
+            const ratio = UiUtils.getVerticalScrollRatio(topLeftPanel);
+            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
+            topRightPanel?.scrollTo({
                 top
             });
-        }
-
-        let handler2 = (e:Event)=>{
-            if(!ConflictUtils.hoverBottomPanel)
-                return;
-            const ratio = UiUtils.getVerticalScrollRatio(bottomPanel);
-            const top = UiUtils.getVerticalScrollTop(topPanel, ratio);
-            topPanel?.scrollTo({                    
-                top,
+            const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
+            bottomPanel?.scrollTo({                    
+                top:btop,
             });
         }
 
-        if(topPanel && bottomPanel){
-            topPanel.addEventListener("scroll",handler1)
-            bottomPanel.addEventListener("scroll",handler2);
+        let handler2 = (_:Event)=>{
+            if(!ConflictUtils.hoverTopPanel)
+                return;
+            handler3(_);
+            const ratio = UiUtils.getVerticalScrollRatio(topRightPanel);
+            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
+            topLeftPanel?.scrollTo({                    
+                top,
+            });
+            const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
+            bottomPanel?.scrollTo({                    
+                top:btop,
+            });
         }
+
+        let handler3 = (e:Event)=>{
+            if(!ConflictUtils.hoverBottomPanel)
+                return;
+            console.log("handler3");            
+            handler1(e);
+            handler2(e);
+        }
+    
+        topLeftPanel.addEventListener("scroll",handler1);
+        topRightPanel.addEventListener("scroll",handler2);
+        bottomPanel.addEventListener("scroll",handler3);
     }
 
     private static SetHeighlightedLines(){
