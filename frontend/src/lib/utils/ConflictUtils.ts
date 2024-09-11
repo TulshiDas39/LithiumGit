@@ -563,25 +563,25 @@ export class ConflictUtils{
             return;
 
 
-        const updateTopLeftScroll=(ratio:number)=>{
-            //line_numbers
-            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
+        const updateTopLeftScroll=(ratioV:number,ratioH:number)=>{
+            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratioV);
+            const left = UiUtils.getHorizontalScrollLeft(topLeftPanel, ratioH);
             topLeftPanel.scrollTo({                    
-                top,
+                top,left
             });
-            const ntop = UiUtils.getVerticalScrollTop(topLeftNumberPanel, ratio);
+            const ntop = UiUtils.getVerticalScrollTop(topLeftNumberPanel, ratioV);
             topLeftNumberPanel.scrollTo({                    
                 top:ntop,
             });
         }
 
-        const updateTopRightScroll=(ratio:number)=>{
-            //line_numbers
-            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
+        const updateTopRightScroll=(ratioV:number,ratioH:number)=>{
+            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratioV);
+            const left = UiUtils.getHorizontalScrollLeft(topRightPanel, ratioH);
             topRightPanel.scrollTo({                    
-                top,
+                top,left
             });
-            const ntop = UiUtils.getVerticalScrollTop(topRightNumberPanel, ratio);
+            const ntop = UiUtils.getVerticalScrollTop(topRightNumberPanel, ratioV);
             topRightNumberPanel.scrollTo({                    
                 top:ntop,
             });
@@ -590,37 +590,45 @@ export class ConflictUtils{
         let handler1 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(topLeftPanel);
-            updateTopRightScroll(ratio);
-            const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
+            // const ratioV = UiUtils.getVerticalScrollRatio(topLeftPanel);
+            // const ratioH = UiUtils.getHorizontalScrollRatio(topLeftPanel);
+            // updateTopRightScroll(ratioV,ratioH);
+            topRightPanel.scrollTo({
+                top:topLeftPanel.scrollTop,
+                left:topLeftPanel.scrollLeft,
+            })
+            //const ratioV = UiUtils.getVerticalScrollRatio(topLeftPanel);
+            //const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratioV);
             bottomPanel?.scrollTo({                    
-                top:btop,
+                top:topLeftPanel.scrollTop,
+                left:topLeftPanel.scrollLeft,
             });
         }
 
         let handler2 = (_:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(topRightPanel);
-            updateTopLeftScroll(ratio);
-            const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
+            topLeftPanel.scrollTo({
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,
+            });
             bottomPanel?.scrollTo({                    
-                top:btop,
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,                
             });
         }
 
         let handler3 = (e:Event)=>{
             if(!ConflictUtils.hoverBottomPanel)
                 return;
-            console.log("handler3");
-            const ratio = UiUtils.getVerticalScrollRatio(bottomPanel);
-            const rtop = UiUtils.getVerticalScrollTop(topRightPanel, ratio);
+            console.log("handler3");            
             topRightPanel?.scrollTo({
-                top: rtop
-            });
-            const lTop = UiUtils.getVerticalScrollTop(topLeftPanel, ratio);
+                top: bottomPanel.scrollTop,
+                left: bottomPanel.scrollLeft
+            });            
             topLeftPanel?.scrollTo({
-                top: lTop
+                top: bottomPanel.scrollTop,
+                left: bottomPanel.scrollLeft,
             });            
         }
     
