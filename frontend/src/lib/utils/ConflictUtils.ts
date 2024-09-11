@@ -551,58 +551,32 @@ export class ConflictUtils{
 
     private static HandleScrolling(){
         const topPanel = ConflictUtils.topPanelElement;
-        const bottomPanel = ConflictUtils.bottomPanelElement;
-        
+
+        const bottomPanel = ConflictUtils.bottomPanelElement.querySelector(".content") as HTMLElement;
+        const bottomPanelLine = ConflictUtils.bottomPanelElement.querySelector(".line-container") as HTMLElement;
+                
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
         
-        if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
+        if(!bottomPanel || !bottomPanelLine || !topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
+        
+        const group = [topLeftPanel, topRightPanel,bottomPanel,topRightNumberPanel,topRightNumberPanel,topLeftNumberPanel,bottomPanelLine];        
 
-
-        const updateTopLeftScroll=(ratioV:number,ratioH:number)=>{
-            const top = UiUtils.getVerticalScrollTop(topLeftPanel, ratioV);
-            const left = UiUtils.getHorizontalScrollLeft(topLeftPanel, ratioH);
-            topLeftPanel.scrollTo({                    
-                top,left
-            });
-            const ntop = UiUtils.getVerticalScrollTop(topLeftNumberPanel, ratioV);
-            topLeftNumberPanel.scrollTo({                    
-                top:ntop,
-            });
-        }
-
-        const updateTopRightScroll=(ratioV:number,ratioH:number)=>{
-            const top = UiUtils.getVerticalScrollTop(topRightPanel, ratioV);
-            const left = UiUtils.getHorizontalScrollLeft(topRightPanel, ratioH);
-            topRightPanel.scrollTo({                    
-                top,left
-            });
-            const ntop = UiUtils.getVerticalScrollTop(topRightNumberPanel, ratioV);
-            topRightNumberPanel.scrollTo({                    
-                top:ntop,
-            });
-        }
-
-        let handler1 = (_:Event)=>{
+        let handler = (e:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            // const ratioV = UiUtils.getVerticalScrollRatio(topLeftPanel);
-            // const ratioH = UiUtils.getHorizontalScrollRatio(topLeftPanel);
-            // updateTopRightScroll(ratioV,ratioH);
-            topRightPanel.scrollTo({
-                top:topLeftPanel.scrollTop,
-                left:topLeftPanel.scrollLeft,
-            })
-            //const ratioV = UiUtils.getVerticalScrollRatio(topLeftPanel);
-            //const btop = UiUtils.getVerticalScrollTop(bottomPanel, ratioV);
-            bottomPanel?.scrollTo({                    
-                top:topLeftPanel.scrollTop,
-                left:topLeftPanel.scrollLeft,
-            });
+            const target = e.target as HTMLElement;
+            const scrollElems = group.filter(elem => elem != target);            
+            for(let elem of scrollElems){
+                elem.scrollTo({
+                    top:target.scrollTop,
+                    left:target.scrollLeft,
+                })
+            }            
         }
 
         let handler2 = (_:Event)=>{
@@ -613,6 +587,11 @@ export class ConflictUtils{
                 left:topRightPanel.scrollLeft,
             });
             bottomPanel?.scrollTo({                    
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,                
+            });
+
+            bottomPanelLine?.scrollTo({                    
                 top:topRightPanel.scrollTop,
                 left:topRightPanel.scrollLeft,                
             });
@@ -629,12 +608,16 @@ export class ConflictUtils{
             topLeftPanel?.scrollTo({
                 top: bottomPanel.scrollTop,
                 left: bottomPanel.scrollLeft,
-            });            
+            });
+            bottomPanelLine?.scrollTo({                    
+                top:bottomPanel.scrollTop,
+                left:bottomPanel.scrollLeft,                
+            });
         }
     
-        topLeftPanel.addEventListener("scroll",handler1);
-        topRightPanel.addEventListener("scroll",handler2);
-        bottomPanel.addEventListener("scroll",handler3);
+        topLeftPanel.addEventListener("scroll",handler);
+        topRightPanel.addEventListener("scroll",handler);
+        bottomPanel.addEventListener("scroll",handler);
     }
 
     private static SetHeighlightedLines(){
