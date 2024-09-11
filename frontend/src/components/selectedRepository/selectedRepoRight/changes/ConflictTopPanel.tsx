@@ -9,13 +9,13 @@ interface IProps{
     currentLineDivWidth:number;
 }
 export function ConflictTopPanel(props:IProps){    
-    return <div className="d-flex w-100 h-100 conflict-diff" style={{overflowY:'auto'}}>
-        <div className={`w-50 previous `}>
+    return <div className="d-flex w-100 h-100 conflict-diff">
+        <div className={`w-50 h-100 previous `}>
             <ConflictDiffView colorClass={"bg-previous-change"} lines={props.previousLines}
                 lineDivWidth={props.previousLineDivWidth} side={EnumConflictSide.Incoming} />
         </div>
 
-        <div className={`w-50 ps-2 current`}>
+        <div className={`w-50 h-100 ps-2 current`}>
             <ConflictDiffView colorClass={"bg-current-change"} lines={props.currentLines}
                 lineDivWidth={props.currentLineDivWidth} side={EnumConflictSide.Current} />
         </div>

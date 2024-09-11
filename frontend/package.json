@@ -33,7 +33,7 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "set FAST_REFRESH=false && react-scripts start",
+    "start": "set FAST_REFRESH=false && set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

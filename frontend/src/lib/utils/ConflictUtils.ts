@@ -551,32 +551,73 @@ export class ConflictUtils{
 
     private static HandleScrolling(){
         const topPanel = ConflictUtils.topPanelElement;
-        const bottomPanel = ConflictUtils.bottomPanelElement;
-    
-        let handler1 = (e:Event)=>{
+
+        const bottomPanel = ConflictUtils.bottomPanelElement.querySelector(".content") as HTMLElement;
+        const bottomPanelLine = ConflictUtils.bottomPanelElement.querySelector(".line-container") as HTMLElement;
+                
+        const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
+        const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
+        const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
+        const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
+
+        
+        if(!bottomPanel || !bottomPanelLine || !topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
+            return;
+        
+        const group = [topLeftPanel, topRightPanel,bottomPanel,topRightNumberPanel,topRightNumberPanel,topLeftNumberPanel,bottomPanelLine];        
+
+        let handler = (e:Event)=>{
             if(!ConflictUtils.hoverTopPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(topPanel);
-            const top = UiUtils.getVerticalScrollTop(bottomPanel, ratio);
-            bottomPanel?.scrollTo({
-                top
+            const target = e.target as HTMLElement;
+            const scrollElems = group.filter(elem => elem != target);            
+            for(let elem of scrollElems){
+                elem.scrollTo({
+                    top:target.scrollTop,
+                    left:target.scrollLeft,
+                })
+            }            
+        }
+
+        let handler2 = (_:Event)=>{
+            if(!ConflictUtils.hoverTopPanel)
+                return;
+            topLeftPanel.scrollTo({
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,
+            });
+            bottomPanel?.scrollTo({                    
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,                
+            });
+
+            bottomPanelLine?.scrollTo({                    
+                top:topRightPanel.scrollTop,
+                left:topRightPanel.scrollLeft,                
             });
         }
 
-        let handler2 = (e:Event)=>{
+        let handler3 = (e:Event)=>{
             if(!ConflictUtils.hoverBottomPanel)
                 return;
-            const ratio = UiUtils.getVerticalScrollRatio(bottomPanel);
-            const top = UiUtils.getVerticalScrollTop(topPanel, ratio);
-            topPanel?.scrollTo({                    
-                top,
+            console.log("handler3");            
+            topRightPanel?.scrollTo({
+                top: bottomPanel.scrollTop,
+                left: bottomPanel.scrollLeft
+            });            
+            topLeftPanel?.scrollTo({
+                top: bottomPanel.scrollTop,
+                left: bottomPanel.scrollLeft,
+            });
+            bottomPanelLine?.scrollTo({                    
+                top:bottomPanel.scrollTop,
+                left:bottomPanel.scrollLeft,                
             });
         }
-
-        if(topPanel && bottomPanel){
-            topPanel.addEventListener("scroll",handler1)
-            bottomPanel.addEventListener("scroll",handler2);
-        }
+    
+        topLeftPanel.addEventListener("scroll",handler);
+        topRightPanel.addEventListener("scroll",handler);
+        bottomPanel.addEventListener("scroll",handler);
     }
 
     private static SetHeighlightedLines(){
@@ -601,7 +642,7 @@ export class ConflictUtils{
         const container = document.querySelector("#"+ConflictUtils.topPanelId);
         if(!ConflictUtils.heighlightedLineIndexes.length)
             return;
-        const focusElem = container?.querySelector('.line_numbers')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
+        const focusElem = container?.querySelector('.content')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
         ConflictUtils.setBottomPanelScrollPosition();
 

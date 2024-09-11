@@ -180,11 +180,25 @@ export class UiUtils {
         return scrollTop / (scrollHeight - height);
     }
 
+    static getHorizontalScrollRatio(element:HTMLElement){
+        const width = element.getBoundingClientRect().width;
+        const scrollLeft = element.scrollLeft;
+        const scrollWidth = element.scrollWidth;
+        return scrollLeft / (scrollWidth - width);
+    }
+
     static getVerticalScrollTop(element:HTMLElement,ratio:number){
         const height = element.getBoundingClientRect().height;
         const scrollHeight = element.scrollHeight;
         const scrollTop = (scrollHeight - height)*ratio;
         return scrollTop;
+    }
+
+    static getHorizontalScrollLeft(element:HTMLElement,ratio:number){
+        const width = element.getBoundingClientRect().width;
+        const scrollWidth = element.scrollWidth;
+        const scrollLeft = (scrollWidth - width)*ratio;
+        return scrollLeft;
     }
 
     static resolveValueFromId(id:string){

@@ -14,6 +14,7 @@ export class RepoUtils{
     static getRepoDetails(repoDetails:IRepositoryDetails){
         if(!repoDetails.allCommits.length)
             return;
+        RepoUtils.enSureTopoOrder(repoDetails);
         RepoUtils.getBranchDetails(repoDetails);
         RepoUtils.enListSourceCommits(repoDetails);
         RepoUtils.finaliseSourceCommits(repoDetails);
@@ -199,6 +200,21 @@ export class RepoUtils{
         }
 	}
     
+    private static enSureTopoOrder(repoDetails:IRepositoryDetails){
+        const mergeCommits = repoDetails.allCommits.filter(_=> _.parentHashes.length > 1);
+        for(let commit of mergeCommits){
+            const i = repoDetails.allCommits.indexOf(commit);
+            const parentHashes = commit.parentHashes;
+            const parents = repoDetails.allCommits.filter(_=> parentHashes.includes(_.avrebHash));
+            const parentIndexes = parents.map(_ => ({p:_,index:repoDetails.allCommits.indexOf(_)}));
+            const rightMostParent = parentIndexes.filter(_ => _.index > i).sort((_x,_y)=> _x.index > _y.index ? -1:1)[0];
+            if(rightMostParent){
+                console.log("fixing shipped commit",rightMostParent.p.hash);
+                repoDetails.allCommits.splice(rightMostParent.index+1,0,commit);
+                repoDetails.allCommits.splice(i,1);
+            }
+        }        
+    }
 
     private static getBranchDetails(repoDetails:IRepositoryDetails){
         let branchTree:IBranchDetails[] = [];
@@ -226,7 +242,7 @@ export class RepoUtils{
             
             let previousCommit = repoDetails.allCommits.find(x=>x.avrebHash === currentCommit.parentHashes[0]); 
             
-            if(!!previousCommit){
+            if(!!previousCommit?.ownerBranch){
             	currentCommit.previousCommit = previousCommit;
                 if(previousCommit.nextCommit || previousCommit.ownerBranch.name){            
                   ownerBranch = createNewBranch(previousCommit);

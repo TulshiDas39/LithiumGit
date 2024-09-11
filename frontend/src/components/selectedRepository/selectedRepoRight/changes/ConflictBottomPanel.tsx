@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { ConflictUtils, DiffUtils, ILine } from "../../../../lib";
+import { ConflictUtils, ILine } from "../../../../lib";
 
 interface ISingleConflictLineProps{
     className:string;
@@ -90,11 +90,11 @@ export function ConflictBottomPanel(props:IProps){
 
     const elements = getElements();
 
-    return <div className="h-100 w-100 conflict-bottom overflow-auto d-flex">
-        <div className="pe-2 line-container">
+    return <div className="h-100 w-100 conflict-bottom d-flex">
+        <div className="pe-2 line-container h-100" style={{overflowY:'hidden'}}>
             {elements.lineNumbers}
         </div>
-        <div className="flex-grow-1">
+        <div className="flex-grow-1 content h-100 w-100 overflow-auto">
             {elements.contents}
         </div>
     </div>
