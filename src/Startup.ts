@@ -12,7 +12,7 @@ import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
 
 export class Startup{
-    private readonly uiPort = Config.FRONTEND_PORT;
+    private readonly uiPort = Config.UI_PORT;
 
     async initilise(){
       //this.initAppData();
@@ -101,7 +101,7 @@ export class Startup{
         if(Config.env === 'development')          
           mainWindow.loadURL(`http://localhost:${this.uiPort}`);
         else{
-          const htmlFile =   path.resolve(__dirname,"frontend", 'index.html');
+          const htmlFile =   path.resolve(__dirname,"ui", 'index.html');
           mainWindow.loadFile(htmlFile);
         }
         

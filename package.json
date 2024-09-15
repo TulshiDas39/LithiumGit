@@ -4,14 +4,14 @@
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
-    "configure_dev": "cross-env-shell NODE_ENV=development FRONTEND_PORT=54533",
+    "configure_dev": "cross-env-shell NODE_ENV=development ui_PORT=54533",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
-    "build_frontend": "cd frontend && npm run build",
+    "build_ui": "cd ui && npm run build",
     "build_common_library": "cd common_library && npm run build",
-    "copy_files": "copyfiles -u 2 frontend/build/**/* dist/frontend",
-    "build_all": "npm run build_frontend && npm run copy_files && npm run build",
+    "copy_files": "copyfiles -u 2 ui/build/**/* dist/ui",
+    "build_all": "npm run build_ui && npm run copy_files && npm run build",
     "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build"
   },
   "main": "./dist/main.js",
