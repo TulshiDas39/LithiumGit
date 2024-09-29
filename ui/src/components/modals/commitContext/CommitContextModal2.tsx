@@ -67,28 +67,13 @@ function CommitContextModalComponent(){
         }
 
         GraphUtils.openContextModal = modalOpenEventListener;                
-        UiUtils.openContextModal = modalOpenEventListener;                
+        UiUtils.openContextModal = modalOpenEventListener;        
 
-        const mergeListener = (e:any,status:IStatus)=>{
-            dispatch(ActionUI.setLoader())
-            dispatch(ActionUI.setMergerCommitMessage(refData.current.mergerCommitMessage));
-            if(status) {
-                ReduxUtils.setStatus(status);
-                dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-            }
-        }
-
-        window.ipcRenderer.on(RendererEvents.gitMerge().replyChannel,mergeListener)
         document.addEventListener("click",(e)=>{
             if(refData.current.show && !refData.current.onHover){
                 hideModal();
             }
-        })
-        return ()=>{
-            UiUtils.removeIpcListeners([
-                RendererEvents.gitMerge().replyChannel,
-            ],[mergeListener]);
-        }
+        });        
 
     },[])
 

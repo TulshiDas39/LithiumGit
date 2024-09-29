@@ -6,12 +6,12 @@ import { EnumModals, useMultiState, RepoUtils, Data } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { ActionUI } from "../../store/slices/UiSlice";
+import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
 import { ModalData } from "./ModalData";
 import { Messages } from "../../lib/constants";
 import { GitUtils } from "../../lib/utils/GitUtils";
-import { createAnnotation, EnumAnnotationType } from "common_library";
+import { createAnnotation, EnumAnnotationType, StringUtils } from "common_library";
 
 interface IState{
     branch:string;
@@ -71,14 +71,15 @@ function PullFromModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
-        dispatch(ActionUI.setLoader({text:Messages.pull}));
+        const loader:ILoaderInfo = {text:Messages.pull,id:StringUtils.uuidv4()};
+        dispatch(ActionUI.setLoader(loader));
         IpcUtils.trigerPull(options).then((r)=>{
             if(!r.error){
                 ModalData.appToast.message = "Pull succeeded.";
                 dispatch(ActionModals.showModal(EnumModals.TOAST));
                 updateAnnotation();
             }
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.removeLoader(loader.id));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));
             GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));

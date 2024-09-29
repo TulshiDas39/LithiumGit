@@ -6,9 +6,9 @@ import { ActionModals, ActionSavedData } from "../../store";
 import React, { useEffect, useMemo, useRef } from "react";
 import { AppButton } from "../common";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { ActionUI } from "../../store/slices/UiSlice";
+import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { FaTimes } from "react-icons/fa";
-import { createAnnotation, EnumAnnotationType } from "common_library";
+import { createAnnotation, EnumAnnotationType, StringUtils } from "common_library";
 import { ModalData } from "./ModalData";
 import { Messages } from "../../lib/constants";
 import { GitUtils } from "../../lib/utils/GitUtils";
@@ -72,9 +72,10 @@ function PushToModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
-        dispatch(ActionUI.setLoader({text:Messages.push}));
+        const loader :ILoaderInfo = {text:Messages.push,id:StringUtils.uuidv4()};
+        dispatch(ActionUI.setLoader(loader));
         IpcUtils.trigerPush(options).then((r)=>{
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.removeLoader(loader.id));
             dispatch(ActionUI.setSync({text:Messages.getStatus}));            
             GitUtils.getStatus().finally(()=>{                
                 dispatch(ActionUI.setSync(undefined));

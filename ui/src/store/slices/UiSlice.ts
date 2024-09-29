@@ -23,7 +23,7 @@ interface EventVersions{
 
 export interface ILoaderInfo{
     text:string;
-    id?:string;
+    id:string;
 }
 
 export interface ILocalSyncInfo{
@@ -96,15 +96,18 @@ const UISlice = createSlice({
         setConfigTab(state,action:PayloadAction<EnumConfigTab>){
             state.configTab = action.payload;
         },
-        setLoader(state,action:PayloadAction<ILoaderInfo | undefined>){
+        setLoader(state,action:PayloadAction<ILoaderInfo>){
             if(!action.payload){
                 state.loaders = [];
             }else{
                 state.loaders.push(action.payload);
             }
         },
-        removeLoader(state,action:PayloadAction<ILoaderInfo>){
-            state.loaders = state.loaders.filter(_=> _.id !== action.payload.id);
+        clearLoaders(state){
+            state.loaders = [];
+        },
+        removeLoader(state,action:PayloadAction<string>){
+            state.loaders = state.loaders.filter(_=> _.id !== action.payload);
         },
         setSync(state,action:PayloadAction<ILocalSyncInfo|undefined>){
             state.synch = action.payload;

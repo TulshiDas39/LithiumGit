@@ -178,7 +178,7 @@ export class GitUtils{
                 ModalData.appToast.message = Messages.fetchComplete;
                 ReduxUtils.dispatch(ActionModals.showModal(EnumModals.TOAST));
             }
-            ReduxUtils.dispatch(ActionUI.removeLoader(loader));
+            ReduxUtils.dispatch(ActionUI.removeLoader(loader.id));
             return r;            
         })
     }
