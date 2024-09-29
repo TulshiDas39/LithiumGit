@@ -166,7 +166,7 @@ export class GitUtils{
         else{
             const origin = RepoUtils.activeOriginName;
             options.push(origin);
-            const brName = RepoUtils.repositoryDetails.status.headCommit?.ownerBranch.name;
+            const brName = RepoUtils.repositoryDetails.headCommit?.ownerBranch?.name;
             if(brName){
                 options.push(brName);
             }
