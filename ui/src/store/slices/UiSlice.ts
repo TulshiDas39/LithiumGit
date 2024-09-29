@@ -23,6 +23,7 @@ interface EventVersions{
 
 export interface ILoaderInfo{
     text:string;
+    id?:string;
 }
 
 export interface ILocalSyncInfo{
@@ -34,7 +35,7 @@ interface IUIState{
     versions:EventVersions;
     selectedRepoTab:EnumSelectedRepoTab;
     configTab:EnumConfigTab;
-    loader?:ILoaderInfo;
+    loaders:ILoaderInfo[];
     synch?:ILocalSyncInfo;
     mergerCommitMessage?:string;
     status?:IStatus;
@@ -59,6 +60,7 @@ const initialState:IUIState={
     branchList:[],
     refreshingGraph:false,
     configTab:EnumConfigTab.USER,
+    loaders:[],
 }
 
 const UISlice = createSlice({
@@ -94,8 +96,15 @@ const UISlice = createSlice({
         setConfigTab(state,action:PayloadAction<EnumConfigTab>){
             state.configTab = action.payload;
         },
-        setLoader(state,action:PayloadAction<ILoaderInfo|undefined>){
-            state.loader = action.payload;
+        setLoader(state,action:PayloadAction<ILoaderInfo | undefined>){
+            if(!action.payload){
+                state.loaders = [];
+            }else{
+                state.loaders.push(action.payload);
+            }
+        },
+        removeLoader(state,action:PayloadAction<ILoaderInfo>){
+            state.loaders = state.loaders.filter(_=> _.id !== action.payload.id);
         },
         setSync(state,action:PayloadAction<ILocalSyncInfo|undefined>){
             state.synch = action.payload;

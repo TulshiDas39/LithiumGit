@@ -5,7 +5,7 @@ import { ActionModals, ActionSavedData } from "../../store";
 import { EnumModals } from "../enums";
 import { ModalData } from "../../components/modals/ModalData";
 import { Messages } from "../constants";
-import { ActionUI } from "../../store/slices/UiSlice";
+import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { RepoUtils } from "./RepoUtils";
 
 export class GitUtils{
@@ -171,13 +171,14 @@ export class GitUtils{
                 options.push(brName);
             }
         }
-        ReduxUtils.dispatch(ActionUI.setLoader({text:Messages.fetch}));
+        const loader:ILoaderInfo = {text:Messages.fetch, id:StringUtils.uuidv4()};
+        ReduxUtils.dispatch(ActionUI.setLoader(loader));
         return IpcUtils.fetch(options).then(r=>{
             if(!r.error){
                 ModalData.appToast.message = Messages.fetchComplete;
                 ReduxUtils.dispatch(ActionModals.showModal(EnumModals.TOAST));
             }
-            ReduxUtils.dispatch(ActionUI.setLoader(undefined));
+            ReduxUtils.dispatch(ActionUI.removeLoader(loader));
             return r;            
         })
     }
