@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "0.5.3-alpha.1",
+  "version": "1.0.0",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc",
