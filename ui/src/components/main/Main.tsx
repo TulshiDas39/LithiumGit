@@ -29,17 +29,14 @@ function MainComponent(){
         window.ipcRenderer.on(RendererEvents.showError().channel,(e,message:any)=>{
             const str = typeof message === 'string'?message:JSON.stringify(message);
             ModalData.errorModal.message = str;
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.clearLoaders());
             dispatch(ActionUI.setSync(undefined));
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })
     }
 
     useEffect(()=>{
-        registerIpcEvents();
-        ReduxUtils.setLoader = (payload:ILoaderInfo | undefined)=>{
-            dispatch(ActionUI.setLoader(payload));
-        }
+        registerIpcEvents();        
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
         if(!savedData){
             batch(()=>{
@@ -60,14 +57,6 @@ function MainComponent(){
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
         });
         setState({isLoading:false});        
-
-        window.ipcRenderer.on(RendererEvents.pull().replyChannel,(_)=>{
-            dispatch(ActionUI.setLoader(undefined));
-        })
-
-        window.ipcRenderer.on(RendererEvents.fetch().replyChannel,(_)=>{
-            dispatch(ActionUI.setLoader(undefined));
-        })
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));

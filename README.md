@@ -6,17 +6,17 @@ This is a cross platform Git GUI application.
 
 # Architecture
 
-common_library: This is a local npm package which is used in both backend and frontend. Functions,classes,types etc needed both in backend and frontend are exported from here.
+common_library: This is a local npm package which is used in both backend and ui. Functions,classes,types etc needed both in backend and ui are exported from here.
 
-frontend: This is a react app built with create-react-app template. This is the application ui.
+ui: This is a react app built with create-react-app template. This is the application ui.
 
 # Steps to run
 
 build and install the common library:  
 -navigate to common_library folder and run "npm run build"  
   
-run the frontend:  
--navigate to frontend folder and run "npm start"  
+run the ui:  
+-navigate to ui folder and run "npm start"  
   
 run the backend:    
 -open ./src/config.ts file  

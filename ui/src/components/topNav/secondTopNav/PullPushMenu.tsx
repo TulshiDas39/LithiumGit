@@ -1,11 +1,11 @@
-import { RendererEvents } from "common_library";
+import { RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useMemo, useRef } from "react"
 import { Dropdown } from "react-bootstrap";
 import { FaAngleDoubleDown, FaAngleDoubleUp, FaArrowDown, FaCaretDown } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, EnumModals, useMultiState } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { ActionUI } from "../../../store/slices/UiSlice";
+import { ActionUI, ILoaderInfo } from "../../../store/slices/UiSlice";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
 import { AppButton } from "../../common";
@@ -53,7 +53,8 @@ function PullPushMenuComponent(){
     },[store.isDetached,store.current,store.trackingBranch]);
 
     const handlePull=()=>{
-        dispatch(ActionUI.setLoader({text:Messages.pull}));
+        const loader:ILoaderInfo = {text:Messages.pull,id:StringUtils.uuidv4()};
+        dispatch(ActionUI.setLoader(loader));
         const options:string[] = [];
         if(upStreamBranch){
             const originName = RepoUtils.activeOriginName;
@@ -64,13 +65,14 @@ function PullPushMenuComponent(){
                 ModalData.appToast.message = Messages.pullSuccess;
                 dispatch(ActionModals.showModal(EnumModals.TOAST));
             }
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.removeLoader(loader.id));
             GitUtils.getStatus();
         })
     }
 
     const handlePush=()=>{
-        dispatch(ActionUI.setLoader({text:Messages.push}));
+        const loader:ILoaderInfo = {text:Messages.push,id:StringUtils.uuidv4()};
+        dispatch(ActionUI.setLoader(loader));
         const options:string[] = [];
         if(upStreamBranch){
             const originName = RepoUtils.activeOriginName;
@@ -82,7 +84,7 @@ function PullPushMenuComponent(){
                 dispatch(ActionModals.showModal(EnumModals.TOAST));
             }
             
-            dispatch(ActionUI.setLoader(undefined));
+            dispatch(ActionUI.removeLoader(loader.id));
             GitUtils.getStatus();
         })
     }

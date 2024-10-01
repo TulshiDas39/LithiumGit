@@ -542,7 +542,7 @@ export class GraphUtils{
                 dummyCommit.message = 'Commit is in merging state.';
                 const allCommits = RepoUtils.repositoryDetails.allCommits;
                 const latestCommit = allCommits[allCommits.length-1];
-                dummyCommit.x = latestCommit.x + RepoUtils.distanceBetweenCommits; 
+                dummyCommit.x = latestCommit.x + RepoUtils.distanceBetweenCommits+10; 
                 dummyCommit.inMergingState = true; 
                 dummyCommit.parentHashes = [head.hash,newStatus.mergingCommitHash];
                 GraphUtils.state.mergingCommit.publish(dummyCommit);

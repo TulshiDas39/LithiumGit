@@ -10,6 +10,7 @@ export class RepoUtils{
     static readonly branchPanelFontSize = 12;    
     static readonly commitRadius = RepoUtils.branchPanelFontSize;
     static readonly distanceBetweenCommits = RepoUtils.commitRadius*3;
+    static readonly mainBranches = ["master","main"];
 
     static getRepoDetails(repoDetails:IRepositoryDetails){
         if(!repoDetails.allCommits.length)
@@ -85,8 +86,8 @@ export class RepoUtils{
     private static setBranchVerticalOffset(repoDetails:IRepositoryDetails){
 
         const branchesWithoutParent = repoDetails.resolvedBranches.filter(_=> !_.parentCommit);
-        const mainBranches = ["master","main"];
-        branchesWithoutParent.sort((a,_) => !mainBranches.includes(a.name) ? 1:-1);
+        const mainBranchNames = RepoUtils.mainBranches;
+        branchesWithoutParent.sort((a,_) => !mainBranchNames.includes(a.name) ? 1:-1);
         for(let i = 0; i < branchesWithoutParent.length; i++){
             const branch = branchesWithoutParent[i];
             branch.verticalOffset = i + 1;
@@ -155,13 +156,15 @@ export class RepoUtils{
 			
 			let currentOwnerBranch = sourceCommit.ownerBranch;
 			let realOwnerBranch:IBranchDetails = null!;
+
+            const mainBranchNames = RepoUtils.mainBranches;
 			
 			if(!currentOwnerBranch.name && sourceCommit.branchesFromThis.length == 1)
 				realOwnerBranch = sourceCommit.branchesFromThis[0];
 			else {
 				for(let br of sourceCommit.branchesFromThis) {
 					if(!br.name)continue;
-                    if(br.name === "master"){
+                    if(mainBranchNames.includes(br.name)){
                         realOwnerBranch = br;
                         break;
                     }

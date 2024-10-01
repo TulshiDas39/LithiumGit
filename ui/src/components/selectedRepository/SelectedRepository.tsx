@@ -106,7 +106,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     const updateGraph=(reloadData = false)=>{
         return updateRepoData(reloadData).then(()=>{
             GraphUtils.createBranchPanel();                
-            dispatch(ActionUI.setLoader(undefined));
             dispatch(ActionUI.setSync(undefined));
             ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
             dispatch(ActionUI.setRemotes(new ObjectUtils().deepClone(RepoUtils.repositoryDetails.remotes)));

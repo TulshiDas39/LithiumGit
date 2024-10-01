@@ -63,7 +63,6 @@ function ChangesComponent() {
     }
 
     useEffect(()=>{
-        checkForDiifClear();
         if(!store.selectedFile || !store.status) return;
         const changedFiles = [...store.status.conflicted,...store.status.staged,...store.status.unstaged];
         const existInStatus = changedFiles.some(x=> x.path === store.selectedFile?.path 
@@ -72,6 +71,10 @@ function ChangesComponent() {
         if(!existInStatus)
             dispatch(ActionChanges.updateData({selectedFile:undefined}));        
     },[store.status])
+
+    useEffect(()=>{
+        checkForDiifClear();
+    },[store.selectedFile])
 
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
