@@ -42,7 +42,7 @@
     "electron-updater": "^5.0.1",
     "fs-extra": "^10.1.0",
     "nedb": "^1.8.0",
-    "simple-git": "^3.10.0"
+    "simple-git": "3.10.0"
   },
   "build": {
     "productName": "LithiumGit",
