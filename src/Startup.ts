@@ -95,6 +95,7 @@ export class Startup{
             contextIsolation:false,
           },
           width: 800,
+          icon: path.join(__dirname, 'assets/images/icon.png')
         });
         mainWindow.maximize();
         AppData.mainWindow = mainWindow;

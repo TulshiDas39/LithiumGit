@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "A git gui application",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy_src_assets",
+    "copy_src_assets":"copyfiles -u 2 \"src/assets/**/*\" dist/assets",
     "configure_dev": "cross-env-shell NODE_ENV=development ui_PORT=54533",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
