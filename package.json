@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "A git gui application",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy_src_assets",
+    "copy_src_assets":"copyfiles -u 2 \"src/icons/**/*\" dist/icons",
     "configure_dev": "cross-env-shell NODE_ENV=development ui_PORT=54533",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/main.js",
     "build_ui": "cd ui && npm run build",
     "build_common_library": "cd common_library && npm run build",
-    "copy_files": "copyfiles -u 2 ui/build/**/* dist/ui",
+    "copy_files": "copyfiles -u 2 \"ui/build/**/*\" dist/ui",
     "build_all": "npm run build_ui && npm run copy_files && npm run build",
-    "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build"
+    "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build",
+    "package-linux": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux"
   },
   "main": "./dist/main.js",
   "keywords": [
@@ -21,7 +23,8 @@
     "app",
     "ui"
   ],
-  "author": "GitHub",
+  "author": "Tulshi Chandra Das <tulshidas37@gmail.com>",
+  "email": "tulshidas37@gmail.com",
   "license": "MIT",
   "devDependencies": {
     "@types/express": "^4.17.13",
@@ -42,7 +45,7 @@
     "electron-updater": "^5.0.1",
     "fs-extra": "^10.1.0",
     "nedb": "^1.8.0",
-    "simple-git": "^3.10.0"
+    "simple-git": "3.10.0"
   },
   "build": {
     "productName": "LithiumGit",
@@ -97,8 +100,9 @@
       "runAfterFinish": true
     },
     "linux": {
+      "icon": "icons/256x256.icns",
       "target": [
-        "AppImage"
+        "AppImage","deb"
       ],
       "category": "Development"
     },
