@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 export class IpcUtils{
+    static continueRebase() {
+        return IpcUtils.runGitCommand(RendererEvents.continueRebase,[]);
+    }
     static async getGraphCommitList(filter: ICommitFilter) {
         const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
         if(!r.error)

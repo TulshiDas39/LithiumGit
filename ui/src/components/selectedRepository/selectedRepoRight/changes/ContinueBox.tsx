@@ -1,10 +1,13 @@
 import { Form } from "react-bootstrap";
-import { useMultiState } from "../../../../lib";
+import { EnumModals, useMultiState } from "../../../../lib";
 import React, { useEffect } from "react";
 import { useSelectorTyped } from "../../../../store/rootReducer";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { AppButton } from "../../../common";
 import { FaCheck } from "react-icons/fa";
+import { IpcUtils } from "../../../../lib/utils/IpcUtils";
+import { ModalData } from "../../../modals/ModalData";
+import { ActionModals } from "../../../../store";
 
 interface IState{
     value:string;
@@ -14,8 +17,9 @@ function ContinueBoxComponent(){
     const store = useSelectorTyped(state=>({
         rebaseCommit:state.ui.status?.rebasingCommit,
         repoPath:state.savedData?.recentRepositories.find(_=> _.isSelected)?.path,
+        conflictedFiles:state.ui.status?.conflicted,
     }),shallowEqual);
-
+    const dispatch = useDispatch();
     const [state,setState]= useMultiState<IState>({
         value:""
     });
@@ -23,6 +27,17 @@ function ContinueBoxComponent(){
     useEffect(()=>{        
         setState({value:store.rebaseCommit?.message || ""});
     },[store.rebaseCommit])
+
+    const handleContinue=()=>{
+        if(!!store.conflictedFiles?.length){
+            ModalData.errorModal.message = "Conflicts exist.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        IpcUtils.continueRebase().then(()=>{
+            IpcUtils.getStashes();
+        });
+    }
 
     const handleSkip=()=>{
 
@@ -35,7 +50,7 @@ function ContinueBoxComponent(){
             </div>
             <div className="col d-flex pt-1 px-1 align-items-center justify-content-around flex-nowrap overflow-auto">
                 <div className="">
-                    <AppButton type="default" onClick={handleSkip} className="h-100 py-2">                                    
+                    <AppButton type="default" onClick={()=>handleContinue()} className="h-100 py-2">                                    
                         <span className="">Continue</span>                    
                     </AppButton>
                 </div>
