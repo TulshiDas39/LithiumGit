@@ -1,11 +1,11 @@
 import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
-import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 export class IpcUtils{
     static continueRebase() {
-        return IpcUtils.runGitCommand(RendererEvents.continueRebase,[]);
+        const options = ["-c","core.editor=true","rebase","--continue"];
+        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options]);
     }
     static async getGraphCommitList(filter: ICommitFilter) {
         const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
@@ -197,7 +197,7 @@ export class IpcUtils{
     }
 
     static async rebaseBranch(branch:string){
-        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,branch);
+        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,[branch]);
     }
 
     static async cherryPick(options:string[]){

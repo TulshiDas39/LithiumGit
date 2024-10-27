@@ -172,8 +172,8 @@ export class GitManager{
         })
     }
     private addRebaseHandler(){
-        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,branch:string)=>{
-            await this.rebaseBranch(repository,branch);
+        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,options:string[])=>{
+            await this.rebase(repository,options);
         })
     }
     addCheckOutCommitHandlder(){
@@ -223,9 +223,9 @@ export class GitManager{
         })
     }
 
-    private async rebaseBranch(repoInfo:RepositoryInfo,branch:string){
+    private async rebase(repoInfo:RepositoryInfo,options:string[]){
         const git = this.getGitRunner(repoInfo);        
-        await git.rebase([branch]);        
+        await git.rebase(options);        
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
