@@ -446,6 +446,8 @@ export class GitManager{
         if(!result.headCommit)
             return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
+        result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
+
         return result;
     }
 
@@ -457,6 +459,15 @@ export class GitManager{
     private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
+            return result;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private async getRebaseInfo(git:SimpleGit){
+        try {
+            const result = await git.revparse(["-q", "--verify", "REBASE_HEAD"]);            
             return result;
         } catch (error) {
             return null;

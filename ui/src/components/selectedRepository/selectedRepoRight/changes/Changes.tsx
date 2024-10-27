@@ -12,6 +12,7 @@ import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ConflictEditor } from "./ConflictEditor";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { ContinueBox } from "./ContinueBox";
 
 
 interface IState {
@@ -108,7 +109,8 @@ function ChangesComponent() {
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
-            <CommitBox />
+            {!store.status?.rebasingCommit && <CommitBox />}
+            {!!store.status?.rebasingCommit && <ContinueBox />}
             <ChangesTabPane  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />

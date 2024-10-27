@@ -4,7 +4,7 @@
   "description": "A git gui application",
   "scripts": {
     "build": "tsc && npm run copy_src_assets",
-    "copy_src_assets":"copyfiles -u 2 \"src/icons/**/*\" dist/icons",
+    "copy_src_assets": "copyfiles -u 2 \"src/icons/**/*\" dist/icons",
     "configure_dev": "cross-env-shell NODE_ENV=development ui_PORT=54533",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
@@ -102,7 +102,8 @@
     "linux": {
       "icon": "icons/256x256.icns",
       "target": [
-        "AppImage","deb"
+        "AppImage",
+        "deb"
       ],
       "category": "Development"
     },

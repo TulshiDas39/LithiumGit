@@ -21,6 +21,8 @@ export interface IStatus{
     totalStagedItem:number;
     totalUnStagedItem:number;
     totalConflictedItem:number;
+    rebasingCommit:ICommitInfo;
+    cherryPickingCommit:ICommitInfo;
 }
 
 export interface IChanges{
