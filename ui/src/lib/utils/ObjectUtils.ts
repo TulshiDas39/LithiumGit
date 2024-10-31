@@ -23,7 +23,7 @@ export class ObjectUtils{
 
     mapToScopedValue<T>(obj:ITypedConfig<T>){
         const res = {} as Record<keyof T, IScopedValue<any>>;
-        const keys = Object.keys(obj.local);
+        const keys = Object.keys(obj.local as any);
         for(let key of keys){
             const tKey = key as keyof T;
             res[tKey] = {value: obj.local[tKey] || obj.global[tKey]} as IScopedValue<any>;
