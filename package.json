@@ -14,7 +14,8 @@
     "copy_files": "copyfiles -u 2 \"ui/build/**/*\" dist/ui",
     "build_all": "npm run build_ui && npm run copy_files && npm run build",
     "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build",
-    "package-linux": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux"
+    "package-linux": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux",
+    "package-mac": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --mac"
   },
   "main": "./dist/main.js",
   "keywords": [
@@ -59,7 +60,7 @@
     ],
     "mac": {
       "target": {
-        "target": "default",
+        "target": "dmg",
         "arch": [
           "arm64",
           "x64"
@@ -72,6 +73,7 @@
       "gatekeeperAssess": false
     },
     "dmg": {
+      "icon": "icons/512x512.png",
       "contents": [
         {
           "x": 130,
