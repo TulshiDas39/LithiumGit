@@ -386,7 +386,7 @@ export class GraphUtils{
                 const newRefs = newStatus.headCommit.refValues;        
                 if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
             }else if(!filter.userModified){
-                return true;
+                //return true;
             }
             filter = {...filter,limit:100};
             let commits = await IpcUtils.getGraphCommitList(filter);
