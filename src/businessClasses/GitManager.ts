@@ -446,8 +446,12 @@ export class GitManager{
         if(!result.headCommit)
             return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
-        result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
-
+        if(!result.mergingCommitHash){
+            result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
+        }
+        if(!result.rebasingCommit){
+            result.cherryPickingCommit = await this.getCommitInfo(git, "CHERRY_PICK_HEAD");
+        }
         return result;
     }
 

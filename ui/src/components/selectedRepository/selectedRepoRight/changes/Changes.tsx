@@ -1,18 +1,15 @@
-import { EnumChangeType, IFile } from "common_library";
+import { EnumChangeType } from "common_library";
 import React, { useMemo, useRef } from "react"
-import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, ReduxUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ConflictEditor } from "./ConflictEditor";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
-import { ContinueBox } from "./ContinueBox";
+import { RebaseActionBox } from "./RebaseActionBox";
 
 
 interface IState {
@@ -110,7 +107,7 @@ function ChangesComponent() {
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
             {!store.status?.rebasingCommit && <CommitBox />}
-            {!!store.status?.rebasingCommit && <ContinueBox />}
+            {!!store.status?.rebasingCommit && <RebaseActionBox />}
             <ChangesTabPane  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />

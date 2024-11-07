@@ -14,7 +14,7 @@ interface IState{
     value:string;
 }
 
-function ContinueBoxComponent(){
+function RebaseActionBoxComponent(){
     const store = useSelectorTyped(state=>({
         rebaseCommit:state.ui.status?.rebasingCommit,
         repoPath:state.savedData?.recentRepositories.find(_=> _.isSelected)?.path,
@@ -79,4 +79,4 @@ function ContinueBoxComponent(){
     </div>
 }
 
-export const ContinueBox = React.memo(ContinueBoxComponent);
+export const RebaseActionBox = React.memo(RebaseActionBoxComponent);
