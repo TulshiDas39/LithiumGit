@@ -19,17 +19,17 @@ function RebaseBranchComponent(props:IProps){
 
     const rebaseBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        IpcUtils.rebaseBranch(branch).then(_=>{
-            GitUtils.getStatus();
-        }).catch(e=>{
+        IpcUtils.rebaseBranch(branch).then(r=>{
             GitUtils.getStatus().then(r=>{
                 if(r.rebasingCommit){
                     dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                 }
             });
-            ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
-        })        
+            if(r.error){
+                ModalData.errorModal.message = r.error?.toString() || "Failed to rebase.";
+                dispatch(ActionModals.showModal(EnumModals.ERROR));
+            }
+        })      
     }
 
     return <Fragment>

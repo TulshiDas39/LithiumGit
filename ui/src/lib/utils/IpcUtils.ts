@@ -3,6 +3,12 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+
+    static skipRebase() {
+        const options = ["--skip"];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options],{preventErrorDisplay:true});
+    }
+
     static continueRebase() {
         const options = ["-c","core.editor=true","rebase","--continue"];
         return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options]);
@@ -196,8 +202,9 @@ export class IpcUtils{
         await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
     }
 
-    static async rebaseBranch(branch:string){
-        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,[branch]);
+    static rebaseBranch(branch:string){
+        const options = [branch];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options]);
     }
 
     static async cherryPick(options:string[]){
@@ -237,10 +244,14 @@ export class IpcUtils{
         };
     }
 
-    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string|RepositoryInfo){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],config?:{
+        repositoryPath?:string|RepositoryInfo,
+        preventErrorDisplay?:boolean,
+    }){
+        let repositoryPath = config?.repositoryPath;
         if(!repositoryPath)
             repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
-        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
+        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args],config?.preventErrorDisplay);
     }
 
     static updateRepository(repo:RepositoryInfo){
@@ -270,7 +281,7 @@ export class IpcUtils{
     }
 
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
-        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],repoInfo);
+        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;
     }
     

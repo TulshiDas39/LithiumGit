@@ -172,8 +172,8 @@ export class GitManager{
         })
     }
     private addRebaseHandler(){
-        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,options:string[])=>{
-            await this.rebase(repository,options);
+        ipcMain.handle(RendererEvents.rebase, async (e,repoPath:string,options:string[])=>{
+            await this.rebase(repoPath,options);
         })
     }
     addCheckOutCommitHandlder(){
@@ -223,8 +223,8 @@ export class GitManager{
         })
     }
 
-    private async rebase(repoInfo:RepositoryInfo,options:string[]){
-        const git = this.getGitRunner(repoInfo);        
+    private async rebase(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
         await git.rebase(options);        
     }
 

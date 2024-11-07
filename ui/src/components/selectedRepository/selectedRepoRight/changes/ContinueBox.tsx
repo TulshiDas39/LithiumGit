@@ -8,6 +8,7 @@ import { FaCheck } from "react-icons/fa";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { ActionModals } from "../../../../store";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IState{
     value:string;
@@ -40,7 +41,9 @@ function ContinueBoxComponent(){
     }
 
     const handleSkip=()=>{
-
+        IpcUtils.skipRebase().finally(()=>{
+            GitUtils.getStatus();
+        })
     }
     
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
