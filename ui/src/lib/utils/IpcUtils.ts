@@ -14,6 +14,11 @@ export class IpcUtils{
         return IpcUtils.runGitCommand(RendererEvents.rebase, [options],{preventErrorDisplay:true});
     }
 
+    static continueCherryPick() {
+        const options = ["-c","core.editor=true","cherry-pick","--continue"];
+        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options]);
+    }
+
     static continueRebase() {
         const options = ["-c","core.editor=true","rebase","--continue"];
         return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options],{preventErrorDisplay:true});

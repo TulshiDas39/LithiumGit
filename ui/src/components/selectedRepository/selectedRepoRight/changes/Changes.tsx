@@ -10,6 +10,7 @@ import { ConflictEditor } from "./ConflictEditor";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { RebaseActionBox } from "./RebaseActionBox";
+import { CherryPickActionBox } from "./CherryPickActionBox";
 
 
 interface IState {
@@ -103,11 +104,19 @@ function ChangesComponent() {
         }
     },[])
 
+    const getActionBox=()=>{
+        if(store.status?.rebasingCommit)
+            return <RebaseActionBox />;
+        if(store.status?.cherryPickingCommit)
+            return <CherryPickActionBox />;
+
+        return <CommitBox />;
+    }
+
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
-            {!store.status?.rebasingCommit && <CommitBox />}
-            {!!store.status?.rebasingCommit && <RebaseActionBox />}
+            {getActionBox()}
             <ChangesTabPane  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
