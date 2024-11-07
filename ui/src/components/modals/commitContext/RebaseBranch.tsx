@@ -21,6 +21,7 @@ function RebaseBranchComponent(props:IProps){
         IpcUtils.rebaseBranch(branch).then(_=>{
             GitUtils.getStatus();
         }).catch(e=>{
+            GitUtils.getStatus();
             ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         })        

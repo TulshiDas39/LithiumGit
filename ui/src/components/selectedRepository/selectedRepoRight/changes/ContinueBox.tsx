@@ -35,7 +35,7 @@ function ContinueBoxComponent(){
             return;
         }
         IpcUtils.continueRebase().then(()=>{
-            IpcUtils.getStashes();
+            IpcUtils.getRepoStatus();
         });
     }
 
