@@ -45,6 +45,12 @@ function ContinueBoxComponent(){
             GitUtils.getStatus();
         })
     }
+
+    const handleAbort=()=>{
+        IpcUtils.abortRebase().finally(()=>{
+            GitUtils.getStatus();
+        })
+    }
     
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
@@ -63,7 +69,7 @@ function ContinueBoxComponent(){
                     </AppButton>
                 </div>
                 <div>
-                    <AppButton type="default" onClick={handleSkip} className="h-100 py-2"
+                    <AppButton type="default" onClick={handleAbort} className="h-100 py-2"
                     style={{paddingRight:8,paddingLeft:8}}>                                    
                         <span className="">Abort</span>                    
                     </AppButton> 

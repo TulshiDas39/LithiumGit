@@ -4,6 +4,11 @@ import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
 
+    static abortRebase() {
+        const options = ["--abort"];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options]);
+    }
+
     static skipRebase() {
         const options = ["--skip"];
         return IpcUtils.runGitCommand(RendererEvents.rebase, [options],{preventErrorDisplay:true});
@@ -11,7 +16,7 @@ export class IpcUtils{
 
     static continueRebase() {
         const options = ["-c","core.editor=true","rebase","--continue"];
-        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options]);
+        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options],{preventErrorDisplay:true});
     }
     static async getGraphCommitList(filter: ICommitFilter) {
         const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
