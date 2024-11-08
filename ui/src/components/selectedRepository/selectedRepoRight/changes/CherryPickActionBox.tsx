@@ -60,7 +60,7 @@ function CherryPickActionBoxComponent(){
     }
     
     return <ContinueBox onAbort={handleAbort} onContinue={handleContinue} 
-        onSkip={handleSkip} text={state.value} />
+        onSkip={handleSkip} text={state.value} label="Select cherry pick action." />
 }
 
 export const CherryPickActionBox = React.memo(CherryPickActionBoxComponent);

@@ -1,10 +1,7 @@
-import { Form } from "react-bootstrap";
 import { EnumModals, useMultiState } from "../../../../lib";
 import React, { useEffect } from "react";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { AppButton } from "../../../common";
-import { FaCheck } from "react-icons/fa";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { ActionModals } from "../../../../store";
@@ -54,7 +51,7 @@ function RebaseActionBoxComponent(){
     }
     
     return <ContinueBox onAbort={handleAbort} onContinue={handleContinue} 
-        onSkip={handleSkip} text={state.value} />
+        onSkip={handleSkip} text={state.value} label="Select rebase action." />
 }
 
 export const RebaseActionBox = React.memo(RebaseActionBoxComponent);
