@@ -1,10 +1,10 @@
 import { IStash } from "common_library";
-import React, { Fragment, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { EnumModals, RepoUtils, useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StashProperty } from "./StashProperty";
 import { StashChangeView } from "./StashChangeView";
-import { FaPlus, FaRegPaperPlane, FaReplyAll, FaStore, FaTrash } from "react-icons/fa";
+import { FaRegPaperPlane, FaReplyAll, FaTrash } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";

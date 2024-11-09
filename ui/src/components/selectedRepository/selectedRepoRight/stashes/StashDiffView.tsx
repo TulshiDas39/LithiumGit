@@ -38,9 +38,9 @@ function StashDiffViewComponent(props:IProps){
                 const content = res || "";
                 const lines = StringUtils.getLines(content);
                 if(props.file?.changeType === EnumChangeType.MODIFIED){
-                    const options =  ["HEAD",`stash@{${selectedStash.index}}`,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",props.file.path];            
-                    IpcUtils.getDiff(options).then(res=>{                        
-                        let lineConfigs = DiffUtils.GetUiLines(res,lines);
+                    const options =  ["HEAD", `stash@{${selectedStash.index}}`,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",props.file.path];            
+                    IpcUtils.getDiff(options).then(diffRes=>{                        
+                        let lineConfigs = DiffUtils.GetUiLines(diffRes,lines);
                         changeUtils.currentLines = lineConfigs.currentLines;
                         changeUtils.previousLines = lineConfigs.previousLines;
                         changeUtils.showChanges();
