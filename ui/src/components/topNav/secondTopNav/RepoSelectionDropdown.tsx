@@ -20,7 +20,7 @@ function RepoSelectionDropdownComponent(){
             <Dropdown.Toggle id="dropdown-reposelection" className="rounded-0 default-button hover-brighter">
                 {store.recentRepos.find(x=>x.isSelected)?.name || ""}
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu className="overflow-auto" style={{maxHeight:'90vh'}}>
                 {store.recentRepos.map(rp=>(
                     <Dropdown.Item key={rp._id} onClick={()=> handleSelect(rp)}>{rp.name}</Dropdown.Item>
                 ))}
