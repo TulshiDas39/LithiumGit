@@ -1,8 +1,9 @@
-import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, IStatus } from "common_library";
+import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, IStatus, RepositoryInfo } from "common_library";
 import { IViewBox } from "../interfaces";
 import { ArrayUtils } from "./ArrayUtils";
 
 export class RepoUtils{
+    static selectedRepo:RepositoryInfo = null!;
     static repositoryDetails:IRepositoryDetails = null!;    
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
     static readonly remoteBranchNamePrefix = "remotes"
@@ -542,12 +543,12 @@ export class RepoUtils{
         return new Promise((res)=>{
             let trycount = 0;
             const timer = setInterval(()=>{
-                if(RepoUtils.repositoryDetails.repoInfo.path == repoPath || trycount > 5){
+                if(RepoUtils.repositoryDetails.repoInfo.path == repoPath || trycount > 10){
                     clearInterval(timer);
                     res(true);
                 }
                 trycount++;
-            },1000)
+            },500)
         })
     }
 }

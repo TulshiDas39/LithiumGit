@@ -55,7 +55,7 @@ export class IpcUtils{
         return err;
     }
     static async getLastUpdatedDate(path: string) {
-        const fullPath = await this.joinPathAsync(RepoUtils.repositoryDetails.repoInfo.path,path);
+        const fullPath = await this.joinPathAsync(RepoUtils.selectedRepo.path,path);
         const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
         return r.result || "";
     }
@@ -85,13 +85,13 @@ export class IpcUtils{
     }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = RepoUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.selectedRepo;
         return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo) as Promise<IStatus>;
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = RepoUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.selectedRepo;
         const status:IStatus = await window.ipcRenderer.invoke(RendererEvents.getStatusSync().channel,repoInfo);
         return status;
     }
@@ -159,11 +159,11 @@ export class IpcUtils{
     }
 
     static async getDiff(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.repositoryDetails.repoInfo) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.selectedRepo) as string;
     }
 
     static async getGitShowResult(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.repositoryDetails.repoInfo,options) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.selectedRepo,options) as string;
     }
     
     static async reset(options:string[]){
@@ -185,19 +185,19 @@ export class IpcUtils{
     }
 
     static async addRemote(remote:IRemoteInfo){
-        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.repositoryDetails.repoInfo,remote);
+        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.selectedRepo,remote);
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.repositoryDetails.repoInfo,remoteName);
+        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.selectedRepo,remoteName);
     }
 
     static async getRemoteList(){
-        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
+        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.selectedRepo) as IRemoteInfo[];
     }
 
     static async getCommitList(filterOptions:ILogFilterOptions){
-        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
+        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.selectedRepo,filterOptions) as IPaginated<ICommitInfo>;
     }
 
     static isValidRepositoryPath(path:string){
@@ -260,7 +260,7 @@ export class IpcUtils{
     }){
         let repositoryPath = config?.repositoryPath;
         if(!repositoryPath)
-            repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
+            repositoryPath = RepoUtils.selectedRepo?.path;
         return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args],config?.preventErrorDisplay);
     }
 
@@ -280,7 +280,7 @@ export class IpcUtils{
     }
     static async getAnnotations(repoId?:string){
         if(!repoId)
-            repoId = RepoUtils.repositoryDetails.repoInfo._id;
+            repoId = RepoUtils.selectedRepo._id;
         const r = await this.execute<Annotation[]>(RendererEvents.annotations,[repoId]);
         return r;
     }
