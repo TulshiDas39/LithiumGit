@@ -26,7 +26,7 @@ function ChangesComponent() {
 
     const store = useSelectorTyped(state=>({        
         focusVersion:state.ui.versions.appFocused,
-        recentRepositories:state.savedData.recentRepositories,
+        repoInfo:state.savedData.recentRepositories.find(_ => _.isSelected),
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
         selectedFile:state.changes.selectedFile,
@@ -36,13 +36,10 @@ function ChangesComponent() {
     const changeUtils = ChangesData.changeUtils;
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
-    const repoInfo = useMemo(()=>{
-        return store.recentRepositories.find(x=>x.isSelected);
-    },[store.recentRepositories])
 
     useEffect(()=>{
          dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
-    },[repoInfo?.path]);
+    },[store.repoInfo?.path]);
 
     useEffect(()=>{
         setState({differenceRefreshKey:Date.now()})
@@ -50,15 +47,8 @@ function ChangesComponent() {
 
     const checkForDiifClear=()=>{
         const file = changeUtils.file!;
-        if(!file || !changeUtils.ContainerId || !store.status || !!store.selectedFile)
-            return;
-
-        if(file.changeGroup === EnumChangeGroup.UN_STAGED && !store.status.unstaged.some(_=>_.path === file.path)){
-            changeUtils.ClearView();
-        }
-        else if(file.changeGroup === EnumChangeGroup.STAGED && !store.status.staged.some(_=>_.path === file.path)){
-            changeUtils.ClearView();
-        }
+        if(!!file && !store.selectedFile)
+            changeUtils.ClearView();        
     }
 
     useEffect(()=>{
@@ -69,7 +59,7 @@ function ChangesComponent() {
             && x.changeGroup === store.selectedFile.changeGroup);
         if(!existInStatus)
             dispatch(ActionChanges.updateData({selectedFile:undefined}));        
-    },[store.status])
+    },[store.status,store.selectedFile])
 
     useEffect(()=>{
         checkForDiifClear();
