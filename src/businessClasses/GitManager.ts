@@ -526,8 +526,11 @@ export class GitManager{
         let postCommits = await this.getCommits(git,newFilter);
         const preCommitHashes = preCommits.map(_=> _.hash);
         postCommits = postCommits.filter(_=> !preCommitHashes.includes(_.hash));
-        const preLastCommitHash = preCommits[preCommits.length -1].hash;
-        const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        let postStartIndex = 0;
+        if(preCommits.length){
+            const preLastCommitHash = preCommits[preCommits.length -1].hash;
+            postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        }
         postCommits = postCommits.slice(postStartIndex);
         let total = preCommits.length + postCommits.length;
         if(total > filter.limit){
