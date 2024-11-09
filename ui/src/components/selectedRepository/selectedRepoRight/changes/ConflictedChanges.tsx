@@ -56,6 +56,8 @@ function ConflictedChangesComponent(props:IProps){
     },[])
 
     const handleSelect = (file?:IFile)=>{
+        if(store.selectedFile?.path === file?.path)
+            return ;
         if(ConflictUtils.Actions.length){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
