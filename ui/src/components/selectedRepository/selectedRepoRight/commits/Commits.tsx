@@ -59,24 +59,37 @@ function CommitsComponent(){
     },[]);
     
     const bottomHeightRef = useRef(200);
+    const prevBottomHeightRef = useRef(bottomHeightRef.current);
     const positionRef = useRef(0);
+    const commitListRef = useRef<HTMLDivElement>();
     
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
-
+    console.log("rendering.");
     const bottomHeight = useMemo(()=>{
         if(!state.selectedCommit)
             return -3;
         const curHeight = bottomHeightRef.current - positionRef.current;
         const height = Math.max(50, curHeight);
         if(!position){
-            bottomHeightRef.current = height;
+            bottomHeightRef.current = prevBottomHeightRef.current;
             positionRef.current = 0;
         }
         else{
             positionRef.current = position.y;
         }
+        
+        const graphViewHeight = commitListRef.current?.getBoundingClientRect().height;
+        if(!!graphViewHeight && graphViewHeight <= 100 && curHeight > prevBottomHeightRef.current){
+            return prevBottomHeightRef.current;
+        }
         return height;
     },[position?.y,state.selectedCommit])
+
+    useEffect(()=>{
+        if(!state.selectedCommit)
+            return;
+        prevBottomHeightRef.current = bottomHeight;
+    },[bottomHeight,state.selectedCommit]);
 
     useEffect(()=>{        
         if(!store.contextVisible && !!state.contextCommit){
@@ -89,7 +102,7 @@ function CommitsComponent(){
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>
         <div className="w-100" style={{height:'90%'}}>
-            <div className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
+            <div ref={commitListRef as any} className="d-flex w-100 overflow-hidden" style={{height:`calc(100% - ${bottomHeight+3}px)`}}>
                 <div className="w-75 h-100">
                     <CommitList searchText={state.searchText} selectedBranch={state.selectedBranch}
                      onCommitSelect={handleSelect} selectedCommit={state.selectedCommit} contextCommit={state.contextCommit} onRightClick={handleContext} />
