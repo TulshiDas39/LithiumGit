@@ -31,14 +31,14 @@ function BranchesViewComponent() {
     const graphViewRef = useRef<HTMLDivElement>();
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
-    const prevBottomHeightRef = useRef(0);
+    const prevBottomHeightRef = useRef(bottomHeightRef.current);
 
     const bottomHeight = useMemo(()=>{
         let curHeight = bottomHeightRef.current - positionRef.current;
         let height = Math.max(50, curHeight);
         
         if(!position){
-            bottomHeightRef.current = height;
+            bottomHeightRef.current = prevBottomHeightRef.current;
             positionRef.current = 0;
         }
         else{
