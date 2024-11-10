@@ -3,6 +3,9 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static runRemote(options:string[]) {
+        return this.runGitCommand(RendererEvents.remote,[options]);
+    }
 
     static abortRebase() {
         const options = ["--abort"];
