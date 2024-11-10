@@ -22,7 +22,7 @@ function CommitChangeViewComponent(props:IProps){
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     useEffect(()=>{
-        if(!props.selectedCommit){
+        if(!props.selectedCommit || props.selectedCommit.inMergingState){
             setState({files:[],selectedFile:undefined});
             return;
         }

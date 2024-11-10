@@ -1,9 +1,28 @@
 import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
-import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
 
 export class IpcUtils{
+
+    static abortRebase() {
+        const options = ["--abort"];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options]);
+    }
+
+    static skipRebase() {
+        const options = ["--skip"];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options],{preventErrorDisplay:true});
+    }
+
+    static continueCherryPick() {
+        const options = ["-c","core.editor=true","cherry-pick","--continue"];
+        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options]);
+    }
+
+    static continueRebase() {
+        const options = ["-c","core.editor=true","rebase","--continue"];
+        return IpcUtils.runGitCommand(RendererEvents.gitRaw, [options],{preventErrorDisplay:true});
+    }
     static async getGraphCommitList(filter: ICommitFilter) {
         const r = await IpcUtils.runGitCommand<ICommitInfo[]>(RendererEvents.getGraphCommits,[filter]);
         if(!r.error)
@@ -36,7 +55,7 @@ export class IpcUtils{
         return err;
     }
     static async getLastUpdatedDate(path: string) {
-        const fullPath = await this.joinPathAsync(RepoUtils.repositoryDetails.repoInfo.path,path);
+        const fullPath = await this.joinPathAsync(RepoUtils.selectedRepo.path,path);
         const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
         return r.result || "";
     }
@@ -66,13 +85,13 @@ export class IpcUtils{
     }
     static getRepoStatus(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = RepoUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.selectedRepo;
         return window.ipcRenderer.invoke(RendererEvents.getStatus().channel,repoInfo) as Promise<IStatus>;
     }
 
     static async getRepoStatusSync(repoInfo?:RepositoryInfo){
         if(!repoInfo)
-            repoInfo = RepoUtils.repositoryDetails.repoInfo;
+            repoInfo = RepoUtils.selectedRepo;
         const status:IStatus = await window.ipcRenderer.invoke(RendererEvents.getStatusSync().channel,repoInfo);
         return status;
     }
@@ -140,11 +159,11 @@ export class IpcUtils{
     }
 
     static async getDiff(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.repositoryDetails.repoInfo) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.selectedRepo) as string;
     }
 
     static async getGitShowResult(options:string[]){
-        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.repositoryDetails.repoInfo,options) as string;
+        return await window.ipcRenderer.invoke(RendererEvents.gitShow().channel,RepoUtils.selectedRepo,options) as string;
     }
     
     static async reset(options:string[]){
@@ -166,19 +185,19 @@ export class IpcUtils{
     }
 
     static async addRemote(remote:IRemoteInfo){
-        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.repositoryDetails.repoInfo,remote);
+        await window.ipcRenderer.invoke(RendererEvents.gitAddRemote().channel,RepoUtils.selectedRepo,remote);
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.repositoryDetails.repoInfo,remoteName);
+        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.selectedRepo,remoteName);
     }
 
     static async getRemoteList(){
-        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.repositoryDetails.repoInfo) as IRemoteInfo[];
+        return await window.ipcRenderer.invoke(RendererEvents.gitGetRemoteList().channel,RepoUtils.selectedRepo) as IRemoteInfo[];
     }
 
     static async getCommitList(filterOptions:ILogFilterOptions){
-        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.repositoryDetails.repoInfo,filterOptions) as IPaginated<ICommitInfo>;
+        return await window.ipcRenderer.invoke(RendererEvents.gitLog,RepoUtils.selectedRepo,filterOptions) as IPaginated<ICommitInfo>;
     }
 
     static isValidRepositoryPath(path:string){
@@ -193,8 +212,9 @@ export class IpcUtils{
         await window.ipcRenderer.invoke(RendererEvents.removeRecentRepo,repoId);
     }
 
-    static async rebaseBranch(branch:string){
-        await window.ipcRenderer.invoke(RendererEvents.rebase,RepoUtils.repositoryDetails.repoInfo,branch);
+    static rebaseBranch(branch:string){
+        const options = [branch];
+        return IpcUtils.runGitCommand(RendererEvents.rebase, [options]);
     }
 
     static async cherryPick(options:string[]){
@@ -234,10 +254,14 @@ export class IpcUtils{
         };
     }
 
-    private static async runGitCommand<TResult=any>(channel:string,args:any[],repositoryPath?:string|RepositoryInfo){      
+    private static async runGitCommand<TResult=any>(channel:string,args:any[],config?:{
+        repositoryPath?:string|RepositoryInfo,
+        preventErrorDisplay?:boolean,
+    }){
+        let repositoryPath = config?.repositoryPath;
         if(!repositoryPath)
-            repositoryPath = RepoUtils.repositoryDetails.repoInfo.path;
-        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args]);
+            repositoryPath = RepoUtils.selectedRepo?.path;
+        return IpcUtils.execute<TResult>(channel,[repositoryPath, ...args],config?.preventErrorDisplay);
     }
 
     static updateRepository(repo:RepositoryInfo){
@@ -256,7 +280,7 @@ export class IpcUtils{
     }
     static async getAnnotations(repoId?:string){
         if(!repoId)
-            repoId = RepoUtils.repositoryDetails.repoInfo._id;
+            repoId = RepoUtils.selectedRepo._id;
         const r = await this.execute<Annotation[]>(RendererEvents.annotations,[repoId]);
         return r;
     }
@@ -267,7 +291,7 @@ export class IpcUtils{
     }
 
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
-        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],repoInfo);
+        const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;
     }
     

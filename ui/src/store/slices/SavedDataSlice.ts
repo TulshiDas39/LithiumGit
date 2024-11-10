@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { RepoUtils } from "../../lib";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
@@ -24,6 +25,7 @@ const SavedDataSlice = createSlice({
             state.recentRepositories = state.recentRepositories.filter(_=> _._id !== action.payload._id);
         },
         setSelectedRepository(state,action:PayloadAction<RepositoryInfo>){
+            RepoUtils.selectedRepo = action.payload;
             const updatedList:RepositoryInfo[]=[];            
             const existingSelected = state.recentRepositories.find(x=>x.isSelected);
             if(action.payload.path === existingSelected?.path) return;

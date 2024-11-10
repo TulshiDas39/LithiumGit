@@ -106,7 +106,7 @@ function PullFromModalComponent(){
         const allOptions = annotations.map(_=>_.value);
         let options:string[] = [];
         if(!state.isSelected && state.inputFocused){                                  
-            options = allOptions.filter(_ => _.includes(state.branch));            
+            options = allOptions.filter(_ => _.toLowerCase().includes(state.branch.toLowerCase()));            
         }
         
         setState({options});

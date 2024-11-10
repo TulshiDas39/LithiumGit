@@ -20,23 +20,23 @@ function SingleDiff(props:ISingleDiffProps){
             let insertedUptoIndex = -1;
             props.line.textHightlightIndex.forEach((range,i)=>{                        
                 if(range.fromIndex > insertedUptoIndex+1 ){
-                    const elem = <span key={i} className={`py-1 ${props.backGroupColorCss}`}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
+                    const elem = <span key={i} className={`${props.backGroupColorCss}`}>{props.line.text!.substring(insertedUptoIndex+1,range.fromIndex)}</span>;
                     childElems.push(elem);                    
                 }
-                const elem = <span key={i} className={`py-1 ${props.forGroupColorCss}`}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
+                const elem = <span key={i} className={`${props.forGroupColorCss}`}>{props.line.text!.substring(range.fromIndex, range.fromIndex+range.count)}</span>;
                 childElems.push(elem);
                 insertedUptoIndex = range.fromIndex+range.count-1;
             });
             if(insertedUptoIndex < props.line.text.length-1){
-                const elem = <span key={props.line.textHightlightIndex.length} className={`py-1 ${props.backGroupColorCss}`}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
+                const elem = <span key={props.line.textHightlightIndex.length} className={`${props.backGroupColorCss}`}>{props.line.text.substring(insertedUptoIndex+1)}</span>;
                 childElems.push(elem);
             }
         }        
         else{
-            if(props.line.text) childElems.push(<span key={1} className="py-1">{props.line.text}</span>)
+            if(props.line.text) childElems.push(<span key={1} className="">{props.line.text}</span>)
             else childElems.push(<br key={1}/>);
         }
-        return <p className={`${props.line.hightLightBackground? props.backGroupColorCss:""}`} style={{...paragraphStyle}}>{childElems}</p>
+        return <p className={`d-flex ${props.line.hightLightBackground? props.backGroupColorCss:""}`} style={{...paragraphStyle}}>{childElems}</p>
     }
 
     return <p className="transparent-background noselect" style={{...paragraphStyle}}> </p>

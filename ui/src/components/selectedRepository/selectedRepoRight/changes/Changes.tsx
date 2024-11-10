@@ -1,17 +1,16 @@
-import { EnumChangeType, IFile } from "common_library";
+import { EnumChangeType } from "common_library";
 import React, { useMemo, useRef } from "react"
-import { useCallback } from "react";
 import { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, ReduxUtils, useMultiState } from "../../../../lib";
+import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ConflictEditor } from "./ConflictEditor";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { RebaseActionBox } from "./RebaseActionBox";
+import { CherryPickActionBox } from "./CherryPickActionBox";
 
 
 interface IState {
@@ -27,7 +26,7 @@ function ChangesComponent() {
 
     const store = useSelectorTyped(state=>({        
         focusVersion:state.ui.versions.appFocused,
-        recentRepositories:state.savedData.recentRepositories,
+        repoInfo:state.savedData.recentRepositories.find(_ => _.isSelected),
         show:state.ui.selectedRepoTab === EnumSelectedRepoTab.CHANGES,
         status:state.ui.status,
         selectedFile:state.changes.selectedFile,
@@ -37,13 +36,10 @@ function ChangesComponent() {
     const changeUtils = ChangesData.changeUtils;
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
-    const repoInfo = useMemo(()=>{
-        return store.recentRepositories.find(x=>x.isSelected);
-    },[store.recentRepositories])
 
     useEffect(()=>{
          dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
-    },[repoInfo?.path]);
+    },[store.repoInfo?.path]);
 
     useEffect(()=>{
         setState({differenceRefreshKey:Date.now()})
@@ -51,15 +47,8 @@ function ChangesComponent() {
 
     const checkForDiifClear=()=>{
         const file = changeUtils.file!;
-        if(!file || !changeUtils.ContainerId || !store.status || !!store.selectedFile)
-            return;
-
-        if(file.changeGroup === EnumChangeGroup.UN_STAGED && !store.status.unstaged.some(_=>_.path === file.path)){
-            changeUtils.ClearView();
-        }
-        else if(file.changeGroup === EnumChangeGroup.STAGED && !store.status.staged.some(_=>_.path === file.path)){
-            changeUtils.ClearView();
-        }
+        if(!!file && !store.selectedFile)
+            changeUtils.ClearView();        
     }
 
     useEffect(()=>{
@@ -70,7 +59,7 @@ function ChangesComponent() {
             && x.changeGroup === store.selectedFile.changeGroup);
         if(!existInStatus)
             dispatch(ActionChanges.updateData({selectedFile:undefined}));        
-    },[store.status])
+    },[store.status,store.selectedFile])
 
     useEffect(()=>{
         checkForDiifClear();
@@ -105,10 +94,19 @@ function ChangesComponent() {
         }
     },[])
 
+    const getActionBox=()=>{
+        if(store.status?.rebasingCommit)
+            return <RebaseActionBox />;
+        if(store.status?.cherryPickingCommit)
+            return <CherryPickActionBox />;
+
+        return <CommitBox />;
+    }
+
     return <div className={`d-flex w-100 h-100 ${store.show?'':'d-none'}`}>
 
         <div className="d-flex flex-column" style={{ width: `calc(20% ${getAdjustedSize(state.adjustedX)})` }}>
-            <CommitBox />
+            {getActionBox()}
             <ChangesTabPane  />
         </div>
         <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />

@@ -567,8 +567,7 @@ export class ConflictUtils{
         const group = [topLeftPanel, topRightPanel,bottomPanel,topRightNumberPanel,topRightNumberPanel,topLeftNumberPanel,bottomPanelLine];        
 
         let handler = (e:Event)=>{
-            if(!ConflictUtils.hoverTopPanel)
-                return;
+            console.log("handling scroll.");            
             const target = e.target as HTMLElement;
             const scrollElems = group.filter(elem => elem != target);            
             for(let elem of scrollElems){
@@ -577,42 +576,6 @@ export class ConflictUtils{
                     left:target.scrollLeft,
                 })
             }            
-        }
-
-        let handler2 = (_:Event)=>{
-            if(!ConflictUtils.hoverTopPanel)
-                return;
-            topLeftPanel.scrollTo({
-                top:topRightPanel.scrollTop,
-                left:topRightPanel.scrollLeft,
-            });
-            bottomPanel?.scrollTo({                    
-                top:topRightPanel.scrollTop,
-                left:topRightPanel.scrollLeft,                
-            });
-
-            bottomPanelLine?.scrollTo({                    
-                top:topRightPanel.scrollTop,
-                left:topRightPanel.scrollLeft,                
-            });
-        }
-
-        let handler3 = (e:Event)=>{
-            if(!ConflictUtils.hoverBottomPanel)
-                return;
-            console.log("handler3");            
-            topRightPanel?.scrollTo({
-                top: bottomPanel.scrollTop,
-                left: bottomPanel.scrollLeft
-            });            
-            topLeftPanel?.scrollTo({
-                top: bottomPanel.scrollTop,
-                left: bottomPanel.scrollLeft,
-            });
-            bottomPanelLine?.scrollTo({                    
-                top:bottomPanel.scrollTop,
-                left:bottomPanel.scrollLeft,                
-            });
         }
     
         topLeftPanel.addEventListener("scroll",handler);
@@ -644,15 +607,6 @@ export class ConflictUtils{
             return;
         const focusElem = container?.querySelector('.content')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
-        ConflictUtils.setBottomPanelScrollPosition();
 
-    }
-
-    private static setBottomPanelScrollPosition(){
-        const conflictTop = ConflictUtils.topPanelElement;
-        const conflictBottom = ConflictUtils.bottomPanelElement;
-        const topScrollRatio = UiUtils.getVerticalScrollRatio(conflictTop);
-        const top = UiUtils.getVerticalScrollTop(conflictBottom,topScrollRatio);
-        conflictBottom.scrollTo({top});
     }
 }

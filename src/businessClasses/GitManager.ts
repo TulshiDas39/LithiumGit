@@ -172,8 +172,8 @@ export class GitManager{
         })
     }
     private addRebaseHandler(){
-        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,branch:string)=>{
-            await this.rebaseBranch(repository,branch);
+        ipcMain.handle(RendererEvents.rebase, async (e,repoPath:string,options:string[])=>{
+            await this.rebase(repoPath,options);
         })
     }
     addCheckOutCommitHandlder(){
@@ -223,9 +223,9 @@ export class GitManager{
         })
     }
 
-    private async rebaseBranch(repoInfo:RepositoryInfo,branch:string){
-        const git = this.getGitRunner(repoInfo);        
-        await git.rebase([branch]);        
+    private async rebase(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
+        await git.rebase(options);        
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
@@ -446,6 +446,13 @@ export class GitManager{
         if(!result.headCommit)
             return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
+        if(!result.mergingCommitHash){
+            result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
+            if(!result.rebasingCommit){
+                result.cherryPickingCommit = await this.getCommitInfo(git, "CHERRY_PICK_HEAD");
+            }
+        }
+        
         return result;
     }
 
@@ -457,6 +464,15 @@ export class GitManager{
     private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
+            return result;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private async getRebaseInfo(git:SimpleGit){
+        try {
+            const result = await git.revparse(["-q", "--verify", "REBASE_HEAD"]);            
             return result;
         } catch (error) {
             return null;
@@ -510,8 +526,11 @@ export class GitManager{
         let postCommits = await this.getCommits(git,newFilter);
         const preCommitHashes = preCommits.map(_=> _.hash);
         postCommits = postCommits.filter(_=> !preCommitHashes.includes(_.hash));
-        const preLastCommitHash = preCommits[preCommits.length -1].hash;
-        const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        let postStartIndex = 0;
+        if(preCommits.length){
+            const preLastCommitHash = preCommits[preCommits.length -1].hash;
+            postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        }
         postCommits = postCommits.slice(postStartIndex);
         let total = preCommits.length + postCommits.length;
         if(total > filter.limit){

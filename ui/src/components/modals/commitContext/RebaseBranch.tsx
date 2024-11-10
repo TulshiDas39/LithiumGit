@@ -1,11 +1,12 @@
 import React, { Fragment } from "react";
 import { ModalData } from "../ModalData";
 import { ContextData, IBaseProps, Option } from "./ContextData";
-import { EnumModals } from "../../../lib";
+import { EnumModals, EnumSelectedRepoTab } from "../../../lib";
 import { useDispatch } from "react-redux";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionModals } from "../../../store";
 import { GitUtils } from "../../../lib/utils/GitUtils";
+import { ActionUI } from "../../../store/slices/UiSlice";
 
 interface IProps extends IBaseProps{
     referredLocalBranches:string[];
@@ -18,12 +19,17 @@ function RebaseBranchComponent(props:IProps){
 
     const rebaseBranch=(branch:string)=>{
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-        IpcUtils.rebaseBranch(branch).then(_=>{
-            GitUtils.getStatus();
-        }).catch(e=>{
-            ModalData.errorModal.message = e?.toString() || "Failed to rebase.";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
-        })        
+        IpcUtils.rebaseBranch(branch).then(r=>{
+            GitUtils.getStatus().then(r=>{
+                if(r.rebasingCommit){
+                    dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
+                }
+            });
+            if(r.error){
+                ModalData.errorModal.message = r.error?.toString() || "Failed to rebase.";
+                dispatch(ActionModals.showModal(EnumModals.ERROR));
+            }
+        })      
     }
 
     return <Fragment>

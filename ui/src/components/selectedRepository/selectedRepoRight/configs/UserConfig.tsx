@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from "react"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { useMultiState } from "../../../../lib";
+import { RepoUtils, useMultiState } from "../../../../lib";
 import { ITypedConfig, IUserConfig } from "common_library";
 import { Form } from "react-bootstrap";
 import { ModalData } from "../../../modals/ModalData";
-import { useDispatch } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { SingleProperty } from "./SingleProperty";
+import { useSelectorTyped } from "../../../../store/rootReducer";
 
 
 interface IRefData{
@@ -20,6 +21,10 @@ interface IState{
 
 
 function UserConfigComponent(){
+    const store = useSelectorTyped(state=>({
+        repoPath:state.savedData.recentRepositories.find(_=>_.isSelected)?.path,
+    }),shallowEqual);
+
     const initialState:IState = {showingGlobal:false};
     const [state,setState] = useMultiState<IState>(initialState);
     const dispatch = useDispatch();
@@ -50,8 +55,13 @@ function UserConfigComponent(){
         });
     }
     useEffect(()=>{
-        refData.current.isMounted = true;
+        if(!store.repoPath)
+            return;
         getData();
+    },[store.repoPath])
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
     },[])
 
     const updateName=(value:string)=>{

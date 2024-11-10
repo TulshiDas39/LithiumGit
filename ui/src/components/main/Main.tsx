@@ -2,7 +2,7 @@ import { ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, GraphUtils, ReduxUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, GraphUtils, ReduxUtils, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
@@ -45,12 +45,13 @@ function MainComponent(){
             });
         }
         dispatch(ActionSavedData.updateAutoStaging(savedData.configInfo.autoStage));
-        const repos = savedData.recentRepositories;
+        const repos = savedData.recentRepositories;        
         if(!repos?.length){
             setState({isLoading:false});
             dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
             return;
         }
+        RepoUtils.selectedRepo = repos.find(_=> _.isSelected)!;
         const sortedRepos = repos.sort((x1,x2)=> (x1.lastOpenedAt ?? "") > (x2.lastOpenedAt ?? "") ?-1:1);
         batch(()=>{
             dispatch(ActionSavedData.setRecentRepositories(sortedRepos));
