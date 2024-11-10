@@ -10,7 +10,6 @@ import { ConflictResolver } from "./ConflictResolver";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
-    private logLine = 10;    
     private readonly LogFormat = "--pretty="+this.logFields.Hash+":%H%n"+this.logFields.Abbrev_Hash+":%h%n"+this.logFields.Parent_Hashes+":%p%n"+this.logFields.Author_Name+":%an%n"+this.logFields.Author_Email+":%ae%n"+this.logFields.Date+":%ad%n"+this.logFields.Message+":%s%n"+this.logFields.Body+":%b%n"+this.logFields.Ref+":%D%n";
     start(){
         this.addEventHandlers();
@@ -173,8 +172,8 @@ export class GitManager{
         })
     }
     private addRebaseHandler(){
-        ipcMain.handle(RendererEvents.rebase, async (e,repository:RepositoryInfo,branch:string)=>{
-            await this.rebaseBranch(repository,branch);
+        ipcMain.handle(RendererEvents.rebase, async (e,repoPath:string,options:string[])=>{
+            await this.rebase(repoPath,options);
         })
     }
     addCheckOutCommitHandlder(){
@@ -224,9 +223,9 @@ export class GitManager{
         })
     }
 
-    private async rebaseBranch(repoInfo:RepositoryInfo,branch:string){
-        const git = this.getGitRunner(repoInfo);        
-        await git.rebase([branch]);        
+    private async rebase(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);        
+        await git.rebase(options);        
     }
 
     private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
@@ -447,6 +446,13 @@ export class GitManager{
         if(!result.headCommit)
             return result;
         result.mergingCommitHash = await this.getMergingInfo(git);
+        if(!result.mergingCommitHash){
+            result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
+            if(!result.rebasingCommit){
+                result.cherryPickingCommit = await this.getCommitInfo(git, "CHERRY_PICK_HEAD");
+            }
+        }
+        
         return result;
     }
 
@@ -458,6 +464,15 @@ export class GitManager{
     private async getMergingInfo(git:SimpleGit){
         try {
             const result = await git.revparse(["-q", "--verify", "MERGE_HEAD"]);            
+            return result;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private async getRebaseInfo(git:SimpleGit){
+        try {
+            const result = await git.revparse(["-q", "--verify", "REBASE_HEAD"]);            
             return result;
         } catch (error) {
             return null;
@@ -509,17 +524,28 @@ export class GitManager{
 
         
         let postCommits = await this.getCommits(git,newFilter);
-        const preLastCommitHash = preCommits[preCommits.length -1].hash;
-        const postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        const preCommitHashes = preCommits.map(_=> _.hash);
+        postCommits = postCommits.filter(_=> !preCommitHashes.includes(_.hash));
+        let postStartIndex = 0;
+        if(preCommits.length){
+            const preLastCommitHash = preCommits[preCommits.length -1].hash;
+            postStartIndex = postCommits.findIndex(_ => _.hash === preLastCommitHash) + 1;
+        }
         postCommits = postCommits.slice(postStartIndex);
-        const total = preCommits.length + postCommits.length;
+        let total = preCommits.length + postCommits.length;
         if(total > filter.limit){
-            const extra = total - filter.limit;
+            let extra = total - filter.limit;
             if(preCommits.length > filter.limit / 2 ){
-                preCommits = preCommits.slice(extra);
+                let preCommitExtra = preCommits.length - (filter.limit / 2);
+                preCommitExtra = Math.min(extra,preCommitExtra);
+                preCommits = preCommits.slice(preCommitExtra);
             }
-            else if(postCommits.length > filter.limit / 2 ){
-                postCommits = postCommits.slice(0, postCommits.length - extra);
+            total = preCommits.length + postCommits.length;
+            extra = total - filter.limit;
+            if(postCommits.length > filter.limit / 2 ){
+                let postCommitExtra = postCommits.length - (filter.limit / 2);
+                postCommitExtra = Math.min(extra,postCommitExtra);
+                postCommits = postCommits.slice(0, postCommits.length - postCommitExtra);
             }
         }
         
@@ -535,7 +561,7 @@ export class GitManager{
         try{
             //--`--skip=${0*commitLimit}`
             const filterOptions = this.getFilterOptions(filter);
-            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--topo-order", this.LogFormat];            
+            const options = ["log","--exclude=refs/stash", "--all",...filterOptions,"--date=iso-strict","--date-order", this.LogFormat];            
             let res = await git.raw(options);
             const commits = CommitParser.parse(res);
             return commits;            

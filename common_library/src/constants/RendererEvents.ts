@@ -279,5 +279,6 @@ export class RendererEvents{
     static readonly updateUserName = "updateUserName";
     static readonly updateUserEmail = "updateUserEmail";
     static readonly getGraphCommits = "getGraphCommits";
+    static readonly continueRebase = "continueRebase";
 }
 

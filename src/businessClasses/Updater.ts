@@ -26,13 +26,13 @@ export class Updater{
             log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
             this.sendStatusToWindow(log_message);
           })
-          autoUpdater.on('update-downloaded', (info) => {
+          autoUpdater.on('update-downloaded', (_) => {
             this.sendStatusToWindow('Update downloaded');
           });
     }
     checkForUpdate(){
         this.handleEvents();
-        autoUpdater.checkForUpdatesAndNotify();
+        autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
     }
 
 }

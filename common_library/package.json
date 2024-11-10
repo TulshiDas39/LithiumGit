@@ -5,8 +5,8 @@
     "main": "./lib/index.js",
     "scripts": {
         "build": "tsc && npm run send",
-        "send": "concurrently \"npm run installToFrontend\" \"npm run installToBackend\" ",
-        "installToFrontend": "cd ../frontend && npm i ../common_library",
+        "send": "concurrently \"npm run installToUi\" \"npm run installToBackend\" ",
+        "installToUi": "cd ../ui && npm i ../common_library",
         "installToBackend": "cd .. && npm i ./common_library"
     },
     "files": [
