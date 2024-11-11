@@ -10,6 +10,7 @@ import { Config } from "./config";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
+import { Env } from "./types";
 
 export class Startup{
     private readonly uiPort = Config.UI_PORT;
@@ -23,7 +24,7 @@ export class Startup{
     }
 
     checkForUpdate(){
-      if(Config.env === 'development')
+      if(Config.env === Env.DEVELOPMENT)
         return;
         new Updater().checkForUpdate();
     }
@@ -86,7 +87,7 @@ export class Startup{
     }
 
     private async  createWindow() {
-        if(Config.env !== 'development')
+        if(Config.env !== Env.DEVELOPMENT)
           Menu.setApplicationMenu(null);
         const mainWindow = new BrowserWindow({
           height: 600,
@@ -99,14 +100,14 @@ export class Startup{
         });
         mainWindow.maximize();
         AppData.mainWindow = mainWindow;
-        if(Config.env === 'development')          
+        if(Config.env === Env.DEVELOPMENT)          
           mainWindow.loadURL(`http://localhost:${this.uiPort}`);
         else{
           const htmlFile =   path.resolve(__dirname,"ui", 'index.html');
           mainWindow.loadFile(htmlFile);
         }
         
-        if(Config.env === 'development')
+        if(Config.env === Env.DEVELOPMENT)
           mainWindow.webContents.openDevTools();
     }
 
