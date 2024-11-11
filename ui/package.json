@@ -34,7 +34,7 @@
   },
   "scripts": {
     "start": "set FAST_REFRESH=false && set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "start-mac": "export FAST_REFRESH=false && export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",    
+    "start-mac": "export FAST_REFRESH=false && export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

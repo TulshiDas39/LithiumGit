@@ -41,6 +41,7 @@ export class GitManager{
         this.addMergeHandler();
         this.addCleanhHandler();
         this.addRemoteAddHandler();
+        this.addRemoteHandler();
         this.addRemoteRemoveHandler();
         this.addRemoteListHandler();
         this.addRebaseHandler();
@@ -704,6 +705,14 @@ export class GitManager{
         })
     }
 
+    private addRemoteHandler(){
+        ipcMain.handle(RendererEvents.remote,async (e,repoPath:string,options:string[])=>{
+            const git = this.getGitRunner(repoPath);
+            const r = await git.remote(options);
+            return r;
+        })
+    }
+
     private addRemoteRemoveHandler(){
         ipcMain.handle(RendererEvents.gitRemoveRemote,async (e,repoInfo:RepositoryInfo,remoteName:string)=>{
             await this.removeRemote(repoInfo, remoteName);
@@ -724,6 +733,12 @@ export class GitManager{
     private async addRemote(repoInfo:RepositoryInfo, remote:IRemoteInfo){
         const git = this.getGitRunner(repoInfo);
         await git.addRemote(remote.name,remote.url);
+    }
+
+    private async updateRemote(repPath:string,name:string, url:string){
+        const git = this.getGitRunner(repPath);
+        const options = ["set-url",name,url];
+        await git.remote(options);
     }
 
     private async removeRemote(repoInfo:RepositoryInfo, remoteName:string){
