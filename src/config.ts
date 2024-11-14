@@ -1,4 +1,6 @@
+import { Env } from "./types";
+
 export class Config{
-    static readonly env:'development'|'production'='production';
+    static readonly env:Env=Env.DEVELOPMENT;
     static readonly UI_PORT = 57631;
 }
