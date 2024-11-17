@@ -36,10 +36,10 @@ function SingleDiff(props:ISingleDiffProps){
             if(props.line.text) childElems.push(<span key={1} className="">{props.line.text}</span>)
             else childElems.push(<br key={1}/>);
         }
-        return <p className={`${props.line.hightLightBackground? props.backGroupColorCss:""}`} style={{...paragraphStyle}}>{childElems}</p>
+        return <div className={`${props.line.hightLightBackground? props.backGroupColorCss:""}`} style={{...paragraphStyle}}>{childElems}</div>
     }
 
-    return <p className="transparent-background noselect" style={{...paragraphStyle}}> </p>
+    return <div className="transparent-background noselect" style={{...paragraphStyle}}> </div>
 }
 
 interface IProps{
