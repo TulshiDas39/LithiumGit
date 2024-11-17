@@ -172,7 +172,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     <div className="d-flex hover py-1" style={{height:40}}
      >
         <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center ps-1">
-            <span className="d-flex align-items-center hover-brighter bg-success px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
+            <span className="d-flex align-items-center hover-shadow hover-brighter bg-success px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
                 <FaMinus />
             </span>
         </div>        

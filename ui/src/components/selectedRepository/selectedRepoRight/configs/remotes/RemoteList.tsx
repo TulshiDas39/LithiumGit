@@ -65,7 +65,7 @@ function SingleRemote(props:ISingleRemoteProps){
                     <span className="pe-3">
                         <AppButton text="Save" className="text-primary" onClick={()=> handleSave()}/>
                     </span>
-                    <AppButton text="Cancel" className="text-danger hover-brighter" title="Remove" onClick={_=> handleCancel()} />
+                    <AppButton text="Cancel" className="text-danger hover-shadow hover-brighter" title="Remove" onClick={_=> handleCancel()} />
                 </div>
             </div>
             }
