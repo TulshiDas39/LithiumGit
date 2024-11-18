@@ -22,18 +22,18 @@ function FooterNavComponent(){
                 )}
             </div>            
         </div>      
-        <div className="col-5 text-center">
-            <div className="d-flex">
+        <div className="col-6 text-center">
+            <div className="d-flex align-items-center">
                 <div className="text-center">                
                         {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
                 </div>
-                <div className="ps-3">
+                <div className="ps-3 text-nowrap overflow-ellipsis">
                     {!!store.loader?.length && <span>{store.loader[store.loader.length-1].text}</span>}
                 </div>
             </div>            
         </div>
         
-        <div className="col-2 text-end">
+        <div className="col-1 text-end">
             <span className="pe-2">
                 <FaAdjust className="hover"/>
             </span>
