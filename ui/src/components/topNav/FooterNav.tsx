@@ -1,8 +1,7 @@
 import React from "react";
 import { shallowEqual } from "react-redux";
-import { BarLoader } from "react-spinners";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { FaSpinner } from "react-icons/fa";
+import { FaAdjust, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
 
 function FooterNavComponent(){
@@ -23,13 +22,22 @@ function FooterNavComponent(){
                 )}
             </div>            
         </div>      
-        <div className="col-auto text-center">
-            <div className="text-center">                
-                    {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
-            </div>
+        <div className="col-5 text-center">
+            <div className="d-flex">
+                <div className="text-center">                
+                        {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
+                </div>
+                <div className="ps-3">
+                    {!!store.loader?.length && <span>{store.loader[store.loader.length-1].text}</span>}
+                </div>
+            </div>            
         </div>
-        <div className="col-auto ps-3">
-            {!!store.loader?.length && <span>{store.loader[store.loader.length-1].text}</span>}
+        
+        <div className="col-2 text-end">
+            <span className="pe-2">
+                <FaAdjust className="hover"/>
+            </span>
+
         </div>
     </div>
 }
