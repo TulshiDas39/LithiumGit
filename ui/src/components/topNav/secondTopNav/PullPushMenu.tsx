@@ -218,7 +218,7 @@ function PullPushMenuComponent(){
                 </div>
                 <div className="border-secondary col-auto d-flex position-relative"
                     onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>                    
-                    <AppButton type="default" className="" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
+                    <AppButton type="default" className="default-button" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
                         onClick={handleFetchCaretClick}>
                         <span> <FaCaretDown /></span>
                     </AppButton>
