@@ -27,10 +27,6 @@ function LayoutComponent(props:ILayoutProps) {
         return height;
     },[props.height])
 
-    const mainPanelHeight = useMemo(()=>{
-        return props.height - topNavHeight - footerHeight;
-    },[topNavHeight,footerHeight])
-
     return (
         <div className="h-100" style={{height:props.height+"px"}}>
             <div id="layout" className="d-flex flex-column overflow-auto h-100">
