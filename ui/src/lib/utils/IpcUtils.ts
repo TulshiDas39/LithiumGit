@@ -1,4 +1,4 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
@@ -296,6 +296,10 @@ export class IpcUtils{
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
         const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;
+    }
+
+    static updateConfig(config:IConfigInfo){
+        return IpcUtils.execute(RendererEvents.updateConfig,[config]);
     }
     
 }

@@ -1,6 +1,6 @@
-import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
 import { ipcMain } from "electron";
-import { AppData, SavedData } from "../dataClasses";
+import { SavedData } from "../dataClasses";
 import { DB } from "../db_service";
 
 export class DataManager{
@@ -13,11 +13,18 @@ export class DataManager{
         this.handleUpdateRepositories();
         this.handleUpdateRepository();
         this.handleRemoveRepository();
-        this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
         this.handleAnnotationsRequest();
         this.handleAnnotationAdd();
+        this.handleConfigUpdate();
 
+    }
+
+    private handleConfigUpdate(){
+        ipcMain.handle(RendererEvents.updateConfig, async(_, config:IConfigInfo) => {            
+            await DB.config.updateOneAsync(config);
+            SavedData.data.configInfo = config;
+        });
     }
 
     private handleSavedDataRequest(){
@@ -82,12 +89,4 @@ export class DataManager{
         });
     }
 
-    private handleUpdateAutoStaging(){
-        ipcMain.on(RendererEvents.updateAutoStaging().channel,(e,value:boolean)=>{            
-            SavedData.data.configInfo.autoStage = value;
-            DB.config.updateOne(SavedData.data.configInfo,(err,count)=>{
-                e.returnValue = true;
-            });
-        });
-    }
 }

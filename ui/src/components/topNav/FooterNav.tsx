@@ -1,15 +1,33 @@
-import React from "react";
-import { shallowEqual } from "react-redux";
+import React, { useEffect, useRef } from "react";
+import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
+import { ActionSavedData } from "../../store";
 
 function FooterNavComponent(){
     const store = useSelectorTyped(state=>({
         loader:state.ui.loaders,
         sync:state.ui.synch,
+        theme:state.savedData.configInfo.theme,                
     }),shallowEqual);
 
+    const dispatch = useDispatch();
+    const refData = useRef({isMounted:false});
+
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return;
+        document.documentElement.setAttribute('data-theme',store.theme);
+    },[store.theme])
+
+    const handleThemeClick=()=>{
+        dispatch(ActionSavedData.toogleTheme());
+    }
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-5">
             <div className="d-flex">
@@ -35,7 +53,7 @@ function FooterNavComponent(){
         
         <div className="col-1 text-end">
             <span className="pe-2">
-                <FaAdjust className="hover"/>
+                <FaAdjust className="hover" onClick={()=> handleThemeClick()}/>
             </span>
 
         </div>
