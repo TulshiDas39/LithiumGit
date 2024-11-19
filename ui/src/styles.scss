@@ -83,21 +83,17 @@ html {
     --bg-change-accepted:#b9d5f6;
   }
 
-  $valid-sides2: top, bottom, start, end;
+  $valid-sides: top, bottom, start, end;
 
-  @each $side in $valid-sides2 {
+  @each $side in $valid-sides {
     .border-#{$side} {
       border-#{$side}-color: var(--border-color) !important;
     }
   }
 
-  // @each $size in $sizes {
-  //   .icon-#{$size} {
-  //     font-size: $size;
-  //     height: $size;
-  //     width: $size;
-  //   }
-  // }
+  .border{
+    border-color: var(--border-color) !important;
+  }
   
 
   p,span,div,i,h1,h2,h3,h4,h5,h6{
@@ -355,7 +351,8 @@ html {
 }
 
 .branchBox{
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-default-button);
 }
 
 .branchBox:hover{
