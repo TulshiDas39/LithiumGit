@@ -103,6 +103,7 @@ html {
 
   input[type="text"],textarea,input[type="text"]:focus,textarea:focus{
     background-color: var(--bg-color);
+    color: var(--font-color);
   }
 
   .form-control, .form-control:focus{
