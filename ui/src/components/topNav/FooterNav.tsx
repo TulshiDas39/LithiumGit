@@ -4,6 +4,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
 import { ActionSavedData } from "../../store";
+import { EnumTheme } from "common_library";
 
 function FooterNavComponent(){
     const store = useSelectorTyped(state=>({
@@ -51,9 +52,9 @@ function FooterNavComponent(){
             </div>            
         </div>
         
-        <div className="col-1 text-end">
-            <span className="pe-2">
-                <FaAdjust className="hover" onClick={()=> handleThemeClick()}/>
+        <div className="col-1 d-flex align-items-center justify-content-end">
+            <span className="pe-2 d-flex align-items-center">
+                <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
             </span>
 
         </div>
