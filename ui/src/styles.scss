@@ -494,6 +494,13 @@ to {
 
   .css-1nmdiq5-menu{
     background-color: var(--bg-color);
+    .css-d7l1ni-option{
+      background-color: var(--bg-select-color);
+    }
+  }
+
+  .css-1dimb5e-singleValue{
+    color: var(--font-color);
   }
 
 }
@@ -503,5 +510,8 @@ to {
   color: var(--font-color);
   .dropdown-item{
     color: var(--font-color);
+  }
+  .dropdown-item:hover{
+    background-color: var(--bg-select-color);
   }
 }

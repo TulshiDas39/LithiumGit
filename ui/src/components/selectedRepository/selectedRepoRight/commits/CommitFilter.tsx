@@ -67,6 +67,7 @@ function CommitFilterComponent(props:IProps){
             
         <div className="ps-5 d-flex align-items-center" style={{height:commonHeight,maxHeight:commonHeight}}>
             <Select options={branches} defaultValue={branches[0]} placeholder="Select branch" onChange={o=> handleBranchSelect(o as IBranchOption)}
+             onBlur={e => {e.preventDefault();e.stopPropagation();e.nativeEvent.stopImmediatePropagation(); return false;}} 
              />
         </div>
     </div>
