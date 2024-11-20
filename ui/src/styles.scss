@@ -497,3 +497,11 @@ to {
   }
 
 }
+
+.dropdown-menu{
+  background-color: var(--bg-second-color);
+  color: var(--font-color);
+  .dropdown-item{
+    color: var(--font-color);
+  }
+}
