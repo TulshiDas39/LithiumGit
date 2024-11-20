@@ -45,6 +45,7 @@ html {
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
+    --scroll-bar-color:#2e0497;
   }  
   
   html[data-theme='dark'] {
@@ -81,6 +82,7 @@ html {
     --bg-previous-change-deep: #701414;
     --bg-fade:#513f3f;
     --bg-change-accepted:#b9d5f6;
+    --scroll-bar-color:rgba(0,0,0,.2);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -137,6 +139,10 @@ html {
   }
   .bg-select-color{
     background-color: var(--bg-select-color);
+  }
+
+  .scroll-color{
+    background-color: var(--scroll-bar-color);
   }
 
   .selected{
