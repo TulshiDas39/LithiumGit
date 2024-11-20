@@ -51,7 +51,7 @@ html {
     --font-color: #CCCCCC;
     --bg-color: #1F1F1F;
     --bg-default-button:#242323;
-    --border-color:rgba(0,0,0,.2);
+    --border-color:rgba(144, 141, 141, 0.2);
     --gs-normal: black;
     --gs-primary: rgb(81, 165, 144);
     --gs-secondary: rgb(86, 86, 230);
@@ -109,6 +109,7 @@ html {
   .form-control, .form-control:focus{
     background-color: var(--bg-color);
     color: var(--font-color);
+    border-color: var(--border-color);
   }
 
   .modal-content{
