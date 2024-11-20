@@ -482,12 +482,25 @@ to {
     min-height: 15px !important;
     border-radius: 0px !important;
     background-color: var(--bg-color);
+    border-color: var(--border-color);
+  }
+
+  .css-13cymwt-control:hover{
+    border-color: var(--border-color);    
   }
   
   .css-t3ipsp-control{
     height: 100%;
     min-height: 15px !important;
     background-color: var(--bg-color);
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 1px var(--border-color);
+    border-width: 2px;
+  }
+
+  .css-t3ipsp-control:hover{
+    border-color: var(--border-color);
+    border-width: 2px;
   }
 
   .css-1hb7zxy-IndicatorsContainer{
