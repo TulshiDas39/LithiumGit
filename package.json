@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc && npm run copy_src_assets",
