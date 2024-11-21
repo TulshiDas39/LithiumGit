@@ -50,6 +50,7 @@ html {
     --branch-line-color:black;
     --commit-circle-fill-color:cadetblue;
     --selected-commit-fill-color:blueviolet;
+    --head-text-color:green;
   }  
   
   html[data-theme='dark'] {
@@ -91,6 +92,7 @@ html {
     --branch-line-color:rgb(3, 86, 27);
     --commit-circle-fill-color:#701414;
     --selected-commit-fill-color:#147053;
+    --head-text-color:rgb(201, 201, 203);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -563,4 +565,8 @@ to {
   &.selected-commit{
     fill:var(--selected-commit-fill-color);
   }
+}
+
+.commit_text{
+  fill: var(--head-text-color);
 }

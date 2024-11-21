@@ -49,7 +49,7 @@ interface ISingleBranchProps{
                 {!!c.refs && getRefs(c)}
                     <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className={`commit ${props.selectedCommit?.hash === c.hash?"selected-commit":""}`} cx={c.x} cy={props.branchDetails.y} r={RepoUtils.commitRadius} stroke="black" 
                         strokeWidth="3"/>                     
-                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`commit_text cur-default d-none`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={RepoUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
+                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`commit_text cur-default d-none`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={RepoUtils.branchPanelFontSize} fontWeight="bold">H</text>
                 </Fragment>
             ))
         }
