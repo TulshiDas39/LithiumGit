@@ -48,6 +48,8 @@ html {
     --scroll-bar-color:#2e0497;
     --outline-color:rgb(85, 42, 42);
     --branch-line-color:black;
+    --commit-circle-fill-color:cadetblue;
+    --selected-commit-fill-color:blueviolet;
   }  
   
   html[data-theme='dark'] {
@@ -87,6 +89,8 @@ html {
     --scroll-bar-color:rgba(20, 19, 20, 0.722);
     --outline-color:rgb(188, 181, 181);
     --branch-line-color:rgb(3, 86, 27);
+    --commit-circle-fill-color:#701414;
+    --selected-commit-fill-color:#147053;
   }
 
   $valid-sides: top, bottom, start, end;
@@ -552,4 +556,11 @@ to {
 
 .branchLine {    
   stroke: var(--branch-line-color);
+}
+
+.commit{
+  fill:var(--commit-circle-fill-color);
+  &.selected-commit{
+    fill:var(--selected-commit-fill-color);
+  }
 }
