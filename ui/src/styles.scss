@@ -53,6 +53,7 @@ html {
     --head-text-color:rgb(198, 213, 198);
     --ref-text-color:blue;
     --modal-border:rgba(0,0,0,.2);
+    --scroll-container-color:#6c757d;
   }  
   
   html[data-theme='dark'] {
@@ -89,7 +90,7 @@ html {
     --bg-previous-change-deep: #701414;
     --bg-fade:#513f3f;
     --bg-change-accepted:#b9d5f6;
-    --scroll-bar-color:rgba(20, 19, 20, 0.722);
+    --scroll-bar-color:rgba(119, 118, 119, 0.722);
     --outline-color:rgb(188, 181, 181);
     --branch-line-color:rgb(3, 86, 27);
     --commit-circle-fill-color:#701414;
@@ -97,6 +98,7 @@ html {
     --head-text-color:#adacac;
     --ref-text-color:#adacac;
     --modal-border:rgba(144, 141, 141, 0.2);
+    --scroll-container-color:#444647;
   }
 
   $valid-sides: top, bottom, start, end;
@@ -578,4 +580,8 @@ to {
 
 .refText{
   fill: var(--ref-text-color);
+}
+
+.scroll-container{
+  background-color: var(--scroll-container-color);
 }
