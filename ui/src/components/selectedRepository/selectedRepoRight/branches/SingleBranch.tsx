@@ -39,7 +39,7 @@ interface ISingleBranchProps{
     }
 
     return <> 
-    <path id={`${EnumIdPrefix.BRANCH_LINE}${props.branchDetails._id}`} d={linePath} fill="none" stroke="black" strokeWidth="3"
+    <path className="branchLine" id={`${EnumIdPrefix.BRANCH_LINE}${props.branchDetails._id}`} d={linePath} fill="none" strokeWidth="3"
          >
          <title>{props.branchDetails.name}</title>
     </path>

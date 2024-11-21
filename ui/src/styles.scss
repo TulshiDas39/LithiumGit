@@ -47,6 +47,7 @@ html {
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:#2e0497;
     --outline-color:rgb(85, 42, 42);
+    --branch-line-color:black;
   }  
   
   html[data-theme='dark'] {
@@ -85,6 +86,7 @@ html {
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:rgba(20, 19, 20, 0.722);
     --outline-color:rgb(188, 181, 181);
+    --branch-line-color:rgb(3, 86, 27);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -546,4 +548,8 @@ to {
   .dropdown-item:hover{
     background-color: var(--bg-select-color);
   }
+}
+
+.branchLine {    
+  stroke: var(--branch-line-color);
 }
