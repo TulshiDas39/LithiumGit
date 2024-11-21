@@ -52,6 +52,7 @@ html {
     --selected-commit-fill-color:blueviolet;
     --head-text-color:rgb(198, 213, 198);
     --ref-text-color:blue;
+    --modal-border:rgba(0,0,0,.2);
   }  
   
   html[data-theme='dark'] {
@@ -95,6 +96,7 @@ html {
     --selected-commit-fill-color:#147053;
     --head-text-color:#adacac;
     --ref-text-color:#adacac;
+    --modal-border:rgba(144, 141, 141, 0.2);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -137,6 +139,7 @@ html {
     & * {
       background-color: inherit;
     }
+    border-color: var(--modal-border);
   }
 
   .font-color{
