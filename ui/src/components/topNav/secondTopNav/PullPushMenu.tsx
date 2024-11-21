@@ -148,21 +148,21 @@ function PullPushMenuComponent(){
                         {currentText}
                     </div>
                     <div className="col-auto ps-1">
-                        <div className="row g-0 bg-info px-1 rounded">
+                        <div className="row g-0 bg-success px-1 rounded">
                             <div className="col-auto">
-                                <FaAngleDoubleUp />
+                                <FaAngleDoubleUp className="color-slight" />
                             </div>
-                            <div className="col-auto">
+                            <div className="col-auto color-slight">
                                 {store.ahead}
                             </div>
                         </div>
                     </div>
                     <div className="col-auto ps-1">
-                        <div className="row g-0 bg-info px-1 rounded">
+                        <div className="row g-0 bg-success px-1 rounded">
                             <div className="col-auto">
-                                <FaAngleDoubleDown />
+                                <FaAngleDoubleDown className="color-slight" />
                             </div>
-                            <div className="col-auto">
+                            <div className="col-auto color-slight">
                                 {store.behind}
                             </div>
                         </div>
@@ -218,7 +218,7 @@ function PullPushMenuComponent(){
                 </div>
                 <div className="border-secondary col-auto d-flex position-relative"
                     onMouseEnter={()=> {refData.current.onHoverFetchAll = true}} onMouseLeave={()=>{refData.current.onHoverFetchAll = false}}>                    
-                    <AppButton type="default" className="" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
+                    <AppButton type="default" className="default-button" style={{width:15,paddingLeft:'8px', paddingRight:'8px'}}
                         onClick={handleFetchCaretClick}>
                         <span> <FaCaretDown /></span>
                     </AppButton>

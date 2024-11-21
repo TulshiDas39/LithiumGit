@@ -30,7 +30,7 @@ interface ISingleBranchProps{
         let y = props.branchDetails.y - RepoUtils.commitRadius - 4;
         for(let sp of commit.refValues){
             const x = commit.x + RepoUtils.commitRadius ;
-            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === Constants.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={RepoUtils.branchPanelFontSize} fill="blue">{sp}</text>;
+            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === Constants.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={RepoUtils.branchPanelFontSize}>{sp}</text>;
             refElements.push(elem);
             y = y - RepoUtils.branchPanelFontSize - 1;
         }
@@ -39,7 +39,7 @@ interface ISingleBranchProps{
     }
 
     return <> 
-    <path id={`${EnumIdPrefix.BRANCH_LINE}${props.branchDetails._id}`} d={linePath} fill="none" stroke="black" strokeWidth="3"
+    <path className="branchLine" id={`${EnumIdPrefix.BRANCH_LINE}${props.branchDetails._id}`} d={linePath} fill="none" strokeWidth="3"
          >
          <title>{props.branchDetails.name}</title>
     </path>
@@ -47,9 +47,9 @@ interface ISingleBranchProps{
             props.branchDetails.commits.map(c=>(
                 <Fragment key={c.hash}>
                 {!!c.refs && getRefs(c)}
-                    <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className="commit" cx={c.x} cy={props.branchDetails.y} r={RepoUtils.commitRadius} stroke="black" 
-                        strokeWidth="3" fill={`${props.selectedCommit?.hash === c.hash?GraphUtils.selectedCommitColor:GraphUtils.commitColor}`}/>                     
-                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`commit_text cur-default d-none`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={RepoUtils.branchPanelFontSize} fill="green" fontWeight="bold">H</text>
+                    <circle id={`${EnumIdPrefix.COMMIT_CIRCLE}${c.hash}`} className={`commit ${props.selectedCommit?.hash === c.hash?"selected-commit":""}`} cx={c.x} cy={props.branchDetails.y} r={RepoUtils.commitRadius} stroke="black" 
+                        strokeWidth="3"/>                     
+                    <text id={`${EnumIdPrefix.COMMIT_TEXT}${c.hash}`} className={`commit_text cur-default d-none`} x={c.x} y={props.branchDetails.y} textAnchor="middle" alignmentBaseline="middle" fontSize={RepoUtils.branchPanelFontSize} fontWeight="bold">H</text>
                 </Fragment>
             ))
         }

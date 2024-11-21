@@ -281,5 +281,6 @@ export class RendererEvents{
     static readonly getGraphCommits = "getGraphCommits";
     static readonly continueRebase = "continueRebase";
     static readonly remote = "remote";
+    static readonly updateConfig = "updateConfig";
 }
 

@@ -5,7 +5,7 @@ interface InputTextProps{
 }
 
 function InputTextComponent(props:InputTextProps){
-    return <input type="text" style={{width:props.text.length+"ch"}} onChange={_=>{}} value={props.text} spellCheck={false} className="h-100 outline-none" />
+    return <input type="text" style={{width:props.text.length+"ch"}} onChange={_=>{}} value={props.text} spellCheck={false} className="h-100 outline-none outline-none-focus" />
     
 }
 

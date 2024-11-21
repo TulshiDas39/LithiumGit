@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useDrag, useMultiState, NumUtils, Data } from "../../lib";
+import React, { useEffect, useRef } from "react";
+import { RepoUtils, CacheUtils, ObjectUtils, ReduxUtils, UiUtils, useMultiState, Data } from "../../lib";
 import { SelectedRepoLeft } from "./SelectedRepoLeft";
 import { SelectedRepoRight } from "./selectedRepoRight/SelectedRepoRight";
 import './SelectedRepository.scss';
@@ -29,10 +29,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         annotVersion:state.ui.versions.annotations,
     }),shallowEqual);
     const[state,setState]=useMultiState<IState>({});
-    const refData = useRef({repo:props.repo,leftMinWidth:100});
-    const leftWidthRef = useRef(refData.current.leftMinWidth);
-    const positionRef = useRef(0);
-    const {currentMousePosition:position,elementRef:resizer} = useDrag();
+    const refData = useRef({repo:props.repo,leftWidth:100});
     const dispatch = useDispatch();
     
     ReduxUtils.refreshGraph = ()=>{
@@ -137,25 +134,6 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
             updateStatus();
     },[store.focusVersion]);
 
-    const leftWidth = useMemo(()=>{
-        const curWidth = leftWidthRef.current + positionRef.current;
-        const width = NumUtils.between(refData.current.leftMinWidth, 500, curWidth);
-        if(!position){
-            leftWidthRef.current = width;
-            positionRef.current = 0;
-        }
-        else{
-            positionRef.current = position.x;
-        }
-        return width;
-    },[position?.x])
-
-    useEffect(()=>{
-        if(!GraphUtils.svgContainer)
-            return;
-        GraphUtils.resizeHandler();
-    },[leftWidth])
-
     const getAnnotations = (repoId:string)=>{
         IpcUtils.getAnnotations(repoId).then(r=>{
             if(!r.error){
@@ -174,11 +152,10 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
     },[props.repo]);
 
     return <div id="SelectedRepository" className="d-flex h-100">
-        <div style={{width:`${leftWidth - 3}px`}}>
+        <div style={{width:`${refData.current.leftWidth}px`}}>
             <SelectedRepoLeft  />
         </div>
-        <div ref={resizer as any} className="bg-second-color cur-resize" style={{ width: '3px' }} />
-        <div style={{width:`calc(100% - ${leftWidth}px)`}} className="overflow-hidden">
+        <div style={{width:`calc(100% - ${refData.current.leftWidth}px)`}} className="overflow-hidden">
             <SelectedRepoRight />
         </div>
     </div>

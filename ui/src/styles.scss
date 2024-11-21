@@ -1,3 +1,4 @@
+@use "sass:list";
 
 @font-face {
     font-family: 'Consolas';
@@ -44,13 +45,22 @@ html {
     --bg-previous-change-deep: #fda0a0;
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
+    --scroll-bar-color:#2e0497;
+    --outline-color:rgb(85, 42, 42);
+    --branch-line-color:black;
+    --commit-circle-fill-color:cadetblue;
+    --selected-commit-fill-color:blueviolet;
+    --head-text-color:rgb(198, 213, 198);
+    --ref-text-color:blue;
+    --modal-border:rgba(0,0,0,.2);
+    --scroll-container-color:#6c757d;
   }  
   
   html[data-theme='dark'] {
-    --font-color: #e4e6eb;
-    --bg-color: #1E1E1E;
-    --bg-default-button:#76a198;
-    --border-color:rgba(0,0,0,.2);
+    --font-color: #CCCCCC;
+    --bg-color: #1F1F1F;
+    --bg-default-button:#353535;
+    --border-color:rgba(144, 141, 141, 0.2);
     --gs-normal: black;
     --gs-primary: rgb(81, 165, 144);
     --gs-secondary: rgb(86, 86, 230);
@@ -58,9 +68,9 @@ html {
     --gs-warning: rgb(165, 165, 109);
     --gs-danger: rgb(170, 63, 63);
     --bg-second-color: #323233;
-    --bg-third-color: #a7a8a7;
+    --bg-third-color: #181818;
     --bg-fourth-color: rgb(126, 117, 156);
-    --bg-select-color: rgb(130, 124, 212);
+    --bg-select-color: #48484d;
     --active-color: #333333;
     --white: #181818;
     --highlight-color:rgb(92, 92, 243);
@@ -68,19 +78,41 @@ html {
     --hover: #56a696;        
     --search-bg: #181818;
     --svg-dark: #909090;
-    --scrollbar-color: #636363;
+    --scrollbar-color: #563D7C;
     --switch-round: #1CD0A8;
     --red-color: #cc401f;
     --switch-bg: #4c4b4b;    
     --wt-dropdown-background: #232323;
     --colorBlue: #1CD0A8;
-    --bg-current-change:#EBF1DD;
-    --bg-current-change-deep: #e2f4b8;
-    --bg-previous-change: #FFCCCC;
-    --bg-previous-change-deep: #fda0a0;
+    --bg-current-change:#383E2A;
+    --bg-current-change-deep: #4C5B2B;
+    --bg-previous-change: #4C1919;
+    --bg-previous-change-deep: #701414;
     --bg-fade:#513f3f;
     --bg-change-accepted:#b9d5f6;
+    --scroll-bar-color:rgba(119, 118, 119, 0.722);
+    --outline-color:rgb(188, 181, 181);
+    --branch-line-color:rgb(3, 86, 27);
+    --commit-circle-fill-color:#701414;
+    --selected-commit-fill-color:#147053;
+    --head-text-color:#adacac;
+    --ref-text-color:#adacac;
+    --modal-border:rgba(144, 141, 141, 0.2);
+    --scroll-container-color:#444647;
   }
+
+  $valid-sides: top, bottom, start, end;
+
+  @each $side in $valid-sides {
+    .border-#{$side} {
+      border-#{$side}-color: var(--border-color) !important;
+    }
+  }
+
+  .border{
+    border-color: var(--border-color) !important;
+  }
+  
 
   p,span,div,i,h1,h2,h3,h4,h5,h6{
     color: var(--font-color);
@@ -89,14 +121,27 @@ html {
 
   input[type="text"],textarea,input[type="text"]:focus,textarea:focus{
     background-color: var(--bg-color);
+    color: var(--font-color);
+  }
+
+  input[type="text"]:focus, textarea:focus{
+    outline-color: var(--outline-color);
+    outline-width:1px;
+    outline-style:solid;
   }
 
   .form-control, .form-control:focus{
     background-color: var(--bg-color);
+    color: var(--font-color);
+    border-color: var(--border-color);
   }
 
   .modal-content{
     background-color: var(--bg-color);
+    & * {
+      background-color: inherit;
+    }
+    border-color: var(--modal-border);
   }
 
   .font-color{
@@ -120,6 +165,10 @@ html {
   }
   .bg-select-color{
     background-color: var(--bg-select-color);
+  }
+
+  .scroll-color{
+    background-color: var(--scroll-bar-color);
   }
 
   .selected{
@@ -168,7 +217,7 @@ html {
   }
 
   .hover-brighter:hover{
-    filter: brightness(105%);
+    //filter: brightness(105%);
   }
 
   .hover-shadow:hover{
@@ -286,6 +335,10 @@ html {
   color:var(--gs-secondary);
 }
 
+.color-slight{
+  color:#CCCCCC;
+}
+
 .no-wrap{
   white-space: nowrap
 }
@@ -333,7 +386,8 @@ html {
 }
 
 .branchBox{
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-default-button);
 }
 
 .branchBox:hover{
@@ -342,7 +396,7 @@ html {
   *{
     cursor: default;
     //opacity: 0.6;
-    color: #2f8512;
+    //color: #2f8512;
   }
 }
 
@@ -460,12 +514,25 @@ to {
     min-height: 15px !important;
     border-radius: 0px !important;
     background-color: var(--bg-color);
+    border-color: var(--border-color);
+  }
+
+  .css-13cymwt-control:hover{
+    border-color: var(--border-color);    
   }
   
   .css-t3ipsp-control{
     height: 100%;
     min-height: 15px !important;
     background-color: var(--bg-color);
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 1px var(--border-color);
+    border-width: 2px;
+  }
+
+  .css-t3ipsp-control:hover{
+    border-color: var(--border-color);
+    border-width: 2px;
   }
 
   .css-1hb7zxy-IndicatorsContainer{
@@ -474,6 +541,47 @@ to {
 
   .css-1nmdiq5-menu{
     background-color: var(--bg-color);
+    .css-d7l1ni-option{
+      background-color: var(--bg-select-color);
+    }
   }
 
+  .css-1dimb5e-singleValue{
+    color: var(--font-color);
+  }
+
+}
+
+.dropdown-menu{
+  background-color: var(--bg-second-color);
+  color: var(--font-color);
+  .dropdown-item{
+    color: var(--font-color);
+  }
+  .dropdown-item:hover{
+    background-color: var(--bg-select-color);
+  }
+}
+
+.branchLine {    
+  stroke: var(--branch-line-color);
+}
+
+.commit{
+  fill:var(--commit-circle-fill-color);
+  &.selected-commit{
+    fill:var(--selected-commit-fill-color);
+  }
+}
+
+.commit_text{
+  fill: var(--head-text-color);
+}
+
+.refText{
+  fill: var(--ref-text-color);
+}
+
+.scroll-container{
+  background-color: var(--scroll-container-color);
 }

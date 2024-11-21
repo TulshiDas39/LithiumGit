@@ -1,11 +1,11 @@
-import { ISavedData, RendererEvents } from "common_library";
+import { EnumTheme, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, GraphUtils, ReduxUtils, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
-import { ActionUI, EnumHomePageTab, ILoaderInfo } from "../../store/slices/UiSlice";
+import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
@@ -35,6 +35,10 @@ function MainComponent(){
         })
     }
 
+    const setTheme=(theme:EnumTheme)=>{
+        window.document.documentElement.setAttribute("data-theme",theme);
+    }
+
     useEffect(()=>{
         registerIpcEvents();        
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
@@ -44,7 +48,10 @@ function MainComponent(){
                 dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
             });
         }
-        dispatch(ActionSavedData.updateAutoStaging(savedData.configInfo.autoStage));
+        else{
+            setTheme(savedData.configInfo.theme);
+        }
+        dispatch(ActionSavedData.updateConfig(savedData.configInfo));
         const repos = savedData.recentRepositories;        
         if(!repos?.length){
             setState({isLoading:false});

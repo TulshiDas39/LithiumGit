@@ -1,16 +1,34 @@
-import React from "react";
-import { shallowEqual } from "react-redux";
-import { BarLoader } from "react-spinners";
+import React, { useEffect, useRef } from "react";
+import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { FaSpinner } from "react-icons/fa";
+import { FaAdjust, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
+import { ActionSavedData } from "../../store";
+import { EnumTheme } from "common_library";
 
 function FooterNavComponent(){
     const store = useSelectorTyped(state=>({
         loader:state.ui.loaders,
         sync:state.ui.synch,
+        theme:state.savedData.configInfo.theme,                
     }),shallowEqual);
 
+    const dispatch = useDispatch();
+    const refData = useRef({isMounted:false});
+
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return;
+        document.documentElement.setAttribute('data-theme',store.theme);
+    },[store.theme])
+
+    const handleThemeClick=()=>{
+        dispatch(ActionSavedData.toogleTheme());
+    }
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+    },[])
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-5">
             <div className="d-flex">
@@ -23,13 +41,22 @@ function FooterNavComponent(){
                 )}
             </div>            
         </div>      
-        <div className="col-auto text-center">
-            <div className="text-center">                
-                    {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
-            </div>
+        <div className="col-6 text-center">
+            <div className="d-flex align-items-center">
+                <div className="text-center">                
+                        {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
+                </div>
+                <div className="ps-3 text-nowrap overflow-ellipsis">
+                    {!!store.loader?.length && <span>{store.loader[store.loader.length-1].text}</span>}
+                </div>
+            </div>            
         </div>
-        <div className="col-auto ps-3">
-            {!!store.loader?.length && <span>{store.loader[store.loader.length-1].text}</span>}
+        
+        <div className="col-1 d-flex align-items-center justify-content-end">
+            <span className="pe-2 d-flex align-items-center">
+                <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
+            </span>
+
         </div>
     </div>
 }

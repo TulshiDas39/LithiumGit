@@ -1,4 +1,4 @@
-import { IConfigInfo, MainEvents, RendererEvents } from "common_library";
+import { EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import { autoUpdater } from "electron-updater";
 import * as path from "path";
@@ -79,10 +79,12 @@ export class Startup{
       SavedData.data.configInfo = (await DB.config.getAll())[0];
       if(!SavedData.data.configInfo){
         const record={
-          portNumber:54523,
-          autoStage:false,
+          theme:EnumTheme.Light,
         } as IConfigInfo;
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
+      }
+      if(!SavedData.data.configInfo.theme){
+        SavedData.data.configInfo.theme = EnumTheme.Light;
       }
     }
 

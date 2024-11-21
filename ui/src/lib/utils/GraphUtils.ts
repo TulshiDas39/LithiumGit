@@ -46,8 +46,7 @@ export class GraphUtils{
     static branchSvgHtml='';
     static initialHorizontalScrollRatio = 1;
     static initialVerticalScrollRatio = 1;
-    static focusedCommit:ICommitInfo=null!;
-    static readonly selectedCommitColor = "blueviolet"
+    static focusedCommit:ICommitInfo=null!;    
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     //static readonly scrollbarSize = 10;
@@ -437,7 +436,7 @@ export class GraphUtils{
         circleElem.setAttribute("r",(RepoUtils.commitRadius+2)+"")
         circleElem.setAttribute("stroke","red")
         circleElem.setAttribute("stroke-width","3");
-        circleElem.setAttribute("fill",GraphUtils.commitColor)
+        // circleElem.setAttribute("fill",GraphUtils.commitColor)
         circleElem.classList.add("mergingState");
 
         const circleElem2 = document.createElementNS(this.svgLnk, "circle");
@@ -465,10 +464,11 @@ export class GraphUtils{
             let existingSelectedCommitElem:HTMLElement|null;
             if(GraphUtils.state.selectedCommit.value?.hash) {
                 existingSelectedCommitElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${GraphUtils.state.selectedCommit.value.hash}`);
-                existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
+                //existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
+                existingSelectedCommitElem?.classList.remove("selected-commit");
             }
 
-            circleElem.setAttribute("fill",GraphUtils.selectedCommitColor);
+            circleElem.classList.add("selected-commit");
 
             GraphUtils.state.selectedCommit.publish(mergeCommit);
         }
