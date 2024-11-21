@@ -51,6 +51,7 @@ html {
     --commit-circle-fill-color:cadetblue;
     --selected-commit-fill-color:blueviolet;
     --head-text-color:rgb(198, 213, 198);
+    --ref-text-color:blue;
   }  
   
   html[data-theme='dark'] {
@@ -93,6 +94,7 @@ html {
     --commit-circle-fill-color:#701414;
     --selected-commit-fill-color:#147053;
     --head-text-color:#adacac;
+    --ref-text-color:#adacac;
   }
 
   $valid-sides: top, bottom, start, end;
@@ -569,4 +571,8 @@ to {
 
 .commit_text{
   fill: var(--head-text-color);
+}
+
+.refText{
+  fill: var(--ref-text-color);
 }
