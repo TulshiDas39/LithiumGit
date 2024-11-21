@@ -46,6 +46,7 @@ html {
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:#2e0497;
+    --outline-color:rgb(85, 42, 42);
   }  
   
   html[data-theme='dark'] {
@@ -83,6 +84,7 @@ html {
     --bg-fade:#513f3f;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:rgba(20, 19, 20, 0.722);
+    --outline-color:rgb(188, 181, 181);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -106,6 +108,12 @@ html {
   input[type="text"],textarea,input[type="text"]:focus,textarea:focus{
     background-color: var(--bg-color);
     color: var(--font-color);
+  }
+
+  input[type="text"]:focus, textarea:focus{
+    outline-color: var(--outline-color);
+    outline-width:1px;
+    outline-style:solid;
   }
 
   .form-control, .form-control:focus{
