@@ -79,7 +79,7 @@ export class Startup{
       SavedData.data.configInfo = (await DB.config.getAll())[0];
       if(!SavedData.data.configInfo){
         const record={
-          theme:EnumTheme.Light,
+          theme:EnumTheme.Dark,
         } as IConfigInfo;
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
       }
