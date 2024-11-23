@@ -36,12 +36,6 @@ function CreateBranchModalComponent(){
         }
     },[store.show])
 
-    useEffect(()=>{
-        window.ipcRenderer.on(RendererEvents.createBranch().replyChannel,(e,sourceCommit:ICommitInfo,branchName:string,status:IStatus,chckout:boolean)=>{
-            GraphUtils.handleNewBranch(sourceCommit,branchName,status);
-        })
-    },[])
-
     const handleBranchCreateClick=()=>{
         const branchNames = RepoUtils.getAllBranchNames();
         if(branchNames.includes(state.branchName)) {

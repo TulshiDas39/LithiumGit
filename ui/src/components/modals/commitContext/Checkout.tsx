@@ -1,7 +1,7 @@
 import React, { Fragment, useMemo } from "react";
 import { ModalData } from "../ModalData";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { EnumModals, GraphUtils, RepoUtils } from "../../../lib";
+import { EnumModals, GraphUtils, ReduxUtils, RepoUtils } from "../../../lib";
 import { shallowEqual } from "react-redux";
 import { ContextData, IBaseProps, Option } from "./ContextData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
@@ -39,12 +39,11 @@ function CheckoutComponent(props:IProps){
         const options:string[]=[destination];
         IpcUtils.checkout(options).then((r)=>{
             if(!r.error){
-                IpcUtils.getRepoStatusSync().then(status=>{
-                    GraphUtils.handleCheckout(Data.selectedCommit,status);            
+                IpcUtils.getRepoStatusSync().then(status=>{                    
+                    GraphUtils.handleCheckout(Data.selectedCommit,status);
+                    ReduxUtils.setStatus(status);
                 })
-            }else{
-                GitUtils.getStatus();
-            }
+            }            
         });
         props.hideModal();
     }

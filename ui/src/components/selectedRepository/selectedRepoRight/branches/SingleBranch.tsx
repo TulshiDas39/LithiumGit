@@ -30,7 +30,7 @@ interface ISingleBranchProps{
         let y = props.branchDetails.y - RepoUtils.commitRadius - 4;
         for(let sp of commit.refValues){
             const x = commit.x + RepoUtils.commitRadius ;
-            const elem = <text className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === Constants.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={RepoUtils.branchPanelFontSize}>{sp}</text>;
+            const elem = <text data-text={sp} className={`refText ${EnumIdPrefix.COMMIT_REF}${commit.hash} ${sp === Constants.detachedHeadIdentifier?'headRef':''}`} key={sp} x={x} y={y} direction="rtl" fontSize={RepoUtils.branchPanelFontSize}>{sp}</text>;
             refElements.push(elem);
             y = y - RepoUtils.branchPanelFontSize - 1;
         }

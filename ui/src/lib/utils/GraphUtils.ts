@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";
 import { EnumHtmlIds, EnumIdPrefix } from "../enums";
-import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IStatus } from "common_library";
+import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IHeadCommitInfo, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
@@ -13,6 +13,7 @@ import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
 import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
+import { HtmlConstants } from "../constants";
 
 
 interface IState{
@@ -241,11 +242,11 @@ export class GraphUtils{
     }
 
 
-    static CreateHeadTextElement(commit:ICommitInfo){
+    static CreateHeadTextElement(commit:ICommitInfo,text:string,index:number){
         if(!commit.refValues.length) return null;    
         let y = commit.ownerBranch.y - RepoUtils.commitRadius - 4;
         const x = commit.x + RepoUtils.commitRadius;
-        for(let i=0;i<commit.refValues.length-1;i++){                
+        for(let i=0;i<index;i++){                
             y = y - RepoUtils.branchPanelFontSize - 1;
         }
         // return <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">HEAD</text>;
@@ -255,27 +256,10 @@ export class GraphUtils{
         elem.setAttribute("direction",`rtl`)
         elem.setAttribute("font-size",`${RepoUtils.branchPanelFontSize}`);
         elem.setAttribute("fill",`blue`);
-        elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`,"headRef")
-        elem.innerHTML = Constants.detachedHeadIdentifier;
+        elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`);
+        elem.innerHTML = text;
         return elem;
-    }
-    
-    static updateUiForCheckout(){
-        if(!this.svgElement) return;
-        const headCommit = RepoUtils.repositoryDetails.headCommit;
-        if(!headCommit)
-            return;
-        if(RepoUtils.repositoryDetails.status.isDetached){
-            const commitElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${headCommit.hash}`);
-            const headTextElem = this.CreateHeadTextElement(headCommit);        
-            commitElem?.insertAdjacentElement("beforebegin",headTextElem!);
-        }
-
-        const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
-
-        HTextElem?.classList.remove("d-none");
-        ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
-    }
+    }    
     
 
     static revertUiOfExistingCheckout(){
@@ -300,18 +284,14 @@ export class GraphUtils{
     }
 
     static handleCheckout(commit:ICommitInfo,newStatus:IStatus){
-        const repoDetails = RepoUtils.repositoryDetails;
-        this.revertUiOfExistingCheckout();
+        const repoDetails = RepoUtils.repositoryDetails;        
         const existingHead = repoDetails.headCommit;
-
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
-
-        const existingStatus = repoDetails.status;
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash) as IHeadCommitInfo;
         repoDetails.status = newStatus; 
 
         if(existingHead){
             existingHead.isHead = false;
-            if(existingStatus.isDetached){
+            if(existingHead.isDetached){
                 existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
                 if(existingHead.ownerBranch.increasedHeightForDetached > 0){
                     existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
@@ -327,6 +307,7 @@ export class GraphUtils{
             const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
             if(newStatus.isDetached){
+                newHeadCommit.isDetached = true;
                 newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
                 newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
             }
@@ -344,34 +325,20 @@ export class GraphUtils{
                 GraphUtils.refreshBranchPanelUi();
             }
             else {
-                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-                this.updateUiForCheckout();
+                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);                
             }
         }
-                
+
+        if(GraphUtils.state.headCommit.value != newHeadCommit){
+            GraphUtils.state.headCommit.publish(newHeadCommit);
+        }else{
+            GraphUtils.state.headCommit.update();
+        }
     }
 
     static refreshBranchPanelUi(){
         this.createBranchPanel();
-    }
-
-    static handleNewBranch(sourceCommit:ICommitInfo,branch:string,status:IStatus){
-        RepoUtils.repositoryDetails.branchList.push(branch);
-        const commitFrom = RepoUtils.repositoryDetails.allCommits.find(x=>x.hash === sourceCommit.hash);
-        if(!commitFrom) return;        
-        commitFrom.refValues.push(branch);                
-        const refLimitExcited = commitFrom.refValues.length > commitFrom.ownerBranch.maxRefCount;
-        if(refLimitExcited)  commitFrom.ownerBranch.maxRefCount++;
-        RepoUtils.repositoryDetails.status = status;
-        if(status.current === branch) {
-            RepoUtils.repositoryDetails.headCommit = commitFrom;
-        }
-        this.focusedCommit = commitFrom;
-
-        CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-        
-        this.refreshBranchPanelUi();
-    }
+    }   
 
     static async isRequiredReload(){
         try{
