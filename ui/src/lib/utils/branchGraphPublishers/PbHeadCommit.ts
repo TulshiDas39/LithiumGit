@@ -3,6 +3,7 @@ import { DerivedState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 import { RepoUtils } from "../RepoUtils";
 import { EnumIdPrefix } from "../../enums";
+import { ObjectUtils } from "../ObjectUtils";
 
 export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
     protected getDerivedValue(): IHeadCommitInfo | undefined {  
@@ -21,7 +22,7 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
 
     private revertUiOfExistingCheckout(){
         const prevHead = this._prevVal;        
-        if(!prevHead)
+        if(!prevHead || prevHead === this.value)
             return;
         prevHead.isHead = false;        
         const headCommitTextElem = GraphUtils.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${prevHead.hash}`);
@@ -34,6 +35,7 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
                 prevHead.ownerBranch.maxRefCount -= prevHead.ownerBranch.increasedHeightForDetached;                
                 prevHead.ownerBranch.increasedHeightForDetached = 0;
             }
+            prevHead.isDetached = false;
             this.resetRefs(prevHead);
         }
     }
@@ -46,8 +48,7 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
         const HTextElem = GraphUtils.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
 
         HTextElem?.classList.remove("d-none");
-        if(headCommit.isDetached)
-            this.resetRefs(headCommit);        
+        this.resetRefs(headCommit);
     }
 
     private resetRefs(commit:IHeadCommitInfo){
