@@ -111,4 +111,4 @@ function CommitContextModalComponent(){
     )
 }
 
-export const CommitContextModal2 = React.memo(CommitContextModalComponent);
+export const CommitContextModal = React.memo(CommitContextModalComponent);
