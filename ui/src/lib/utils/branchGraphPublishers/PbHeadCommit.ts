@@ -1,4 +1,4 @@
-import { IHeadCommitInfo } from "common_library";
+import { Constants, IHeadCommitInfo } from "common_library";
 import { DerivedState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 import { RepoUtils } from "../RepoUtils";
@@ -20,17 +20,22 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
     }
 
     private revertUiOfExistingCheckout(){
-        const headCommit = this._prevVal;
-        if(!headCommit)
+        const prevHead = this._prevVal;        
+        if(!prevHead)
             return;
-        const headCommitTextElem = GraphUtils.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
+        prevHead.isHead = false;        
+        const headCommitTextElem = GraphUtils.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${prevHead.hash}`);
         if(headCommitTextElem) {
             headCommitTextElem.classList.add("d-none");
         }
-        if(headCommit.isDetached){
-            this.resetRefs(headCommit);
+        if(prevHead.isDetached){
+            prevHead.refValues = prevHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
+            if(prevHead.ownerBranch.increasedHeightForDetached > 0){
+                prevHead.ownerBranch.maxRefCount -= prevHead.ownerBranch.increasedHeightForDetached;                
+                prevHead.ownerBranch.increasedHeightForDetached = 0;
+            }
+            this.resetRefs(prevHead);
         }
-
     }
 
     private updateUiForNewHead(){
@@ -57,6 +62,12 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
             commitElem?.insertAdjacentElement("beforebegin",headTextElem!);
         }
 
+    }
+
+    publishOrUpdate(v: IHeadCommitInfo | undefined): void {
+        if(this.value != v)
+            this.publish(v);
+        else this.notifyAll();
     }
 
 }

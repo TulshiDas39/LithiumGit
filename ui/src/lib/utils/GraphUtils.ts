@@ -198,7 +198,6 @@ export class GraphUtils{
         if(!GraphUtils.svgElement) return;
         
         GraphUtils.svgElement.addEventListener("wheel",(e)=>{
-            var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
             if(e.deltaX > 0 || e.deltaY > 0) {                
                 GraphUtils.controlZoom("zoomOut", 0.1);
             }
@@ -285,20 +284,9 @@ export class GraphUtils{
 
     static handleCheckout(commit:ICommitInfo,newStatus:IStatus){
         const repoDetails = RepoUtils.repositoryDetails;        
-        const existingHead = repoDetails.headCommit;
         const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash) as IHeadCommitInfo;
         repoDetails.status = newStatus; 
-
-        if(existingHead){
-            existingHead.isHead = false;
-            if(existingHead.isDetached){
-                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                    existingHead.ownerBranch.increasedHeightForDetached = 0;
-                }            
-            }
-        }
+        
         repoDetails.headCommit = newHeadCommit!;
         
         if(newHeadCommit){
@@ -316,24 +304,18 @@ export class GraphUtils{
                     newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
                     newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
                     newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+                    RepoUtils.repositoryDetails.branchList.push(newHeadCommit.ownerBranch.name);
                 }
             }
             if(newHeadCommit.refValues.length > existingMaxRefLength){
                 newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
-                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-                GraphUtils.refreshBranchPanelUi();
-            }
-            else {
-                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);                
-            }
+                //GraphUtils.refreshBranchPanelUi();
+            }            
+            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
         }
 
-        if(GraphUtils.state.headCommit.value != newHeadCommit){
-            GraphUtils.state.headCommit.publish(newHeadCommit);
-        }else{
-            GraphUtils.state.headCommit.update();
-        }
+        GraphUtils.state.headCommit.publishOrUpdate(newHeadCommit);        
     }
 
     static refreshBranchPanelUi(){
