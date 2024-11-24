@@ -2,10 +2,11 @@ import React, { Fragment, useMemo } from "react";
 import { ModalData } from "../ModalData";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { EnumModals, GraphUtils, ReduxUtils, RepoUtils } from "../../../lib";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
 import { ContextData, IBaseProps, Option } from "./ContextData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../lib/utils/GitUtils";
+import { ActionModals } from "../../../store";
 
 interface IProps extends IBaseProps{
     mouseOver?: Option;
@@ -18,6 +19,8 @@ function CheckoutComponent(props:IProps){
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
+
+    const dispatch = useDispatch();
 
     const Data = ModalData.commitContextModal;
 
@@ -39,6 +42,8 @@ function CheckoutComponent(props:IProps){
         const options:string[]=[destination];
         IpcUtils.checkout(options).then((r)=>{
             if(!r.error){
+                ModalData.appToast.message = "Checkout successful.";
+                dispatch(ActionModals.showToast());
                 IpcUtils.getRepoStatusSync().then(status=>{                    
                     GraphUtils.handleCheckout(Data.selectedCommit,status);
                     ReduxUtils.setStatus(status);
