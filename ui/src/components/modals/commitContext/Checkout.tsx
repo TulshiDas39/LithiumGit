@@ -65,7 +65,7 @@ function CheckoutComponent(props:IProps){
                                             <span>&gt;</span>
                                         </div>
                                         
-                                        {(props.mouseOver === Option.Checkout) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                        {(props.mouseOver === Option.Checkout) && <div className="position-absolute border bg-color" style={{left:'100%',top:0}}>
                                             {
                                                 branchNamesForCheckout.map((br=>(
                                                     <div key={br} className="border-bottom py-1 px-3">
