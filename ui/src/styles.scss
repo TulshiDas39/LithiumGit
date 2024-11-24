@@ -54,6 +54,7 @@ html {
     --ref-text-color:blue;
     --modal-border:rgba(0,0,0,.2);
     --scroll-container-color:#6c757d;
+    --bg-disabled:rgb(217, 217, 217);
   }  
   
   html[data-theme='dark'] {
@@ -99,6 +100,7 @@ html {
     --ref-text-color:#adacac;
     --modal-border:rgba(144, 141, 141, 0.2);
     --scroll-container-color:#444647;
+    --bg-disabled:rgb(67, 66, 66);
   }
 
   $valid-sides: top, bottom, start, end;
@@ -134,6 +136,10 @@ html {
     background-color: var(--bg-color);
     color: var(--font-color);
     border-color: var(--border-color);
+  }
+
+  .form-control[readonly]{
+    background-color: var(--bg-disabled);
   }
 
   .modal-content{
