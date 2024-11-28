@@ -307,19 +307,19 @@ export class RepoUtils{
             return;
         }
 
-        let extraSpace = RepoUtils.getExtraSpaceForRefs(commit);
-        if(extraSpace > RepoUtils.distanceBetweenCommits) {
-            commit.x = x + extraSpace - RepoUtils.distanceBetweenCommits;
+        let extraSpace = Math.floor(RepoUtils.getExtraSpaceNeededForRefs(commit));
+        if(extraSpace > 0) {
+            commit.x = x + extraSpace;
         }
         else commit.x = x;
     }
 
-    private static getExtraSpaceForRefs(commit:ICommitInfo){
+    static getExtraSpaceNeededForRefs(commit:ICommitInfo){
         const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
         const spaceForRef = (RepoUtils.branchPanelFontSize * 0.8) * maxRefSize;
         let previousCommit = commit.previousCommit;
         let extraSpace = 0;
-        let availableSpace = 0;
+        let availableSpace = RepoUtils.distanceBetweenCommits - RepoUtils.commitRadius*2;
         while(previousCommit){
             if(previousCommit.ownerBranch !== commit.ownerBranch){
                 break;

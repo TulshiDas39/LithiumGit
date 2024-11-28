@@ -336,6 +336,14 @@ export class GraphUtils{
                 const uiRefs = GraphUtils.state.headCommit.value.refValues;
                 const newRefs = newStatus.headCommit.refValues;        
                 if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+                const nextCommit = GraphUtils.state.headCommit.value.nextCommit;
+                if(nextCommit){
+                    const spaceNeeded = Math.floor(RepoUtils.getExtraSpaceNeededForRefs(nextCommit) + RepoUtils.distanceBetweenCommits);
+                    const distance = nextCommit.x - GraphUtils.state.headCommit.value.x;
+                    if(spaceNeeded > distance)
+                        return true;
+                }
+                
             }else if(!filter.userModified){
                 //return true;
             }
