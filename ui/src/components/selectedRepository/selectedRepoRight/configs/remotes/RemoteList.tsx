@@ -3,14 +3,15 @@ import { useSelectorTyped } from "../../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AddRemote } from "./AddRemote";
 import { ActionUI } from "../../../../../store/slices/UiSlice";
-import { FaCopy, FaPen, FaTrash } from "react-icons/fa";
+import { FaCopy, FaEllipsisH, FaPen, FaTrash } from "react-icons/fa";
 import { IRemoteInfo } from "common_library";
 import { IpcUtils } from "../../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../../modals/ModalData";
 import { ActionModals } from "../../../../../store";
 import { EnumModals, UiUtils, useMultiState } from "../../../../../lib";
-import { Form } from "react-bootstrap";
+import { Dropdown, Form } from "react-bootstrap";
 import { AppButton } from "../../../../common";
+import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 interface ISingleRemoteProps{
     url:string;
@@ -93,16 +94,23 @@ function SingleRemote(props:ISingleRemoteProps){
             }
         </div>
     </div>
-    {!state.isEditing && <div className="ps-4 pe-2 text-end" style={{width:state.rightWidth }}>
-        <span className="hover pe-3" onClick={ () => copyUrl()}>
-            <FaCopy title="Copy url" className="click-effect" />
-        </span>
-        <span className="pe-3">
+    {!state.isEditing && <div className="ps-4 pe-2 d-flex align-items-center justify-content-end" style={{width:state.rightWidth }}>
+        
+        <span className="">
             <FaPen className="text-primary" onClick={()=> setState({isEditing:true})}/>
         </span>
-        <span className="ps-3">
+        <span className="px-3">
             <FaTrash className="text-danger hover-brighter" title="Remove" onClick={_=> handleRemove()} />
         </span>
+        <Dropdown>
+            <Dropdown.Toggle variant="link" id="remote_item_more" className="rounded-0 no-caret">
+                <FaEllipsisH />
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="no-radius">
+                <Dropdown.Item onClick={() => {}} className="">Set as default</Dropdown.Item>
+                <Dropdown.Item onClick={() => copyUrl()} className="">Copy url</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
     </div>}    
 
 </div>
