@@ -3,12 +3,12 @@ import { useSelectorTyped } from "../../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AddRemote } from "./AddRemote";
 import { ActionUI } from "../../../../../store/slices/UiSlice";
-import { FaPen, FaTrash } from "react-icons/fa";
+import { FaCopy, FaPen, FaTrash } from "react-icons/fa";
 import { IRemoteInfo } from "common_library";
 import { IpcUtils } from "../../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../../modals/ModalData";
 import { ActionModals } from "../../../../../store";
-import { EnumModals, useMultiState } from "../../../../../lib";
+import { EnumModals, UiUtils, useMultiState } from "../../../../../lib";
 import { Form } from "react-bootstrap";
 import { AppButton } from "../../../../common";
 
@@ -50,13 +50,27 @@ function SingleRemote(props:ISingleRemoteProps){
         setState({value:props.url});
     },[props.url]);
 
+    const copyUrl = ()=>{
+        UiUtils.copy(props.url);
+        ModalData.appToast.message = "Copied.";
+        dispatch(ActionModals.showToast());
+    }
+
     return <div className="d-flex border w-100 align-items-center">
     <div className="flex-grow-1">
         <div className="d-flex">
             <b className="">{props.name}</b>
         </div>
         <div>
-            {!state.isEditing && <span>{props.url}</span>}
+            {!state.isEditing && <span className="d-flex">
+                <span>{props.url}</span>
+                <span className="ps-1 small">
+                    <span className="small hover" onClick={ () => copyUrl()}>
+                        <FaCopy className="click-effect" />
+                    </span>
+                </span>
+            </span>
+            }
             {state.isEditing && 
             <div className="d-flex align-items-center pt-1">
                 <Form.Control type="text" value={state.value} onChange={e=> setState({value:e.target.value})} />
