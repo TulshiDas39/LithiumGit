@@ -504,10 +504,15 @@ export class RepoUtils{
         return orignName;
     }
 
-    static get activeOriginUrl(){
-        const name = RepoUtils.activeOriginName;
-        const url = RepoUtils.repositoryDetails.remotes.find(_=> _.name === name);
-        return url?.url;
+    static get activeRemoteInfo(){
+        if(!RepoUtils.repositoryDetails.remotes.length)
+            return undefined;
+        const orignName = RepoUtils.repositoryDetails.repoInfo.activeOrigin;
+        const remote = RepoUtils.repositoryDetails.remotes.find(_=> _.name === orignName);
+        if(!remote){
+            return RepoUtils.repositoryDetails.remotes[0];
+        }
+        return remote;
     }
 
     static enSureUpdate(repoPath:string){
