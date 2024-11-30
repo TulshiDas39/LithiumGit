@@ -504,6 +504,12 @@ export class RepoUtils{
         return orignName;
     }
 
+    static get activeOriginUrl(){
+        const name = RepoUtils.activeOriginName;
+        const url = RepoUtils.repositoryDetails.remotes.find(_=> _.name === name);
+        return url?.url;
+    }
+
     static enSureUpdate(repoPath:string){
         return new Promise((res)=>{
             let trycount = 0;

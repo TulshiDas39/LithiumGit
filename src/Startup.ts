@@ -11,6 +11,7 @@ import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
 import { Env } from "./types";
+import { ShellManager } from "./businessClasses/ShellManager";
 
 export class Startup{
     private readonly uiPort = Config.UI_PORT;
@@ -157,6 +158,7 @@ export class Startup{
       new DataManager().start();
       new GitManager().start();
       new FileManager().start();
+      new ShellManager().start();
     }
 
 }

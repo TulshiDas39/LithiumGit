@@ -1,16 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
 import { ActionSavedData } from "../../store";
 import { EnumTheme } from "common_library";
+import { RepoUtils } from "../../lib";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 function FooterNavComponent(){
     const store = useSelectorTyped(state=>({
         loader:state.ui.loaders,
         sync:state.ui.synch,
-        theme:state.savedData.configInfo.theme,                
+        theme:state.savedData.configInfo.theme,
+        repo:state.savedData.recentRepositories.find(_=>_.isSelected),
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -29,10 +32,17 @@ function FooterNavComponent(){
     useEffect(()=>{
         refData.current.isMounted = true;
     },[])
+    const openOrigin=()=>{
+        const url = RepoUtils.activeOriginUrl
+        if(url){
+            IpcUtils.openLink(url);
+        }
+    }
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-5">
-            <div className="d-flex">
-                <span>LithiumGit</span>
+            <div className="d-flex align-items-center">
+                {!!store.repo && <span className="hover-color cur-point ps-1 overflow-ellipsis" title={store.repo.activeOriginUrl} style={{maxWidth:'120px'}}
+                    onClick={()=>openOrigin()}>{store.repo.activeOrigin}</span>}
                 {!!store.sync && (
                     <div className="ps-3 d-flex align-items-center">
                         <FaSpinner className="spinner" />

@@ -301,5 +301,9 @@ export class IpcUtils{
     static updateConfig(config:IConfigInfo){
         return IpcUtils.execute(RendererEvents.updateConfig,[config]);
     }
+
+    static openLink(url:string){
+        return IpcUtils.execute(RendererEvents.openLink,[url]);
+    }
     
 }
