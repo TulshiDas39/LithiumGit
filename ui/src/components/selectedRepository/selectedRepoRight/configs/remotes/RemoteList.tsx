@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useRef } from "react"
 import { useSelectorTyped } from "../../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AddRemote } from "./AddRemote";
@@ -23,11 +23,20 @@ interface ISingleRemoteProps{
 interface ISingleRemoteState{
     isEditing:boolean;
     value:string;
+    rightWidth:number;
+    leftWidth?:string;
 }
 
 function SingleRemote(props:ISingleRemoteProps){
-    const [state,setState] = useMultiState<ISingleRemoteState>({isEditing:false,value:props.url});
+    const rightWidth  = 130;
+    const [state,setState] = useMultiState<ISingleRemoteState>({isEditing:false,
+        value:props.url,
+        rightWidth:rightWidth,
+        leftWidth:`calc(100% - ${rightWidth}px)`
+    });
     const dispatch = useDispatch();
+
+    // const refData = useRef({rightWidht:120});
     const handleSave = ()=>{
         setState({isEditing:false});
         props.onUpdate(state.value);
@@ -49,6 +58,13 @@ function SingleRemote(props:ISingleRemoteProps){
     useEffect(()=>{
         setState({value:props.url});
     },[props.url]);
+    useEffect(()=>{
+        if(state.isEditing){
+            setState({leftWidth:'100%'})
+        }else{
+            setState({leftWidth:`calc(100% - ${rightWidth}px)`})
+        }
+    },[state.isEditing])
 
     const copyUrl = ()=>{
         UiUtils.copy(props.url);
@@ -57,20 +73,12 @@ function SingleRemote(props:ISingleRemoteProps){
     }
 
     return <div className="d-flex border w-100 align-items-center">
-    <div className="flex-grow-1">
+    <div style={{width:state.leftWidth}} className="overflow-hidden">
         <div className="d-flex">
             <b className="">{props.name}</b>
         </div>
-        <div>
-            {!state.isEditing && <span className="d-flex">
-                <span>{props.url}</span>
-                <span className="ps-1 small">
-                    <span className="small hover" onClick={ () => copyUrl()}>
-                        <FaCopy className="click-effect" />
-                    </span>
-                </span>
-            </span>
-            }
+        <div className="w-100 overflow-ellipsis">
+            {!state.isEditing && <span className="w-100">{props.url}</span>}
             {state.isEditing && 
             <div className="d-flex align-items-center pt-1">
                 <Form.Control type="text" value={state.value} onChange={e=> setState({value:e.target.value})} />
@@ -85,11 +93,16 @@ function SingleRemote(props:ISingleRemoteProps){
             }
         </div>
     </div>
-    {!state.isEditing && <div className="px-2">
+    {!state.isEditing && <div className="ps-4 pe-2 text-end" style={{width:state.rightWidth }}>
+        <span className="hover pe-3" onClick={ () => copyUrl()}>
+            <FaCopy title="Copy url" className="click-effect" />
+        </span>
         <span className="pe-3">
             <FaPen className="text-primary" onClick={()=> setState({isEditing:true})}/>
         </span>
-        <FaTrash className="text-danger hover-brighter" title="Remove" onClick={_=> handleRemove()} />
+        <span className="ps-3">
+            <FaTrash className="text-danger hover-brighter" title="Remove" onClick={_=> handleRemove()} />
+        </span>
     </div>}    
 
 </div>

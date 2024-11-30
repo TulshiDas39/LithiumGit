@@ -10,7 +10,7 @@ function ConfigRightComponent(){
         tab:state.ui.configTab,
     }),shallowEqual);
 
-    return <div className="h-100 w-100">
+    return <div className="h-100" style={{width:`calc(100% - 100px)`}}>
         {store.tab === EnumConfigTab.USER && <UserConfig />}
         {store.tab === EnumConfigTab.REMOTES && <RemoteList />}
     </div>

@@ -519,7 +519,7 @@ export class RepoUtils{
         return new Promise((res)=>{
             let trycount = 0;
             const timer = setInterval(()=>{
-                if(RepoUtils.repositoryDetails.repoInfo.path == repoPath || trycount > 10){
+                if(RepoUtils.repositoryDetails?.repoInfo.path == repoPath || trycount > 10){
                     clearInterval(timer);
                     res(true);
                 }
