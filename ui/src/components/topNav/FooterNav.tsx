@@ -66,7 +66,7 @@ function FooterNavComponent(){
             <div className="d-flex align-items-center">
                 {!!state.remote && <span className="ps-1 d-flex">
                         <span onClick={()=>openOrigin()} className="hover-color cur-point overflow-ellipsis" title={state.remote.url} style={{maxWidth:'120px'}}>{state.remote.name}</span>
-                        <span className="ps-1 small"> <span onClick={()=>copyOrigin()} title="Copy origin" className="small hover-color cur-point overflow-ellipsis"><FaCopy /></span></span>
+                        <span className="ps-1 small"> <span onClick={()=>copyOrigin()} title="Copy origin" className="small hover-color cur-point overflow-ellipsis"><FaCopy className="click-effect" /></span></span>
                     </span>}
                 {!!store.sync && (
                     <div className="ps-3 d-flex align-items-center">
