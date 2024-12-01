@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { EnumTheme, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { RepoUtils } from "../../lib";
+import { CacheUtils, RepoUtils } from "../../lib";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
@@ -88,7 +88,7 @@ const SavedDataSlice = createSlice({
             repo!.activeOrigin = action.payload;            
             RepoUtils.repositoryDetails.repoInfo.activeOrigin = action.payload;
             IpcUtils.updateRepository(RepoUtils.repositoryDetails.repoInfo);
-            // CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
         }
 
     }

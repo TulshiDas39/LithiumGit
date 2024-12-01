@@ -1,8 +1,8 @@
-import { Annotation, Constants, createAnnotation, createBranchDetailsObj, createMergeLineObj, EnumAnnotationType, IBranchDetails, IBranchRemote, ICommitInfo, IHeadCommitInfo, ILastReference, IRepositoryDetails, IStatus, RepositoryInfo } from "common_library";
+import { Annotation, createAnnotation, createBranchDetailsObj, createMergeLineObj, EnumAnnotationType, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, RepositoryInfo } from "common_library";
 import { IViewBox } from "../interfaces";
 import { ArrayUtils } from "./ArrayUtils";
-import { Data } from "../data";
-import { IpcUtils } from "./IpcUtils";
+ import { Data } from "../data/Data";
+ import { IpcUtils } from "./IpcUtils";
 
 export class RepoUtils{
     static selectedRepo:RepositoryInfo = null!;
