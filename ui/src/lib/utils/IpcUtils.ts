@@ -192,7 +192,7 @@ export class IpcUtils{
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.selectedRepo,remoteName);
+        return IpcUtils.execute(RendererEvents.gitRemoveRemote,[RepoUtils.selectedRepo,remoteName]);        
     }
 
     static async getRemoteList(){

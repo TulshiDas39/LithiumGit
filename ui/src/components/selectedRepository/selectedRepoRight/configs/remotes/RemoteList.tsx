@@ -134,6 +134,10 @@ function RemoteListComponent(){
     },[])
 
     const handleRemove = (remote:IRemoteInfo)=>{
+        if(remote.name === store.activeOrigin && store.remotes.length > 1){
+            const newActiveOrigin = store.remotes.filter(_=>_.name !== store.activeOrigin)[0].name;
+            dispatch(ActionSavedData.setActiveOrigin(newActiveOrigin));
+        }
         IpcUtils.removeRemote(remote.name).then(_=>{
             dispatch(ActionUI.increamentVersion("remoteList"));
         })        
