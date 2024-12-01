@@ -288,8 +288,8 @@ export class IpcUtils{
         return r;
     }
 
-    static async addAnnotation(annot:Annotation){
-        const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
+    static async addAnnotation(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.addAnnotation,[annots]);
         return r;
     }
 

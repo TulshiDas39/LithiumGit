@@ -47,11 +47,8 @@ export class DataManager{
     }
 
     private handleAnnotationAdd(){
-        ipcMain.handle(RendererEvents.addAnnotation, async(e,annot:Annotation) => {
-            const existing = await DB.annotation.findOneAsync({repoId:annot.repoId,type:annot.type,value:annot.value});
-            if(existing)
-                return;
-            await DB.annotation.insertOne(annot);
+        ipcMain.handle(RendererEvents.addAnnotation, async(_e,annots:Annotation[]) => {            
+            await DB.annotation.insertManyAsync(annots);
         });
     }
 

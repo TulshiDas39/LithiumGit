@@ -1,6 +1,8 @@
-import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, IHeadCommitInfo, ILastReference, IRepositoryDetails, IStatus, RepositoryInfo } from "common_library";
+import { Annotation, Constants, createAnnotation, createBranchDetailsObj, createMergeLineObj, EnumAnnotationType, IBranchDetails, IBranchRemote, ICommitInfo, IHeadCommitInfo, ILastReference, IRepositoryDetails, IStatus, RepositoryInfo } from "common_library";
 import { IViewBox } from "../interfaces";
 import { ArrayUtils } from "./ArrayUtils";
+import { Data } from "../data";
+import { IpcUtils } from "./IpcUtils";
 
 export class RepoUtils{
     static selectedRepo:RepositoryInfo = null!;
@@ -526,5 +528,26 @@ export class RepoUtils{
                 trycount++;
             },500)
         })
+    }
+
+    static syncBranches(){
+        const brList = RepoUtils.repositoryDetails.branchList;
+        const savedBrList = Data.annotations.filter(_ => _.type === EnumAnnotationType.Branch).map(_=>_.value);
+        const newBrList = brList.filter(_=> !savedBrList.includes(_));
+        if(newBrList.length){
+            const newAnnots:Annotation[]=[];
+            for(let br of newBrList){
+                const newAnnot = createAnnotation({
+                    repoId:RepoUtils.repositoryDetails.repoInfo._id,
+                    type: EnumAnnotationType.Branch,
+                    value:br
+                });
+                newAnnots.push(newAnnot);
+                Data.annotations.push(newAnnot);
+            }
+            IpcUtils.addAnnotation(newAnnots);            
+            
+        }
+        
     }
 }
