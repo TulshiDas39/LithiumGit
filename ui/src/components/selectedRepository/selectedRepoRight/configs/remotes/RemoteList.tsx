@@ -112,7 +112,7 @@ function SingleRemote(props:ISingleRemoteProps){
                 <FaEllipsisH />
             </Dropdown.Toggle>
             <Dropdown.Menu className="no-radius">
-                <Dropdown.Item onClick={() => setAsDefault()} className="">Set as default</Dropdown.Item>
+                {!props.isDefault && <Dropdown.Item onClick={() => setAsDefault()} className="">Set as default</Dropdown.Item>}
                 <Dropdown.Item onClick={() => copyUrl()} className="">Copy url</Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>
