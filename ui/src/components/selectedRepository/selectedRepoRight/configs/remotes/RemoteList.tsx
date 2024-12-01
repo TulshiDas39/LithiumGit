@@ -1,24 +1,23 @@
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { useSelectorTyped } from "../../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { AddRemote } from "./AddRemote";
 import { ActionUI } from "../../../../../store/slices/UiSlice";
-import { FaCopy, FaEllipsisH, FaPen, FaTrash } from "react-icons/fa";
+import { FaEllipsisH, FaPen, FaTrash } from "react-icons/fa";
 import { IRemoteInfo } from "common_library";
 import { IpcUtils } from "../../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../../modals/ModalData";
-import { ActionModals } from "../../../../../store";
+import { ActionModals, ActionSavedData } from "../../../../../store";
 import { EnumModals, UiUtils, useMultiState } from "../../../../../lib";
 import { Dropdown, Form } from "react-bootstrap";
 import { AppButton } from "../../../../common";
-import DropdownItem from "react-bootstrap/esm/DropdownItem";
 
 interface ISingleRemoteProps{
     url:string;
     name:string;
     handleRemove:()=>void;
     onUpdate:(url:string)=>void;
-
+    isDefault:boolean;
 }
 
 interface ISingleRemoteState{
@@ -73,10 +72,16 @@ function SingleRemote(props:ISingleRemoteProps){
         dispatch(ActionModals.showToast());
     }
 
+    const setAsDefault=()=>{
+        dispatch(ActionSavedData.setActiveOrigin(props.name));
+    }
+
+
     return <div className="d-flex border w-100 align-items-center">
     <div style={{width:state.leftWidth}} className="overflow-hidden">
         <div className="d-flex">
             <b className="">{props.name}</b>
+            {props.isDefault && <span className="small ps-1">(default)</span>}
         </div>
         <div className="w-100 overflow-ellipsis">
             {!state.isEditing && <span className="w-100">{props.url}</span>}
@@ -107,7 +112,7 @@ function SingleRemote(props:ISingleRemoteProps){
                 <FaEllipsisH />
             </Dropdown.Toggle>
             <Dropdown.Menu className="no-radius">
-                <Dropdown.Item onClick={() => {}} className="">Set as default</Dropdown.Item>
+                <Dropdown.Item onClick={() => setAsDefault()} className="">Set as default</Dropdown.Item>
                 <Dropdown.Item onClick={() => copyUrl()} className="">Copy url</Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>
@@ -119,6 +124,7 @@ function SingleRemote(props:ISingleRemoteProps){
 function RemoteListComponent(){
     const store = useSelectorTyped(state=>({
         remotes:state.ui.remotes,
+        activeOrigin:state.savedData.recentRepositories.find(_=>_.isSelected)?.activeOrigin,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -146,7 +152,8 @@ function RemoteListComponent(){
         {
             store.remotes.map(r=>(
                 <SingleRemote key={r.url+r.name} handleRemove={()=> handleRemove(r)} name={r.name} url={r.url}
-                    onUpdate={(url)=> handleUpdate(r,url)} />
+                    onUpdate={(url)=> handleUpdate(r,url)}
+                    isDefault={store.activeOrigin === r.name} />
             ))
         }
     </div>

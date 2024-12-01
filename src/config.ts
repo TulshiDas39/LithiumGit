@@ -2,5 +2,5 @@ import { Env } from "./types";
 
 export class Config{
     static readonly env:Env=Env.DEVELOPMENT;
-    static readonly UI_PORT = 58593;
+    static readonly UI_PORT = 57631;
 }
