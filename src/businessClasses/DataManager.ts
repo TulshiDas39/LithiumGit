@@ -16,6 +16,7 @@ export class DataManager{
         this.handleSavedDataRequest();
         this.handleAnnotationsRequest();
         this.handleAnnotationAdd();
+        this.handleAnnotationDelete();
         this.handleConfigUpdate();
 
     }
@@ -49,6 +50,14 @@ export class DataManager{
     private handleAnnotationAdd(){
         ipcMain.handle(RendererEvents.addAnnotation, async(_e,annots:Annotation[]) => {            
             await DB.annotation.insertManyAsync(annots);
+        });
+    }
+
+    private handleAnnotationDelete(){
+        ipcMain.handle(RendererEvents.removeAnnotation, async(_e,annots:Annotation[]) => {            
+            for(let annot of annots){
+                await DB.annotation.deleteAsync(annot);
+            }
         });
     }
 

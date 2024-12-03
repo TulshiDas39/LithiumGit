@@ -293,6 +293,11 @@ export class IpcUtils{
         return r;
     }
 
+    static async deleteAnnotations(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.removeAnnotation,[annots]);
+        return r;
+    }
+
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
         const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;

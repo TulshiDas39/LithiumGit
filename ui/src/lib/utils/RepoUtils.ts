@@ -548,6 +548,9 @@ export class RepoUtils{
             IpcUtils.addAnnotation(newAnnots);            
             
         }
-        
+        const deletedBranches = Data.annotations.filter(_ => !_.value.startsWith(RepoUtils.remoteBranchNamePrefix+"/") && !brList.includes(_.value));
+        if(deletedBranches.length){
+            IpcUtils.deleteAnnotations(deletedBranches);
+        }
     }
 }
