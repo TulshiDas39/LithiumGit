@@ -153,6 +153,7 @@ export class RepoUtils{
     }
 
     private static finaliseSourceCommits(repoDetails:IRepositoryDetails) {
+        const branchAnnots = Data.annotations.filter(_=> _.type === EnumAnnotationType.Branch);
     	for (let i = repoDetails.sourceCommits.length-1; i>=0; i--) {
     		let sourceCommit = repoDetails.sourceCommits[i];			
 			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
@@ -170,6 +171,10 @@ export class RepoUtils{
                     if(mainBranchNames.includes(br.name)){
                         realOwnerBranch = br;
                         break;
+                    }
+                    if(branchAnnots.some(ann=> ann.value == br.name && ann.createdAt < sourceCommit.date)){
+                        realOwnerBranch = br;
+					    break;
                     }
 					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date)){
                         realOwnerBranch = br;
@@ -530,7 +535,7 @@ export class RepoUtils{
         })
     }
 
-    static syncBranches(){
+    static syncBranchHistory(){
         const brList = RepoUtils.repositoryDetails.branchList;
         const savedBrList = Data.annotations.filter(_ => _.type === EnumAnnotationType.Branch).map(_=>_.value);
         const newBrList = brList.filter(_=> !savedBrList.includes(_));
@@ -548,7 +553,7 @@ export class RepoUtils{
             IpcUtils.addAnnotation(newAnnots);            
             
         }
-        const deletedBranches = Data.annotations.filter(_ => !_.value.startsWith(RepoUtils.remoteBranchNamePrefix+"/") && !brList.includes(_.value));
+        const deletedBranches = Data.annotations.filter(_ => !brList.includes(_.value));
         if(deletedBranches.length){
             IpcUtils.deleteAnnotations(deletedBranches);
         }
