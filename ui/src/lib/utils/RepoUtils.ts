@@ -541,12 +541,14 @@ export class RepoUtils{
         const newBrList = brList.filter(_=> !savedBrList.includes(_));
         if(newBrList.length){
             const newAnnots:Annotation[]=[];
+            const date = new Date().toISOString();
             for(let br of newBrList){
                 const newAnnot = createAnnotation({
                     repoId:RepoUtils.repositoryDetails.repoInfo._id,
                     type: EnumAnnotationType.Branch,
                     value:br
                 });
+                newAnnot.createdAt = date;
                 newAnnots.push(newAnnot);
                 Data.annotations.push(newAnnot);
             }
