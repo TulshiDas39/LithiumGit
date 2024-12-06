@@ -8,7 +8,7 @@ export class RepoUtils{
     static selectedRepo:RepositoryInfo = null!;
     static repositoryDetails:IRepositoryDetails = null!;    
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
-    static readonly remoteBranchNamePrefix = "remotes"
+    static readonly remoteBranchNamePrefix = "remotes/"
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
     static readonly commitRadius = RepoUtils.branchPanelFontSize;
@@ -171,15 +171,15 @@ export class RepoUtils{
                     if(mainBranchNames.includes(br.name)){
                         realOwnerBranch = br;
                         break;
-                    }
-                    if(branchAnnots.some(ann=> ann.value == br.name && ann.createdAt < sourceCommit.date)){
-                        realOwnerBranch = br;
-					    break;
-                    }
+                    }                    
 					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date)){
                         realOwnerBranch = br;
 					    break;
                     }
+                    if(branchAnnots.some(ann=> ann.value == br.name && ann.createdAt < sourceCommit.date)){
+                        realOwnerBranch = br;
+					    break;
+                    }                    
 				}
 			}					
 			
@@ -356,7 +356,7 @@ export class RepoUtils{
     private static isBranch(str:string,repoDetails:IRepositoryDetails){
         if(repoDetails.branchList.includes(str)) return true;
         if(str.includes('/')) {
-            str = this.remoteBranchNamePrefix +"/"+str;
+            str = this.remoteBranchNamePrefix+str;
             if(repoDetails.branchList.includes(str)) return true;
         }
         return false;
@@ -471,8 +471,8 @@ export class RepoUtils{
     }
 
     static isOriginBranch(str:string){
-        if(!str.startsWith("remotes/"))
-            str = "remotes/"+str;
+        if(!str.startsWith(RepoUtils.remoteBranchNamePrefix))
+            str = RepoUtils.remoteBranchNamePrefix+str;
         if(RepoUtils.repositoryDetails.branchList.includes(str))
             return true;
     }
@@ -488,8 +488,8 @@ export class RepoUtils{
 
     static getLocalBranch(originBranch:string){
         let localBranch = originBranch;
-        if(originBranch.startsWith("remotes/")){
-            localBranch = localBranch.substring("remotes/".length);            
+        if(originBranch.startsWith(RepoUtils.remoteBranchNamePrefix)){
+            localBranch = localBranch.substring(RepoUtils.remoteBranchNamePrefix.length);            
         }
         const remotes = RepoUtils.repositoryDetails.remotes;
         const remote = remotes.find(_ => localBranch.startsWith(`${_.name}/`))
