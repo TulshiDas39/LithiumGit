@@ -247,8 +247,8 @@ html {
   }
 
   .outline-none{
-    outline: none;
-    border: 0;
+    outline: none !important;
+    border: 0 !important;
   }
 
   .outline-none-focus:focus{  
