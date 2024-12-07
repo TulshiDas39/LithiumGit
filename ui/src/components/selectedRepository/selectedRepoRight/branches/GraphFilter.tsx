@@ -2,9 +2,11 @@ import React, { useRef } from "react"
 import { FaBuffer } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
+import DatePicker from "react-datepicker";
 
 interface IState{
     show:boolean;
+    selectedDate?:string;
 }
 
 function GraphFilterComponent(){
@@ -34,7 +36,11 @@ function GraphFilterComponent(){
               ...props.style,
             }}
           >
-            Simple tooltip
+            <div className="d-flex">
+                <div>
+                    <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                </div>
+            </div>
           </div>
         )}
       </Overlay>
