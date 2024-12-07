@@ -7,7 +7,8 @@ import { AppButton } from "../../../common";
 
 interface IState{
     show:boolean;
-    selectedDate?:string;
+    fromDate?:string;
+    toDate?:string;
 }
 
 function GraphFilterComponent(){
@@ -41,11 +42,11 @@ function GraphFilterComponent(){
                 <div className="d-flex align-items-center">
                     <div className="d-flex align-items-center">
                         <span>From:</span>
-                        <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                        <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => setState({fromDate:date?.toISOString()})} />
                     </div>
-                    <div className="d-flex align-items-center">
+                    <div className="ps-2 d-flex align-items-center">
                         <span>To:</span>
-                        <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                        <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => setState({toDate:date?.toISOString()})} />
                     </div>
                 </div>
                 <div className="row g-0 py-2">
