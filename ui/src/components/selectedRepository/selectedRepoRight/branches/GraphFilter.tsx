@@ -3,6 +3,7 @@ import { FaBuffer } from "react-icons/fa";
 import { useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
 import DatePicker from "react-datepicker";
+import { AppButton } from "../../../common";
 
 interface IState{
     show:boolean;
@@ -36,16 +37,28 @@ function GraphFilterComponent(){
               ...props.style,
             }}
           >
-            <div className="d-flex align-items-center">
+            <div className="pt-3">
                 <div className="d-flex align-items-center">
-                    <span>From:</span>
-                    <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                    <div className="d-flex align-items-center">
+                        <span>From:</span>
+                        <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                    </div>
+                    <div className="d-flex align-items-center">
+                        <span>To:</span>
+                        <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                    </div>
                 </div>
-                <div className="d-flex align-items-center">
-                    <span>To:</span>
-                    <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                <div className="row g-0 py-2">
+                    <div className="col-4"></div>
+                    <div className="col-4 d-flex justify-content-center">
+                        <AppButton className="">Apply</AppButton>
+                        <span className="px-2" />
+                        <AppButton className="">Reset</AppButton>
+                    </div>
+                    <div className="col-4"></div>                    
                 </div>
             </div>
+            
           </div>
         )}
       </Overlay>
