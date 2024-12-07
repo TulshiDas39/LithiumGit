@@ -12,7 +12,7 @@ interface IState{
 function GraphFilterComponent(){
     const [state,setState] = useMultiState<IState>({show:false});
     const target = useRef<HTMLElement>(null!);
-    return <div>
+    return <div className="bg-color">
         <span ref={target} onClick={() => setState({show:!state.show})}>
             <FaBuffer />
         </span>
@@ -28,7 +28,7 @@ function GraphFilterComponent(){
         }) => (
           <div
             {...props}
-            className="border"
+            className="bg-color border"
             style={{
               position: 'absolute',
               padding: '2px 10px',
@@ -36,8 +36,13 @@ function GraphFilterComponent(){
               ...props.style,
             }}
           >
-            <div className="d-flex">
-                <div>
+            <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center">
+                    <span>From:</span>
+                    <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
+                </div>
+                <div className="d-flex align-items-center">
+                    <span>To:</span>
                     <DatePicker selected={state.selectedDate? new Date(state.selectedDate):null} onChange={(date) => setState({selectedDate:date?.toISOString()})} />
                 </div>
             </div>
