@@ -121,7 +121,7 @@ html {
     font-family: 'Consolas';
   }
 
-  input[type="text"],textarea,input[type="text"]:focus,textarea:focus{
+  input[type="text"],input[type="number"],textarea,input[type="text"]:focus,textarea:focus{
     background-color: var(--bg-color);
     color: var(--font-color);
     outline: none;

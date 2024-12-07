@@ -9,6 +9,7 @@ interface IState{
     show:boolean;
     fromDate?:string;
     toDate?:string;
+    at?:string;
 }
 
 function GraphFilterComponent(){
@@ -39,7 +40,7 @@ function GraphFilterComponent(){
             }}
           >
             <div className="pt-3">
-                <div className="d-flex align-items-center">
+                <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>From:</span>
                         <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => setState({fromDate:date?.toISOString()})} />
@@ -49,7 +50,19 @@ function GraphFilterComponent(){
                         <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => setState({toDate:date?.toISOString()})} />
                     </div>
                 </div>
-                <div className="row g-0 py-2">
+                <div className="text-center py-2">or</div>
+                <div className="d-flex align-items-center justify-content-center">
+                    <div className="d-flex align-items-center">
+                        <span>At:</span>
+                        <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => setState({at:date?.toISOString()})} />
+                    </div>
+                    <div className="px-2" />
+                    <div className="d-flex align-items-center">
+                        <span>Commit count:</span>
+                        <input type="number" />
+                    </div>
+                </div>
+                <div className="row g-0 py-3">
                     <div className="col-4"></div>
                     <div className="col-4 d-flex justify-content-center">
                         <AppButton className="">Apply</AppButton>
