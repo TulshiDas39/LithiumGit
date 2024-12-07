@@ -14,7 +14,8 @@ function GraphFilterComponent(){
         <span ref={target} onClick={() => setState({show:!state.show})}>
             <FaBuffer />
         </span>
-        <Overlay target={target.current} show={state.show} placement="right">
+        <Overlay target={target.current} show={state.show} placement="bottom"
+            rootClose={true} rootCloseEvent="click" onHide={() => setState({show:!state.show})}>
         {({
           placement: _placement,
           arrowProps: _arrowProps,
@@ -25,12 +26,11 @@ function GraphFilterComponent(){
         }) => (
           <div
             {...props}
+            className="border"
             style={{
               position: 'absolute',
-              backgroundColor: 'rgba(255, 100, 100, 0.85)',
               padding: '2px 10px',
-              color: 'white',
-              borderRadius: 3,
+              borderRadius: 3,              
               ...props.style,
             }}
           >
