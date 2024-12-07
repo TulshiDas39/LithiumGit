@@ -176,7 +176,7 @@ export class RepoUtils{
                         realOwnerBranch = br;
 					    break;
                     }
-                    if(branchAnnots.some(ann=> ann.value == br.name && ann.createdAt < sourceCommit.date)){
+                    if(branchAnnots.some(ann => RepoUtils.getLocalBranch(ann.value) == br.name && ann.createdAt < sourceCommit.date)){
                         realOwnerBranch = br;
 					    break;
                     }                    
