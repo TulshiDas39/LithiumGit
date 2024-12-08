@@ -10,6 +10,7 @@ interface IState{
     fromDate?:string;
     toDate?:string;
     at?:string;
+    commitCount?:number;
 }
 
 function GraphFilterComponent(){
@@ -59,7 +60,7 @@ function GraphFilterComponent(){
                     <div className="px-2" />
                     <div className="d-flex align-items-center">
                         <span>Commit count:</span>
-                        <input type="number" />
+                        <input type="number" value={state.commitCount ?? ""} onChange={e=>setState({commitCount: e.target.value ? Number(e.target.value):null!})} />
                     </div>
                 </div>
                 <div className="row g-0 py-3">
