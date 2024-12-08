@@ -62,8 +62,9 @@ function GraphFilterComponent(){
 
     const handleApply = ()=>{
         if(!isValid){
-            ModalData.errorModal.message = "Invalid filter data";
-            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            ModalData.appToast.message = "Invalid filter data";
+            ModalData.appToast.customClass = "bg-danger";
+            dispatch(ActionModals.showToast());
             return;
         }
         if(state.fromDate && state.toDate){
