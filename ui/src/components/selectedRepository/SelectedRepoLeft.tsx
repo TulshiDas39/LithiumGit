@@ -41,7 +41,7 @@ function SelectedRepoLeftComponent(){
                         onClick={()=> dispatch(ActionUI.setSelectedRepoTab(t.type))}>
                             <span className="">{t.text}</span>
                             {!!t.innerHtml && t.innerHtml}
-                            {!!t.marked && <span className="text-primary">*</span>}
+                            {!!t.marked && <span className="star">*</span>}
                     </span>
                 ))
             }

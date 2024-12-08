@@ -55,6 +55,7 @@ html {
     --modal-border:rgba(0,0,0,.2);
     --scroll-container-color:#6c757d;
     --bg-disabled:rgb(217, 217, 217);
+    --star-color:#0d6efd;
   }  
   
   html[data-theme='dark'] {
@@ -101,6 +102,7 @@ html {
     --modal-border:rgba(144, 141, 141, 0.2);
     --scroll-container-color:#444647;
     --bg-disabled:rgb(67, 66, 66);
+    --star-color:#0d6efd;
   }
 
   $valid-sides: top, bottom, start, end;
@@ -592,4 +594,8 @@ to {
 
 .scroll-container{
   background-color: var(--scroll-container-color);
+}
+
+.star{
+  color: var(--star-color);
 }

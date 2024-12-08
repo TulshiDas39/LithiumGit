@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { FaBuffer } from "react-icons/fa";
-import { EnumModals, GraphUtils, useMultiState } from "../../../../lib";
+import { GraphUtils, useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import { AppButton } from "../../../common";
 import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ICommitFilter } from "common_library";
 
 interface IState{
@@ -16,6 +15,7 @@ interface IState{
     toDate?:string;
     at?:string;
     commitCount?:string;
+    isModified?:boolean;
 }
 
 function GraphFilterComponent(){
@@ -37,7 +37,12 @@ function GraphFilterComponent(){
     useEffect(()=>{
         if(!state.show){
             const filter = GraphUtils.state.filter.value;
-            setState({at:filter.baseDate,commitCount:filter.limit?filter.limit+"":"",fromDate:filter.fromDate,toDate:filter.toDate});
+            setState({at:filter.baseDate,
+                commitCount:filter.limit?filter.limit+"":"",
+                fromDate:filter.fromDate,
+                toDate:filter.toDate,
+                isModified:!!filter.userModified,
+            });
         }
     },[state.show])
 
@@ -106,6 +111,7 @@ function GraphFilterComponent(){
     return <div className="bg-color">
         <span title="Filter" ref={target} onClick={() => setState({show:!state.show})}>
             <FaBuffer />
+            {!!state.isModified && <span className="star">*</span>}
         </span>
         <Overlay target={target.current} show={state.show} placement="bottom"
             rootClose={true} rootCloseEvent="click" onHide={() => setState({show:!state.show})}>
