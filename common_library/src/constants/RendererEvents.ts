@@ -282,5 +282,7 @@ export class RendererEvents{
     static readonly continueRebase = "continueRebase";
     static readonly remote = "remote";
     static readonly updateConfig = "updateConfig";
+    static readonly openLink = "openLink";
+    static readonly removeAnnotation = "removeAnnotation";
 }
 

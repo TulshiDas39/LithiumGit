@@ -192,7 +192,7 @@ export class IpcUtils{
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.selectedRepo,remoteName);
+        return IpcUtils.execute(RendererEvents.gitRemoveRemote,[RepoUtils.selectedRepo,remoteName]);        
     }
 
     static async getRemoteList(){
@@ -288,8 +288,13 @@ export class IpcUtils{
         return r;
     }
 
-    static async addAnnotation(annot:Annotation){
-        const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
+    static async addAnnotation(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.addAnnotation,[annots]);
+        return r;
+    }
+
+    static async deleteAnnotations(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.removeAnnotation,[annots]);
         return r;
     }
 
@@ -300,6 +305,10 @@ export class IpcUtils{
 
     static updateConfig(config:IConfigInfo){
         return IpcUtils.execute(RendererEvents.updateConfig,[config]);
+    }
+
+    static openLink(url:string){
+        return IpcUtils.execute(RendererEvents.openLink,[url]);
     }
     
 }

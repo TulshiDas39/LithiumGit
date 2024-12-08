@@ -80,7 +80,7 @@ function MoreOptionsComponent(props:IProps){
                                 <span>&gt;</span>
                             </div>
                             
-                            {(props.mouseOver === Option.DeleteBranch) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                            {(props.mouseOver === Option.DeleteBranch) && <div className="position-absolute border bg-color" style={{left:'100%',top:0}}>
                                 {
                                     branchNamesForDelete.map((br=>(
                                         <div key={br} className="border-bottom py-1 px-3 ">

@@ -64,6 +64,7 @@ function SelectedRepositoryComponent(props:ISelectedRepositoryProps){
         else{
             RepoUtils.repositoryDetails.status = status;            
         }
+        RepoUtils.syncBranchHistory();
         CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
     }    
 

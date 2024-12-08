@@ -1,12 +1,10 @@
-import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
-import React, { Fragment, useEffect, useMemo, useRef } from "react";
-import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeType, IFile, RepositoryInfo, StringUtils } from "common_library";
+import React, { Fragment, useEffect, useRef } from "react";
+import { FaMinus } from "react-icons/fa";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ActionChanges } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";

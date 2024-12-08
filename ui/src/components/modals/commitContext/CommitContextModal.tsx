@@ -1,23 +1,11 @@
-import { EnumChangeGroup, IStatus, RendererEvents } from "common_library";
-import React, { Fragment, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { FaCodeBranch, FaRegPaperPlane } from "react-icons/fa";
-import { EnumModals, EnumSelectedRepoTab, GraphUtils, IPositition, ReduxUtils, RepoUtils, UiUtils, useMultiState } from "../../../lib";
-import { GitUtils } from "../../../lib/utils/GitUtils";
-import { IpcUtils } from "../../../lib/utils/IpcUtils";
-import { ActionModals, ActionChanges } from "../../../store";
+import { EnumModals, GraphUtils, IPositition, RepoUtils, UiUtils, useMultiState } from "../../../lib";
+import { ActionModals } from "../../../store";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { ActionUI } from "../../../store/slices/UiSlice";
 import { ModalData, InitialModalData } from "../ModalData";
 import { Option} from "./ContextData";
-import { Checkout } from "./Checkout";
-import { CreateBranch } from "./CreateBranch";
-import { MergeBranch } from "./MergeBranch";
-import { RebaseBranch } from "./RebaseBranch";
-import { CherryPick } from "./CherryPick";
-import { ShowMore } from "./ShowMore";
-import { MoreOptions } from "./MoreOptions";
 import { CommitOptions } from "./CommitOptions";
 import { MeregingCommitOptions } from "./MeregingCommitOptions";
 
@@ -123,4 +111,4 @@ function CommitContextModalComponent(){
     )
 }
 
-export const CommitContextModal2 = React.memo(CommitContextModalComponent);
+export const CommitContextModal = React.memo(CommitContextModalComponent);

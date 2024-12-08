@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -350,9 +350,10 @@ export class GitManager{
 
     setHead(repoDetails:IRepositoryDetails){
         const status = repoDetails.status;
-        const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash);
+        const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash) as IHeadCommitInfo;
         if(!head) return;
         head.isHead = true;
+        head.isDetached = status.headCommit.isDetached;
         repoDetails.headCommit = head;        
     }
 
@@ -443,9 +444,10 @@ export class GitManager{
 
         result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
-        result.headCommit = await this.getCommitInfo(git,undefined);
+        result.headCommit = (await this.getCommitInfo(git,undefined)) as IHeadCommitInfo;
         if(!result.headCommit)
             return result;
+        result.headCommit.isDetached = status.detached;
         result.mergingCommitHash = await this.getMergingInfo(git);
         if(!result.mergingCommitHash){
             result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");

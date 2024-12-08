@@ -58,7 +58,7 @@ function PullFromModalComponent(){
             type:EnumAnnotationType.PullFrom,
             value:state.branch
         });
-        IpcUtils.addAnnotation(newAnnot).then(r=>{
+        IpcUtils.addAnnotation([newAnnot]).then(r=>{
             if(!r.error){
                 const annots =[...annotations,newAnnot];
                 Data.annotations = annots;

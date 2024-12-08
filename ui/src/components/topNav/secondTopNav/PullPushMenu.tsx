@@ -183,7 +183,7 @@ function PullPushMenuComponent(){
                             onClick={handlePushCaretClick}>
                             <span className=""><FaCaretDown /></span> 
                         </AppButton>
-                        {state.showPushTo && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
+                        {state.showPushTo && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0,zIndex:99}}
                             onClick={handlePushTo}>
                             <span className="text-nowrap">Push To &gt;</span>
                         </div>}
@@ -203,7 +203,7 @@ function PullPushMenuComponent(){
                         <span> <FaCaretDown /></span>
                     </AppButton>
                 
-                    {state.showPullFrom && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
+                    {state.showPullFrom && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0,zIndex:99}}
                         onClick={handlePullFrom}>
                         <span className="text-nowrap">Pull From &gt;</span>
                     </div>}
@@ -222,7 +222,7 @@ function PullPushMenuComponent(){
                         onClick={handleFetchCaretClick}>
                         <span> <FaCaretDown /></span>
                     </AppButton>
-                    {state.showFetchAll && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0}}
+                    {state.showFetchAll && <div className="position-absolute py-1 px-2 default-button" style={{top:'105%', right:0,zIndex:99}}
                         onClick={_=> handleFetch(true)}>
                         <span className="text-nowrap">Fetch all</span>
                     </div>}

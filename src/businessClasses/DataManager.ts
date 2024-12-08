@@ -16,6 +16,7 @@ export class DataManager{
         this.handleSavedDataRequest();
         this.handleAnnotationsRequest();
         this.handleAnnotationAdd();
+        this.handleAnnotationDelete();
         this.handleConfigUpdate();
 
     }
@@ -47,11 +48,16 @@ export class DataManager{
     }
 
     private handleAnnotationAdd(){
-        ipcMain.handle(RendererEvents.addAnnotation, async(e,annot:Annotation) => {
-            const existing = await DB.annotation.findOneAsync({repoId:annot.repoId,type:annot.type,value:annot.value});
-            if(existing)
-                return;
-            await DB.annotation.insertOne(annot);
+        ipcMain.handle(RendererEvents.addAnnotation, async(_e,annots:Annotation[]) => {            
+            await DB.annotation.insertManyAsync(annots);
+        });
+    }
+
+    private handleAnnotationDelete(){
+        ipcMain.handle(RendererEvents.removeAnnotation, async(_e,annots:Annotation[]) => {            
+            for(let annot of annots){
+                await DB.annotation.deleteAsync(annot);
+            }
         });
     }
 
