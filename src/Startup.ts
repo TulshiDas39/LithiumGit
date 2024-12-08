@@ -85,7 +85,7 @@ export class Startup{
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
       }
       if(!SavedData.data.configInfo.theme){
-        SavedData.data.configInfo.theme = EnumTheme.Light;
+        SavedData.data.configInfo.theme = EnumTheme.Dark;
       }
     }
 
