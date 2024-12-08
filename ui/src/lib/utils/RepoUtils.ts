@@ -60,7 +60,7 @@ export class RepoUtils{
         for(let offset = 1;offset <= maxOffset;offset++){
             const branchesOfThisOffset = repoDetails.resolvedBranches.filter(_=> _.verticalOffset == offset);
             for(let branch of branchesOfThisOffset){
-                branch.y = y + (branch.maxRefCount* RepoUtils.branchPanelFontSize);
+                branch.y = y + ((branch.maxRefCount + 1)* RepoUtils.branchPanelFontSize);
             }
 
             y = ArrayUtils.findMax(branchesOfThisOffset.map(_=>_.y)) + RepoUtils.distanceBetweenBranchLine;
