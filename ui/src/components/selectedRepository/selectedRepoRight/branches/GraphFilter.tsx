@@ -45,6 +45,21 @@ function GraphFilterComponent(){
         return false;
     },[state.at,state.commitCount,state.fromDate,state.toDate])
 
+    const handleFromDateChange=(date:Date | null)=>{
+        setState({fromDate:date?.toISOString(),at:null!,commitCount:""});
+    }
+    const handleToDateChange=(date:Date | null)=>{
+        setState({toDate:date?.toISOString(),at:null!,commitCount:""});
+    }
+
+    const handleBaseDateChange=(date:Date | null)=>{
+        setState({at :date?.toISOString(),fromDate:null!,toDate:null!});
+    }
+
+    const handleCommitCountChange=(value:string | null)=>{
+        setState({commitCount: value ?? "",fromDate:null!,toDate:null!});
+    }
+
     const handleApply = ()=>{
         if(!isValid){
             ModalData.errorModal.message = "Invalid filter data";
@@ -57,7 +72,7 @@ function GraphFilterComponent(){
         if(state.at && state.commitCount){
             GraphUtils.state.filter.publish({userModified:true,baseDate:state.at,limit: Number(state.commitCount)});
         }
-
+        setState({show:false});
     }
 
 
@@ -90,23 +105,23 @@ function GraphFilterComponent(){
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>From:</span>
-                        <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => setState({fromDate:date?.toISOString()})} />
+                        <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)} />
                     </div>
                     <div className="ps-2 d-flex align-items-center">
                         <span>To:</span>
-                        <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => setState({toDate:date?.toISOString()})} />
+                        <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => handleToDateChange(date)} />
                     </div>
                 </div>
                 <div className="text-center py-2">or</div>
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>At:</span>
-                        <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => setState({at:date?.toISOString()})} />
+                        <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => handleBaseDateChange(date)} />
                     </div>
                     <div className="px-2" />
                     <div className="d-flex align-items-center">
                         <span>Commit count:</span>
-                        <input type="number" value={state.commitCount} onChange={e=>setState({commitCount:e.target.value})} />
+                        <input type="number" value={state.commitCount} onChange={e=> handleCommitCountChange(e.target.value)} />
                     </div>
                 </div>
                 <div className="row g-0 py-3">
