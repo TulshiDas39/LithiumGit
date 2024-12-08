@@ -53,10 +53,10 @@ function GraphFilterComponent(){
     },[state.at,state.commitCount,state.fromDate,state.toDate])
 
     const handleFromDateChange=(date:Date | null)=>{
-        setState({fromDate:date?.toISOString(),at:null!,commitCount:""});
+        setState({fromDate:date?.toISOString(),at:null!});
     }
     const handleToDateChange=(date:Date | null)=>{
-        setState({toDate:date?.toISOString(),at:null!,commitCount:""});
+        setState({toDate:date?.toISOString(),at:null!});
     }
 
     const handleBaseDateChange=(date:Date | null)=>{
@@ -80,6 +80,11 @@ function GraphFilterComponent(){
         if(state.at && state.commitCount){
             GraphUtils.state.filter.publish({userModified:true,baseDate:state.at,limit: Number(state.commitCount)});
         }
+        setState({show:false});
+    }
+
+    const handleReset=()=>{
+        GraphUtils.state.filter.reset();
         setState({show:false});
     }
 
@@ -139,7 +144,7 @@ function GraphFilterComponent(){
                     <div className="col-4 d-flex justify-content-center">
                         <AppButton className="" onClick={()=>handleApply()}>Apply</AppButton>
                         <span className="px-2" />
-                        <AppButton className="">Reset</AppButton>
+                        <AppButton className="" onClick={()=>handleReset()}>Reset</AppButton>
                     </div>
                     <div className="col-4"></div>                    
                 </div>
