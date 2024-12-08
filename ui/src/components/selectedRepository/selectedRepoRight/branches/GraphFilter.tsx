@@ -27,12 +27,19 @@ function GraphFilterComponent(){
             const commitCount = filter.limit ? filter.limit+"":"";
             setState({at:filter.baseDate,commitCount,fromDate:filter.fromDate,toDate:filter.toDate});
         }
-        GraphUtils.state.filter.subscribe(onFilterChange);
+        GraphUtils.state.filter.subscribe(onFilterChange);        
 
         return ()=>{
             GraphUtils.state.filter.unSubscribe(onFilterChange);
         }
     },[])
+
+    useEffect(()=>{
+        if(!state.show){
+            const filter = GraphUtils.state.filter.value;
+            setState({at:filter.baseDate,commitCount:filter.limit?filter.limit+"":"",fromDate:filter.fromDate,toDate:filter.toDate});
+        }
+    },[state.show])
 
     const isValid = useMemo(()=>{
         if(state.fromDate && state.toDate){
@@ -116,10 +123,12 @@ function GraphFilterComponent(){
                 <div className="text-center py-2">or</div>
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
-                        <span>At:</span>
+                        <span className="text-nowrap">Surroundings At:</span>
                         <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => handleBaseDateChange(date)} />
                     </div>
-                    <div className="px-2" />
+                </div>
+                <hr />
+                <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>Commit count:</span>
                         <input type="number" value={state.commitCount} onChange={e=> handleCommitCountChange(e.target.value)} />
