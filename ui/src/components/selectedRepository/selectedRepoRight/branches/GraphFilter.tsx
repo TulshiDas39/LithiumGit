@@ -42,14 +42,13 @@ function GraphFilterComponent(){
     },[state.show])
 
     const isValid = useMemo(()=>{
-        if(state.fromDate && state.toDate){
+        if(state.fromDate && state.toDate){       
             if(state.fromDate > state.toDate)
                 return false;
-            return true;
         }
-        if(state.at && state.commitCount)
-            return true;
-        return false;
+        if(!state.fromDate && !state.toDate && !state.at)
+            return false;
+        return true;
     },[state.at,state.commitCount,state.fromDate,state.toDate])
 
     const handleFromDateChange=(date:Date | null)=>{
@@ -64,7 +63,7 @@ function GraphFilterComponent(){
     }
 
     const handleCommitCountChange=(value:string | null)=>{
-        setState({commitCount: value ?? "",fromDate:null!,toDate:null!});
+        setState({commitCount: value ?? ""});
     }
 
     const handleApply = ()=>{
@@ -74,12 +73,26 @@ function GraphFilterComponent(){
             dispatch(ActionModals.showToast());
             return;
         }
-        if(state.fromDate && state.toDate){
-            GraphUtils.state.filter.publish({userModified:true,fromDate:state.fromDate,toDate:state.toDate});
+        const maxLimit = 2000;
+        let limit:number | undefined = undefined;
+        if(!state.commitCount){
+            if(state.at){
+                limit = GraphUtils.defaultLimit;
+            }else {
+                limit = maxLimit;
+            }
+        }else{
+            limit = Number(state.commitCount);
         }
-        if(state.at && state.commitCount){
-            GraphUtils.state.filter.publish({userModified:true,baseDate:state.at,limit: Number(state.commitCount)});
-        }
+
+        GraphUtils.state.filter.publish({
+            userModified:true,
+            fromDate:state.fromDate,
+            toDate:state.toDate,
+            baseDate:state.at,
+            limit
+        });
+        
         setState({show:false});
     }
 
@@ -91,7 +104,7 @@ function GraphFilterComponent(){
 
 
     return <div className="bg-color">
-        <span ref={target} onClick={() => setState({show:!state.show})}>
+        <span title="Filter" ref={target} onClick={() => setState({show:!state.show})}>
             <FaBuffer />
         </span>
         <Overlay target={target.current} show={state.show} placement="bottom"
