@@ -1,21 +1,67 @@
-import React, { useRef } from "react"
+import React, { useEffect, useMemo, useRef } from "react"
 import { FaBuffer } from "react-icons/fa";
-import { useMultiState } from "../../../../lib";
+import { EnumModals, GraphUtils, useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
 import DatePicker from "react-datepicker";
 import { AppButton } from "../../../common";
+import { ModalData } from "../../../modals/ModalData";
+import { useDispatch } from "react-redux";
+import { ActionModals } from "../../../../store";
+import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ICommitFilter } from "common_library";
 
 interface IState{
     show:boolean;
     fromDate?:string;
     toDate?:string;
     at?:string;
-    commitCount?:number;
+    commitCount?:string;
 }
 
 function GraphFilterComponent(){
-    const [state,setState] = useMultiState<IState>({show:false});
+    const [state,setState] = useMultiState<IState>({show:false,commitCount:""});
     const target = useRef<HTMLElement>(null!);
+    const dispatch = useDispatch();
+    useEffect(()=>{
+        const onFilterChange = (filter:ICommitFilter)=>{
+            const commitCount = filter.limit ? filter.limit+"":"";
+            setState({at:filter.baseDate,commitCount,fromDate:filter.fromDate,toDate:filter.toDate});
+        }
+        GraphUtils.state.filter.subscribe(onFilterChange);
+
+        return ()=>{
+            GraphUtils.state.filter.unSubscribe(onFilterChange);
+        }
+    },[])
+
+    const isValid = useMemo(()=>{
+        if(state.fromDate && state.toDate){
+            if(state.fromDate > state.toDate)
+                return false;
+            return true;
+        }
+        if(state.at && state.commitCount)
+            return true;
+        return false;
+    },[state.at,state.commitCount,state.fromDate,state.toDate])
+
+    const handleApply = ()=>{
+        if(!isValid){
+            ModalData.errorModal.message = "Invalid filter data";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        if(state.fromDate && state.toDate){
+            GraphUtils.state.filter.publish({userModified:true,fromDate:state.fromDate,toDate:state.toDate});
+        }
+        if(state.at && state.commitCount){
+            GraphUtils.state.filter.publish({userModified:true,baseDate:state.at,limit: Number(state.commitCount)});
+        }
+
+    }
+
+
+
     return <div className="bg-color">
         <span ref={target} onClick={() => setState({show:!state.show})}>
             <FaBuffer />
@@ -60,13 +106,13 @@ function GraphFilterComponent(){
                     <div className="px-2" />
                     <div className="d-flex align-items-center">
                         <span>Commit count:</span>
-                        <input type="number" value={state.commitCount ?? ""} onChange={e=>setState({commitCount: e.target.value ? Number(e.target.value):null!})} />
+                        <input type="number" value={state.commitCount} onChange={e=>setState({commitCount:e.target.value})} />
                     </div>
                 </div>
                 <div className="row g-0 py-3">
                     <div className="col-4"></div>
                     <div className="col-4 d-flex justify-content-center">
-                        <AppButton className="">Apply</AppButton>
+                        <AppButton className="" onClick={()=>handleApply()}>Apply</AppButton>
                         <span className="px-2" />
                         <AppButton className="">Reset</AppButton>
                     </div>
