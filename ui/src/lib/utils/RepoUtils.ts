@@ -512,7 +512,7 @@ export class RepoUtils{
     }
 
     static get activeRemoteInfo(){
-        if(!RepoUtils.repositoryDetails.remotes.length)
+        if(!RepoUtils.repositoryDetails?.remotes.length)
             return undefined;
         const orignName = RepoUtils.repositoryDetails.repoInfo.activeOrigin;
         const remote = RepoUtils.repositoryDetails.remotes.find(_=> _.name === orignName);
