@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { GraphUtils } from "../../../../lib/utils/GraphUtils";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { GraphFilter } from "./GraphFilter";
+import { GraphSearch } from "./GraphSearch";
 
 function BranchActionsComponent(){
     const dispatch = useDispatch();
@@ -30,6 +31,9 @@ function BranchActionsComponent(){
     </div>
     <div className="ps-5 hover">
         <GraphFilter />
+    </div>
+    <div className="flex-grow-1 d-flex justify-content-end">
+        <GraphSearch />
     </div>
 
 </div>

@@ -93,7 +93,7 @@ html {
     --bg-fade:#513f3f;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:rgba(119, 118, 119, 0.722);
-    --outline-color:rgb(188, 181, 181);
+    --outline-color:rgb(169, 165, 165);
     --branch-line-color:rgb(3, 86, 27);
     --commit-circle-fill-color:#701414;
     --selected-commit-fill-color:#147053;
@@ -123,17 +123,17 @@ html {
     font-family: 'Consolas';
   }
 
-  input[type="text"],input[type="number"],textarea,input[type="text"]:focus,textarea:focus{
+  input[type="text"],input[type="number"],textarea{
     background-color: var(--bg-color);
     color: var(--font-color);
     outline: none;
     border: 1px solid var(--border-color);
+    outline-width:0px;
+    outline-style:none;
   }
 
   input[type="text"]:focus, textarea:focus{
-    outline-color: var(--outline-color);
-    outline-width:1px;
-    outline-style:solid;
+    border: 1px solid var(--outline-color);
   }
 
   .form-control, .form-control:focus{
