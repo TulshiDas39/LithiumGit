@@ -7,12 +7,20 @@ export enum CacheKey{
 
 export class CacheUtils{
     static async setRepoDetails(data:IRepositoryDetails){
-        await localforage.setItem(CacheKey.repoDetails+data.repoInfo.path,data);
+        try {
+            await localforage.setItem(CacheKey.repoDetails+data.repoInfo.path,data);
+        } catch (error) {
+        }
     }
 
     static async getRepoDetails(path:string){
-        const res = await localforage.getItem<IRepositoryDetails>(CacheKey.repoDetails+path);
-        return res;
+        try{
+            const res = await localforage.getItem<IRepositoryDetails>(CacheKey.repoDetails+path);
+            return res;
+        }catch(e){
+            return null!;
+        }
+        
     }
 
     static async clearRepoDetails(path:string){
