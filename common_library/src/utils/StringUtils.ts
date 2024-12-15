@@ -96,16 +96,23 @@ export class StringUtils{
     }
 
     static getMatchScore(str:string,keys:string[]){
+        
+        const keyLen = keys.join().length;
+        if(keyLen > str.length)
+            return 0;
         let score = 0;
         let index = 0;
+        let preIndex = 0;
         for(const key of keys){
-            index = str.indexOf(key,index);
+            index = str.indexOf(key,preIndex);
             if(index < 0)
                 return 0;
-            score += key.length * (str.length - index);
-            index += key.length;
+            const indexGap = index - preIndex + 1;
+            score += key.length / indexGap;
+            preIndex = index + key.length;
         }
-        return score;
+        const extraLen = str.length - preIndex - 1;
+        return score - (extraLen/str.length);
     }
 
     static filterStrings(arr:string[],kes:string[][],limit:number){
