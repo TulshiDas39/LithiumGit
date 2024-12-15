@@ -156,11 +156,20 @@ export class StringUtils{
     }
 
     static getAllSplits(str:string) {
-        const result:string[][] = [];
+        const result:{splits:string[];score:number;}[] = [];
+
+        const getScore = (arr:string[])=>{
+            let score = 0;
+            for(let i = 0; i < arr.length; i++){
+                score += arr[i].length * (str.length - i);
+            }
+            return score;
+        }
     
         const generateSplits = (current:string[], remaining:string) => {
             if (remaining.length === 0) {
-                result.push(current);
+                const score = getScore(current);
+                result.push({splits:current,score});
                 return;
             }
             
@@ -171,6 +180,7 @@ export class StringUtils{
         };
     
         generateSplits([], str);
+        result.sort((a,b)=> a.score > b.score?-1:1);
         return result;
   }
   
