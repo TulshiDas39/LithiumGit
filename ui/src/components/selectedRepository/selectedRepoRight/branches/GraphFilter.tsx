@@ -137,7 +137,8 @@ function GraphFilterComponent(){
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>From:</span>
-                        <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)} />
+                        <DatePicker yearDropdownItemNumber={15} showYearDropdown
+                            scrollableYearDropdown selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)} />
                     </div>
                     <div className="ps-2 d-flex align-items-center">
                         <span>To:</span>

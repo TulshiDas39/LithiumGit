@@ -605,3 +605,34 @@ to {
   stroke:#8eb68e;
   stroke-opacity: 0.5;
 }
+
+.react-datepicker{
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+.react-datepicker__header{
+  background-color: inherit;
+  color: inherit;
+}
+
+.react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header{
+  color: inherit;
+}
+
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name{
+  color: inherit;
+}
+
+.react-datepicker__day:hover, .react-datepicker__month-text:hover, .react-datepicker__quarter-text:hover, .react-datepicker__year-text:hover{
+  background-color: var(--bg-select-color);
+}
+
+.react-datepicker__day--keyboard-selected, .react-datepicker__month-text--keyboard-selected, .react-datepicker__quarter-text--keyboard-selected, .react-datepicker__year-text--keyboard-selected{
+  background-color: var(--bg-select-color);
+}
+
+.react-datepicker__year-dropdown, .react-datepicker__month-dropdown, .react-datepicker__month-year-dropdown{
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
