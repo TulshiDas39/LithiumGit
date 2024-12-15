@@ -95,6 +95,39 @@ export class StringUtils{
         
     }
 
+    static getMatchScore(str:string,keys:string[]){
+        let score = 0;
+        let index = 0;
+        for(const key in keys){
+            index = str.indexOf(key,index);
+            if(index < 0)
+                return 0;
+            score += key.length * (str.length - index);
+            index += key.length;
+        }
+        return score;
+    }
+
+    static filterStrings(arr:string[],kes:string[][],limit:number){
+        arr = arr.slice();
+        const filteredList:{str:string;keys:string[],score:number}[] = [];
+        for(let keyArr of kes){
+            let scroring = arr.map(str => ({str,score:StringUtils.getMatchScore(str,keyArr),keys:keyArr})).filter(_=> _.score > 0);
+            scroring.forEach(s => filteredList.push(s));
+            if(scroring.length >= limit){
+                scroring.sort((a,b) => a.score > b.score? -1:1);
+                scroring = scroring.slice(0,limit);
+                return scroring;
+            }
+        }
+    }
+
+    static approxFilter(str:string[],input:string,limit:number){
+        const splits = this.getAllSplits(input);
+        const keys = splits.map(_=>_.splits);
+        return StringUtils.filterStrings(str,keys,limit);
+    }
+
     static getSimilarity(str:string,input:string){
         if(input.length > str.length)
             return 0;
