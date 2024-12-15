@@ -138,18 +138,23 @@ function GraphFilterComponent(){
                     <div className="d-flex align-items-center">
                         <span>From:</span>
                         <DatePicker yearDropdownItemNumber={15} showYearDropdown
-                            scrollableYearDropdown selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)} />
+                            scrollableYearDropdown selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)}
+                            placeholderText="mm/dd/yyyy" />
                     </div>
                     <div className="ps-2 d-flex align-items-center">
                         <span>To:</span>
-                        <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => handleToDateChange(date)} />
+                        <DatePicker yearDropdownItemNumber={15} showYearDropdown
+                            scrollableYearDropdown selected={state.toDate? new Date(state.toDate):null} onChange={(date) => handleToDateChange(date)}
+                            placeholderText="mm/dd/yyyy" />
                     </div>
                 </div>
                 <div className="text-center py-2">or</div>
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span className="text-nowrap">Surroundings At:</span>
-                        <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => handleBaseDateChange(date)} />
+                        <DatePicker yearDropdownItemNumber={15} showYearDropdown
+                            scrollableYearDropdown selected={state.at? new Date(state.at):null} onChange={(date) => handleBaseDateChange(date)}
+                            placeholderText="mm/dd/yyyy" />
                     </div>
                 </div>
                 <hr />
