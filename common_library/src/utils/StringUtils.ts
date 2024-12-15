@@ -98,7 +98,7 @@ export class StringUtils{
     static getMatchScore(str:string,keys:string[]){
         let score = 0;
         let index = 0;
-        for(const key in keys){
+        for(const key of keys){
             index = str.indexOf(key,index);
             if(index < 0)
                 return 0;
@@ -113,13 +113,16 @@ export class StringUtils{
         const filteredList:{str:string;keys:string[],score:number}[] = [];
         for(let keyArr of kes){
             let scroring = arr.map(str => ({str,score:StringUtils.getMatchScore(str,keyArr),keys:keyArr})).filter(_=> _.score > 0);
+            const strs = scroring.map(_=>_.str);
+            arr = arr.filter(_=> !strs.includes(_));
             scroring.forEach(s => filteredList.push(s));
-            if(scroring.length >= limit){
-                scroring.sort((a,b) => a.score > b.score? -1:1);
-                scroring = scroring.slice(0,limit);
-                return scroring;
+            if(filteredList.length >= limit){
+                break;
             }
         }
+
+        filteredList.sort((a,b) => a.score > b.score? -1:1);
+        return filteredList.slice(0,limit);
     }
 
     static approxFilter(str:string[],input:string,limit:number){
