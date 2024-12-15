@@ -67,35 +67,7 @@ export class StringUtils{
             return "M";
     }
 
-
-    static getSimilarityRecurse(str:string,input:string,strIndex=0,inputIndex=0):{index:number;count:number}[]{
-        const index = str.indexOf(input[inputIndex],strIndex);        
-        if(index < 0)
-            return [];
-
-        if(inputIndex === input.length - 1){
-            const indexes:{index:number;count:number}[]=[{index,count:1}];
-            return indexes;
-        }
-        else{
-            let indexes = this.getSimilarityRecurse(str,input,index+1,inputIndex+1);
-            if(!indexes.length)
-                return [];
-
-            const first = indexes[0];
-            if(first.index === index + 1){
-                first.index = index;
-                first.count += 1;
-            }else{
-                indexes = [{index,count:1}, ...indexes];
-            }
-
-            return indexes;
-        }
-        
-    }
-
-    static getMatchScore(str:string,keys:string[]){
+    private static getMatchScore(str:string,keys:string[]){
         
         const keyLen = keys.join().length;
         if(keyLen > str.length)
@@ -115,7 +87,7 @@ export class StringUtils{
         return score - (extraLen/str.length);
     }
 
-    static filterStrings(arr:string[],kes:string[][],limit:number){
+    private static filterStrings(arr:string[],kes:string[][],limit:number){
         arr = arr.slice();
         const filteredList:{str:string;keys:string[],score:number}[] = [];
         for(let keyArr of kes){
@@ -133,72 +105,12 @@ export class StringUtils{
     }
 
     static approxFilter(str:string[],input:string,limit:number){
-        const splits = this.getAllSplits(input);
+        const splits = StringUtils.getAllSplits(input);
         const keys = splits.map(_=>_.splits);
         return StringUtils.filterStrings(str,keys,limit);
     }
 
-    static getSimilarity(str:string,input:string){
-        if(input.length > str.length)
-            return 0;
-        if(input.length === str.length){
-            if(input === str)
-                return 1;
-            return 0;
-        }
-
-        const allInputSplits = StringUtils.getAllSplits(input);
-        let strIndex = 0;
-        let inputIndex = 0;
-        const allSimilarities: {index: number;count: number;}[][]=[];
-        do{
-            const similarities = this.getSimilarityRecurse(str,input,strIndex,inputIndex);
-            if(!similarities.length)
-                break;
-            allSimilarities.push(similarities);
-            const first = similarities[0];
-            if(str.length - first.index -1 < input.length)
-                break;
-            
-            strIndex = first.index + 1;
-            inputIndex = 0;
-        }while(true);
-
-        // let i=0;
-        // const ind = str.indexOf(input[0]);
-        // if(ind < 0)
-        //     return similarities;
-
-        
-        // while( i < input.length){
-        //     const similars:{index:number;count:number}[]=[];
-        //     let j = i;
-        //     while( j < input.length ){
-        //         let scount = 0;
-        //         let index = j;
-        //         for(let k = j; k < str.length && j < input.length;k++ ){
-        //             if(str[k] == input[j]){
-        //                 j++;
-        //                 scount++;                        
-        //             }
-        //             else if(scount){
-        //                 similars.push({index,count:scount});
-        //                 scount = 0;
-        //                 index=j;
-        //             }
-        //         }
-        //         if(scount){
-        //             similars.push({index,count:scount});
-        //         }                
-        //     }
-        //     similarities.push(similars);
-
-        // }
-
-        console.log(allSimilarities);
-    }
-
-    static getAllSplits(str:string) {
+    private static getAllSplits(str:string) {
         const result:{splits:string[];score:number;}[] = [];
 
         const getScore = (arr:string[])=>{
@@ -225,11 +137,6 @@ export class StringUtils{
         generateSplits([], str);
         result.sort((a,b)=> a.score > b.score?-1:1);
         return result;
-  }
-  
-  // Example usage
-//   const str = "abc";
-//   const splits = getAllSplits(str);
-//   console.log(splits);
+    }
   
 }
