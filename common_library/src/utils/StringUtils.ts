@@ -103,6 +103,8 @@ export class StringUtils{
                 return 1;
             return 0;
         }
+
+        const allInputSplits = StringUtils.getAllSplits(input);
         let strIndex = 0;
         let inputIndex = 0;
         const allSimilarities: {index: number;count: number;}[][]=[];
@@ -152,4 +154,29 @@ export class StringUtils{
 
         console.log(allSimilarities);
     }
+
+    static getAllSplits(str:string) {
+        const result:string[][] = [];
+    
+        const generateSplits = (current:string[], remaining:string) => {
+            if (remaining.length === 0) {
+                result.push(current);
+                return;
+            }
+            
+            for (let i = 1; i <= remaining.length; i++) {
+                const prefix = remaining.slice(0, i);
+                generateSplits([...current, prefix], remaining.slice(i));
+            }
+        };
+    
+        generateSplits([], str);
+        return result;
+  }
+  
+  // Example usage
+//   const str = "abc";
+//   const splits = getAllSplits(str);
+//   console.log(splits);
+  
 }
