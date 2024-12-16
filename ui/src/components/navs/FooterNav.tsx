@@ -9,6 +9,7 @@ import { RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import {BellWithDot} from "../common"
+import { Notifications } from "./notification";
 
 interface IState{
     remote?:IRemoteInfo;
@@ -93,9 +94,7 @@ function FooterNavComponent(){
                 <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
             </span>
 
-            <span className="ps-1 pe-2 d-flex align-items-center">
-                {true? <FaRegBell />: <BellWithDot /> }
-            </span>
+            <Notifications />
 
         </div>
     </div>
