@@ -636,3 +636,7 @@ to {
   background-color: var(--bg-color);
   color: var(--font-color);
 }
+
+.react-datepicker__year-option:hover, .react-datepicker__month-option:hover, .react-datepicker__month-year-option:hover{
+  background-color: var(--bg-select-color);
+}
