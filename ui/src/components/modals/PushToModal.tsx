@@ -48,7 +48,7 @@ function PushToModalComponent(){
     }
 
     const clearState = ()=>{
-        setState({branch:""});;
+        setState({branch:""});
     }
 
     const updateAnnotation=()=>{
@@ -115,7 +115,7 @@ function PushToModalComponent(){
         }
         
         setState({options});
-    },[state.branch,state.isSelected,state.inputFocused])
+    },[state.branch,state.isSelected,state.inputFocused,annotations])
     const handleBlur = ()=>{
         if(refData.current.hoverOptions)
             return;

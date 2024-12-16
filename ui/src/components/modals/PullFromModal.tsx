@@ -110,7 +110,7 @@ function PullFromModalComponent(){
         }
         
         setState({options});
-    },[state.branch,state.isSelected,state.inputFocused])
+    },[state.branch,state.isSelected,state.inputFocused,annotations])
 
     const handleSelect=(option:string)=>{
         setState({branch:option,isSelected:true,inputFocused:false});
