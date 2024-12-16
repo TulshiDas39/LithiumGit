@@ -3,6 +3,7 @@ import { FaRegBell } from "react-icons/fa";
 import { BellWithDot } from "../../common";
 import { Overlay } from "react-bootstrap";
 import { useMultiState } from "../../../lib";
+import { SingleNotification } from "./SingleNotification";
 
 interface IState{
     show:boolean;
@@ -36,8 +37,12 @@ function NotificationsComponent(){
                     ...props.style,
                     }}
                 >
-                    <div className="pt-3">
+                    {/* <div className="pt-3">
                         No notifications found.
+                    </div> */}
+                    <div className="py-2">
+                        <SingleNotification data={{message:"notification 1"}}  />
+                        <SingleNotification data={{message:"notification 2"}}  />
                     </div>
                     
                 </div>
