@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
+import { FaAdjust, FaCopy, FaRegBell, FaSpinner } from "react-icons/fa";
 import { ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumTheme, IRemoteInfo } from "common_library";
 import { RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
+import {BellWithDot} from "../common"
 
 interface IState{
     remote?:IRemoteInfo;
@@ -87,9 +88,13 @@ function FooterNavComponent(){
             </div>            
         </div>
         
-        <div className="col-1 d-flex align-items-center justify-content-end">
+        <div className="col-1 d-flex align-items-center justify-content-end">            
             <span className="pe-2 d-flex align-items-center">
                 <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
+            </span>
+
+            <span className="ps-1 pe-2 d-flex align-items-center">
+                {true? <FaRegBell />: <BellWithDot /> }
             </span>
 
         </div>
