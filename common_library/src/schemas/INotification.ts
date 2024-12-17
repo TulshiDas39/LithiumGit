@@ -1,5 +1,15 @@
-import { BaseSchema } from "./BaseSchema";
+import { INotificationAction } from "../models/INotificationAction";
+import { BaseSchema, createBaseSchema } from "./BaseSchema";
 
 export interface INotification extends BaseSchema{
-    message:string;    
+    message:string;
+    action?:INotificationAction;
+}
+
+export const createNotification=(props?:Partial<INotification>)=>{
+    let obj:INotification={
+        ...createBaseSchema(),        
+    } as INotification;
+    if(props) obj = {...obj,...props};
+    return obj;
 }

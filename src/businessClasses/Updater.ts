@@ -32,7 +32,10 @@ export class Updater{
     }
     checkForUpdate(){
         this.handleEvents();
-        autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
+        // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
+        autoUpdater.autoInstallOnAppQuit = false;
+        autoUpdater.checkForUpdates();
+
     }
 
 }

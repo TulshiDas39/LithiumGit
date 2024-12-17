@@ -64,6 +64,7 @@ export class Startup{
       await DB.config.load();
       await DB.repository.load();
       await DB.annotation.load();
+      await DB.notification.load();
     }
 
     private async loadSavedData(){
