@@ -1,9 +1,11 @@
+import { EnumNotificationType } from "../enums";
 import { INotificationAction } from "../models/INotificationAction";
 import { BaseSchema, createBaseSchema } from "./BaseSchema";
 
 export interface INotification extends BaseSchema{
     message:string;
     action?:INotificationAction;
+    type:EnumNotificationType;
     isRead:boolean;
 }
 
