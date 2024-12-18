@@ -1,4 +1,4 @@
-import { EnumTheme, ISavedData, RendererEvents } from "common_library";
+import { EnumTheme, INotification, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
@@ -9,6 +9,7 @@ import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 interface IState{
     isLoading:boolean;
@@ -37,6 +38,14 @@ function MainComponent(){
 
     const setTheme=(theme:EnumTheme)=>{
         window.document.documentElement.setAttribute("data-theme",theme);
+    }
+
+    const loadNotifications=()=>{
+        IpcUtils.getNotifications().then(r=>{
+            if(!r.error){
+                dispatch(ActionUI.setNotificationList(r.result!));
+            }
+        })
     }
 
     useEffect(()=>{
@@ -75,6 +84,13 @@ function MainComponent(){
             DataUtils.clone.stage = stage;
             DataUtils.clone.progress = progress;
         })
+
+        loadNotifications();
+
+        window.ipcRenderer.on(RendererEvents.notification,(_e,notification:INotification)=>{            
+            dispatch(ActionUI.addNotifications([notification]));
+        })
+
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);

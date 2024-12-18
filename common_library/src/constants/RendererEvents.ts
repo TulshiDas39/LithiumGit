@@ -284,5 +284,7 @@ export class RendererEvents{
     static readonly updateConfig = "updateConfig";
     static readonly openLink = "openLink";
     static readonly removeAnnotation = "removeAnnotation";
+    static readonly notification = "newNotification";
+    static readonly loadNotifications = "loadNotifications";
 }
 

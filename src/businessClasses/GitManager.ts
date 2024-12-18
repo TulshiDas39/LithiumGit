@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo, createNotification} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -7,6 +7,7 @@ import { CommitParser } from "./CommitParser";
 import * as path from 'path';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
+import { DB } from "../db_service";
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
@@ -692,6 +693,9 @@ export class GitManager{
     private  addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
             await this.takeFetch(repoPath,options);
+            const notification = createNotification({message:"Fetch completed.",action:{buttonText:"Ok"}})
+            await DB.notification.insertOneAsync(notification);
+            AppData.mainWindow.webContents.send(RendererEvents.notification,notification);
         });
     }
 

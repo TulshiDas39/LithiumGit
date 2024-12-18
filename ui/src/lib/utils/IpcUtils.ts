@@ -1,4 +1,4 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
@@ -309,6 +309,10 @@ export class IpcUtils{
 
     static openLink(url:string){
         return IpcUtils.execute(RendererEvents.openLink,[url]);
+    }
+
+    static getNotifications(){
+        return IpcUtils.execute<INotification[]>(RendererEvents.loadNotifications,[]);
     }
     
 }
