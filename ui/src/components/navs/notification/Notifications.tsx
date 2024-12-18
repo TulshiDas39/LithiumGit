@@ -1,4 +1,4 @@
-import React, { useRef } from "react"
+import React, { Fragment, useRef } from "react"
 import { FaRegBell } from "react-icons/fa";
 import { BellWithDot } from "../../common";
 import { Overlay } from "react-bootstrap";
@@ -40,7 +40,7 @@ function NotificationsComponent(){
                     position: 'absolute',
                     padding: '2px 10px',
                     borderRadius: 3,
-                    width:350,
+                    width:450,
                     ...props.style,
                     }}
                 >
@@ -50,7 +50,9 @@ function NotificationsComponent(){
                     <div className="py-2">
                         {!store.notifications.length && <span>No new notifications</span>}
                         {store.notifications.map(n=>(
-                            <SingleNotification key={n._id} data={{message:n.message}}  />
+                            <div className="py-1" key={n._id}>
+                                <SingleNotification data={{message:n.message}}  />
+                            </div>
                         ))}
                         {/* <SingleNotification data={{message:"notification 1"}}  />
                         <SingleNotification data={{message:"notification 2"}}  /> */}
