@@ -39,7 +39,8 @@ function NotificationsComponent(){
                     style={{
                     position: 'absolute',
                     padding: '2px 10px',
-                    borderRadius: 3,              
+                    borderRadius: 3,
+                    width:350,
                     ...props.style,
                     }}
                 >
