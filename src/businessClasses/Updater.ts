@@ -1,4 +1,7 @@
 import { autoUpdater } from "electron-updater";
+import { DB } from "../db_service";
+import { createNotificationForNewUpdate, RendererEvents } from "common_library";
+import { AppData } from "../dataClasses";
 
 export class Updater{
 
@@ -26,8 +29,9 @@ export class Updater{
             log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
             this.sendStatusToWindow(log_message);
           })
-          autoUpdater.on('update-downloaded', (_) => {
-            this.sendStatusToWindow('Update downloaded');
+          autoUpdater.on('update-downloaded', async (_) => {          
+            const notifiacation = await DB.notification.addNotificationForNewUpdate();
+            AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
           });
     }
     checkForUpdate(){

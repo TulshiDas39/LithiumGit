@@ -16,3 +16,11 @@ export const createNotification=(props?:Partial<INotification>)=>{
     if(props) obj = {...obj,...props};
     return obj;
 }
+
+export const createNotificationForNewUpdate=()=>{
+    return createNotification({
+        type:EnumNotificationType.UpdateAvailable,
+        action:{buttonText:"Install"},
+        message:"Update available."
+    })
+}
