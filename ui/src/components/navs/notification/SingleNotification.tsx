@@ -16,7 +16,7 @@ function SingleNotificationComponent(props:IProps){
             </span>
         </div>
         <div className="d-flex py-2 align-items-center">
-            <div className="flex-grow-1">
+            <div className="flex-grow-1 align-self-start">
                 {props.data.message}
             </div>
             {!!props.data.action?.buttonText && <div className="">
