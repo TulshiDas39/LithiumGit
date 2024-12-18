@@ -51,7 +51,7 @@ function NotificationsComponent(){
                         {!store.notifications.length && <span>No new notifications</span>}
                         {store.notifications.map(n=>(
                             <div className="py-1" key={n._id}>
-                                <SingleNotification data={{message:n.message}}  />
+                                <SingleNotification data={n}  />
                             </div>
                         ))}
                         {/* <SingleNotification data={{message:"notification 1"}}  />

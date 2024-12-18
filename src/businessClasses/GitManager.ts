@@ -693,7 +693,7 @@ export class GitManager{
     private  addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
             await this.takeFetch(repoPath,options);
-            const notification = createNotification({message:"Fetch completed.",action:{buttonText:"Ok"}})
+            const notification = createNotification({message:"Fetch completed."})
             await DB.notification.insertOneAsync(notification);
             AppData.mainWindow.webContents.send(RendererEvents.notification,notification);
         });
