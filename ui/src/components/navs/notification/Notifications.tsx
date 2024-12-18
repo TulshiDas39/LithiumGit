@@ -47,6 +47,7 @@ function NotificationsComponent(){
                         No notifications found.
                     </div> */}
                     <div className="py-2">
+                        {!store.notifications.length && <span>No new notifications</span>}
                         {store.notifications.map(n=>(
                             <SingleNotification key={n._id} data={{message:n.message}}  />
                         ))}

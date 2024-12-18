@@ -5,7 +5,7 @@ interface IProps{
 }
 
 function SingleNotificationComponent(props:IProps){
-    return <div className="border" style={{width:300}}>
+    return <div className="border py-2" style={{width:300}}>
         {props.data.message}
     </div>
 }

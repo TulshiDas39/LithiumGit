@@ -78,15 +78,15 @@ export class BaseDB<T extends BaseSchema>{
         this.dataStore.find(query,null,callback)
     }
 
-    insertOne(record:T,cb?: (err: Error, document: T) => void){        
+    insertOne(record:T,cb?: (err: Error, document: T) => void){ 
+        this.addBaseProperties(record);
         this.dataStore.insert({
-            ...createBaseSchema(),
             ...record
         },cb);
     }
 
     insertOneAsync(record:T){
-        if(!!record._id) return null;
+        this.addBaseProperties(record);
         return new Promise<T>((resolve,reject)=>{
             this.insertOne(record,(err,doc)=>{
                 if(err) reject(err);
@@ -122,13 +122,17 @@ export class BaseDB<T extends BaseSchema>{
             });
         })        
     }
+
+    private addBaseProperties(rec:BaseSchema){
+        if(!rec._id) rec._id = StringUtils.uuidv4();
+        if(!rec.createdAt) rec.createdAt = new Date().toISOString();
+        if(!rec.updateAt) rec.updateAt = new Date().toISOString();
+    }
     
     insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){
         if(records.length === 0) return;
         records.forEach(rec=>{
-            if(!rec._id) rec._id = StringUtils.uuidv4();
-            if(!rec.createdAt) rec.createdAt = new Date().toISOString();
-            if(!rec.updateAt) rec.updateAt = new Date().toISOString();
+            this.addBaseProperties(rec);
         })
         this.dataStore.insert(records,cb);
     }
