@@ -1,4 +1,3 @@
-import { INotification } from "common_library";
 import React from "react"
 import { FaMinus, FaTimes } from "react-icons/fa";
 import { AppButton } from "../../common";
@@ -30,7 +29,7 @@ function SingleNotificationComponent(props:IProps){
         <div className="d-flex justify-content-end" style={{lineHeight:1.2}}>
             {!!props.showMinus &&
             <span className="pe-2 small">
-                <FaMinus onClick={handleHide} />
+                <FaMinus className="hover" onClick={handleHide} />
             </span>}
             <span className="pe-2 small">
                 <FaTimes className="small hover" onClick={handleRemove} />

@@ -37,6 +37,15 @@ function NotificationsComponent(){
         });
     }
 
+    const toogleNotifications=()=>{
+        if(!state.show && !!activeNotifications.length){
+            for(let not of activeNotifications){
+                dispatch(ActionUI.deactivateNotification(not._id));
+            }
+        }
+        setState({show:!state.show});
+    }
+
     return <div className="ps-1 pe-2 position-relative">
             {!!activeNotifications.length && <div className="py-2 overflow-auto position-absolute" style={{width:450, maxHeight:`95vh`,bottom:'100%',right:'0px'}}>
                         {activeNotifications.map(n=>(
@@ -46,7 +55,7 @@ function NotificationsComponent(){
                         ))}                                                                      
                     </div>}
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
-                onClick={() => setState({show:!state.show})}>
+                onClick={() => toogleNotifications()}>
                 {true? <FaRegBell />: <BellWithDot /> }
             </span>
             <Overlay target={target.current} show={state.show} placement="top-end"
