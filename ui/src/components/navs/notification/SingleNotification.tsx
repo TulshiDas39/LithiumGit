@@ -2,17 +2,29 @@ import { INotification } from "common_library";
 import React from "react"
 import { FaMinus, FaTimes } from "react-icons/fa";
 import { AppButton } from "../../common";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { useDispatch } from "react-redux";
+import { ActionUI } from "../../../store/slices/UiSlice";
 
 interface IProps{
     data:INotification;
 }
 
 function SingleNotificationComponent(props:IProps){
+    const dispatch = useDispatch();
+
+    const handleRemove=()=>{
+        IpcUtils.deleteNotification([props.data]).then(r=>{
+            if(!r.error){
+                dispatch(ActionUI.increamentVersion("notifications"))
+            }
+        });
+    }
     return <div className="border ps-1 w-100 bg-second-color" style={{width:300}}>
         <div className="d-flex justify-content-end" style={{lineHeight:1.2}}>
             {/* <FaMinus /> */}
             <span className="pe-2 small">
-                <FaTimes className="small" />
+                <FaTimes className="small hover" onClick={handleRemove} />
             </span>
         </div>
         <div className="d-flex pt-2 pb-1 align-items-center">

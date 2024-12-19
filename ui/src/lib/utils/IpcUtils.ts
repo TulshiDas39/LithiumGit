@@ -3,6 +3,9 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static deleteNotification(items: INotification[]) {
+        return IpcUtils.execute(RendererEvents.deleteNotifcations,[items]);        
+    }
     static clearNotifications() {
         return IpcUtils.execute(RendererEvents.clearNotifications,[]);
     }
