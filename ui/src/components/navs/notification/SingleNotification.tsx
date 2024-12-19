@@ -1,5 +1,5 @@
 import React from "react"
-import { FaMinus, FaTimes } from "react-icons/fa";
+import { FaCircle, FaMinus, FaTimes } from "react-icons/fa";
 import { AppButton } from "../../common";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { useDispatch } from "react-redux";
@@ -26,14 +26,20 @@ function SingleNotificationComponent(props:IProps){
     }
 
     return <div className="border ps-1 w-100 bg-second-color" style={{width:300}}>
-        <div className="d-flex justify-content-end" style={{lineHeight:1.2}}>
-            {!!props.showMinus &&
-            <span className="pe-2 small">
-                <FaMinus className="hover" onClick={handleHide} />
+        <div className="d-flex" style={{lineHeight:1.2}}>
+            {!props.data.isRead && <span className="pe-2 small">
+                <FaCircle fontSize={"0.5em"} className="text-info"/>
             </span>}
-            <span className="pe-2 small">
-                <FaTimes className="small hover" onClick={handleRemove} />
-            </span>
+            <div className="flex-grow-1 d-flex justify-content-end">
+                {!!props.showMinus &&
+                <span className="pe-2 small">
+                    <FaMinus className="hover" onClick={handleHide} />
+                </span>}
+                <span className="pe-2 small">
+                    <FaTimes className="small hover" onClick={handleRemove} />
+                </span>
+            </div>
+            
         </div>
         <div className="d-flex pt-2 pb-1 align-items-center">
             <div className="flex-grow-1 align-self-start">
