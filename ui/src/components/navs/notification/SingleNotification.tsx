@@ -15,11 +15,11 @@ function SingleNotificationComponent(props:IProps){
                 <FaTimes className="small" />
             </span>
         </div>
-        <div className="d-flex py-2 align-items-center">
+        <div className="d-flex pt-2 pb-1 align-items-center">
             <div className="flex-grow-1 align-self-start">
                 {props.data.message}
             </div>
-            {!!props.data.action?.buttonText && <div className="">
+            {!!props.data.action?.buttonText && <div className="pe-1 small">
                 <AppButton>{props.data.action?.buttonText}</AppButton>
             </div>}
         </div>
