@@ -22,7 +22,8 @@ const initialState = {
 function MainComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
-        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),        
+        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
+        notificationLoadV:state.ui.versions.notifications,        
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
 
@@ -47,6 +48,10 @@ function MainComponent(){
             }
         })
     }
+
+    useEffect(()=>{
+        loadNotifications();
+    },[store.notificationLoadV])
 
     useEffect(()=>{
         registerIpcEvents();        
@@ -84,8 +89,6 @@ function MainComponent(){
             DataUtils.clone.stage = stage;
             DataUtils.clone.progress = progress;
         })
-
-        loadNotifications();
 
         window.ipcRenderer.on(RendererEvents.notification,(_e,notification:INotification)=>{            
             dispatch(ActionUI.addNotifications([notification]));

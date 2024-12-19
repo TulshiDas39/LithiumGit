@@ -5,7 +5,9 @@ import { Overlay } from "react-bootstrap";
 import { useMultiState } from "../../../lib";
 import { SingleNotification } from "./SingleNotification";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
+import { IpcUtils } from "../../../lib/utils/IpcUtils";
+import { ActionUI } from "../../../store/slices/UiSlice";
 
 interface IState{
     show:boolean;
@@ -15,11 +17,21 @@ function NotificationsComponent(){
         notifications:state.ui.notifications,        
     }),shallowEqual);
 
+    const dispatch = useDispatch();
+
     const [state, setState] = useMultiState<IState>({show:false});
     const target = useRef<HTMLElement>(null!);
     const bottomHeight = useMemo(()=>{
         return !!store.notifications.length ? 50:0;
     },[store.notifications.length])
+
+    const handleClear=()=>{
+        IpcUtils.clearNotifications().then(r=>{
+            if(!r.error){
+                dispatch(ActionUI.increamentVersion("notifications"));
+            }
+        });
+    }
 
     return <div className="ps-1 pe-2">
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
@@ -56,7 +68,7 @@ function NotificationsComponent(){
                         ))}                                                                      
                     </div>
                     {!!store.notifications.length && <div className="d-flex align-items-center justify-content-end" style={{height:bottomHeight}}>
-                        <AppButton>Clear all</AppButton>
+                        <AppButton onClick={handleClear}>Clear all</AppButton>
                     </div>}
                     
                 </div>

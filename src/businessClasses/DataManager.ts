@@ -19,6 +19,7 @@ export class DataManager{
         this.handleAnnotationDelete();
         this.handleConfigUpdate();
         this.handleNotificationsFetch();
+        this.handleNotificationsClear();
 
     }
 
@@ -57,6 +58,12 @@ export class DataManager{
     private handleNotificationsFetch(){
         ipcMain.handle(RendererEvents.loadNotifications, async(_e) => {            
             return await DB.notification.getAll();
+        });
+    }
+
+    private handleNotificationsClear(){
+        ipcMain.handle(RendererEvents.clearNotifications, async(_e) => {            
+            return await DB.notification.deleteAsync({},true);
         });
     }
 

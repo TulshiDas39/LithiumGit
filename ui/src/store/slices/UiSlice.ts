@@ -19,6 +19,7 @@ interface EventVersions{
     repoDetails:number;
     remoteList:number;
     annotations:number;
+    notifications:number;
 }
 
 export interface ILoaderInfo{
@@ -55,6 +56,7 @@ const initialState:IUIState={
         repoDetails:0,
         remoteList:0,
         annotations:0,
+        notifications:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],

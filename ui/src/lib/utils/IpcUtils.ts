@@ -3,6 +3,9 @@ import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 
 export class IpcUtils{
+    static clearNotifications() {
+        return IpcUtils.execute(RendererEvents.clearNotifications,[]);
+    }
     static runRemote(options:string[]) {
         return this.runGitCommand(RendererEvents.remote,[options]);
     }

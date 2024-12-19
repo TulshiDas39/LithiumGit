@@ -192,16 +192,16 @@ export class BaseDB<T extends BaseSchema>{
         })
     }
 
-    delete(query:Partial<T>,cb?: (err: Error, n: number) => void){        
-        this.dataStore.remove(query,cb);
+    delete(query:Partial<T>,cb?: (err: Error, n: number) => void,multi?:boolean){        
+        this.dataStore.remove(query,{multi},cb);
     }
 
-    deleteAsync(query:Partial<T>){
+    deleteAsync(query:Partial<T>,isMulty?:boolean){
         return new Promise<number>((resolve,reject)=>{
             this.delete(query,(err,deleteCount)=>{
                 if(err) reject(err);
                 resolve(deleteCount);
-            })
+            },isMulty);
         })
     }
 
