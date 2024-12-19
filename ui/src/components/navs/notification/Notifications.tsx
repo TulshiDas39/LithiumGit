@@ -1,6 +1,6 @@
-import React, { Fragment, useRef } from "react"
+import React, { Fragment, useMemo, useRef } from "react"
 import { FaRegBell } from "react-icons/fa";
-import { BellWithDot } from "../../common";
+import { AppButton, BellWithDot } from "../../common";
 import { Overlay } from "react-bootstrap";
 import { useMultiState } from "../../../lib";
 import { SingleNotification } from "./SingleNotification";
@@ -17,6 +17,9 @@ function NotificationsComponent(){
 
     const [state, setState] = useMultiState<IState>({show:false});
     const target = useRef<HTMLElement>(null!);
+    const bottomHeight = useMemo(()=>{
+        return !!store.notifications.length ? 50:0;
+    },[store.notifications.length])
 
     return <div className="ps-1 pe-2">
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
@@ -43,20 +46,18 @@ function NotificationsComponent(){
                     width:450,
                     ...props.style,
                     }}
-                >
-                    {/* <div className="pt-3">
-                        No notifications found.
-                    </div> */}
-                    <div className="py-2">
+                >                    
+                    <div className="py-2 overflow-auto" style={{maxHeight:`calc(95vh - ${bottomHeight}px)`}}>
                         {!store.notifications.length && <span>No new notifications</span>}
                         {store.notifications.map(n=>(
                             <div className="py-1" key={n._id}>
                                 <SingleNotification data={n}  />
                             </div>
-                        ))}
-                        {/* <SingleNotification data={{message:"notification 1"}}  />
-                        <SingleNotification data={{message:"notification 2"}}  /> */}
+                        ))}                                                                      
                     </div>
+                    {!!store.notifications.length && <div className="d-flex align-items-center justify-content-end" style={{height:bottomHeight}}>
+                        <AppButton>Clear all</AppButton>
+                    </div>}
                     
                 </div>
                 )}
