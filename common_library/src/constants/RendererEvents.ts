@@ -288,5 +288,6 @@ export class RendererEvents{
     static readonly loadNotifications = "loadNotifications";
     static readonly clearNotifications = "clearNotifications";
     static readonly deleteNotifcations = "deleteNotifcations";
+    static readonly updateNotifications = "updateNotifications";
 }
 

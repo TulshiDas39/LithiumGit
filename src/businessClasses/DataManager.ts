@@ -21,6 +21,7 @@ export class DataManager{
         this.handleNotificationsFetch();
         this.handleNotificationsClear();
         this.handleRemoveNotifications();
+        this.handleUpdateNotifications();
 
     }
 
@@ -75,6 +76,16 @@ export class DataManager{
             }
         });
     }
+
+    private handleUpdateNotifications(){
+        ipcMain.handle(RendererEvents.updateNotifications, async(_e,items:INotification[]) => {
+            for(let item of items){
+                await DB.notification.updateOneAsync(item);
+            }
+        });
+    }
+
+    //markAllNotificationAsRead
 
     private handleAnnotationDelete(){
         ipcMain.handle(RendererEvents.removeAnnotation, async(_e,annots:Annotation[]) => {            

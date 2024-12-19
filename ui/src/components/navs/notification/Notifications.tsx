@@ -1,8 +1,8 @@
-import React, { Fragment, useMemo, useRef } from "react"
+import React, { Fragment, useEffect, useMemo, useRef } from "react"
 import { FaRegBell } from "react-icons/fa";
 import { AppButton, BellWithDot } from "../../common";
 import { Overlay } from "react-bootstrap";
-import { useMultiState } from "../../../lib";
+import { ObjectUtils, useMultiState } from "../../../lib";
 import { SingleNotification } from "./SingleNotification";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -30,7 +30,7 @@ function NotificationsComponent(){
     },[store.notifications]);
 
     const unreadCount = useMemo(()=>{
-        return store.notifications.filter(_ => !_.isRead);
+        return store.notifications.filter(_ => !_.isRead).length;
     },[store.notifications])
 
     const handleClear=()=>{
@@ -49,6 +49,28 @@ function NotificationsComponent(){
         }
         setState({show:!state.show});
     }
+
+    useEffect(()=>{
+        if(!state.show){
+            const unreadNots = store.notifications.filter(_ => !_.isRead);
+            if(unreadNots.length){
+                const nots = new ObjectUtils().deepClone(unreadNots);
+                nots.forEach(n=> n.isRead = true);
+                IpcUtils.updateNotifications(nots).then(r=>{
+                    if(!r.error){
+                        dispatch(ActionUI.increamentVersion("notifications"));
+                    }
+                });
+            }
+            
+        }
+    },[state.show])
+
+    const renderingNots = useMemo(()=>{
+        const renderingList = store.notifications.slice();
+        renderingList.sort((a,b)=> a.createdAt > b.createdAt?-1:1);
+        return renderingList;
+    },[store.notifications])
 
     return <div className="ps-1 pe-2 position-relative">
             {!!activeNotifications.length && <div className="py-2 overflow-auto position-absolute" style={{width:450, maxHeight:`95vh`,bottom:'100%',right:'0px'}}>
@@ -85,7 +107,7 @@ function NotificationsComponent(){
                 >                    
                     <div className="py-2 overflow-auto" style={{maxHeight:`calc(95vh - ${bottomHeight}px)`}}>
                         {!store.notifications.length && <span>No new notifications</span>}
-                        {store.notifications.map(n=>(
+                        {renderingNots.map(n=>(
                             <div className="py-1" key={n._id}>
                                 <SingleNotification data={n}  />
                             </div>
