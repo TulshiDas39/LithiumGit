@@ -29,6 +29,10 @@ function NotificationsComponent(){
         return store.notifications.filter(_ => _.isActive);
     },[store.notifications]);
 
+    const unreadCount = useMemo(()=>{
+        return store.notifications.filter(_ => !_.isRead);
+    },[store.notifications])
+
     const handleClear=()=>{
         IpcUtils.clearNotifications().then(r=>{
             if(!r.error){
@@ -56,7 +60,7 @@ function NotificationsComponent(){
                     </div>}
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
                 onClick={() => toogleNotifications()}>
-                {true? <FaRegBell />: <BellWithDot /> }
+                {!unreadCount? <FaRegBell />: <BellWithDot /> }
             </span>
             <Overlay target={target.current} show={state.show} placement="top-end"
                 rootClose={true} rootCloseEvent="click" onHide={() => setState({show:false})}>
