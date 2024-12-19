@@ -22,7 +22,7 @@ function NotificationsComponent(){
     const [state, setState] = useMultiState<IState>({show:false});
     const target = useRef<HTMLElement>(null!);
     const bottomHeight = useMemo(()=>{
-        return !!store.notifications.length ? 50:0;
+        return !!store.notifications.length ? 30:0;
     },[store.notifications.length])
 
     const handleClear=()=>{
@@ -67,7 +67,7 @@ function NotificationsComponent(){
                             </div>
                         ))}                                                                      
                     </div>
-                    {!!store.notifications.length && <div className="d-flex align-items-center justify-content-end" style={{height:bottomHeight}}>
+                    {!!store.notifications.length && <div className="d-flex small align-items-end justify-content-end" style={{height:bottomHeight}}>
                         <AppButton onClick={handleClear}>Clear all</AppButton>
                     </div>}
                     
