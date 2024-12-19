@@ -2,7 +2,7 @@ import { EnumTheme, INotification, ISavedData, RendererEvents } from "common_lib
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, GraphUtils, IUiNotification, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
@@ -90,8 +90,13 @@ function MainComponent(){
             DataUtils.clone.progress = progress;
         })
 
-        window.ipcRenderer.on(RendererEvents.notification,(_e,notification:INotification)=>{            
+        window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
+            notification.isActive = true;
+            const id = notification._id;
             dispatch(ActionUI.addNotifications([notification]));
+            setTimeout(() => {
+                dispatch(ActionUI.deactivateNotification(id));
+            }, 1000*60);
         })
 
 

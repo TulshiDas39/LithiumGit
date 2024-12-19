@@ -1,6 +1,7 @@
 import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
+import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
     static deleteNotification(items: INotification[]) {
@@ -318,7 +319,7 @@ export class IpcUtils{
     }
 
     static getNotifications(){
-        return IpcUtils.execute<INotification[]>(RendererEvents.loadNotifications,[]);
+        return IpcUtils.execute<IUiNotification[]>(RendererEvents.loadNotifications,[]);
     }
     
 }

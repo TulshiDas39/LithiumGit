@@ -25,6 +25,10 @@ function NotificationsComponent(){
         return !!store.notifications.length ? 30:0;
     },[store.notifications.length])
 
+    const activeNotifications = useMemo(()=>{
+        return store.notifications.filter(_ => _.isActive);
+    },[store.notifications]);
+
     const handleClear=()=>{
         IpcUtils.clearNotifications().then(r=>{
             if(!r.error){
@@ -33,7 +37,14 @@ function NotificationsComponent(){
         });
     }
 
-    return <div className="ps-1 pe-2">
+    return <div className="ps-1 pe-2 position-relative">
+            {!!activeNotifications.length && <div className="py-2 overflow-auto position-absolute" style={{width:450, maxHeight:`95vh`,bottom:'100%',right:'0px'}}>
+                        {activeNotifications.map(n=>(
+                            <div className="py-1" key={n._id}>
+                                <SingleNotification data={n} showMinus={true}  />
+                            </div>
+                        ))}                                                                      
+                    </div>}
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
                 onClick={() => setState({show:!state.show})}>
                 {true? <FaRegBell />: <BellWithDot /> }

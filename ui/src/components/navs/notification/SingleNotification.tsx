@@ -5,9 +5,11 @@ import { AppButton } from "../../common";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { useDispatch } from "react-redux";
 import { ActionUI } from "../../../store/slices/UiSlice";
+import { IUiNotification } from "../../../lib";
 
 interface IProps{
-    data:INotification;
+    data:IUiNotification;
+    showMinus?:boolean;
 }
 
 function SingleNotificationComponent(props:IProps){
@@ -20,9 +22,16 @@ function SingleNotificationComponent(props:IProps){
             }
         });
     }
+    const handleHide=()=>{
+        dispatch(ActionUI.deactivateNotification(props.data._id));
+    }
+
     return <div className="border ps-1 w-100 bg-second-color" style={{width:300}}>
         <div className="d-flex justify-content-end" style={{lineHeight:1.2}}>
-            {/* <FaMinus /> */}
+            {!!props.showMinus &&
+            <span className="pe-2 small">
+                <FaMinus onClick={handleHide} />
+            </span>}
             <span className="pe-2 small">
                 <FaTimes className="small hover" onClick={handleRemove} />
             </span>

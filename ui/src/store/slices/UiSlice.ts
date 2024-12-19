@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { INotification, IRemoteInfo, IStatus } from "common_library";
-import { EnumConfigTab, EnumSelectedRepoTab } from "../../lib";
+import { EnumConfigTab, EnumSelectedRepoTab, IUiNotification } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -43,7 +43,7 @@ interface IUIState{
     remotes:IRemoteInfo[];
     branchList:string[];
     refreshingGraph:boolean;
-    notifications:INotification[];
+    notifications:IUiNotification[];
 }
 
 const initialState:IUIState={
@@ -131,11 +131,17 @@ const UISlice = createSlice({
         setGraphRefresh(state,action:PayloadAction<boolean>){
             state.refreshingGraph = action.payload;
         },
-        setNotificationList(state,action:PayloadAction<INotification[]>){
+        setNotificationList(state,action:PayloadAction<IUiNotification[]>){
             state.notifications = action.payload;
         },
-        addNotifications(state,action:PayloadAction<INotification[]>){
+        addNotifications(state,action:PayloadAction<IUiNotification[]>){
             state.notifications.push(...action.payload);
+        },
+        deactivateNotification(state,action:PayloadAction<string>){
+            const notification = state.notifications.find(_=> _._id === action.payload);
+            if(notification){
+                notification.isActive = false;
+            }
         }
     }
 });
