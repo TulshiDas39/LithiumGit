@@ -8,6 +8,10 @@ export class NotificationDB extends BaseDB<INotification>{
     }
 
     async addNotificationForNewUpdate(version:string){
+        const existing:INotification<IDownloadedVersion> = await this.findOneAsync({type:EnumNotificationType.UpdateAvailable});
+        if(existing?.data?.version === version){
+            return null;
+        }
         const data:IDownloadedVersion = {
             version,
         };
@@ -17,7 +21,7 @@ export class NotificationDB extends BaseDB<INotification>{
             message:"Update available.",
         });
         notification.data = data;
-        await this.deleteAsync({type:EnumNotificationType.UpdateAvailable});
+        await this.deleteAsync({type:EnumNotificationType.UpdateAvailable},true);
         await this.insertOneAsync(notification);
         return notification;
     }

@@ -31,7 +31,9 @@ export class Updater{
           })
           autoUpdater.on('update-downloaded', async (_) => {          
             const notifiacation = await DB.notification.addNotificationForNewUpdate("");
-            AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
+            if(notifiacation){
+              AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
+            }
           });
     }
     checkForUpdate(){
