@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static installUpdate() {
+        return IpcUtils.execute(RendererEvents.installUpdate,[]);
+    }
     static checkForUpdate() {
         return IpcUtils.execute(RendererEvents.checkForUpdate,[]);
     }

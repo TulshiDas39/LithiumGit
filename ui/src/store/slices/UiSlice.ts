@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { INotification, IRemoteInfo, IStatus } from "common_library";
+import { EnumNotificationType, INotification, IRemoteInfo, IStatus } from "common_library";
 import { EnumConfigTab, EnumSelectedRepoTab, IUiNotification } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -135,7 +135,12 @@ const UISlice = createSlice({
             state.notifications = action.payload;
         },
         addNotifications(state,action:PayloadAction<IUiNotification[]>){
-            state.notifications.push(...action.payload);
+            for(let item of action.payload){
+                if(item.type === EnumNotificationType.UpdateAvailable){
+                    state.notifications = state.notifications.filter(_ => _.type !== EnumNotificationType.UpdateAvailable);
+                }
+                state.notifications.push(item);
+            }
         },
         deactivateNotification(state,action:PayloadAction<string>){
             const notification = state.notifications.find(_=> _._id === action.payload);

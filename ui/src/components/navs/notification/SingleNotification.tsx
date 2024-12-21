@@ -5,6 +5,7 @@ import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { useDispatch } from "react-redux";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IUiNotification } from "../../../lib";
+import { EnumNotificationType, INewVersionInfo } from "common_library";
 
 interface IProps{
     data:IUiNotification;
@@ -23,6 +24,15 @@ function SingleNotificationComponent(props:IProps){
     }
     const handleHide=()=>{
         dispatch(ActionUI.deactivateNotification(props.data._id));
+    }
+
+    const handleAction=(_e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
+        if(props.data.type === EnumNotificationType.UpdateAvailable){
+            const data = props.data.data as INewVersionInfo;
+            if(data?.downloaded){
+                IpcUtils.installUpdate();
+            }
+        }
     }
 
     return <div className="border ps-1 w-100 bg-second-color" style={{width:300}}>
@@ -46,7 +56,7 @@ function SingleNotificationComponent(props:IProps){
                 {props.data.message}
             </div>
             {!!props.data.action?.buttonText && <div className="pe-1 small">
-                <AppButton>{props.data.action?.buttonText}</AppButton>
+                <AppButton onClick={handleAction}>{props.data.action?.buttonText}</AppButton>
             </div>}
         </div>
     </div>
