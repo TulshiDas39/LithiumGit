@@ -182,6 +182,11 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         refData.current.isMounted = true;
     },[])
+
+    const copyFile=(file:IFile)=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+        UiUtils.copy(path);
+    }
     
     
     const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
@@ -191,7 +196,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         const items:IContextItem[] = [
             {
                 text:`Copy path`,
-                onClick:handleIgnore
+                onClick:()=>copyFile(file)
             },
             {
                 text:`Show in directory`,
