@@ -18,7 +18,9 @@ function ContextModalComponent(){
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
     
-    const [state, setState] = useMultiState({} as IState);
+    const [state, setState] = useMultiState({
+        position:{x:0,y:0}
+    } as IState);
 
     const refData = useRef({onHover:false,show:false});
 
@@ -40,7 +42,6 @@ function ContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
-            console.log("opening context:",Data.position);
             setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.CONTEXT));
         }
@@ -65,7 +66,7 @@ function ContextModalComponent(){
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>
                 <div className="container">                    
                     {!!Data.items.length && Data.items.map(item=>(
-                        <div className={`row g-0 border-bottom context-option`}>
+                        <div key={item.text} className={`row g-0 border-bottom context-option`}>
                             <div className="col-12 hover cur-default " onClick={() => handleClick(item)}>
                                 {item.text} {!!item.icon && item.icon}
                             </div> 

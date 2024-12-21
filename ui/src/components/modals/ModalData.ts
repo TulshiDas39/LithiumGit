@@ -32,7 +32,9 @@ export interface IToastData{
 }
 
 export class InitialModalData{
-    static readonly contextModal= { items:[],position:{x:0,y:0} } as IContextModalData; 
+    static get contextModal(){
+        return { items:[],position:{x:0,y:0} } as IContextModalData;
+    } 
     static readonly commitContextModal= {  } as ICommitContextModalData; 
     static get createBranchModal() {
         return {} as ICreateBranchModal;

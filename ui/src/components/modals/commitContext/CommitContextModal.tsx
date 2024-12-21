@@ -49,7 +49,6 @@ function CommitContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
-            console.log("opening context:",Data.position);
             setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
