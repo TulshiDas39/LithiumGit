@@ -10,10 +10,10 @@ export interface INotification<T=any> extends BaseSchema{
     data?:T
 }
 
-export const createNotification=(props?:Partial<INotification>)=>{
-    let obj:INotification={
+export const createNotification=<T=any>(props?:Partial<INotification<T>>)=>{
+    let obj={
         ...createBaseSchema(),        
-    } as INotification;
+    } as INotification<T>;
     if(props) obj = {...obj,...props};
     return obj;
 }

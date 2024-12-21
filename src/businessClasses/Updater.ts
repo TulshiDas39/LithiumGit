@@ -30,7 +30,7 @@ export class Updater{
             this.sendStatusToWindow(log_message);
           })
           autoUpdater.on('update-downloaded', async (_) => {          
-            const notifiacation = await DB.notification.addNotificationForNewUpdate();
+            const notifiacation = await DB.notification.addNotificationForNewUpdate("");
             AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
           });
     }
