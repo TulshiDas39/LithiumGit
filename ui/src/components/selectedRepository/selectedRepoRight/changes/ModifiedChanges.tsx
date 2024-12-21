@@ -206,7 +206,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         ]
         if(file.changeType !== EnumChangeType.DELETED){
             items.push({
-                text:`Show in directory`,
+                text:`Open containing folder`,
                 onClick:()=>showInDirectory(file)
             })
         }
