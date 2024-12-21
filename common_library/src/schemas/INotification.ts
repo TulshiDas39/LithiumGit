@@ -2,11 +2,12 @@ import { EnumNotificationType } from "../enums";
 import { INotificationAction } from "../models/INotificationAction";
 import { BaseSchema, createBaseSchema } from "./BaseSchema";
 
-export interface INotification extends BaseSchema{
+export interface INotification<T=any> extends BaseSchema{
     message:string;
     action?:INotificationAction;
     type:EnumNotificationType;
     isRead:boolean;
+    data?:T
 }
 
 export const createNotification=(props?:Partial<INotification>)=>{

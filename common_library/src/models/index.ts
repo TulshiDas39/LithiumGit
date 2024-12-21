@@ -20,3 +20,4 @@ export * from './ITypedConfig';
 export * from './IGitConfig';
 export * from './ICommitFilter';
 export * from './IHeadCommitInfo';
+export * from './Interfaces';
