@@ -1,3 +1,4 @@
-export interface IDownloadedVersion{
-    version:string;    
+export interface INewVersionInfo{
+    version:string;
+    downloaded?:boolean;
 }

@@ -19,19 +19,8 @@ export class Startup{
     async initilise(){
       //this.initAppData();
       this.addExceptionHandler();
-      this.checkForUpdate();
       await this.loadSavedData();      
       this.startIpcManagers();
-    }
-
-    checkForUpdate(){
-      if(Config.env === Env.DEVELOPMENT)
-        return;
-      try{
-        new Updater().checkForUpdate();
-      }catch(e){
-        console.log(e?.toString());
-      }
     }
 
     addExceptionHandler(){
@@ -164,6 +153,7 @@ export class Startup{
       new GitManager().start();
       new FileManager().start();
       new ShellManager().start();
+      new Updater().registerIpcEvents();
     }
 
 }

@@ -78,7 +78,9 @@ function MainComponent(){
             dispatch(ActionSavedData.setRecentRepositories(sortedRepos));
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
         });
-        setState({isLoading:false});        
+        setState({isLoading:false});
+        
+        IpcUtils.checkForUpdate();
 
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));
