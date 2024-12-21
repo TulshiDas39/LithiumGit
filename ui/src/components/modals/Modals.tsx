@@ -7,11 +7,13 @@ import { PullFromModal } from "./PullFromModal";
 import { CheckoutBranchModal } from "./CheckoutBranchModal";
 import { AppToast } from "./AppToast";
 import { CommitContextModal } from "./commitContext";
+import { ContextModal } from "./ContextModal";
 
 function ModalsComponent(){
     return(
         <Fragment>
             <CommitContextModal />
+            <ContextModal />
             <CreateBranchModal />
             <ErrorModal />
             <ConfirmationModal />

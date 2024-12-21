@@ -1,5 +1,10 @@
 import { ICommitInfo } from "common_library"
-import { IPositition } from "../../lib";
+import { IContextItem, IPositition } from "../../lib";
+
+interface IContextModalData{
+    items:IContextItem[];
+    position:IPositition;
+}
 
 interface ICommitContextModalData{
     selectedCommit:ICommitInfo;
@@ -27,6 +32,7 @@ export interface IToastData{
 }
 
 export class InitialModalData{
+    static readonly contextModal= { items:[],position:{x:0,y:0} } as IContextModalData; 
     static readonly commitContextModal= {  } as ICommitContextModalData; 
     static get createBranchModal() {
         return {} as ICreateBranchModal;
@@ -54,6 +60,7 @@ export class InitialModalData{
 
 export class ModalData{
     static commitContextModal = InitialModalData.commitContextModal;
+    static contextModal = InitialModalData.contextModal;
     static createBranchModal = InitialModalData.createBranchModal;
     static errorModal = InitialModalData.errorModal;
     static confirmationModal = InitialModalData.confirmationModal;

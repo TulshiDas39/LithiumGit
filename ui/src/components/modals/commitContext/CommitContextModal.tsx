@@ -55,7 +55,7 @@ function CommitContextModalComponent(){
         }
 
         GraphUtils.openContextModal = modalOpenEventListener;                
-        UiUtils.openContextModal = modalOpenEventListener;        
+        UiUtils.openCommitContextModal = modalOpenEventListener;        
 
         document.addEventListener("click",(e)=>{
             if(refData.current.show && !refData.current.onHover){
