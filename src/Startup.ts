@@ -27,7 +27,11 @@ export class Startup{
     checkForUpdate(){
       if(Config.env === Env.DEVELOPMENT)
         return;
+      try{
         new Updater().checkForUpdate();
+      }catch(e){
+        console.log(e?.toString());
+      }
     }
 
     addExceptionHandler(){

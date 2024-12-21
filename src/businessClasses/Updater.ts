@@ -4,6 +4,7 @@ import { createNotificationForNewUpdate, RendererEvents } from "common_library";
 import { AppData } from "../dataClasses";
 
 export class Updater{
+    private newVersion:string="";
 
     sendStatusToWindow(text:string) {
         // log.info(text);
@@ -30,7 +31,7 @@ export class Updater{
             this.sendStatusToWindow(log_message);
           })
           autoUpdater.on('update-downloaded', async (_) => {          
-            const notifiacation = await DB.notification.addNotificationForNewUpdate("");
+            const notifiacation = await DB.notification.addNotificationForNewUpdate(this.newVersion);
             if(notifiacation){
               AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
             }
@@ -40,7 +41,9 @@ export class Updater{
         this.handleEvents();
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
         autoUpdater.autoInstallOnAppQuit = false;
-        autoUpdater.checkForUpdates();
+        autoUpdater.checkForUpdates().then(r=>{
+          this.newVersion = r?.updateInfo?.version;
+        });
 
     }
 
