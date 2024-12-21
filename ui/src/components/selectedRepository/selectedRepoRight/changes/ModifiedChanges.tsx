@@ -187,6 +187,11 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
         UiUtils.copy(path);
     }
+
+    const showInDirectory=(file:IFile)=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+        IpcUtils.showInFileExplorer(path);
+    }
     
     
     const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
@@ -197,12 +202,14 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             {
                 text:`Copy path`,
                 onClick:()=>copyFile(file)
-            },
-            {
-                text:`Show in directory`,
-                onClick:handleIgnore
-            }
+            }            
         ]
+        if(file.changeType !== EnumChangeType.DELETED){
+            items.push({
+                text:`Show in directory`,
+                onClick:()=>showInDirectory(file)
+            })
+        }
         if(file.changeType === EnumChangeType.CREATED){
             items.push({
                 text:`Ignore '${file.fileName}'`,

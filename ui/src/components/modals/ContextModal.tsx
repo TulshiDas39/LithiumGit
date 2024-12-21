@@ -41,8 +41,8 @@ function ContextModalComponent(){
     }    
 
     useEffect(()=>{
-        const modalOpenEventListener = ()=>{
-            setState({position:Data.position});
+        const modalOpenEventListener = ()=>{        
+            setState({position:ModalData.contextModal.position});
             dispatch(ActionModals.showModal(EnumModals.CONTEXT));
         }
 
@@ -58,8 +58,10 @@ function ContextModalComponent(){
 
     const handleClick = (item:IContextItem)=>{
         item.onClick();
+        hideModal();
     }
     
+    console.log("state.position", state.position);
 
     return (
         <Modal dialogClassName="context" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
