@@ -190,14 +190,26 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         }
         const items:IContextItem[] = [
             {
-                text:`Ignore '${file.fileName}'`,
+                text:`Copy path`,
                 onClick:handleIgnore
             },
             {
-                text:`Copy path`,
+                text:`Show in directory`,
                 onClick:handleIgnore
             }
         ]
+        if(file.changeType === EnumChangeType.CREATED){
+            items.push({
+                text:`Ignore '${file.fileName}'`,
+                onClick:handleIgnore
+            })
+        }
+        if(file.changeType === EnumChangeType.MODIFIED){
+            items.push({
+                text:`Delete from git`,
+                onClick:handleIgnore
+            })
+        }
         ModalData.contextModal.items = items;
         ModalData.contextModal.position = {x:e.clientX,y:e.clientY};
 
