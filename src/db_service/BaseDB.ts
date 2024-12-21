@@ -140,8 +140,12 @@ export class BaseDB<T extends BaseSchema>{
     insertManyAsync(records:T[]){
         return new Promise<T[]>((resolve,reject)=>{
             this.insertMany(records,(err,docs)=>{
-                if(err) reject(err);
-                resolve(docs);
+                if(err) {
+                    reject(err);
+                }
+                else{
+                    resolve(docs);
+                }
             });
         })
     }
