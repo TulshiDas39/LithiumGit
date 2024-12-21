@@ -1,7 +1,8 @@
 import { autoUpdater } from "electron-updater";
 import { DB } from "../db_service";
-import { createNotificationForNewUpdate, RendererEvents } from "common_library";
+import { RendererEvents } from "common_library";
 import { AppData } from "../dataClasses";
+import { ipcMain } from "electron";
 
 export class Updater{
     private newVersion:string="";
@@ -33,11 +34,12 @@ export class Updater{
           autoUpdater.on('update-downloaded', async (_) => {          
             const notifiacation = await DB.notification.addNotificationForNewUpdate(this.newVersion);
             if(notifiacation){
-              AppData.mainWindow.webContents.send(RendererEvents.notification,notifiacation);
+              AppData.mainWindow?.webContents.send(RendererEvents.notification,notifiacation);
             }
           });
     }
     checkForUpdate(){
+        this.registerIpcEvents();
         this.handleEvents();
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
         autoUpdater.autoInstallOnAppQuit = false;
@@ -47,4 +49,13 @@ export class Updater{
 
     }
 
+    private registerIpcEvents(){
+      this.handleInstall();
+    }
+
+    private handleInstall(){
+      ipcMain.handle(RendererEvents.installUpdate,(_e)=>{
+        autoUpdater.quitAndInstall(true,true);
+      })
+    }
 }
