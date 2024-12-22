@@ -24,13 +24,31 @@ function ContextModalComponent(){
 
     const refData = useRef({onHover:false,show:false});
 
+    const getAdjustedPosition=(height:number,width:number)=>{
+        let x = state.position.x;
+        const diffX = window.innerWidth - state.position.x;
+        if(diffX < width){
+            x -= (width - diffX);
+        }
+        let y = state.position.y;
+        const diffY = window.innerHeight - state.position.y;
+        if(diffY < height){
+            y -= (height - diffY);
+        }
+
+        return {x,y} as IPositition
+    }
+
     useEffect(()=>{
         refData.current.show = store.show;
         if(store.show){
             let elem = document.querySelector(".context") as HTMLElement;
             if(elem){
-                elem.style.marginTop = state.position.y+"px";
-                elem.style.marginLeft = state.position.x+"px";
+                const height = elem.getBoundingClientRect().height;
+                const width = elem.getBoundingClientRect().width;
+                const position = getAdjustedPosition(height,width);
+                elem.style.marginTop = position.y+"px";
+                elem.style.marginLeft = position.x+"px";
             }
         }        
     },[store.show,state.position])
