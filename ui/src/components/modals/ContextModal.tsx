@@ -69,7 +69,7 @@ function ContextModalComponent(){
                 <div className="container">                    
                     {!!Data.items.length && Data.items.map(item=>(
                         <div key={item.text} className={`row g-0 border-bottom context-option`}>
-                            <div className="col-12 hover cur-default " onClick={() => handleClick(item)}>
+                            <div className="col-12 hover cur-default overflow-ellipsis text-nowrap" onClick={() => handleClick(item)} style={{maxWidth:500}}>
                                 {item.text} {!!item.icon && item.icon}
                             </div> 
                         </div>
