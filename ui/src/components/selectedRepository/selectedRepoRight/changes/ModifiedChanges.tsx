@@ -196,7 +196,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
     const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
         const handleIgnore=()=>{
-
+            IpcUtils.ignoreFile(file.path).then(()=>{
+                GitUtils.getStatus();
+            });
         }
         const items:IContextItem[] = [
             {

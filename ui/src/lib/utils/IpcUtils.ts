@@ -1,9 +1,12 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFile, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static ignoreFile(pattern: string) {
+        return IpcUtils.runGitCommand(RendererEvents.ignoreItem,[pattern])
+    }
     static installUpdate() {
         return IpcUtils.execute(RendererEvents.installUpdate,[]);
     }

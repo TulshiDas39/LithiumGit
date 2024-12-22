@@ -1,13 +1,14 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo, createNotification} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import * as fs from 'fs';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
-import { DB } from "../db_service";
+import * as os from 'os';
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
@@ -54,6 +55,7 @@ export class GitManager{
         this.addUserNameUpdateHandler();
         this.addUserEmailUpdateHandler();
         this.addGraphCommitListHandler();
+        this.addIgnore();
     }
 
 
@@ -694,6 +696,32 @@ export class GitManager{
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
             await this.takeFetch(repoPath,options);            
         });
+    }
+
+    private addIgnore(){
+        ipcMain.handle(RendererEvents.ignoreItem,async (_e,repoPath:string,pattern:string)=>{
+            return await this.ignoreItem(repoPath,pattern);
+        });
+    }
+
+    private ignoreItem(repoPath:string,pattern:string){
+        const gitIgnore = path.join(repoPath,".gitignore");
+        const exists = fs.existsSync(gitIgnore);
+        let data = `${pattern}`;
+        if(exists){
+            data = `${os.EOL}${data}`;
+        }
+        return new Promise<boolean>((res,rej)=>{
+            fs.writeFile(gitIgnore,data,{flag:'a+'},(err)=>{
+                if(err){
+                    rej(err);
+                }else{
+                    res(true);
+                }
+           });
+
+        })
+        
     }
 
     private addCleanhHandler(){

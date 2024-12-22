@@ -61,8 +61,6 @@ function ContextModalComponent(){
         hideModal();
     }
     
-    console.log("state.position", state.position);
-
     return (
         <Modal dialogClassName="context" className="context-modal" backdrop={false}  size="sm" backdropClassName="bg-transparent" animation={false} show={store.show} onHide={()=> hideModal()}>
             <Modal.Body onMouseEnter={()=> {refData.current.onHover = true}} onMouseLeave={()=>{refData.current.onHover = false}}>

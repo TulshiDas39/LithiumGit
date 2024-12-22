@@ -291,5 +291,6 @@ export class RendererEvents{
     static readonly updateNotifications = "updateNotifications";
     static readonly checkForUpdate = "checkForUpdate";
     static readonly installUpdate = "installUpdate";
+    static readonly ignoreItem = "ignoreItem";
 }
 
