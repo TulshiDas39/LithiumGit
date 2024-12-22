@@ -196,7 +196,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
     const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
         const handleDelete = ()=>{
-
+            const options:string[] = ["-r", "--cached",file.path];
+            IpcUtils.removeFromGit(options).then(r=>{
+                if(!r.error){
+                    GitUtils.getStatus();
+                }
+            });
         }
         const handleIgnore=()=>{
             IpcUtils.ignoreFile(file.path).then(()=>{

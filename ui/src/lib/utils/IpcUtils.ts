@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static removeFromGit(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.deleteFromGit,[options]);
+    }
     static ignoreFile(pattern: string) {
         return IpcUtils.runGitCommand(RendererEvents.ignoreItem,[pattern])
     }

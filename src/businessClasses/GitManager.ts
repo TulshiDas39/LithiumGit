@@ -56,6 +56,7 @@ export class GitManager{
         this.addUserEmailUpdateHandler();
         this.addGraphCommitListHandler();
         this.addIgnore();
+        this.addRemoveFromGitHandler();
     }
 
 
@@ -756,6 +757,19 @@ export class GitManager{
         })
     }
 
+    private addRemoveFromGitHandler(){
+        ipcMain.handle(RendererEvents.deleteFromGit,async (e,repoPath:string,options:string[])=>{
+            return await this.deleteFromGit(repoPath,options);
+        })
+    }
+
+    private async deleteFromGit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        return await git.raw(["rm",...options]);
+    }
+
+
+
     private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
         const git = this.getGitRunner(repoInfo);
         await git.clean(CleanOptions.FORCE,files);
@@ -793,18 +807,7 @@ export class GitManager{
         });
 
         return remotes;
-    }
-    
-    private hasChangesInPull(result:PullResult){
-        if(!result) return false;
-        if(result.created?.length) return true;
-        if(result.deleted?.length) return true;
-        if(result.summary?.changes) return true;
-        if(result.summary.deletions) return true;
-        if(result.summary.insertions) return true;
-        return false;
-    }
-    
+    }    
 
     private async getStashList(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
