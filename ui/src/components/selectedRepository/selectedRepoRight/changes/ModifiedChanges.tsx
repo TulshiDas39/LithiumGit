@@ -195,6 +195,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
     
     const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
+        const handleDelete = ()=>{
+
+        }
         const handleIgnore=()=>{
             IpcUtils.ignoreFile(file.path).then(()=>{
                 GitUtils.getStatus();
@@ -220,8 +223,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         }
         if(file.changeType === EnumChangeType.MODIFIED){
             items.push({
-                text:`Delete from git`,
-                onClick:handleIgnore
+                text:`Delete from git(--cached)`,
+                onClick:handleDelete
             })
         }
         ModalData.contextModal.items = items;

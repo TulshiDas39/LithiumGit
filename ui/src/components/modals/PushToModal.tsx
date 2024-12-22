@@ -28,7 +28,8 @@ function PushToModalComponent(){
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
-        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo && _.repoId === RepoUtils.repositoryDetails.repoInfo._id);
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo && _.repoId === repoId);
     },[store.show])
 
     const [state,setState] = useMultiState<IState>({

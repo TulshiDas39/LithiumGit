@@ -38,7 +38,8 @@ function PullFromModalComponent(){
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
-        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom);
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom && _.repoId === repoId);
     },[store.show])
 
     const closeModal=()=>{
