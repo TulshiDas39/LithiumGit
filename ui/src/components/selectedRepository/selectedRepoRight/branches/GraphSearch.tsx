@@ -13,8 +13,8 @@ function GraphSearchComponent(){
             GraphUtils.state.highlightedCommit.publish(undefined);
             return;
         }
-
-        const commit = RepoUtils.repositoryDetails?.allCommits.find(_=> _.hash.includes(state.text) || _.refValues.some(r=>r.includes(state.text)));
+        const str = state.text.toLowerCase();
+        const commit = RepoUtils.repositoryDetails?.allCommits.find(_=> _.hash.includes(str) || _.refValues.some(r=>r.toLowerCase().includes(str)));
         GraphUtils.state.highlightedCommit.publish(commit);
     },[state.text])
     return <div className="h-100 pe-1" style={{minWidth:200}}>
