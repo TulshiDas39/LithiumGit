@@ -16,25 +16,31 @@ interface IProps{
 }
 
 function CommitDiffNavigationComponent(props:IProps){
-    const parentCommit = useMemo(()=>{
+    const hash2 = useMemo(()=>{
         if(props.file?.changeType !== EnumChangeType.MODIFIED)
             return "";
         return GraphUtils.state.selectedCommit.value?.parentHashes.join();
     },[GraphUtils.state.selectedCommit.value,props.file]);
 
-    const currentCommit = GraphUtils.state.selectedCommit.value?.avrebHash;
+    const hash1 = useMemo(()=>{
+        if(!props.file)
+            return "";
+        if(props.file.changeType === EnumChangeType.DELETED)
+            return GraphUtils.state.selectedCommit.value?.parentHashes.join();
+        return GraphUtils.state.selectedCommit.value?.avrebHash;
+    },[GraphUtils.state.selectedCommit.value,props.file]);
 
     return <div className="d-flex">
         <div className="flex-grow-1 d-flex align-items-center justify-content-center">
             {!!props.file && <Fragment>
-                <span title={props.file.path}>{StringUtils.getFileName(props.file.path)}</span>
-                <span>({currentCommit}</span>
-                {!!parentCommit && 
+                <span className="pe-1" title={props.file.path}>{StringUtils.getFileName(props.file.path)} </span>
+                <span>({hash1}</span>
+                {!!hash2 && 
                    <Fragment>
                         <span className="px-1">
                             <FaArrowsAltH />
                         </span>                        
-                        <span>{parentCommit}</span>
+                        <span>{hash2}</span>
                    </Fragment> 
                 }
                 <span>)</span>
