@@ -692,7 +692,7 @@ export class GitManager{
         });
     }
 
-    private  addFetchHandler(){
+    private addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
             await this.takeFetch(repoPath,options);            
         });

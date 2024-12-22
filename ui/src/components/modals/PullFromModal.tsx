@@ -60,8 +60,7 @@ function PullFromModalComponent(){
         });
         IpcUtils.addAnnotation([newAnnot]).then(r=>{
             if(!r.error){
-                const annots =[...annotations,newAnnot];
-                Data.annotations = annots;
+                Data.annotations.push(newAnnot);
             }
         })
     }

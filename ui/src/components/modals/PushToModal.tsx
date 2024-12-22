@@ -28,7 +28,7 @@ function PushToModalComponent(){
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
-        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo);
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo && _.repoId === RepoUtils.repositoryDetails.repoInfo._id);
     },[store.show])
 
     const [state,setState] = useMultiState<IState>({
@@ -61,8 +61,7 @@ function PushToModalComponent(){
         });
         IpcUtils.addAnnotation([newAnnot]).then(r=>{
             if(!r.error){
-                const annots =[...annotations,newAnnot];
-                Data.annotations = annots;
+                Data.annotations.push(newAnnot);
             }
         })
     }
