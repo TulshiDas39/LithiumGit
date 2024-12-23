@@ -4,9 +4,6 @@ import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { GraphUtils } from "../../../../lib";
 import { FaArrowsAltH } from "react-icons/fa";
 
-{/* <StepNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
-            onNextClick={handleNext} onPreviousClick={handlePrevious} /> */}
-
 interface IProps{
     currentStep:number;
     totalStep:number;
