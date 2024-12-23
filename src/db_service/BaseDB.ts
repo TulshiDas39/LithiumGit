@@ -160,8 +160,10 @@ export class BaseDB<T extends BaseSchema>{
     updateOneAsync(record:T){
         return new Promise<number>((resolve,reject)=>{
             this.updateOne(record,(err,updateCount)=>{
-                if(err) reject(err);
-                resolve(updateCount);
+                if(err)
+                    reject(err);
+                else 
+                    resolve(updateCount);
             })
         });        
     }

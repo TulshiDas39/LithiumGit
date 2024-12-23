@@ -49,7 +49,7 @@ export class Updater{
     }
     private checkForUpdate(){
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
-        autoUpdater.checkForUpdates().then(r=>{
+        return autoUpdater.checkForUpdates().then(r=>{
           this.newVersion = r?.updateInfo?.version;
         });
     }
@@ -61,8 +61,8 @@ export class Updater{
 
    
    private handleCheckForUpdate(){
-    ipcMain.handle(RendererEvents.checkForUpdate,(_e)=>{
-      this.checkForUpdate();
+    ipcMain.handle(RendererEvents.checkForUpdate, async (_e)=>{
+      await this.checkForUpdate();
     })
   }
 

@@ -1,4 +1,4 @@
-import { EnumTheme, INotification, ISavedData, RendererEvents } from "common_library";
+import { EnumNotificationType, EnumTheme, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
@@ -10,6 +10,7 @@ import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { getStoreState } from "../../store";
 
 interface IState{
     isLoading:boolean;
@@ -23,7 +24,8 @@ function MainComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
         selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
-        notificationLoadV:state.ui.versions.notifications,        
+        notificationLoadV:state.ui.versions.notifications, 
+        appFocusV:state.ui.versions.appFocused,
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
 
@@ -52,6 +54,25 @@ function MainComponent(){
     useEffect(()=>{
         loadNotifications();
     },[store.notificationLoadV])
+
+    useEffect(()=>{
+        const notification = getStoreState().ui.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
+        if(notification)
+            return ;
+        const checkInterValMinute = 2*24*60;
+        const now = new Date();
+        const config = getStoreState().savedData.configInfo;
+        const lastChecked = config.checkedForUpdateAt;
+        const nextCheckDate = new Date(lastChecked);
+        nextCheckDate.setMinutes(nextCheckDate.getMinutes() + checkInterValMinute);
+        console.log(now.toISOString(),nextCheckDate.toISOString());
+        if(nextCheckDate < now){
+            console.log("checking for update.");
+            IpcUtils.checkForUpdate().then(r=>{
+                dispatch(ActionSavedData.updateConfig({...config,checkedForUpdateAt: now.toISOString()}));
+            });
+        }
+    },[store.appFocusV])
 
     useEffect(()=>{
         registerIpcEvents();        
