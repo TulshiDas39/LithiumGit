@@ -101,8 +101,6 @@ function MainComponent(){
         });
         setState({isLoading:false});
         
-        IpcUtils.checkForUpdate();
-
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));
             GraphUtils.refreshGraph();
