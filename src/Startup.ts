@@ -1,6 +1,5 @@
 import { EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
-import { autoUpdater } from "electron-updater";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
@@ -19,15 +18,8 @@ export class Startup{
     async initilise(){
       //this.initAppData();
       this.addExceptionHandler();
-      this.checkForUpdate();
       await this.loadSavedData();      
       this.startIpcManagers();
-    }
-
-    checkForUpdate(){
-      if(Config.env === Env.DEVELOPMENT)
-        return;
-        new Updater().checkForUpdate();
     }
 
     addExceptionHandler(){
@@ -64,6 +56,7 @@ export class Startup{
       await DB.config.load();
       await DB.repository.load();
       await DB.annotation.load();
+      await DB.notification.load();
     }
 
     private async loadSavedData(){
@@ -80,12 +73,22 @@ export class Startup{
       SavedData.data.configInfo = (await DB.config.getAll())[0];
       if(!SavedData.data.configInfo){
         const record={
-          theme:EnumTheme.Dark,
         } as IConfigInfo;
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
       }
+      let isUpdated = false;
       if(!SavedData.data.configInfo.theme){
-        SavedData.data.configInfo.theme = EnumTheme.Light;
+        SavedData.data.configInfo.theme = EnumTheme.Dark;
+        isUpdated = true;
+      }
+      if(!SavedData.data.configInfo.checkedForUpdateAt){
+        let lastChecked = new Date(2023,0,1).toISOString();
+        SavedData.data.configInfo.checkedForUpdateAt = lastChecked;
+        isUpdated = true;
+      }
+
+      if(isUpdated){
+        await DB.config.updateOneAsync(SavedData.data.configInfo);
       }
     }
 
@@ -159,6 +162,7 @@ export class Startup{
       new GitManager().start();
       new FileManager().start();
       new ShellManager().start();
+      new Updater().registerIpcEvents();
     }
 
 }

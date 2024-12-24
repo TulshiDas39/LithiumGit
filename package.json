@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc && npm run copy_src_assets",
@@ -107,14 +107,12 @@
         {
           "target": "AppImage",
           "arch": [
-            "ia32",
             "x64"
           ]
         },
         {
           "target": "deb",
           "arch": [
-            "ia32",
             "x64"
           ]
         }

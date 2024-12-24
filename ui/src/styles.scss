@@ -91,9 +91,9 @@ html {
     --bg-previous-change: #4C1919;
     --bg-previous-change-deep: #701414;
     --bg-fade:#513f3f;
-    --bg-change-accepted:#b9d5f6;
+    --bg-change-accepted:#48484d;
     --scroll-bar-color:rgba(119, 118, 119, 0.722);
-    --outline-color:rgb(188, 181, 181);
+    --outline-color:rgb(169, 165, 165);
     --branch-line-color:rgb(3, 86, 27);
     --commit-circle-fill-color:#701414;
     --selected-commit-fill-color:#147053;
@@ -123,17 +123,17 @@ html {
     font-family: 'Consolas';
   }
 
-  input[type="text"],input[type="number"],textarea,input[type="text"]:focus,textarea:focus{
+  input[type="text"],input[type="number"],textarea{
     background-color: var(--bg-color);
     color: var(--font-color);
     outline: none;
     border: 1px solid var(--border-color);
+    outline-width:0px;
+    outline-style:none;
   }
 
   input[type="text"]:focus, textarea:focus{
-    outline-color: var(--outline-color);
-    outline-width:1px;
-    outline-style:solid;
+    border: 1px solid var(--outline-color);
   }
 
   .form-control, .form-control:focus{
@@ -381,7 +381,7 @@ html {
   padding-bottom: 4px;
 }
 
-.commitContext{
+.commitContext, .context{
   .modal-content{
     border-radius: 0 !important;
   }
@@ -598,4 +598,45 @@ to {
 
 .star{
   color: var(--star-color);
+}
+
+.commit_hightlighted{
+  stroke-width: 12px;
+  stroke:#8eb68e;
+  stroke-opacity: 0.5;
+}
+
+.react-datepicker{
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+.react-datepicker__header{
+  background-color: inherit;
+  color: inherit;
+}
+
+.react-datepicker__current-month, .react-datepicker-time__header, .react-datepicker-year-header{
+  color: inherit;
+}
+
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name{
+  color: inherit;
+}
+
+.react-datepicker__day:hover, .react-datepicker__month-text:hover, .react-datepicker__quarter-text:hover, .react-datepicker__year-text:hover{
+  background-color: var(--bg-select-color);
+}
+
+.react-datepicker__day--keyboard-selected, .react-datepicker__month-text--keyboard-selected, .react-datepicker__quarter-text--keyboard-selected, .react-datepicker__year-text--keyboard-selected{
+  background-color: var(--bg-select-color);
+}
+
+.react-datepicker__year-dropdown, .react-datepicker__month-dropdown, .react-datepicker__month-year-dropdown{
+  background-color: var(--bg-color);
+  color: var(--font-color);
+}
+
+.react-datepicker__year-option:hover, .react-datepicker__month-option:hover, .react-datepicker__month-year-option:hover{
+  background-color: var(--bg-select-color);
 }

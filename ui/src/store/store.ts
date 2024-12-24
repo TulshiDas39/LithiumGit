@@ -8,3 +8,7 @@ export const ReduxStore = configureStore({
     reducer: RootReducer,
     devTools: process.env.NODE_ENV === 'development',
 });
+
+export function getStoreState(){
+    return ReduxStore.getState();
+}

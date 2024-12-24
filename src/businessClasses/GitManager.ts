@@ -5,8 +5,10 @@ import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOp
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import * as fs from 'fs';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
+import * as os from 'os';
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
@@ -53,6 +55,8 @@ export class GitManager{
         this.addUserNameUpdateHandler();
         this.addUserEmailUpdateHandler();
         this.addGraphCommitListHandler();
+        this.addIgnore();
+        this.addRemoveFromGitHandler();
     }
 
 
@@ -689,10 +693,36 @@ export class GitManager{
         });
     }
 
-    private  addFetchHandler(){
+    private addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
-            await this.takeFetch(repoPath,options);
+            await this.takeFetch(repoPath,options);            
         });
+    }
+
+    private addIgnore(){
+        ipcMain.handle(RendererEvents.ignoreItem,async (_e,repoPath:string,pattern:string)=>{
+            return await this.ignoreItem(repoPath,pattern);
+        });
+    }
+
+    private ignoreItem(repoPath:string,pattern:string){
+        const gitIgnore = path.join(repoPath,".gitignore");
+        const exists = fs.existsSync(gitIgnore);
+        let data = `${pattern}`;
+        if(exists){
+            data = `${os.EOL}${data}`;
+        }
+        return new Promise<boolean>((res,rej)=>{
+            fs.writeFile(gitIgnore,data,{flag:'a+'},(err)=>{
+                if(err){
+                    rej(err);
+                }else{
+                    res(true);
+                }
+           });
+
+        })
+        
     }
 
     private addCleanhHandler(){
@@ -726,6 +756,19 @@ export class GitManager{
             return await this.getRemotes(repoInfo);
         })
     }
+
+    private addRemoveFromGitHandler(){
+        ipcMain.handle(RendererEvents.deleteFromGit,async (e,repoPath:string,options:string[])=>{
+            return await this.deleteFromGit(repoPath,options);
+        })
+    }
+
+    private async deleteFromGit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        return await git.raw(["rm",...options]);
+    }
+
+
 
     private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
         const git = this.getGitRunner(repoInfo);
@@ -764,18 +807,7 @@ export class GitManager{
         });
 
         return remotes;
-    }
-    
-    private hasChangesInPull(result:PullResult){
-        if(!result) return false;
-        if(result.created?.length) return true;
-        if(result.deleted?.length) return true;
-        if(result.summary?.changes) return true;
-        if(result.summary.deletions) return true;
-        if(result.summary.insertions) return true;
-        return false;
-    }
-    
+    }    
 
     private async getStashList(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);

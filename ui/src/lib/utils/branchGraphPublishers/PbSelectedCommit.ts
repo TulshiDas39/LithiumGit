@@ -37,10 +37,7 @@ export class PbSelectedCommit extends UiState<ICommitInfo|undefined>{
     focus(){
         if(!this.value)
             return;
-        const horizontalRatio = this.value.x/RepoUtils.repositoryDetails.branchPanelWidth;
-        const verticalRatio = this.value.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
-        GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
-        GraphUtils.state.verticalScrollRatio.publish(verticalRatio);
+        GraphUtils.scrollToCommit(this.value);
     }
 
     setHeadCommit(){

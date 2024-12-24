@@ -13,7 +13,7 @@ import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
 import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
-import { HtmlConstants } from "../constants";
+import { PbHighlightedCommit } from "./branchGraphPublishers/PbHighlightedCommit";
 
 
 interface IState{
@@ -35,6 +35,7 @@ interface IState{
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
     filter:PbCommitFilter;
+    highlightedCommit:PbHighlightedCommit;
 }
 
 export class GraphUtils{
@@ -66,6 +67,7 @@ export class GraphUtils{
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
         filter : new PbCommitFilter({limit:400,toDate: new Date().toISOString(),userModified:false}),
+        highlightedCommit:new PbHighlightedCommit(undefined),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -520,5 +522,15 @@ export class GraphUtils{
         GraphUtils.state.svgContainerWidth.publish(0);
         GraphUtils.state.headCommit.publish(null!);
         GraphUtils.state.mergingCommit.publish(null!);
+        GraphUtils.state.highlightedCommit.publish(null!);
+    }
+
+    static scrollToCommit=(commit:ICommitInfo)=>{        
+        if(!commit)
+            return;
+        const horizontalRatio = commit.x/RepoUtils.repositoryDetails.branchPanelWidth;
+        const verticalRatio = commit.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
+        GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
+        GraphUtils.state.verticalScrollRatio.publish(verticalRatio);        
     }
 }

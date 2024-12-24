@@ -1,8 +1,30 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFile, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
+import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static removeFromGit(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.deleteFromGit,[options]);
+    }
+    static ignoreFile(pattern: string) {
+        return IpcUtils.runGitCommand(RendererEvents.ignoreItem,[pattern])
+    }
+    static installUpdate() {
+        return IpcUtils.execute(RendererEvents.installUpdate,[]);
+    }
+    static checkForUpdate() {
+        return IpcUtils.execute(RendererEvents.checkForUpdate,[]);
+    }
+    static updateNotifications(items: INotification[]) {
+        return IpcUtils.execute(RendererEvents.updateNotifications,[items]);
+    }
+    static deleteNotification(items: INotification[]) {
+        return IpcUtils.execute(RendererEvents.deleteNotifcations,[items]);        
+    }
+    static clearNotifications() {
+        return IpcUtils.execute(RendererEvents.clearNotifications,[]);
+    }
     static runRemote(options:string[]) {
         return this.runGitCommand(RendererEvents.remote,[options]);
     }
@@ -309,6 +331,10 @@ export class IpcUtils{
 
     static openLink(url:string){
         return IpcUtils.execute(RendererEvents.openLink,[url]);
+    }
+
+    static getNotifications(){
+        return IpcUtils.execute<IUiNotification[]>(RendererEvents.loadNotifications,[]);
     }
     
 }

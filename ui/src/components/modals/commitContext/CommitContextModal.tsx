@@ -49,13 +49,12 @@ function CommitContextModalComponent(){
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{
-            console.log("opening context:",Data.position);
             setState({position:Data.position});
             dispatch(ActionModals.showModal(EnumModals.COMMIT_CONTEXT));
         }
 
         GraphUtils.openContextModal = modalOpenEventListener;                
-        UiUtils.openContextModal = modalOpenEventListener;        
+        UiUtils.openCommitContextModal = modalOpenEventListener;        
 
         document.addEventListener("click",(e)=>{
             if(refData.current.show && !refData.current.onHover){

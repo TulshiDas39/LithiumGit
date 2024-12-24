@@ -1,6 +1,16 @@
 import { autoUpdater } from "electron-updater";
+import { DB } from "../db_service";
+import { INewVersionInfo, RendererEvents } from "common_library";
+import { AppData } from "../dataClasses";
+import { ipcMain } from "electron";
 
 export class Updater{
+    private newVersion:string="";
+
+    constructor(){
+      autoUpdater.autoInstallOnAppQuit = false;
+      this.handleEvents();
+    }
 
     sendStatusToWindow(text:string) {
         // log.info(text);
@@ -26,13 +36,39 @@ export class Updater{
             log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
             this.sendStatusToWindow(log_message);
           })
-          autoUpdater.on('update-downloaded', (_) => {
-            this.sendStatusToWindow('Update downloaded');
+          autoUpdater.on('update-downloaded', async (_) => {
+            const info:INewVersionInfo={
+              version:this.newVersion,
+              downloaded:true,
+            };
+            const notifiacation = await DB.notification.addNotificationForNewUpdate(info);
+            if(notifiacation){
+              AppData.mainWindow?.webContents.send(RendererEvents.notification,notifiacation);
+            }
           });
     }
-    checkForUpdate(){
-        this.handleEvents();
-        autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
+    private checkForUpdate(){
+        // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
+        return autoUpdater.checkForUpdates().then(r=>{
+          this.newVersion = r?.updateInfo?.version;
+        });
     }
 
+   registerIpcEvents(){
+      this.handleCheckForUpdate();
+      this.handleInstall();
+   }
+
+   
+   private handleCheckForUpdate(){
+    ipcMain.handle(RendererEvents.checkForUpdate, async (_e)=>{
+      await this.checkForUpdate();
+    })
+  }
+
+    private handleInstall(){
+      ipcMain.handle(RendererEvents.installUpdate,(_e)=>{
+        autoUpdater.quitAndInstall(true,true);
+      })
+    }
 }

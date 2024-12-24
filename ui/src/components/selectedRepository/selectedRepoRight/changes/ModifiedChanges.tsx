@@ -1,12 +1,11 @@
 import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaPlus, FaUndo } from "react-icons/fa";
-import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState, IContextItem } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
@@ -183,7 +182,62 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         refData.current.isMounted = true;
     },[])
+
+    const copyFile=(file:IFile)=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+        UiUtils.copy(path);
+    }
+
+    const showInDirectory=(file:IFile)=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+        IpcUtils.showInFileExplorer(path);
+    }
     
+    
+    const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
+        const handleDelete = ()=>{
+            const options:string[] = ["-r", "--cached",file.path];
+            IpcUtils.removeFromGit(options).then(r=>{
+                if(!r.error){
+                    GitUtils.getStatus();
+                }
+            });
+        }
+        const handleIgnore=()=>{
+            IpcUtils.ignoreFile(file.path).then(()=>{
+                GitUtils.getStatus();
+            });
+        }
+        const items:IContextItem[] = [
+            {
+                text:`Copy path`,
+                onClick:()=>copyFile(file)
+            }            
+        ]
+        if(file.changeType !== EnumChangeType.DELETED){
+            items.push({
+                text:`Open containing folder`,
+                onClick:()=>showInDirectory(file)
+            })
+        }
+        if(file.changeType === EnumChangeType.CREATED){
+            items.push({
+                text:`Ignore '${file.fileName}'`,
+                onClick:handleIgnore
+            })
+        }
+        if(file.changeType === EnumChangeType.MODIFIED){
+            items.push({
+                text:`Delete from git(--cached)`,
+                onClick:handleDelete
+            })
+        }
+        ModalData.contextModal.items = items;
+        ModalData.contextModal.position = {x:e.clientX,y:e.clientY};
+
+        UiUtils.openContextModal();
+    }
+
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
             {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
                 <span className="d-flex align-items-center hover-shadow hover-brighter bg-danger px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
@@ -199,6 +253,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     {props.changes?.map(f=>(
                         <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
                             className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
+                            onContextMenu={(e) => handleContext(e,f)}
                             >
                             <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
                             style={{textOverflow:'ellipsis'}}>

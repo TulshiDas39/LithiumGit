@@ -1,5 +1,5 @@
 import React from "react"
-import { FaLongArrowAltUp, FaLongArrowAltDown, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 interface IProps{
     currentStep:number;

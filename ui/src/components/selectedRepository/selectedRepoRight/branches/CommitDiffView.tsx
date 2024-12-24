@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from "react"
 import { DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../../../lib";
 import { EnumChangeType, ICommitInfo, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { StepNavigation } from "../../../common";
+import { CommitDiffNavigation } from "./CommitDiffNavigation";
 
 interface IProps{
     file?:IFile;
@@ -94,8 +94,8 @@ function CommitDiffViewComponent(props:IProps){
     }
     
     return <div className="h-100 w-100">
-        <StepNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
-            onNextClick={handleNext} onPreviousClick={handlePrevious} />
+        <CommitDiffNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
+            handleNext={handleNext} handlePrevious={handlePrevious} file={props.file!} />
         <div id={props.containerId} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>

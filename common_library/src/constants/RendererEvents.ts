@@ -284,5 +284,14 @@ export class RendererEvents{
     static readonly updateConfig = "updateConfig";
     static readonly openLink = "openLink";
     static readonly removeAnnotation = "removeAnnotation";
+    static readonly notification = "newNotification";
+    static readonly loadNotifications = "loadNotifications";
+    static readonly clearNotifications = "clearNotifications";
+    static readonly deleteNotifcations = "deleteNotifcations";
+    static readonly updateNotifications = "updateNotifications";
+    static readonly checkForUpdate = "checkForUpdate";
+    static readonly installUpdate = "installUpdate";
+    static readonly ignoreItem = "ignoreItem";
+    static readonly deleteFromGit = "deleteFromGit";
 }
 

@@ -3,7 +3,7 @@ import { FaBuffer } from "react-icons/fa";
 import { GraphUtils, useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
 import DatePicker from "react-datepicker";
-import { AppButton } from "../../../common";
+import { AppButton, AppDatePicker } from "../../../common";
 import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
@@ -56,15 +56,15 @@ function GraphFilterComponent(){
         return true;
     },[state.at,state.commitCount,state.fromDate,state.toDate])
 
-    const handleFromDateChange=(date:Date | null)=>{
-        setState({fromDate:date?.toISOString(),at:null!});
+    const handleFromDateChange=(date?:string)=>{
+        setState({fromDate:date,at:null!});
     }
-    const handleToDateChange=(date:Date | null)=>{
-        setState({toDate:date?.toISOString(),at:null!});
+    const handleToDateChange=(date?:string)=>{
+        setState({toDate:date,at:null!});
     }
 
-    const handleBaseDateChange=(date:Date | null)=>{
-        setState({at :date?.toISOString(),fromDate:null!,toDate:null!});
+    const handleBaseDateChange=(date?:string)=>{
+        setState({at :date,fromDate:null!,toDate:null!});
     }
 
     const handleCommitCountChange=(value:string | null)=>{
@@ -137,18 +137,18 @@ function GraphFilterComponent(){
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span>From:</span>
-                        <DatePicker selected={state.fromDate? new Date(state.fromDate):null} onChange={(date) => handleFromDateChange(date)} />
+                        <AppDatePicker date={state.fromDate} onChange={handleFromDateChange} />                        
                     </div>
                     <div className="ps-2 d-flex align-items-center">
                         <span>To:</span>
-                        <DatePicker selected={state.toDate? new Date(state.toDate):null} onChange={(date) => handleToDateChange(date)} />
+                        <AppDatePicker date={state.toDate} onChange={handleToDateChange} />                        
                     </div>
                 </div>
                 <div className="text-center py-2">or</div>
                 <div className="d-flex align-items-center justify-content-center">
                     <div className="d-flex align-items-center">
                         <span className="text-nowrap">Surroundings At:</span>
-                        <DatePicker selected={state.at? new Date(state.at):null} onChange={(date) => handleBaseDateChange(date)} />
+                        <AppDatePicker date={state.at} onChange={handleBaseDateChange} />                        
                     </div>
                 </div>
                 <hr />

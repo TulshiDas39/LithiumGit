@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IRemoteInfo, IStatus } from "common_library";
-import { EnumConfigTab, EnumSelectedRepoTab } from "../../lib";
+import { EnumNotificationType, INotification, IRemoteInfo, IStatus } from "common_library";
+import { EnumConfigTab, EnumSelectedRepoTab, IUiNotification } from "../../lib";
 
 export enum EnumHomePageTab{
     Recent="Recents",
@@ -19,6 +19,7 @@ interface EventVersions{
     repoDetails:number;
     remoteList:number;
     annotations:number;
+    notifications:number;
 }
 
 export interface ILoaderInfo{
@@ -42,6 +43,7 @@ interface IUIState{
     remotes:IRemoteInfo[];
     branchList:string[];
     refreshingGraph:boolean;
+    notifications:IUiNotification[];
 }
 
 const initialState:IUIState={
@@ -54,6 +56,7 @@ const initialState:IUIState={
         repoDetails:0,
         remoteList:0,
         annotations:0,
+        notifications:0,
     },    
     selectedRepoTab:EnumSelectedRepoTab.GRAPH,
     remotes:[],
@@ -61,6 +64,7 @@ const initialState:IUIState={
     refreshingGraph:false,
     configTab:EnumConfigTab.USER,
     loaders:[],
+    notifications:[],
 }
 
 const UISlice = createSlice({
@@ -126,6 +130,23 @@ const UISlice = createSlice({
         },
         setGraphRefresh(state,action:PayloadAction<boolean>){
             state.refreshingGraph = action.payload;
+        },
+        setNotificationList(state,action:PayloadAction<IUiNotification[]>){
+            state.notifications = action.payload;
+        },
+        addNotifications(state,action:PayloadAction<IUiNotification[]>){
+            for(let item of action.payload){
+                if(item.type === EnumNotificationType.UpdateAvailable){
+                    state.notifications = state.notifications.filter(_ => _.type !== EnumNotificationType.UpdateAvailable);
+                }
+                state.notifications.push(item);
+            }
+        },
+        deactivateNotification(state,action:PayloadAction<string>){
+            const notification = state.notifications.find(_=> _._id === action.payload);
+            if(notification){
+                notification.isActive = false;
+            }
         }
     }
 });

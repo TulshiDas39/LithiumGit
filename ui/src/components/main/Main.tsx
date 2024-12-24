@@ -1,14 +1,16 @@
-import { EnumTheme, ISavedData, RendererEvents } from "common_library";
+import { EnumNotificationType, EnumTheme, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, FetchState, GraphUtils, IUiNotification, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
 import { ModalData } from "../modals/ModalData";
 import { RepositorySelection } from "../repositorySelection";
 import { SelectedRepository } from "../selectedRepository";
+import { IpcUtils } from "../../lib/utils/IpcUtils";
+import { getStoreState } from "../../store";
 
 interface IState{
     isLoading:boolean;
@@ -21,7 +23,9 @@ const initialState = {
 function MainComponent(){
     const dispatch = useDispatch();
     const store = useSelectorTyped(state=>({
-        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),        
+        selectedRepo:state.savedData.recentRepositories.find(x=>x.isSelected),
+        notificationLoadV:state.ui.versions.notifications, 
+        appFocusV:state.ui.versions.appFocused,
     }),shallowEqual);
     const [state,setState] = useMultiState(initialState);
 
@@ -38,6 +42,34 @@ function MainComponent(){
     const setTheme=(theme:EnumTheme)=>{
         window.document.documentElement.setAttribute("data-theme",theme);
     }
+
+    const loadNotifications=()=>{
+        IpcUtils.getNotifications().then(r=>{
+            if(!r.error){
+                dispatch(ActionUI.setNotificationList(r.result!));
+            }
+        })
+    }
+
+    useEffect(()=>{
+        loadNotifications();
+    },[store.notificationLoadV])
+
+    useEffect(()=>{
+        const checkInterValMinute = 2*24*60;
+        const now = new Date();
+        const config = getStoreState().savedData.configInfo;
+        const lastChecked = config.checkedForUpdateAt;
+        const nextCheckDate = new Date(lastChecked);
+        nextCheckDate.setMinutes(nextCheckDate.getMinutes() + checkInterValMinute);
+        console.log(now.toISOString(),nextCheckDate.toISOString());
+        if(nextCheckDate < now){
+            console.log("checking for update.");
+            IpcUtils.checkForUpdate().then(r=>{
+                dispatch(ActionSavedData.updateConfig({...config,checkedForUpdateAt: now.toISOString()}));
+            });
+        }
+    },[store.appFocusV])
 
     useEffect(()=>{
         registerIpcEvents();        
@@ -64,8 +96,8 @@ function MainComponent(){
             dispatch(ActionSavedData.setRecentRepositories(sortedRepos));
             if(!repos.length) dispatch(ActionUI.setHomePageTab(EnumHomePageTab.Open));
         });
-        setState({isLoading:false});        
-
+        setState({isLoading:false});
+        
         window.ipcRenderer.on(RendererEvents.refreshBranchPanel().channel,()=>{
             dispatch(ActionUI.setSync({text:"Refreshing..."}));
             GraphUtils.refreshGraph();
@@ -75,6 +107,23 @@ function MainComponent(){
             DataUtils.clone.stage = stage;
             DataUtils.clone.progress = progress;
         })
+
+        window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
+            if(notification.type === EnumNotificationType.UpdateAvailable){
+                const existingNot = getStoreState().ui.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
+                if(!existingNot){
+                    notification.isActive = true;
+                }
+            }
+            const id = notification._id;
+            dispatch(ActionUI.addNotifications([notification]));
+            if(notification.isActive){
+                setTimeout(() => {
+                    dispatch(ActionUI.deactivateNotification(id));
+                }, 1000*60);
+            }
+        })
+
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);

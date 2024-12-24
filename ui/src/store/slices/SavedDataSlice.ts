@@ -17,6 +17,7 @@ const initialState:ISavedData={
         createdAt: new Date().toISOString(),
         theme:EnumTheme.Light,
         updateAt:new Date().toISOString(),
+        checkedForUpdateAt: new Date().toISOString(),
     }
 }
 

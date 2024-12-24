@@ -1,4 +1,4 @@
-import { Annotation, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
 import { ipcMain } from "electron";
 import { SavedData } from "../dataClasses";
 import { DB } from "../db_service";
@@ -18,6 +18,10 @@ export class DataManager{
         this.handleAnnotationAdd();
         this.handleAnnotationDelete();
         this.handleConfigUpdate();
+        this.handleNotificationsFetch();
+        this.handleNotificationsClear();
+        this.handleRemoveNotifications();
+        this.handleUpdateNotifications();
 
     }
 
@@ -52,6 +56,36 @@ export class DataManager{
             await DB.annotation.insertManyAsync(annots);
         });
     }
+
+    private handleNotificationsFetch(){
+        ipcMain.handle(RendererEvents.loadNotifications, async(_e) => {            
+            return await DB.notification.getAll();
+        });
+    }
+
+    private handleNotificationsClear(){
+        ipcMain.handle(RendererEvents.clearNotifications, async(_e) => {            
+            return await DB.notification.deleteAsync({},true);
+        });
+    }
+
+    private handleRemoveNotifications(){
+        ipcMain.handle(RendererEvents.deleteNotifcations, async(_e,items:INotification[]) => {
+            for(let item of items){
+                await DB.notification.deleteAsync({_id:item._id});
+            }
+        });
+    }
+
+    private handleUpdateNotifications(){
+        ipcMain.handle(RendererEvents.updateNotifications, async(_e,items:INotification[]) => {
+            for(let item of items){
+                await DB.notification.updateOneAsync(item);
+            }
+        });
+    }
+
+    //markAllNotificationAsRead
 
     private handleAnnotationDelete(){
         ipcMain.handle(RendererEvents.removeAnnotation, async(_e,annots:Annotation[]) => {            
