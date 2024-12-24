@@ -56,9 +56,6 @@ function MainComponent(){
     },[store.notificationLoadV])
 
     useEffect(()=>{
-        const notification = getStoreState().ui.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
-        if(notification)
-            return ;
         const checkInterValMinute = 2*24*60;
         const now = new Date();
         const config = getStoreState().savedData.configInfo;
@@ -112,12 +109,19 @@ function MainComponent(){
         })
 
         window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
-            notification.isActive = true;
+            if(notification.type === EnumNotificationType.UpdateAvailable){
+                const existingNot = getStoreState().ui.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
+                if(!existingNot){
+                    notification.isActive = true;
+                }
+            }
             const id = notification._id;
             dispatch(ActionUI.addNotifications([notification]));
-            setTimeout(() => {
-                dispatch(ActionUI.deactivateNotification(id));
-            }, 1000*60);
+            if(notification.isActive){
+                setTimeout(() => {
+                    dispatch(ActionUI.deactivateNotification(id));
+                }, 1000*60);
+            }
         })
 
 
