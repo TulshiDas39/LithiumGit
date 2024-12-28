@@ -23,4 +23,10 @@ export class UiConstants{
     static get SelectedRepoMidPanelWidth(){
         return this.screenWidth - this.selectedRepoLeftWidth - this.selectedRepoRightsWidth;
     }
+    
+    static readonly siteBaseUrl = "https://lithiumgit.github.io";
+    static get downloadUrl(){
+        return UiConstants.siteBaseUrl + "/download";
+    }
+
 }

@@ -49,10 +49,25 @@ export class Updater{
             }
           });
     }
+
+    private sendDownloadLatestVersionNotification(){
+      const info:INewVersionInfo={
+        version:this.newVersion,
+        downloaded:false,        
+      };
+      const notifiacation = DB.notification.addNotificationForNewUpdate(info);
+      if(notifiacation){
+        AppData.mainWindow?.webContents.send(RendererEvents.notification,notifiacation);
+      }
+    }
+
     private checkForUpdate(){
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
         return autoUpdater.checkForUpdates().then(r=>{
           this.newVersion = r?.updateInfo?.version;
+          if(!process.platform?.toString().startsWith('win') || this.newVersion !== app.getVersion()){
+            this.sendDownloadLatestVersionNotification();
+          }
         });
     }
 

@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { IUiNotification } from "../../../lib";
 import { EnumNotificationType, INewVersionInfo } from "common_library";
+import { UiConstants } from "../../../lib/constants";
 
 interface IProps{
     data:IUiNotification;
@@ -31,6 +32,9 @@ function SingleNotificationComponent(props:IProps){
             const data = props.data.data as INewVersionInfo;
             if(data?.downloaded){
                 IpcUtils.installUpdate();
+            }
+            else{
+                IpcUtils.openLink(UiConstants.downloadUrl);
             }
         }
     }
