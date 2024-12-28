@@ -37,7 +37,7 @@ export class Updater{
             this.sendStatusToWindow(log_message);
           })
           autoUpdater.on('update-downloaded', async (_) => {
-            if(this.newVersion === app.getVersion())
+            if(!process.platform.startsWith('win') || this.newVersion === app.getVersion())
               return;
             const info:INewVersionInfo={
               version:this.newVersion,
