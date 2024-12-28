@@ -2,7 +2,7 @@ import { autoUpdater } from "electron-updater";
 import { DB } from "../db_service";
 import { INewVersionInfo, RendererEvents } from "common_library";
 import { AppData } from "../dataClasses";
-import { ipcMain } from "electron";
+import { app, ipcMain } from "electron";
 
 export class Updater{
     private newVersion:string="";
@@ -37,6 +37,8 @@ export class Updater{
             this.sendStatusToWindow(log_message);
           })
           autoUpdater.on('update-downloaded', async (_) => {
+            if(this.newVersion === app.getVersion())
+              return;
             const info:INewVersionInfo={
               version:this.newVersion,
               downloaded:true,
