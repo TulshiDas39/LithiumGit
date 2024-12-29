@@ -4,7 +4,8 @@ import { INewVersionInfo, RendererEvents } from "common_library";
 import { AppData } from "../dataClasses";
 import { app, ipcMain } from "electron";
 import { AppUtility } from "./AppUtility";
-import { EnumPlatform } from "../types";
+import { EnumPlatform, ILatestVersion } from "../types";
+import { Intercept } from "./Interceptor";
 
 export class Updater{
     private newVersion:string="";
@@ -63,8 +64,22 @@ export class Updater{
       }
     }
 
-    private checkForUpdateManually(){
-      
+    private async checkForUpdateManually(){
+      try{
+        const url = "https://github.com/LithiumGit/LithiumGit/releases/download/v1.0.0/latest.json";
+        const res = await Intercept.get(url,{responseType:'json'});
+        if(res.error)
+          return ;
+        const data:ILatestVersion = res.response.data;
+        this.newVersion = data.version;
+        console.log("latest version:"+data.version);
+        if(data.version !== app.getVersion()){
+          console.log("Sending notification to download latest version.");
+          this.sendDownloadLatestVersionNotification();
+        }
+        console.log("response:");
+        console.log(res.response.data);
+      }catch(e){}
     }
 
     private checkForUpdate(){
@@ -88,7 +103,7 @@ export class Updater{
       if(AppUtility.getPlatform() === EnumPlatform.WINDOWS){
         await this.checkForUpdate();
       }else{
-        this.checkForUpdateManually();
+        await this.checkForUpdateManually();
       }
     })
   }
