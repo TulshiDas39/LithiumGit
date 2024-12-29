@@ -28,6 +28,9 @@ function SingleNotificationComponent(props:IProps){
     }
 
     const handleAction=(_e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
+        if(props.data.isActive){
+            handleHide();
+        }
         if(props.data.type === EnumNotificationType.UpdateAvailable){
             const data = props.data.data as INewVersionInfo;
             if(data?.downloaded){
