@@ -53,12 +53,12 @@ export class Updater{
           });
     }
 
-    private sendDownloadLatestVersionNotification(){
+    private async sendDownloadLatestVersionNotification(){
       const info:INewVersionInfo={
         version:this.newVersion,
         downloaded:false,        
       };
-      const notifiacation = DB.notification.addNotificationForNewUpdate(info);
+      const notifiacation = await DB.notification.addNotificationForNewUpdate(info);
       if(notifiacation){
         AppData.mainWindow?.webContents.send(RendererEvents.notification,notifiacation);
       }
@@ -75,7 +75,7 @@ export class Updater{
         console.log("latest version:"+data.version);
         if(data.version !== app.getVersion()){
           console.log("Sending notification to download latest version.");
-          this.sendDownloadLatestVersionNotification();
+          await this.sendDownloadLatestVersionNotification();
         }
         console.log("response:");
         console.log(res.response.data);
@@ -85,10 +85,7 @@ export class Updater{
     private checkForUpdate(){
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
         return autoUpdater.checkForUpdates().then(r=>{
-          this.newVersion = r?.updateInfo?.version;
-          if(AppUtility.getPlatform() !== EnumPlatform.WINDOWS || this.newVersion !== app.getVersion()){
-            this.sendDownloadLatestVersionNotification();
-          }
+          this.newVersion = r?.updateInfo?.version;          
         });
     }
 
