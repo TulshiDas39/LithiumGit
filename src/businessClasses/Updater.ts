@@ -3,6 +3,8 @@ import { DB } from "../db_service";
 import { INewVersionInfo, RendererEvents } from "common_library";
 import { AppData } from "../dataClasses";
 import { app, ipcMain } from "electron";
+import { AppUtility } from "./AppUtility";
+import { EnumPlatform } from "../types";
 
 export class Updater{
     private newVersion:string="";
@@ -37,7 +39,7 @@ export class Updater{
             this.sendStatusToWindow(log_message);
           })
           autoUpdater.on('update-downloaded', async (_) => {
-            if(!process.platform.startsWith('win') || this.newVersion === app.getVersion())
+            if(AppUtility.getPlatform() !== EnumPlatform.WINDOWS || this.newVersion === app.getVersion())
               return;
             const info:INewVersionInfo={
               version:this.newVersion,
@@ -61,11 +63,15 @@ export class Updater{
       }
     }
 
+    private checkForUpdateManually(){
+      
+    }
+
     private checkForUpdate(){
         // autoUpdater.checkForUpdatesAndNotify({title:"New version of LithiumGit downloaded",body:"LithiumGit will be updated on application exit."});
         return autoUpdater.checkForUpdates().then(r=>{
           this.newVersion = r?.updateInfo?.version;
-          if(!process.platform?.toString().startsWith('win') || this.newVersion !== app.getVersion()){
+          if(AppUtility.getPlatform() !== EnumPlatform.WINDOWS || this.newVersion !== app.getVersion()){
             this.sendDownloadLatestVersionNotification();
           }
         });
@@ -79,7 +85,11 @@ export class Updater{
    
    private handleCheckForUpdate(){
     ipcMain.handle(RendererEvents.checkForUpdate, async (_e)=>{
-      await this.checkForUpdate();
+      if(AppUtility.getPlatform() === EnumPlatform.WINDOWS){
+        await this.checkForUpdate();
+      }else{
+        this.checkForUpdateManually();
+      }
     })
   }
 
