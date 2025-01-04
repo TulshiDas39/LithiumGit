@@ -537,14 +537,16 @@ export class RepoUtils{
 
     static syncBranchHistory(){
         const brList = RepoUtils.repositoryDetails.branchList;
-        const savedBrList = Data.annotations.filter(_ => _.type === EnumAnnotationType.Branch).map(_=>_.value);
-        const newBrList = brList.filter(_=> !savedBrList.includes(_));
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        const savedBrList = Data.annotations.filter(_ => _.repoId === repoId && _.type === EnumAnnotationType.Branch);
+        const savedBrNameList = savedBrList.map(_=>_.value);
+        const newBrList = brList.filter(_=> !savedBrNameList.includes(_));
         if(newBrList.length){
             const newAnnots:Annotation[]=[];
             const date = new Date().toISOString();
             for(let br of newBrList){
                 const newAnnot = createAnnotation({
-                    repoId:RepoUtils.repositoryDetails.repoInfo._id,
+                    repoId,
                     type: EnumAnnotationType.Branch,
                     value:br
                 });
@@ -555,7 +557,7 @@ export class RepoUtils{
             IpcUtils.addAnnotation(newAnnots);            
             
         }
-        const deletedBranches = Data.annotations.filter(_ => !brList.includes(_.value));
+        const deletedBranches = savedBrList.filter(_ => !brList.includes(_.value));
         if(deletedBranches.length){
             IpcUtils.deleteAnnotations(deletedBranches);
         }
