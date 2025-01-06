@@ -109,10 +109,11 @@ function MainComponent(){
         })
 
         window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
+            notification.isActive = true;
             if(notification.type === EnumNotificationType.UpdateAvailable){
                 const existingNot = getStoreState().ui.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
-                if(!existingNot){
-                    notification.isActive = true;
+                if(existingNot){
+                    notification.isActive = false;
                 }
             }
             const id = notification._id;
