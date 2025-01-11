@@ -3,7 +3,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/tulshidas39/lithiumgit)  
 
 
-**LithiumGit** is an advanced desktop application designed to simplify and supercharge your Git workflow. Whether you're a seasoned Git user or just getting started, Lithium Git Client provides you with a seamless, feature-rich, and customizable experience while managing your repositories.
+**LithiumGit** is an advanced desktop application designed to simplify and supercharge your Git workflow. Whether you're a seasoned Git user or just getting started, LithiumGit provides you with a seamless, feature-rich, and customizable experience while managing your repositories.
 
 ---
 
@@ -16,7 +16,7 @@
 - **📈 Interactive Graph View**: Visualize the history and structure of your repositories with a sophisticated graph view.  
   ![Graph View](https://lithiumgit.github.io/_next/static/media/graph.e4449400.png)
 
-- **💻 Cross-Platform Support**: Lithium Git Client works everywhere you code: Windows, macOS, and Linux.  
+- **💻 Cross-Platform Support**: LithiumGit works everywhere you code: Windows, macOS, and Linux.  
 
 - **⚡ Customizable Workflows**: Tailor the application to fit your unique development needs. Customize shortcuts, automate repetitive tasks, and more!
 
@@ -109,7 +109,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE)
 ## 🌐 Website
 
 For detailed usage instructions, and resources, visit our  website:  
-👉 **[Lithium Git Client Documentation & Guide](https://lithiumgit.github.io/)**  
+👉 **[LithiumGit Documentation & Guide](https://lithiumgit.github.io/)**  
 
 ---
 
@@ -125,6 +125,6 @@ We welcome users and contributors alike. Let's build the best Git client experie
 
 ## 🌟 Support the Project
 
-If you find **Lithium Git Client** helpful, please consider giving this repository a ⭐ on GitHub. It helps others discover the project!
+If you find **LithiumGit** helpful, please consider giving this repository a ⭐ on GitHub. It helps others discover the project!
 
 ---
