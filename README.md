@@ -18,7 +18,7 @@
 
 - **💻 Cross-Platform Support**: LithiumGit works everywhere you code: Windows, macOS, and Linux.  
 
-- **⚡ Customizable Workflows**: Tailor the application to fit your unique development needs. Customize shortcuts, automate repetitive tasks, and more!
+- **⚡ Customizable Workflows**: Tailor the application to fit your unique development needs.
 
 ---
 
