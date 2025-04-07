@@ -7,7 +7,7 @@ export class IpcUtils{
     static removeFromGit(options: string[]) {
         return IpcUtils.runGitCommand(RendererEvents.deleteFromGit,[options]);
     }
-    static ignoreFile(pattern: string) {
+    static ignoreItem(pattern: string) {
         return IpcUtils.runGitCommand(RendererEvents.ignoreItem,[pattern])
     }
     static installUpdate() {

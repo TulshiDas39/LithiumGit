@@ -202,12 +202,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     GitUtils.getStatus();
                 }
             });
-        }
-        const handleIgnore=()=>{
-            IpcUtils.ignoreFile(file.path).then(()=>{
-                GitUtils.getStatus();
-            });
-        }
+        }        
         const items:IContextItem[] = [
             {
                 text:`Copy path`,
@@ -221,9 +216,23 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             })
         }
         if(file.changeType === EnumChangeType.CREATED){
+            const handleIgnore=()=>{
+                IpcUtils.ignoreItem(file.path).then(()=>{
+                    GitUtils.getStatus();
+                });
+            }
+            const ext = StringUtils.GetFileExtension(file.path);
+            const handleIgnoreExt=()=>{                
+                IpcUtils.ignoreItem("*"+ext).then(()=>{
+                    GitUtils.getStatus();
+                });
+            }
             items.push({
                 text:`Ignore '${file.fileName}'`,
                 onClick:handleIgnore
+            },{
+                text:`Ignore '*${ext}'`,
+                onClick:handleIgnoreExt
             })
         }
         if(file.changeType === EnumChangeType.MODIFIED){

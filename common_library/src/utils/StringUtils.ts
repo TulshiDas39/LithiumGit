@@ -110,6 +110,13 @@ export class StringUtils{
         return StringUtils.filterStrings(str,keys,limit);
     }
 
+    static GetFileExtension(pathOrName:string){
+        const name = StringUtils.getFileName(pathOrName);
+        const index = name.lastIndexOf(".");
+        if(index < 0) return "";
+        return name.slice(index);
+    }
+
     private static getAllSplits(str:string) {
         const result:{splits:string[];score:number;}[] = [];
 
