@@ -1,10 +1,8 @@
-import { ICommitInfo, IStatus, RendererEvents } from "common_library";
 import React, { useEffect } from "react"
 import { Button, Form, Modal } from "react-bootstrap";
 import { FaTimes } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
 import { RepoUtils, EnumModals, useMultiState } from "../../lib";
-import { GraphUtils } from "../../lib/utils/GraphUtils";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -79,7 +77,7 @@ function CreateBranchModalComponent(){
             <div className="row g-0 py-3">
                 <div className="col-12 text-end">
                     <Button variant="primary" onClick={_=> handleBranchCreateClick() }
-                        disabled={!state.branchName}>Create branch</Button>
+                        disabled={!state.branchName} className="bg-primary">Create branch</Button>
                 </div>
             </div>
         </Modal.Body>
