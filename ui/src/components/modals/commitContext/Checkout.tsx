@@ -1,11 +1,12 @@
 import React, { Fragment, useMemo } from "react";
 import { ModalData } from "../ModalData";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { EnumModals, GraphUtils, RepoUtils } from "../../../lib";
-import { shallowEqual } from "react-redux";
+import { EnumModals, GraphUtils, ReduxUtils, RepoUtils } from "../../../lib";
+import { shallowEqual, useDispatch } from "react-redux";
 import { ContextData, IBaseProps, Option } from "./ContextData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../lib/utils/GitUtils";
+import { ActionModals } from "../../../store";
 
 interface IProps extends IBaseProps{
     mouseOver?: Option;
@@ -18,6 +19,8 @@ function CheckoutComponent(props:IProps){
         show:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
         repo:state.savedData.recentRepositories.find(x=>x.isSelected),
     }),shallowEqual);
+
+    const dispatch = useDispatch();
 
     const Data = ModalData.commitContextModal;
 
@@ -39,12 +42,13 @@ function CheckoutComponent(props:IProps){
         const options:string[]=[destination];
         IpcUtils.checkout(options).then((r)=>{
             if(!r.error){
-                IpcUtils.getRepoStatusSync().then(status=>{
-                    GraphUtils.handleCheckout(Data.selectedCommit,status);            
+                ModalData.appToast.message = "Checkout successful.";
+                dispatch(ActionModals.showToast());
+                IpcUtils.getRepoStatusSync().then(status=>{                    
+                    GraphUtils.handleCheckout(Data.selectedCommit,status);
+                    ReduxUtils.setStatus(status);
                 })
-            }else{
-                GitUtils.getStatus();
-            }
+            }            
         });
         props.hideModal();
     }
@@ -61,7 +65,7 @@ function CheckoutComponent(props:IProps){
                                             <span>&gt;</span>
                                         </div>
                                         
-                                        {(props.mouseOver === Option.Checkout) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                        {(props.mouseOver === Option.Checkout) && <div className="position-absolute border bg-color" style={{left:'100%',top:0}}>
                                             {
                                                 branchNamesForCheckout.map((br=>(
                                                     <div key={br} className="border-bottom py-1 px-3">

@@ -28,7 +28,8 @@ function PushToModalComponent(){
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
-        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo);
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PushTo && _.repoId === repoId);
     },[store.show])
 
     const [state,setState] = useMultiState<IState>({
@@ -48,7 +49,7 @@ function PushToModalComponent(){
     }
 
     const clearState = ()=>{
-        setState({branch:""});;
+        setState({branch:""});
     }
 
     const updateAnnotation=()=>{
@@ -59,10 +60,9 @@ function PushToModalComponent(){
             type:EnumAnnotationType.PushTo,
             value:state.branch
         });
-        IpcUtils.addAnnotation(newAnnot).then(r=>{
+        IpcUtils.addAnnotation([newAnnot]).then(r=>{
             if(!r.error){
-                const annots =[...annotations,newAnnot];
-                Data.annotations = annots;
+                Data.annotations.push(newAnnot);
             }
         })
     }
@@ -115,7 +115,7 @@ function PushToModalComponent(){
         }
         
         setState({options});
-    },[state.branch,state.isSelected,state.inputFocused])
+    },[state.branch,state.isSelected,state.inputFocused,annotations])
     const handleBlur = ()=>{
         if(refData.current.hoverOptions)
             return;

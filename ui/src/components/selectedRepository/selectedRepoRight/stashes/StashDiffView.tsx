@@ -1,11 +1,11 @@
 import { EnumChangeType, IFile, IStash, StringUtils } from "common_library";
 import React, { useEffect } from "react"
 import { useMultiState, DiffUtils, EnumHtmlIds, ILine } from "../../../../lib";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StepNavigation } from "../../../common";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { StashData } from "./StashData";
+import { CommitDiffNavigation } from "./CommitDiffNavigation";
 
 interface IProps{
     file?:IFile;
@@ -93,8 +93,8 @@ function StashDiffViewComponent(props:IProps){
     }
     
     return <div className="h-100 w-100">
-        <StepNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
-            onNextClick={handleNext} onPreviousClick={handlePrevious} />
+        {!!props.file && <CommitDiffNavigation stashHash={props.stash?.avrebHash!} file={props.file!} currentStep={state.currentStep} totalStep={state.totalStep} 
+            handleNext={handleNext} handlePrevious={handlePrevious} />}
         <div id={EnumHtmlIds.StashDiff} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>

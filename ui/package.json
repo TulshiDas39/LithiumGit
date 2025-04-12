@@ -21,6 +21,7 @@
     "moment": "^2.29.1",
     "react": "^17.0.1",
     "react-bootstrap": "^2.0.0-beta.4",
+    "react-datepicker": "^4.10.0",
     "react-dom": "^17.0.1",
     "react-icons": "^4.2.0",
     "react-quill": "2.0.0-beta.1",
@@ -34,7 +35,8 @@
   },
   "scripts": {
     "start": "set FAST_REFRESH=false && set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "start-mac": "export FAST_REFRESH=false && export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",    
+    "start-linux": "export FAST_REFRESH=false && export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "start-mac": "export FAST_REFRESH=false && export NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -58,6 +60,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-datepicker": "^4.10.0",
     "@types/react-router-dom": "^5.1.8",
     "electron": "^13.1.9",
     "sass": "1.51.0"

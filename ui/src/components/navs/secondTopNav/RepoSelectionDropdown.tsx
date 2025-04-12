@@ -17,12 +17,12 @@ function RepoSelectionDropdownComponent(){
 
     return <div className="">
         <Dropdown className="">
-            <Dropdown.Toggle id="dropdown-reposelection" className="rounded-0 default-button hover-brighter">
+            <Dropdown.Toggle id="dropdown-reposelection" className="rounded-0 default-button hover-shadow hover-brighter">
                 {store.recentRepos.find(x=>x.isSelected)?.name || ""}
             </Dropdown.Toggle>
             <Dropdown.Menu className="overflow-auto" style={{maxHeight:'90vh'}}>
                 {store.recentRepos.map(rp=>(
-                    <Dropdown.Item key={rp._id} onClick={()=> handleSelect(rp)}>{rp.name}</Dropdown.Item>
+                    <Dropdown.Item title={rp.path} key={rp._id} onClick={()=> handleSelect(rp)}>{rp.name}</Dropdown.Item>
                 ))}
             </Dropdown.Menu>
         </Dropdown>

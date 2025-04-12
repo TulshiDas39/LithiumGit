@@ -1,5 +1,6 @@
 import { ICommitInfo } from "./ICommitInfo";
 import { IFile } from "./IFile";
+import { IHeadCommitInfo } from "./IHeadCommitInfo";
 
 export interface IStatus{
     ahead:number;
@@ -14,7 +15,7 @@ export interface IStatus{
     isClean:boolean;
     current:string | null;
     isDetached:boolean;
-    headCommit:ICommitInfo;
+    headCommit:IHeadCommitInfo;
     mergingCommitHash?:string;
     trackingBranch?:string;
     totalChangedItem:number;

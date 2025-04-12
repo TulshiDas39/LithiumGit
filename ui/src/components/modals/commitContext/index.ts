@@ -1,1 +1,1 @@
-export * from './CommitContextModal2';
+export * from './CommitContextModal';

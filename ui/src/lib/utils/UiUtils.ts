@@ -218,6 +218,7 @@ export class UiUtils {
         return `UTC ${sign} ${offset}`;
     }
 
+    static openCommitContextModal=()=>{};
     static openContextModal=()=>{};
 
 }

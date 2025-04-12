@@ -1,6 +1,6 @@
-import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
 import { ipcMain } from "electron";
-import { AppData, SavedData } from "../dataClasses";
+import { SavedData } from "../dataClasses";
 import { DB } from "../db_service";
 
 export class DataManager{
@@ -13,11 +13,23 @@ export class DataManager{
         this.handleUpdateRepositories();
         this.handleUpdateRepository();
         this.handleRemoveRepository();
-        this.handleUpdateAutoStaging();
         this.handleSavedDataRequest();
         this.handleAnnotationsRequest();
         this.handleAnnotationAdd();
+        this.handleAnnotationDelete();
+        this.handleConfigUpdate();
+        this.handleNotificationsFetch();
+        this.handleNotificationsClear();
+        this.handleRemoveNotifications();
+        this.handleUpdateNotifications();
 
+    }
+
+    private handleConfigUpdate(){
+        ipcMain.handle(RendererEvents.updateConfig, async(_, config:IConfigInfo) => {            
+            await DB.config.updateOneAsync(config);
+            SavedData.data.configInfo = config;
+        });
     }
 
     private handleSavedDataRequest(){
@@ -40,11 +52,46 @@ export class DataManager{
     }
 
     private handleAnnotationAdd(){
-        ipcMain.handle(RendererEvents.addAnnotation, async(e,annot:Annotation) => {
-            const existing = await DB.annotation.findOneAsync({repoId:annot.repoId,type:annot.type,value:annot.value});
-            if(existing)
-                return;
-            await DB.annotation.insertOne(annot);
+        ipcMain.handle(RendererEvents.addAnnotation, async(_e,annots:Annotation[]) => {            
+            await DB.annotation.insertManyAsync(annots);
+        });
+    }
+
+    private handleNotificationsFetch(){
+        ipcMain.handle(RendererEvents.loadNotifications, async(_e) => {            
+            return await DB.notification.getAll();
+        });
+    }
+
+    private handleNotificationsClear(){
+        ipcMain.handle(RendererEvents.clearNotifications, async(_e) => {            
+            return await DB.notification.deleteAsync({},true);
+        });
+    }
+
+    private handleRemoveNotifications(){
+        ipcMain.handle(RendererEvents.deleteNotifcations, async(_e,items:INotification[]) => {
+            for(let item of items){
+                await DB.notification.deleteAsync({_id:item._id});
+            }
+        });
+    }
+
+    private handleUpdateNotifications(){
+        ipcMain.handle(RendererEvents.updateNotifications, async(_e,items:INotification[]) => {
+            for(let item of items){
+                await DB.notification.updateOneAsync(item);
+            }
+        });
+    }
+
+    //markAllNotificationAsRead
+
+    private handleAnnotationDelete(){
+        ipcMain.handle(RendererEvents.removeAnnotation, async(_e,annots:Annotation[]) => {            
+            for(let annot of annots){
+                await DB.annotation.deleteAsync(annot);
+            }
         });
     }
 
@@ -82,12 +129,4 @@ export class DataManager{
         });
     }
 
-    private handleUpdateAutoStaging(){
-        ipcMain.on(RendererEvents.updateAutoStaging().channel,(e,value:boolean)=>{            
-            SavedData.data.configInfo.autoStage = value;
-            DB.config.updateOne(SavedData.data.configInfo,(err,count)=>{
-                e.returnValue = true;
-            });
-        });
-    }
 }

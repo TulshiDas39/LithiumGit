@@ -78,15 +78,15 @@ export class BaseDB<T extends BaseSchema>{
         this.dataStore.find(query,null,callback)
     }
 
-    insertOne(record:T,cb?: (err: Error, document: T) => void){        
+    insertOne(record:T,cb?: (err: Error, document: T) => void){ 
+        this.addBaseProperties(record);
         this.dataStore.insert({
-            ...createBaseSchema(),
             ...record
         },cb);
     }
 
     insertOneAsync(record:T){
-        if(!!record._id) return null;
+        this.addBaseProperties(record);
         return new Promise<T>((resolve,reject)=>{
             this.insertOne(record,(err,doc)=>{
                 if(err) reject(err);
@@ -122,13 +122,17 @@ export class BaseDB<T extends BaseSchema>{
             });
         })        
     }
+
+    private addBaseProperties(rec:BaseSchema){
+        if(!rec._id) rec._id = StringUtils.uuidv4();
+        if(!rec.createdAt) rec.createdAt = new Date().toISOString();
+        if(!rec.updateAt) rec.updateAt = new Date().toISOString();
+    }
     
     insertMany(records:T[],cb?: (err: Error, documents: T[]) => void){
         if(records.length === 0) return;
         records.forEach(rec=>{
-            if(!rec._id) rec._id = StringUtils.uuidv4();
-            if(!rec.createdAt) rec.createdAt = new Date().toISOString();
-            if(!rec.updateAt) rec.updateAt = new Date().toISOString();
+            this.addBaseProperties(rec);
         })
         this.dataStore.insert(records,cb);
     }
@@ -136,8 +140,12 @@ export class BaseDB<T extends BaseSchema>{
     insertManyAsync(records:T[]){
         return new Promise<T[]>((resolve,reject)=>{
             this.insertMany(records,(err,docs)=>{
-                if(err) reject(err);
-                resolve(docs);
+                if(err) {
+                    reject(err);
+                }
+                else{
+                    resolve(docs);
+                }
             });
         })
     }
@@ -152,8 +160,10 @@ export class BaseDB<T extends BaseSchema>{
     updateOneAsync(record:T){
         return new Promise<number>((resolve,reject)=>{
             this.updateOne(record,(err,updateCount)=>{
-                if(err) reject(err);
-                resolve(updateCount);
+                if(err)
+                    reject(err);
+                else 
+                    resolve(updateCount);
             })
         });        
     }
@@ -188,16 +198,16 @@ export class BaseDB<T extends BaseSchema>{
         })
     }
 
-    delete(query:Partial<T>,cb?: (err: Error, n: number) => void){        
-        this.dataStore.remove(query,cb);
+    delete(query:Partial<T>,cb?: (err: Error, n: number) => void,multi?:boolean){        
+        this.dataStore.remove(query,{multi},cb);
     }
 
-    deleteAsync(query:Partial<T>){
+    deleteAsync(query:Partial<T>,isMulty?:boolean){
         return new Promise<number>((resolve,reject)=>{
             this.delete(query,(err,deleteCount)=>{
                 if(err) reject(err);
                 resolve(deleteCount);
-            })
+            },isMulty);
         })
     }
 

@@ -43,7 +43,7 @@ function RebaseBranchComponent(props:IProps){
                                     <span>&gt;</span>
                                 </div>
                                 
-                                {(props.mouseOver === Option.Rebase) && <div className="position-absolute border bg-white" style={{left:'100%',top:0}}>
+                                {(props.mouseOver === Option.Rebase) && <div className="position-absolute border bg-color" style={{left:'100%',top:0}}>
                                     {
                                         props.referredLocalBranches.map((br=>(
                                             <div key={br} className="border-bottom py-1 px-3">

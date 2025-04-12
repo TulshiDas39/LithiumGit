@@ -1,12 +1,14 @@
-import { Constants, createBranchDetailsObj, createMergeLineObj, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, IStatus, RepositoryInfo } from "common_library";
+import { Annotation, createAnnotation, createBranchDetailsObj, createMergeLineObj, EnumAnnotationType, IBranchDetails, IBranchRemote, ICommitInfo, ILastReference, IRepositoryDetails, RepositoryInfo } from "common_library";
 import { IViewBox } from "../interfaces";
 import { ArrayUtils } from "./ArrayUtils";
+ import { Data } from "../data/Data";
+ import { IpcUtils } from "./IpcUtils";
 
 export class RepoUtils{
     static selectedRepo:RepositoryInfo = null!;
     static repositoryDetails:IRepositoryDetails = null!;    
     static readonly MergedCommitMessagePrefix = "Merge branch \'";
-    static readonly remoteBranchNamePrefix = "remotes"
+    static readonly remoteBranchNamePrefix = "remotes/"
     static readonly distanceBetweenBranchLine = 30;    
     static readonly branchPanelFontSize = 12;    
     static readonly commitRadius = RepoUtils.branchPanelFontSize;
@@ -151,6 +153,7 @@ export class RepoUtils{
     }
 
     private static finaliseSourceCommits(repoDetails:IRepositoryDetails) {
+        const branchAnnots = Data.annotations.filter(_=> _.type === EnumAnnotationType.Branch);
     	for (let i = repoDetails.sourceCommits.length-1; i>=0; i--) {
     		let sourceCommit = repoDetails.sourceCommits[i];			
 			if(sourceCommit.branchNameWithRemotes.length != 0) continue;
@@ -168,11 +171,15 @@ export class RepoUtils{
                     if(mainBranchNames.includes(br.name)){
                         realOwnerBranch = br;
                         break;
-                    }
+                    }                    
 					if(repoDetails.lastReferencesByBranch.some(ref => ref.branchName ===  br.name  && ref.dateTime < sourceCommit.date)){
                         realOwnerBranch = br;
 					    break;
                     }
+                    if(branchAnnots.some(ann => RepoUtils.getLocalBranch(ann.value) == br.name && ann.createdAt < sourceCommit.date)){
+                        realOwnerBranch = br;
+					    break;
+                    }                    
 				}
 			}					
 			
@@ -307,19 +314,19 @@ export class RepoUtils{
             return;
         }
 
-        let extraSpace = RepoUtils.getExtraSpaceForRefs(commit);
-        if(extraSpace > RepoUtils.distanceBetweenCommits) {
-            commit.x = x + extraSpace - RepoUtils.distanceBetweenCommits;
+        let extraSpace = Math.floor(RepoUtils.getExtraSpaceNeededForRefs(commit));
+        if(extraSpace > 0) {
+            commit.x = x + extraSpace;
         }
         else commit.x = x;
     }
 
-    private static getExtraSpaceForRefs(commit:ICommitInfo){
+    static getExtraSpaceNeededForRefs(commit:ICommitInfo){
         const maxRefSize = Math.max(...commit.refs.split(",").map(x=>x.length));
         const spaceForRef = (RepoUtils.branchPanelFontSize * 0.8) * maxRefSize;
         let previousCommit = commit.previousCommit;
         let extraSpace = 0;
-        let availableSpace = 0;
+        let availableSpace = RepoUtils.distanceBetweenCommits - RepoUtils.commitRadius*2;
         while(previousCommit){
             if(previousCommit.ownerBranch !== commit.ownerBranch){
                 break;
@@ -349,7 +356,7 @@ export class RepoUtils{
     private static isBranch(str:string,repoDetails:IRepositoryDetails){
         if(repoDetails.branchList.includes(str)) return true;
         if(str.includes('/')) {
-            str = this.remoteBranchNamePrefix +"/"+str;
+            str = this.remoteBranchNamePrefix+str;
             if(repoDetails.branchList.includes(str)) return true;
         }
         return false;
@@ -425,41 +432,6 @@ export class RepoUtils{
         return branchNames;
     }
 
-    static handleCheckout(commit:ICommitInfo,repoDetails:IRepositoryDetails,newStatus:IStatus){
-        
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
-
-        const existingStatus = repoDetails.status;
-        repoDetails.status = newStatus;                
-
-        const existingHead = repoDetails.headCommit;
-        
-        if(existingHead){
-            existingHead.isHead = false;
-            if(existingStatus.isDetached){
-                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                    existingHead.ownerBranch.increasedHeightForDetached = 0;
-                }            
-            }
-        }
-
-        if(newHeadCommit){
-            repoDetails.headCommit = newHeadCommit;
-            newHeadCommit.isHead = true;
-            const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
-            if(newStatus.isDetached){
-                newHeadCommit.refValues.push(Constants.detachedHeadIdentifier);
-                if(newHeadCommit.refValues.length > existingMaxRefLength){
-                    newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
-                    newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
-                }
-            }
-        }
-                
-    }
-
     static HasBranchNameRef(commit:ICommitInfo){
         return commit.branchNameWithRemotes.some(ref=> ref.branchName === commit.ownerBranch.name && !ref.remote);
     }
@@ -499,8 +471,8 @@ export class RepoUtils{
     }
 
     static isOriginBranch(str:string){
-        if(!str.startsWith("remotes/"))
-            str = "remotes/"+str;
+        if(!str.startsWith(RepoUtils.remoteBranchNamePrefix))
+            str = RepoUtils.remoteBranchNamePrefix+str;
         if(RepoUtils.repositoryDetails.branchList.includes(str))
             return true;
     }
@@ -516,8 +488,8 @@ export class RepoUtils{
 
     static getLocalBranch(originBranch:string){
         let localBranch = originBranch;
-        if(originBranch.startsWith("remotes/")){
-            localBranch = localBranch.substring("remotes/".length);            
+        if(originBranch.startsWith(RepoUtils.remoteBranchNamePrefix)){
+            localBranch = localBranch.substring(RepoUtils.remoteBranchNamePrefix.length);            
         }
         const remotes = RepoUtils.repositoryDetails.remotes;
         const remote = remotes.find(_ => localBranch.startsWith(`${_.name}/`))
@@ -539,16 +511,55 @@ export class RepoUtils{
         return orignName;
     }
 
+    static get activeRemoteInfo(){
+        if(!RepoUtils.repositoryDetails?.remotes.length)
+            return undefined;
+        const orignName = RepoUtils.repositoryDetails.repoInfo.activeOrigin;
+        const remote = RepoUtils.repositoryDetails.remotes.find(_=> _.name === orignName);
+        if(!remote){
+            return RepoUtils.repositoryDetails.remotes[0];
+        }
+        return remote;
+    }
+
     static enSureUpdate(repoPath:string){
         return new Promise((res)=>{
             let trycount = 0;
             const timer = setInterval(()=>{
-                if(RepoUtils.repositoryDetails.repoInfo.path == repoPath || trycount > 10){
+                if(RepoUtils.repositoryDetails?.repoInfo.path == repoPath || trycount > 10){
                     clearInterval(timer);
                     res(true);
                 }
                 trycount++;
             },500)
         })
+    }
+
+    static syncBranchHistory(){
+        const brList = RepoUtils.repositoryDetails.branchList;
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        const savedBrList = Data.annotations.filter(_ => _.repoId === repoId && _.type === EnumAnnotationType.Branch);
+        const savedBrNameList = savedBrList.map(_=>_.value);
+        const newBrList = brList.filter(_=> !savedBrNameList.includes(_));
+        if(newBrList.length){
+            const newAnnots:Annotation[]=[];
+            const date = new Date().toISOString();
+            for(let br of newBrList){
+                const newAnnot = createAnnotation({
+                    repoId,
+                    type: EnumAnnotationType.Branch,
+                    value:br
+                });
+                newAnnot.createdAt = date;
+                newAnnots.push(newAnnot);
+                Data.annotations.push(newAnnot);
+            }
+            IpcUtils.addAnnotation(newAnnots);            
+            
+        }
+        const deletedBranches = savedBrList.filter(_ => !brList.includes(_.value));
+        if(deletedBranches.length){
+            IpcUtils.deleteAnnotations(deletedBranches);
+        }
     }
 }

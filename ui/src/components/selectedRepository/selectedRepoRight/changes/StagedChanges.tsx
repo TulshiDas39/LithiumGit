@@ -1,12 +1,10 @@
-import { EnumChangeType, IChanges, IFile, IStatus, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
-import React, { Fragment, useEffect, useMemo, useRef } from "react";
-import { FaAngleDown, FaAngleRight, FaMinus } from "react-icons/fa";
-import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
+import { EnumChangeType, IFile, RepositoryInfo, StringUtils } from "common_library";
+import React, { Fragment, useEffect, useRef } from "react";
+import { FaMinus } from "react-icons/fa";
+import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
-import { ChangeUtils } from "../../../../lib/utils/ChangeUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ActionChanges } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
@@ -172,7 +170,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     <div className="d-flex hover py-1" style={{height:40}}
      >
         <div id={EnumHtmlIds.unstage_unstage_allPanel} className="d-flex justify-content-center ps-1">
-            <span className="d-flex align-items-center hover-brighter bg-success px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
+            <span className="d-flex align-items-center hover-shadow hover-brighter bg-success px-2 cur-default" title="Unstage all" onClick={_=>unStageAll()}>
                 <FaMinus />
             </span>
         </div>        

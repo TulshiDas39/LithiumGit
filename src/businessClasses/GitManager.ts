@@ -1,12 +1,14 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
+import * as fs from 'fs';
 import { FileManager } from "./FileManager";
 import { ConflictResolver } from "./ConflictResolver";
+import * as os from 'os';
 
 export class GitManager{
     private readonly logFields = LogFields.Fields();
@@ -41,6 +43,7 @@ export class GitManager{
         this.addMergeHandler();
         this.addCleanhHandler();
         this.addRemoteAddHandler();
+        this.addRemoteHandler();
         this.addRemoteRemoveHandler();
         this.addRemoteListHandler();
         this.addRebaseHandler();
@@ -52,6 +55,8 @@ export class GitManager{
         this.addUserNameUpdateHandler();
         this.addUserEmailUpdateHandler();
         this.addGraphCommitListHandler();
+        this.addIgnore();
+        this.addRemoveFromGitHandler();
     }
 
 
@@ -349,9 +354,10 @@ export class GitManager{
 
     setHead(repoDetails:IRepositoryDetails){
         const status = repoDetails.status;
-        const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash);
+        const head = repoDetails.allCommits.find(x=>x.hash === status.headCommit.hash) as IHeadCommitInfo;
         if(!head) return;
         head.isHead = true;
+        head.isDetached = status.headCommit.isDetached;
         repoDetails.headCommit = head;        
     }
 
@@ -442,9 +448,10 @@ export class GitManager{
 
         result.totalChangedItem = result.unstaged.length + result.staged.length + result.conflicted.length;
         
-        result.headCommit = await this.getCommitInfo(git,undefined);
+        result.headCommit = (await this.getCommitInfo(git,undefined)) as IHeadCommitInfo;
         if(!result.headCommit)
             return result;
+        result.headCommit.isDetached = status.detached;
         result.mergingCommitHash = await this.getMergingInfo(git);
         if(!result.mergingCommitHash){
             result.rebasingCommit = await this.getCommitInfo(git,"REBASE_HEAD");
@@ -686,10 +693,36 @@ export class GitManager{
         });
     }
 
-    private  addFetchHandler(){
+    private addFetchHandler(){
         ipcMain.handle(RendererEvents.fetch().channel,async (e,repoPath:string,options:string[])=>{
-            await this.takeFetch(repoPath,options);
+            await this.takeFetch(repoPath,options);            
         });
+    }
+
+    private addIgnore(){
+        ipcMain.handle(RendererEvents.ignoreItem,async (_e,repoPath:string,pattern:string)=>{
+            return await this.ignoreItem(repoPath,pattern);
+        });
+    }
+
+    private ignoreItem(repoPath:string,pattern:string){
+        const gitIgnore = path.join(repoPath,".gitignore");
+        const exists = fs.existsSync(gitIgnore);
+        let data = `${pattern}`;
+        if(exists){
+            data = `${os.EOL}${data}`;
+        }
+        return new Promise<boolean>((res,rej)=>{
+            fs.writeFile(gitIgnore,data,{flag:'a+'},(err)=>{
+                if(err){
+                    rej(err);
+                }else{
+                    res(true);
+                }
+           });
+
+        })
+        
     }
 
     private addCleanhHandler(){
@@ -701,6 +734,14 @@ export class GitManager{
     private addRemoteAddHandler(){
         ipcMain.handle(RendererEvents.gitAddRemote().channel,async (e,repoInfo:RepositoryInfo,remote:IRemoteInfo)=>{
             await this.addRemote(repoInfo, remote);
+        })
+    }
+
+    private addRemoteHandler(){
+        ipcMain.handle(RendererEvents.remote,async (e,repoPath:string,options:string[])=>{
+            const git = this.getGitRunner(repoPath);
+            const r = await git.remote(options);
+            return r;
         })
     }
 
@@ -716,6 +757,19 @@ export class GitManager{
         })
     }
 
+    private addRemoveFromGitHandler(){
+        ipcMain.handle(RendererEvents.deleteFromGit,async (e,repoPath:string,options:string[])=>{
+            return await this.deleteFromGit(repoPath,options);
+        })
+    }
+
+    private async deleteFromGit(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);
+        return await git.raw(["rm",...options]);
+    }
+
+
+
     private async cleanFiles(repoInfo:RepositoryInfo,files:string[]){
         const git = this.getGitRunner(repoInfo);
         await git.clean(CleanOptions.FORCE,files);
@@ -724,6 +778,12 @@ export class GitManager{
     private async addRemote(repoInfo:RepositoryInfo, remote:IRemoteInfo){
         const git = this.getGitRunner(repoInfo);
         await git.addRemote(remote.name,remote.url);
+    }
+
+    private async updateRemote(repPath:string,name:string, url:string){
+        const git = this.getGitRunner(repPath);
+        const options = ["set-url",name,url];
+        await git.remote(options);
     }
 
     private async removeRemote(repoInfo:RepositoryInfo, remoteName:string){
@@ -747,18 +807,7 @@ export class GitManager{
         });
 
         return remotes;
-    }
-    
-    private hasChangesInPull(result:PullResult){
-        if(!result) return false;
-        if(result.created?.length) return true;
-        if(result.deleted?.length) return true;
-        if(result.summary?.changes) return true;
-        if(result.summary.deletions) return true;
-        if(result.summary.insertions) return true;
-        return false;
-    }
-    
+    }    
 
     private async getStashList(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);

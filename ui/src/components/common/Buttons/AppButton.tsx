@@ -60,6 +60,12 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
         return 0;
     }
 
+    const getClasses=()=>{
+        if(type === "default")
+            return "default-button";
+        return "";
+    }
+
     const getHoverClasses=()=>{
         if(props.disabled){
             return "";
@@ -84,7 +90,7 @@ function AppButtonComponent(props:PropsWithChildren<IProps>){
         return style;
     },[props.style])
 
-    return <div title={props.title} className={`${config.bgColor} ${getHoverClasses()} ${props.disabled?'disabled':''} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
+    return <div title={props.title} className={`${config.bgColor} ${getClasses()} ${getHoverClasses()} ${props.disabled?'disabled':''} d-flex align-items-center justify-content-center text-center py-1 ${props.className?props.className:''}`} onClick={props.disabled?undefined:props.onClick}
         style={styles}>
         {props.children || props.text}
     </div>

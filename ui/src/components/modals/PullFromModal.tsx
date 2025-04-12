@@ -38,7 +38,8 @@ function PullFromModalComponent(){
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
-        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom);
+        const repoId = RepoUtils.repositoryDetails.repoInfo._id;
+        return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom && _.repoId === repoId);
     },[store.show])
 
     const closeModal=()=>{
@@ -58,10 +59,9 @@ function PullFromModalComponent(){
             type:EnumAnnotationType.PullFrom,
             value:state.branch
         });
-        IpcUtils.addAnnotation(newAnnot).then(r=>{
+        IpcUtils.addAnnotation([newAnnot]).then(r=>{
             if(!r.error){
-                const annots =[...annotations,newAnnot];
-                Data.annotations = annots;
+                Data.annotations.push(newAnnot);
             }
         })
     }
@@ -110,7 +110,7 @@ function PullFromModalComponent(){
         }
         
         setState({options});
-    },[state.branch,state.isSelected,state.inputFocused])
+    },[state.branch,state.isSelected,state.inputFocused,annotations])
 
     const handleSelect=(option:string)=>{
         setState({branch:option,isSelected:true,inputFocused:false});

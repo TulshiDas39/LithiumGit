@@ -113,7 +113,7 @@ function CheckoutBranchModalComponent(){
                         <div className="w-100 position-relative">
                             <Form.Control type="text" value={state.searchText} onChange={e=> setState({searchText:e.target.value,isSelected:false})}
                              autoFocus={true} onFocus={()=> setState({inputFocused:true})} onBlur={handleBlur} />
-                            {!!state.options.length && <div className="position-absolute bg-white border px-2 overflow-y-auto" 
+                            {!!state.options.length && <div className="position-absolute border px-2 overflow-y-auto" 
                                 style={{top:`110%`,left:0,minWidth:'100%',maxHeight:'75vh',maxWidth:500, overflowY:'auto'}}
                                 onMouseEnter={()=> {refData.current.hoverOptions = true}} onMouseLeave={()=>{refData.current.hoverOptions = false}}>
                                 {

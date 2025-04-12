@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import { BranchPanel } from "../../components/selectedRepository/selectedRepoRight/branches/BranchPanel";
 import { UiUtils } from "./UiUtils";
 import { EnumHtmlIds, EnumIdPrefix } from "../enums";
-import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IStatus } from "common_library";
+import { Constants, CreateCommitInfoObj, IBranchDetails, ICommitInfo, IHeadCommitInfo, IStatus } from "common_library";
 import { ModalData } from "../../components/modals/ModalData";
 import { CacheUtils } from "./CacheUtils";
 import { ReduxUtils } from "./ReduxUtils";
@@ -13,6 +13,7 @@ import { Publisher } from "../publishers";
 import { NumUtils } from "./NumUtils";
 import { IpcUtils } from "./IpcUtils";
 import { PbCommitFilter } from "./branchGraphPublishers/PbCommitFilter";
+import { PbHighlightedCommit } from "./branchGraphPublishers/PbHighlightedCommit";
 
 
 interface IState{
@@ -34,6 +35,7 @@ interface IState{
     viewBoxHeight:PbViewBoxHeight;
     verticalScrollHeight:PbVerticalScrollHeight;
     filter:PbCommitFilter;
+    highlightedCommit:PbHighlightedCommit;
 }
 
 export class GraphUtils{
@@ -46,8 +48,7 @@ export class GraphUtils{
     static branchSvgHtml='';
     static initialHorizontalScrollRatio = 1;
     static initialVerticalScrollRatio = 1;
-    static focusedCommit:ICommitInfo=null!;
-    static readonly selectedCommitColor = "blueviolet"
+    static focusedCommit:ICommitInfo=null!;    
     static readonly commitColor = "cadetblue";
     static readonly svgLnk = "http://www.w3.org/2000/svg";
     //static readonly scrollbarSize = 10;
@@ -66,6 +67,7 @@ export class GraphUtils{
         horizontalScrollRatio:new Publisher(0),
         verticalScrollRatio:new Publisher(0),
         filter : new PbCommitFilter({limit:400,toDate: new Date().toISOString(),userModified:false}),
+        highlightedCommit:new PbHighlightedCommit(undefined),
     } as IState;
     
     static resizeHandler = ()=>{
@@ -198,7 +200,6 @@ export class GraphUtils{
         if(!GraphUtils.svgElement) return;
         
         GraphUtils.svgElement.addEventListener("wheel",(e)=>{
-            var delta = Math.max(Math.abs(e.deltaX),Math.abs(e.deltaY));
             if(e.deltaX > 0 || e.deltaY > 0) {                
                 GraphUtils.controlZoom("zoomOut", 0.1);
             }
@@ -242,11 +243,11 @@ export class GraphUtils{
     }
 
 
-    static CreateHeadTextElement(commit:ICommitInfo){
+    static CreateHeadTextElement(commit:ICommitInfo,text:string,index:number){
         if(!commit.refValues.length) return null;    
         let y = commit.ownerBranch.y - RepoUtils.commitRadius - 4;
         const x = commit.x + RepoUtils.commitRadius;
-        for(let i=0;i<commit.refValues.length-1;i++){                
+        for(let i=0;i<index;i++){                
             y = y - RepoUtils.branchPanelFontSize - 1;
         }
         // return <text x={x} y={y} direction="rtl" fontSize={BranchUtils.branchPanelFontSize} fill="blue">HEAD</text>;
@@ -256,27 +257,10 @@ export class GraphUtils{
         elem.setAttribute("direction",`rtl`)
         elem.setAttribute("font-size",`${RepoUtils.branchPanelFontSize}`);
         elem.setAttribute("fill",`blue`);
-        elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`,"headRef")
-        elem.innerHTML = Constants.detachedHeadIdentifier;
+        elem.classList.add("refText",`${EnumIdPrefix.COMMIT_REF}${commit.hash}`);
+        elem.innerHTML = text;
         return elem;
-    }
-    
-    static updateUiForCheckout(){
-        if(!this.svgElement) return;
-        const headCommit = RepoUtils.repositoryDetails.headCommit;
-        if(!headCommit)
-            return;
-        if(RepoUtils.repositoryDetails.status.isDetached){
-            const commitElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${headCommit.hash}`);
-            const headTextElem = this.CreateHeadTextElement(headCommit);        
-            commitElem?.insertAdjacentElement("beforebegin",headTextElem!);
-        }
-
-        const HTextElem = this.svgElement.querySelector(`#${EnumIdPrefix.COMMIT_TEXT}${headCommit.hash}`);
-
-        HTextElem?.classList.remove("d-none");
-        ReduxUtils.setStatus(RepoUtils.repositoryDetails.status);
-    }
+    }    
     
 
     static revertUiOfExistingCheckout(){
@@ -301,78 +285,47 @@ export class GraphUtils{
     }
 
     static handleCheckout(commit:ICommitInfo,newStatus:IStatus){
-        const repoDetails = RepoUtils.repositoryDetails;
-        this.revertUiOfExistingCheckout();
-        const existingHead = repoDetails.headCommit;
-
-        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash);        
-
-        const existingStatus = repoDetails.status;
+        const repoDetails = RepoUtils.repositoryDetails;        
+        const newHeadCommit = repoDetails.allCommits.find(x=>x.hash === commit.hash) as IHeadCommitInfo;
         repoDetails.status = newStatus; 
-
-        if(existingHead){
-            existingHead.isHead = false;
-            if(existingStatus.isDetached){
-                existingHead.refValues = existingHead.refValues.filter(x=> x !== Constants.detachedHeadIdentifier);
-                if(existingHead.ownerBranch.increasedHeightForDetached > 0){
-                    existingHead.ownerBranch.maxRefCount -= existingHead.ownerBranch.increasedHeightForDetached;                
-                    existingHead.ownerBranch.increasedHeightForDetached = 0;
-                }            
-            }
-        }
+        
         repoDetails.headCommit = newHeadCommit!;
         
         if(newHeadCommit){
-            repoDetails.headCommit = newHeadCommit;
             newHeadCommit.isHead = true;
             const existingMaxRefLength = newHeadCommit.ownerBranch.maxRefCount;
 
             if(newStatus.isDetached){
+                newHeadCommit.isDetached = true;
                 newHeadCommit.refs += `,${Constants.detachedHeadIdentifier}`;
                 newHeadCommit.refValues.push(`${Constants.detachedHeadIdentifier}`);            
             }
             else{
+                newHeadCommit.isDetached = false;
+                if(newHeadCommit.refValues.includes(Constants.detachedHeadIdentifier)){
+                    newHeadCommit.refValues = newHeadCommit.refValues.filter(_=> _ != Constants.detachedHeadIdentifier);
+                }
                 if(!RepoUtils.repositoryDetails.branchList.includes(newHeadCommit.ownerBranch.name)){
                     newHeadCommit.refs = `${Constants.headPrefix}${newHeadCommit.ownerBranch.name},${newHeadCommit.refs}`;
                     newHeadCommit.refValues.push(`${newHeadCommit.ownerBranch.name}`);
                     newHeadCommit.branchNameWithRemotes.push({branchName:newHeadCommit.ownerBranch.name,remote:""});                
+                    RepoUtils.repositoryDetails.branchList.push(newHeadCommit.ownerBranch.name);
                 }
             }
             if(newHeadCommit.refValues.length > existingMaxRefLength){
                 newHeadCommit.ownerBranch.increasedHeightForDetached = newHeadCommit.refValues.length - existingMaxRefLength;
                 newHeadCommit.ownerBranch.maxRefCount = newHeadCommit.refValues.length;
-                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-                GraphUtils.refreshBranchPanelUi();
-            }
-            else {
-                CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-                this.updateUiForCheckout();
-            }
+            } 
+            repoDetails.headCommit = newHeadCommit;
         }
-                
+        GraphUtils.state.headCommit.publishOrUpdate(newHeadCommit);   
+        CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+
     }
 
     static refreshBranchPanelUi(){
         this.createBranchPanel();
-    }
-
-    static handleNewBranch(sourceCommit:ICommitInfo,branch:string,status:IStatus){
-        RepoUtils.repositoryDetails.branchList.push(branch);
-        const commitFrom = RepoUtils.repositoryDetails.allCommits.find(x=>x.hash === sourceCommit.hash);
-        if(!commitFrom) return;        
-        commitFrom.refValues.push(branch);                
-        const refLimitExcited = commitFrom.refValues.length > commitFrom.ownerBranch.maxRefCount;
-        if(refLimitExcited)  commitFrom.ownerBranch.maxRefCount++;
-        RepoUtils.repositoryDetails.status = status;
-        if(status.current === branch) {
-            RepoUtils.repositoryDetails.headCommit = commitFrom;
-        }
-        this.focusedCommit = commitFrom;
-
-        CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
-        
-        this.refreshBranchPanelUi();
-    }
+    }   
 
     static async isRequiredReload(){
         try{
@@ -385,6 +338,14 @@ export class GraphUtils{
                 const uiRefs = GraphUtils.state.headCommit.value.refValues;
                 const newRefs = newStatus.headCommit.refValues;        
                 if(newRefs.some(ref => !uiRefs.includes(ref)) || newRefs.length !== uiRefs.length) return true;
+                const nextCommit = GraphUtils.state.headCommit.value.nextCommit;
+                if(nextCommit){
+                    const spaceNeeded = Math.floor(RepoUtils.getExtraSpaceNeededForRefs(nextCommit) + RepoUtils.distanceBetweenCommits);
+                    const distance = nextCommit.x - GraphUtils.state.headCommit.value.x;
+                    if(spaceNeeded > distance)
+                        return true;
+                }
+                
             }else if(!filter.userModified){
                 //return true;
             }
@@ -437,7 +398,7 @@ export class GraphUtils{
         circleElem.setAttribute("r",(RepoUtils.commitRadius+2)+"")
         circleElem.setAttribute("stroke","red")
         circleElem.setAttribute("stroke-width","3");
-        circleElem.setAttribute("fill",GraphUtils.commitColor)
+        // circleElem.setAttribute("fill",GraphUtils.commitColor)
         circleElem.classList.add("mergingState");
 
         const circleElem2 = document.createElementNS(this.svgLnk, "circle");
@@ -465,10 +426,11 @@ export class GraphUtils{
             let existingSelectedCommitElem:HTMLElement|null;
             if(GraphUtils.state.selectedCommit.value?.hash) {
                 existingSelectedCommitElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${GraphUtils.state.selectedCommit.value.hash}`);
-                existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
+                //existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
+                existingSelectedCommitElem?.classList.remove("selected-commit");
             }
 
-            circleElem.setAttribute("fill",GraphUtils.selectedCommitColor);
+            circleElem.classList.add("selected-commit");
 
             GraphUtils.state.selectedCommit.publish(mergeCommit);
         }
@@ -560,5 +522,15 @@ export class GraphUtils{
         GraphUtils.state.svgContainerWidth.publish(0);
         GraphUtils.state.headCommit.publish(null!);
         GraphUtils.state.mergingCommit.publish(null!);
+        GraphUtils.state.highlightedCommit.publish(null!);
+    }
+
+    static scrollToCommit=(commit:ICommitInfo)=>{        
+        if(!commit)
+            return;
+        const horizontalRatio = commit.x/RepoUtils.repositoryDetails.branchPanelWidth;
+        const verticalRatio = commit.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
+        GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
+        GraphUtils.state.verticalScrollRatio.publish(verticalRatio);        
     }
 }

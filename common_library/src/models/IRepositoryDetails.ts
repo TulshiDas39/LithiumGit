@@ -1,4 +1,4 @@
-import { IBranchDetails, ICommitInfo, ILastReference, IRemoteInfo, IStatus } from ".";
+import { IBranchDetails, ICommitInfo, IHeadCommitInfo, ILastReference, IRemoteInfo, IStatus } from ".";
 import { Annotation, RepositoryInfo } from "../schemas";
 import { IMergeLine } from "./IMergeLine";
 
@@ -10,7 +10,7 @@ export interface IRepositoryDetails{
     remotes:IRemoteInfo[];
     branchTree:IBranchDetails[];
     resolvedBranches:IBranchDetails[];
-    headCommit?:ICommitInfo;
+    headCommit?:IHeadCommitInfo;
     mergeCommitMessages:string[];
     sourceCommits:ICommitInfo[];
     repoInfo:RepositoryInfo;

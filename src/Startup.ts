@@ -1,6 +1,5 @@
-import { IConfigInfo, MainEvents, RendererEvents } from "common_library";
+import { EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
-import { autoUpdater } from "electron-updater";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
 import { FileManager } from "./businessClasses/FileManager";
@@ -10,6 +9,8 @@ import { Config } from "./config";
 import { AppData } from "./dataClasses/AppData";
 import { SavedData } from "./dataClasses/SavedData";
 import { DB } from "./db_service/db_service";
+import { Env } from "./types";
+import { ShellManager } from "./businessClasses/ShellManager";
 
 export class Startup{
     private readonly uiPort = Config.UI_PORT;
@@ -17,15 +18,8 @@ export class Startup{
     async initilise(){
       //this.initAppData();
       this.addExceptionHandler();
-      this.checkForUpdate();
       await this.loadSavedData();      
       this.startIpcManagers();
-    }
-
-    checkForUpdate(){
-      if(Config.env === 'development')
-        return;
-        new Updater().checkForUpdate();
     }
 
     addExceptionHandler(){
@@ -62,6 +56,7 @@ export class Startup{
       await DB.config.load();
       await DB.repository.load();
       await DB.annotation.load();
+      await DB.notification.load();
     }
 
     private async loadSavedData(){
@@ -78,15 +73,27 @@ export class Startup{
       SavedData.data.configInfo = (await DB.config.getAll())[0];
       if(!SavedData.data.configInfo){
         const record={
-          portNumber:54523,
-          autoStage:false,
         } as IConfigInfo;
         SavedData.data.configInfo= await DB.config.insertAndRemainOneAsync(record);
+      }
+      let isUpdated = false;
+      if(!SavedData.data.configInfo.theme){
+        SavedData.data.configInfo.theme = EnumTheme.Dark;
+        isUpdated = true;
+      }
+      if(!SavedData.data.configInfo.checkedForUpdateAt){
+        let lastChecked = new Date(2023,0,1).toISOString();
+        SavedData.data.configInfo.checkedForUpdateAt = lastChecked;
+        isUpdated = true;
+      }
+
+      if(isUpdated){
+        await DB.config.updateOneAsync(SavedData.data.configInfo);
       }
     }
 
     private async  createWindow() {
-        if(Config.env !== 'development')
+        if(Config.env !== Env.DEVELOPMENT)
           Menu.setApplicationMenu(null);
         const mainWindow = new BrowserWindow({
           height: 600,
@@ -99,14 +106,14 @@ export class Startup{
         });
         mainWindow.maximize();
         AppData.mainWindow = mainWindow;
-        if(Config.env === 'development')          
+        if(Config.env === Env.DEVELOPMENT)          
           mainWindow.loadURL(`http://localhost:${this.uiPort}`);
         else{
           const htmlFile =   path.resolve(__dirname,"ui", 'index.html');
           mainWindow.loadFile(htmlFile);
         }
         
-        if(Config.env === 'development')
+        if(Config.env === Env.DEVELOPMENT)
           mainWindow.webContents.openDevTools();
     }
 
@@ -154,6 +161,8 @@ export class Startup{
       new DataManager().start();
       new GitManager().start();
       new FileManager().start();
+      new ShellManager().start();
+      new Updater().registerIpcEvents();
     }
 
 }

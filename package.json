@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "A git gui application",
   "scripts": {
     "build": "tsc && npm run copy_src_assets",
@@ -14,7 +14,7 @@
     "copy_files": "copyfiles -u 2 \"ui/build/**/*\" dist/ui",
     "build_all": "npm run build_ui && npm run copy_files && npm run build",
     "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build",
-    "package-linux": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux",
+    "package-linux": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux",
     "package-mac": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --mac"
   },
   "main": "./dist/main.js",
@@ -41,6 +41,7 @@
     "typescript": "^4.6.4"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "common_library": "file:common_library",
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-updater": "^5.0.1",
@@ -104,8 +105,18 @@
     "linux": {
       "icon": "icons/256x256.icns",
       "target": [
-        "AppImage",
-        "deb"
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "Development"
     },

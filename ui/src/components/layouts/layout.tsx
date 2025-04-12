@@ -3,9 +3,9 @@ import { Route, Switch } from 'react-router-dom';
 import './layout.scss'
 import { Main } from '../main/Main';
 import { UiRoutes } from '../../lib/UiRoutes';
-import { TopNav } from '../topNav/TopNav';
+import { TopNav } from '../navs/TopNav';
 import { Modals } from '../modals';
-import { FooterNav } from '../topNav/FooterNav';
+import { FooterNav } from '../navs/FooterNav';
 import { IDimension } from '../../lib';
 
 interface ILayoutProps{
@@ -26,10 +26,6 @@ function LayoutComponent(props:ILayoutProps) {
         if(height > 20) return 20;
         return height;
     },[props.height])
-
-    const mainPanelHeight = useMemo(()=>{
-        return props.height - topNavHeight - footerHeight;
-    },[topNavHeight,footerHeight])
 
     return (
         <div className="h-100" style={{height:props.height+"px"}}>

@@ -1,16 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Annotation, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumTheme, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { RepoUtils } from "../../lib";
+import { CacheUtils, RepoUtils } from "../../lib";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
-    autoStagingEnabled:boolean;    
+    autoStagingEnabled:boolean;
+    configInfo:IConfigInfo;    
 }
 
 const initialState:ISavedData={
     recentRepositories:[],
-    autoStagingEnabled:false,    
+    autoStagingEnabled:false,
+    configInfo:{
+        _id:"",
+        createdAt: new Date().toISOString(),
+        theme:EnumTheme.Light,
+        updateAt:new Date().toISOString(),
+        checkedForUpdateAt: new Date().toISOString(),
+    }
 }
 
 const SavedDataSlice = createSlice({
@@ -62,9 +70,27 @@ const SavedDataSlice = createSlice({
             state.recentRepositories[index] = action.payload;
             IpcUtils.updateRepository(action.payload);
         },
-        updateAutoStaging(state,action:PayloadAction<boolean>){
-            state.autoStagingEnabled = action.payload;
+
+        updateConfig(state,action:PayloadAction<IConfigInfo>){
+            state.configInfo = action.payload;
+            IpcUtils.updateConfig(action.payload);
         },
+
+        toogleTheme(state){
+            if(state.configInfo.theme === EnumTheme.Light){
+                state.configInfo.theme = EnumTheme.Dark;
+            }else{
+                state.configInfo.theme = EnumTheme.Light;
+            }
+            IpcUtils.updateConfig({...state.configInfo});
+        },
+        setActiveOrigin(state,action:PayloadAction<string>){
+            const repo = state.recentRepositories.find(_=>_.isSelected);
+            repo!.activeOrigin = action.payload;            
+            RepoUtils.repositoryDetails.repoInfo.activeOrigin = action.payload;
+            IpcUtils.updateRepository(RepoUtils.repositoryDetails.repoInfo);
+            CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+        }
 
     }
 });

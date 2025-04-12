@@ -54,7 +54,7 @@ function CommitsComponent(){
             x:e.clientX,
             y:e.clientY,
         };
-        UiUtils.openContextModal();
+        UiUtils.openCommitContextModal();
         setState({contextCommit:commit});
     },[]);
     

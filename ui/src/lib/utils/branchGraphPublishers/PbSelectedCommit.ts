@@ -25,22 +25,19 @@ export class PbSelectedCommit extends UiState<ICommitInfo|undefined>{
         else {
             existingSelectedCommitElem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.prevValue.hash}`);
         }
-        existingSelectedCommitElem?.setAttribute("fill",GraphUtils.commitColor);
+        existingSelectedCommitElem?.classList.remove("selected-commit");
     }
 
     private highlight(){
         if(!this.value) return;
         var elem = GraphUtils.svgContainer.querySelector(`#${EnumIdPrefix.COMMIT_CIRCLE}${this.value.hash}`);        
-        elem?.setAttribute("fill",GraphUtils.selectedCommitColor);        
+        elem?.classList.add("selected-commit");        
     }
 
     focus(){
         if(!this.value)
             return;
-        const horizontalRatio = this.value.x/RepoUtils.repositoryDetails.branchPanelWidth;
-        const verticalRatio = this.value.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
-        GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
-        GraphUtils.state.verticalScrollRatio.publish(verticalRatio);
+        GraphUtils.scrollToCommit(this.value);
     }
 
     setHeadCommit(){

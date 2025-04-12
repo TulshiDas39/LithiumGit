@@ -1,8 +1,33 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, ILogFilterOptions, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFile, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
+import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static removeFromGit(options: string[]) {
+        return IpcUtils.runGitCommand(RendererEvents.deleteFromGit,[options]);
+    }
+    static ignoreItem(pattern: string) {
+        return IpcUtils.runGitCommand(RendererEvents.ignoreItem,[pattern])
+    }
+    static installUpdate() {
+        return IpcUtils.execute(RendererEvents.installUpdate,[]);
+    }
+    static checkForUpdate() {
+        return IpcUtils.execute(RendererEvents.checkForUpdate,[]);
+    }
+    static updateNotifications(items: INotification[]) {
+        return IpcUtils.execute(RendererEvents.updateNotifications,[items]);
+    }
+    static deleteNotification(items: INotification[]) {
+        return IpcUtils.execute(RendererEvents.deleteNotifcations,[items]);        
+    }
+    static clearNotifications() {
+        return IpcUtils.execute(RendererEvents.clearNotifications,[]);
+    }
+    static runRemote(options:string[]) {
+        return this.runGitCommand(RendererEvents.remote,[options]);
+    }
 
     static abortRebase() {
         const options = ["--abort"];
@@ -189,7 +214,7 @@ export class IpcUtils{
     }
 
     static async removeRemote(remoteName:string){
-        await window.ipcRenderer.invoke(RendererEvents.gitRemoveRemote,RepoUtils.selectedRepo,remoteName);
+        return IpcUtils.execute(RendererEvents.gitRemoveRemote,[RepoUtils.selectedRepo,remoteName]);        
     }
 
     static async getRemoteList(){
@@ -285,14 +310,31 @@ export class IpcUtils{
         return r;
     }
 
-    static async addAnnotation(annot:Annotation){
-        const r = await this.execute<any>(RendererEvents.addAnnotation,[annot]);
+    static async addAnnotation(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.addAnnotation,[annots]);
+        return r;
+    }
+
+    static async deleteAnnotations(annots:Annotation[]){
+        const r = await this.execute<any>(RendererEvents.removeAnnotation,[annots]);
         return r;
     }
 
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
         const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;
+    }
+
+    static updateConfig(config:IConfigInfo){
+        return IpcUtils.execute(RendererEvents.updateConfig,[config]);
+    }
+
+    static openLink(url:string){
+        return IpcUtils.execute(RendererEvents.openLink,[url]);
+    }
+
+    static getNotifications(){
+        return IpcUtils.execute<IUiNotification[]>(RendererEvents.loadNotifications,[]);
     }
     
 }
