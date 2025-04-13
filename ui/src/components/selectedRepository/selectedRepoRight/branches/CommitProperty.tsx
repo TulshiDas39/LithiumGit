@@ -62,11 +62,14 @@ function CommitPropertyComponent(props:IProps){
         </span>}
         <span title={timeZoneOffset}>Date: {moment(props.selectedCommit.date).format("D MMM,YYYY hh:mm a") }</span>
         {!!props.selectedCommit.hash && <div className="w-100 overflow-hidden d-flex">
-            <span>Author: </span>
-            <div><InputText text={props.selectedCommit.author_name}/></div>
-            <span>&lt;</span>            
-            <div><InputText text={props.selectedCommit.author_email} /></div>
-            <span>&gt;</span>
+            <div style={{width:'55px'}}>Author: </div>
+            <div style={{width:'calc(100% - 55px)'}} className="overflow-hidden d-flex">
+                <div><InputText text={props.selectedCommit.author_name}/></div>
+                <span>&lt;</span>            
+                <div><InputText text={props.selectedCommit.author_email} /></div>
+                <span>&gt;</span>
+            </div>
+            
         </div>}
         <div className="w-100 overflow-hidden d-flex">
             <div style={{width:'65px'}}>Branches: </div>
