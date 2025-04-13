@@ -294,5 +294,6 @@ export class RendererEvents{
     static readonly ignoreItem = "ignoreItem";
     static readonly deleteFromGit = "deleteFromGit";    
     static readonly getAppInfo = "getAppInfo";
+    static readonly setCheckForUpdateTime = "setCheckForUpdateTime";
 }
 

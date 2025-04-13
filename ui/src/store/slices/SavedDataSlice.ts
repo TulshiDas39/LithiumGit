@@ -16,7 +16,7 @@ const initialState:ISavedData={
     configInfo:{
         _id:"",
         createdAt: new Date().toISOString(),
-        theme:EnumTheme.Light,
+        theme:EnumTheme.Dark,
         updateAt:new Date().toISOString(),
         checkedForUpdateAt: new Date().toISOString(),
     },
@@ -77,7 +77,10 @@ const SavedDataSlice = createSlice({
             state.configInfo = action.payload;
             IpcUtils.updateConfig(action.payload);
         },
-
+        setCheckForUpdateTime(state,action:PayloadAction<string>){
+            state.configInfo.checkedForUpdateAt = action.payload;
+            IpcUtils.setCheckForUpdateTime(action.payload);
+        },
         toogleTheme(state){
             if(state.configInfo.theme === EnumTheme.Light){
                 state.configInfo.theme = EnumTheme.Dark;

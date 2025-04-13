@@ -329,6 +329,10 @@ export class IpcUtils{
         return IpcUtils.execute(RendererEvents.updateConfig,[config]);
     }
 
+    static setCheckForUpdateTime(time:string){
+        return IpcUtils.execute(RendererEvents.setCheckForUpdateTime,[time]);
+    }
+
     static openLink(url:string){
         return IpcUtils.execute(RendererEvents.openLink,[url]);
     }

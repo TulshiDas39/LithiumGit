@@ -23,13 +23,20 @@ export class DataManager{
         this.handleRemoveNotifications();
         this.handleUpdateNotifications();
         this.handleAppInfoRequest();
-
+        this.setCheckForUpdateTime();
     }
 
     private handleConfigUpdate(){
         ipcMain.handle(RendererEvents.updateConfig, async(_, config:IConfigInfo) => {            
             await DB.config.updateOneAsync(config);
             SavedData.data.configInfo = config;
+        });
+    }
+
+    private setCheckForUpdateTime(){
+        ipcMain.handle(RendererEvents.setCheckForUpdateTime, async(_, time:string) => {            
+            SavedData.data.configInfo.checkedForUpdateAt = time;
+            await DB.config.updateOneAsync(SavedData.data.configInfo);
         });
     }
 

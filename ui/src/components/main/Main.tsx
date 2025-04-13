@@ -64,7 +64,7 @@ function MainComponent(){
         nextCheckDate.setMinutes(nextCheckDate.getMinutes() + checkInterValMinute);        
         if(nextCheckDate < now || !store.appFocusV){            
             IpcUtils.checkForUpdate().then(r=>{
-                dispatch(ActionSavedData.updateConfig({...config,checkedForUpdateAt: now.toISOString()}));
+                dispatch(ActionSavedData.setCheckForUpdateTime(now.toISOString()));
             });
         }
     },[store.appFocusV])
