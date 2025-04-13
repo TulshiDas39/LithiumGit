@@ -71,7 +71,7 @@ function CommitPropertyComponent(props:IProps){
             </div>
             
         </div>}
-        <div className="w-100 overflow-hidden d-flex">
+        <div className="w-100 overflow-hidden d-flex pb-2">
             <div style={{width:'65px'}}>Branches: </div>
             <div style={{width:'calc(100% - 65px)'}} className="overflow-hidden"><InputText text={branchesStr} width={(branchesStr.length+2)+"ch"} /></div>            
         </div>
