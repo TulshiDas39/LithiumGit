@@ -57,6 +57,7 @@ export class GitManager{
         this.addGraphCommitListHandler();
         this.addIgnore();
         this.addRemoveFromGitHandler();
+        this.addCommitDetailsHandler();
     }
 
 
@@ -763,6 +764,13 @@ export class GitManager{
         })
     }
 
+    private addCommitDetailsHandler(){        
+        ipcMain.handle(RendererEvents.getCommitDetails, async (e,repoPath:string,hash:string)=>{
+            const git = this.getGitRunner(repoPath);
+            return await this.getCommitInfo(git,hash);
+        })
+    }
+
     private async deleteFromGit(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
         return await git.raw(["rm",...options]);
@@ -896,7 +904,26 @@ export class GitManager{
             return null!;
         }
         
-        return commits?.[0];
+        const c = commits?.[0];
+
+        if(!c)
+            return c;
+
+        const containingBranches = await this.getContainingBranches(git,c.hash);
+        c.containingBranches = containingBranches;
+
+        return c;
+    }
+
+    private async getContainingBranches(git:SimpleGit,hash:string){
+        try{
+            //git branch -a --contains a1b2c3d4
+            const options = ["-a","--contains",hash];
+            const r = await git.branch(options);
+            return r.all;
+        }catch(e){
+            return [];
+        }
     }
 
 

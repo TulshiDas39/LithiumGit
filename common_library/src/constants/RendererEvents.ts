@@ -295,5 +295,6 @@ export class RendererEvents{
     static readonly deleteFromGit = "deleteFromGit";    
     static readonly getAppInfo = "getAppInfo";
     static readonly setCheckForUpdateTime = "setCheckForUpdateTime";
+    static readonly getCommitDetails = "getCommitDetails";    
 }
 

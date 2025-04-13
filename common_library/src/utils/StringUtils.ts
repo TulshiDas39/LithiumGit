@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { EnumChangeType } from '../enums';
+import { Constants } from '../constants';
 
 export class StringUtils{
     static getFolderName(path:string){
@@ -144,6 +145,12 @@ export class StringUtils{
         generateSplits([], str);
         result.sort((a,b)=> a.score > b.score?-1:1);
         return result;
+    }
+
+    static removeRemotePrefix(branches:string[]){
+        if(!branches)
+            return [];
+        return branches.map(b=> b.startsWith(Constants.originBranPrefix)? b.substring(Constants.originBranPrefix.length):b);
     }
   
 }
