@@ -142,6 +142,11 @@ const UISlice = createSlice({
                 state.notifications.push(item);
             }
         },
+        removeNotifications(state,action:PayloadAction<IUiNotification[]>){
+            for(let item of action.payload){
+                state.notifications = state.notifications.filter(_ => _._id !== item._id);
+            }
+        },
         deactivateNotification(state,action:PayloadAction<string>){
             const notification = state.notifications.find(_=> _._id === action.payload);
             if(notification){

@@ -1,6 +1,6 @@
-import { Annotation, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
-import { ipcMain } from "electron";
-import { SavedData } from "../dataClasses";
+import { Annotation, EnumNotificationType, IAppInfo, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
+import { app, ipcMain } from "electron";
+import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
 
 export class DataManager{
@@ -22,6 +22,7 @@ export class DataManager{
         this.handleNotificationsClear();
         this.handleRemoveNotifications();
         this.handleUpdateNotifications();
+        this.handleAppInfoRequest();
 
     }
 
@@ -35,6 +36,16 @@ export class DataManager{
     private handleSavedDataRequest(){
         ipcMain.on(RendererEvents.getSaveData().channel, (event, arg) => {            
             event.returnValue = SavedData.data;
+        });
+    }
+
+    private handleAppInfoRequest(){
+        ipcMain.on(RendererEvents.getAppInfo, (event, arg) => {
+            const info:IAppInfo = {
+                version:app.getVersion()
+            };
+            console.log("app version",info.version);
+            event.returnValue = info;
         });
     }
 

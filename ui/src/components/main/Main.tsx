@@ -1,5 +1,5 @@
-import { EnumNotificationType, EnumTheme, ISavedData, RendererEvents } from "common_library";
-import React from "react";
+import { EnumNotificationType, EnumTheme, IAppInfo, INewVersionInfo, ISavedData, RendererEvents } from "common_library";
+import React, { useMemo } from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
 import { DataUtils, EnumModals, FetchState, GraphUtils, IUiNotification, RepoUtils, UiUtils, useMultiState } from "../../lib";
@@ -84,6 +84,8 @@ function MainComponent(){
             setTheme(savedData.configInfo.theme);
         }
         dispatch(ActionSavedData.updateConfig(savedData.configInfo));
+        const appInfo:IAppInfo = window.ipcRenderer.sendSync(RendererEvents.getAppInfo);
+        dispatch(ActionSavedData.setAppInfo(appInfo));
         const repos = savedData.recentRepositories;        
         if(!repos?.length){
             setState({isLoading:false});
@@ -106,7 +108,7 @@ function MainComponent(){
         window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            
             DataUtils.clone.stage = stage;
             DataUtils.clone.progress = progress;
-        })
+        })        
 
         window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
             notification.isActive = true;
