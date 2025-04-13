@@ -1,4 +1,4 @@
-import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo} from "common_library";
+import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo, IStatusConfig} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
 import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
@@ -57,6 +57,7 @@ export class GitManager{
         this.addGraphCommitListHandler();
         this.addIgnore();
         this.addRemoveFromGitHandler();
+        this.addCommitDetailsHandler();
     }
 
 
@@ -401,7 +402,7 @@ export class GitManager{
         return await git.clone(url,folderPath);
     }
 
-    private async getStatus(repoInfo:RepositoryInfo){
+    private async getStatus(repoInfo:RepositoryInfo,config?:IStatusConfig){
         const git = this.getGitRunner(repoInfo);
         const status = await git.status();
         const result = {
@@ -597,7 +598,8 @@ export class GitManager{
             options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
         }
         else{
-            options.push("--all");
+            if(!filterOption.hash) 
+                options.push("--all");
         }
 
         options.push(this.LogFormat);
@@ -763,6 +765,13 @@ export class GitManager{
         })
     }
 
+    private addCommitDetailsHandler(){        
+        ipcMain.handle(RendererEvents.getCommitDetails, async (e,repoPath:string,hash:string)=>{
+            const git = this.getGitRunner(repoPath);
+            return await this.getCommitInfo(git,hash,{includeBranchList:true});
+        })
+    }
+
     private async deleteFromGit(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);
         return await git.raw(["rm",...options]);
@@ -884,7 +893,7 @@ export class GitManager{
         return git;
     }
 
-    private async getCommitInfo(git:SimpleGit,commitHash:string|undefined){
+    private async getCommitInfo(git:SimpleGit,commitHash:string|undefined,config?:{includeBranchList?:boolean}){
         const options:string[] = [];
         if(commitHash) options.push(commitHash);
         options.push(this.LogFormat);
@@ -896,7 +905,27 @@ export class GitManager{
             return null!;
         }
         
-        return commits?.[0];
+        const c = commits?.[0];
+
+        if(!c)
+            return c;
+        if(config?.includeBranchList){
+            const containingBranches = await this.getContainingBranches(git,c.hash);
+            c.containingBranches = containingBranches;
+        }        
+
+        return c;
+    }
+
+    private async getContainingBranches(git:SimpleGit,hash:string){
+        try{
+            //git branch -a --contains a1b2c3d4
+            const options = ["-a","--contains",hash];
+            const r = await git.branch(options);
+            return r.all;
+        }catch(e){
+            return [];
+        }
     }
 
 

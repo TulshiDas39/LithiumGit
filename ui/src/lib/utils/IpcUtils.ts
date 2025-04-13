@@ -1,9 +1,12 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFile, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static getCommitInfo(hash: string) {
+        return IpcUtils.runGitCommand<ICommitInfo>(RendererEvents.getCommitDetails,[hash]);
+    }
     static removeFromGit(options: string[]) {
         return IpcUtils.runGitCommand(RendererEvents.deleteFromGit,[options]);
     }
@@ -327,6 +330,10 @@ export class IpcUtils{
 
     static updateConfig(config:IConfigInfo){
         return IpcUtils.execute(RendererEvents.updateConfig,[config]);
+    }
+
+    static setCheckForUpdateTime(time:string){
+        return IpcUtils.execute(RendererEvents.setCheckForUpdateTime,[time]);
     }
 
     static openLink(url:string){
