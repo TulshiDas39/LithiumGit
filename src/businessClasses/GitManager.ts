@@ -598,7 +598,8 @@ export class GitManager{
             options.push(`--first-parent`,`${filterOption.branchName}`, "--no-merges");
         }
         else{
-            options.push("--all");
+            if(!filterOption.hash) 
+                options.push("--all");
         }
 
         options.push(this.LogFormat);
