@@ -85,6 +85,14 @@ function NotificationsComponent(){
             }
         },[updateNotification,store.appInfo])
 
+    const getBellIcon=()=>{
+        if(!store.notifications.length)
+            return <FaRegBell />
+        if(unreadCount)
+            return <BellWithDot unread ={true} />
+        return <BellWithDot />
+    }
+
     return <div className="ps-1 pe-2 position-relative">
             {!!activeNotifications.length && <div className="py-2 overflow-auto position-absolute" style={{width:450, maxHeight:`95vh`,bottom:'100%',right:'0px'}}>
                         {activeNotifications.map(n=>(
@@ -95,7 +103,7 @@ function NotificationsComponent(){
                     </div>}
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
                 onClick={() => toogleNotifications()}>
-                {!unreadCount? <FaRegBell />: <BellWithDot /> }
+                {getBellIcon()}
             </span>
             <Overlay target={target.current} show={state.show} placement="top-end"
                 rootClose={true} rootCloseEvent="click" onHide={() => setState({show:false})}>

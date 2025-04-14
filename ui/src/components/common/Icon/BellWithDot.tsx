@@ -1,10 +1,13 @@
 import React from "react"
 import { FaCircle, FaRegBell } from "react-icons/fa";
 
-function BellWithDotComponent(){
+interface IProps{
+    unread?:boolean;
+}
+function BellWithDotComponent(props:IProps){
     return <span className="d-flex position-relative">
         <FaRegBell />
-        <FaCircle fontSize={"0.5em"} className="position-absolute text-info" style={{top:-1,left:10}}/>
+        <FaCircle fontSize={"0.5em"} className={`position-absolute ${props.unread?'text-info':'text-secondary'}`} style={{top:-1,left:10}}/>
     </span>
 }
 
