@@ -1,10 +1,12 @@
 import { ICommitInfo } from "common_library";
-import { UiUtils, useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
 import React, { useRef } from "react";
 import { FaCircle, FaDotCircle, FaEllipsisV, FaHashtag, FaKey, FaKeybase, FaKeycdn, FaUser } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
 import { Dropdown } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface ISingleCommitProps{
     commit:ICommitInfo;
@@ -26,18 +28,7 @@ function SingleCommitComponent(props:ISingleCommitProps){
     const getTimeZonOffsetStr = ()=>{
         return UiUtils.getTimeZonOffsetStr();
     }
-    const handleEllipsisClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>)=>{
-        //e.preventDefault(); 
-        //e.stopPropagation();        
-        //props.onRightClick(e as any,props.commit);
-        //setState({showDropdown:!state.showDropdown});
-        // ModalData.commitContextModal.selectedCommit=props.commit!;            
-        // ModalData.commitContextModal.position = {
-        //     x:e.clientX,
-        //     y:e.clientY,
-        // };
-        // UiUtils.openContextModal();        
-    }
+    const dispatch = useDispatch();
     const handleDivClick = ()=>{
         if(refData.current.hoverElipsis)
             return ;
@@ -48,7 +39,17 @@ function SingleCommitComponent(props:ISingleCommitProps){
             return ;
         props.onRightClick(e,props.commit);
     }
-    return <div className={`py-1 w-100 gs-overflow-x-auto ${props.isSelected?'selected':''} ${props.highlighted?'highlighted':''}`} onClick={()=>handleDivClick()} onContextMenu={handleContext}>
+
+    const showInGraph=()=>{
+        const commit = RepoUtils.repositoryDetails.allCommits.find(c=>c.hash === props.commit.hash);
+        if(commit){
+            dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.GRAPH));
+            GraphUtils.state.selectedCommit.publish(commit);
+            GraphUtils.state.selectedCommit.focus();
+        }
+    }
+
+    return <div className={`py-1 w-100 overflow-hidden ${props.isSelected?'selected':''} ${props.highlighted?'highlighted':''}`} onClick={()=>handleDivClick()} onContextMenu={handleContext}>
      <div className="border border-secondary ps-2">
         <div className="d-flex">
             <div className="flex-grow-1">
@@ -58,13 +59,13 @@ function SingleCommitComponent(props:ISingleCommitProps){
                 <b className="text-danger"> ({props.commit.refs})</b>}
             </div>
             <div className="d-flex justify-content-end align-items-center">            
-                <Dropdown autoClose="outside" className="pe-2">
-                    <Dropdown.Toggle variant="link" id="dropdown-commit-list-item" className="rounded-0 no-caret"
-                        onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
+                <Dropdown className="pe-2"
+                onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
+                    <Dropdown.Toggle variant="link" id="dropdown-commit-list-item" className="rounded-0 no-caret">
                         <FaEllipsisV />
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="no-radius">
-                        <Dropdown.Item onClick={()=>{}} className="border-bottom">Show in graph</Dropdown.Item>                                
+                        <Dropdown.Item key={"show_in_graph"} onClick={showInGraph} className="border-bottom">Show in graph</Dropdown.Item>                                
                     </Dropdown.Menu>
                 </Dropdown>                        
             </div>
