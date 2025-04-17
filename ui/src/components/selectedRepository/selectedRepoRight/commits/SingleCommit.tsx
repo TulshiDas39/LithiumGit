@@ -41,11 +41,13 @@ function SingleCommitComponent(props:ISingleCommitProps){
     }
 
     const showInGraph=()=>{
+        dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.GRAPH));
         const commit = RepoUtils.repositoryDetails.allCommits.find(c=>c.hash === props.commit.hash);
-        if(commit){
-            dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.GRAPH));
+        if(commit){            
             GraphUtils.state.selectedCommit.publish(commit);
             GraphUtils.state.selectedCommit.focus();
+        }else{
+            GraphUtils.loadAndFocunsOnCommit(props.commit);
         }
     }
 
