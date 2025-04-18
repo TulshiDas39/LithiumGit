@@ -537,7 +537,7 @@ export class GraphUtils{
         GraphUtils.state.verticalScrollRatio.publish(verticalRatio);        
     }
 
-    static loadAndFocunsOnCommit=(commit:ICommitInfo)=>{
+    static loadAndFocusOnCommit=(commit:ICommitInfo)=>{
         if(!commit)
             return;
         GraphUtils.postRefreshActions.push(() => {

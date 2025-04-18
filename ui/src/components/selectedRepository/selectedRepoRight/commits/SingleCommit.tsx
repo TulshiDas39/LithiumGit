@@ -47,7 +47,7 @@ function SingleCommitComponent(props:ISingleCommitProps){
             GraphUtils.state.selectedCommit.publish(commit);
             GraphUtils.state.selectedCommit.focus();
         }else{
-            GraphUtils.loadAndFocunsOnCommit(props.commit);
+            GraphUtils.loadAndFocusOnCommit(props.commit);
         }
     }
 
