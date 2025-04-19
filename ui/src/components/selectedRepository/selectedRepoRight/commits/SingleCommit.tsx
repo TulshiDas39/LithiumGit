@@ -63,7 +63,7 @@ function SingleCommitComponent(props:ISingleCommitProps){
             <div className="d-flex justify-content-end align-items-center">            
                 <Dropdown className="pe-2"
                 onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
-                    <Dropdown.Toggle variant="link" id="dropdown-commit-list-item" className="rounded-0 no-caret">
+                    <Dropdown.Toggle variant="link" id="dropdown-commit-list-item" className="rounded-0 no-caret p-0">
                         <FaEllipsisV />
                     </Dropdown.Toggle>
                     <Dropdown.Menu className="no-radius">
