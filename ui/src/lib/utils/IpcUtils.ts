@@ -324,6 +324,7 @@ export class IpcUtils{
     }
 
     static async getRepoDetails(repoInfo:RepositoryInfo,filter:ICommitFilter){
+        console.log("getting repo details.");
         const r = await IpcUtils.runGitCommand<IRepositoryDetails>(RendererEvents.getRepositoryDetails().channel,[filter],{repositoryPath:repoInfo});
         return r;
     }
