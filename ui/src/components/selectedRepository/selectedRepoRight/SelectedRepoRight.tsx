@@ -15,9 +15,8 @@ function SelectedRepoRightComponent(){
 
     return <div className="d-flex w-100 h-100">
         <Changes />
-        <BranchesView />
-        {store.tab === EnumSelectedRepoTab.COMMITS &&
-            <Commits />}
+        <BranchesView />        
+        <Commits show={store.tab === EnumSelectedRepoTab.COMMITS}/>
         {store.tab === EnumSelectedRepoTab.STASHES &&
             <Stashes />}
         {store.tab === EnumSelectedRepoTab.CONFIG &&

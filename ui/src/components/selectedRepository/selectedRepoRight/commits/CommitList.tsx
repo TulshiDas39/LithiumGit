@@ -64,6 +64,7 @@ function CommitListComponent(props:IProps){
     useEffect(()=>{
         RepoUtils.enSureUpdate(store.repo!).then((r)=>{
             setState({pageIndex:0,refreshKey:new Date().toISOString()});
+            props.onCommitSelect(null!);
         })
     },[store.repo])
 
