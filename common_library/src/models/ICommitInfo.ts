@@ -19,6 +19,7 @@ export interface ICommitInfo{
     x:number;
     isHead:boolean;
     inMergingState?:boolean;
+    containingBranches:string[];
 }
 
 export function CreateCommitInfoObj(){
@@ -40,6 +41,7 @@ export function CreateCommitInfoObj(){
         previousCommit:null!,
         isHead:false,
         refValues:[],
+        containingBranches:[],
     }
     return obj;
 }

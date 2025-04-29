@@ -9,6 +9,10 @@ import { ModalData } from "../../../modals/ModalData";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 
+interface IProps{
+    show:boolean;
+}
+
 interface IRefData{
     selectedCommit?:ICommitInfo;
 }
@@ -20,7 +24,7 @@ interface IState{
     contextCommit?:ICommitInfo;
 }
 
-function CommitsComponent(){
+function CommitsComponent(props:IProps){
     const store = useSelectorTyped((state)=>({
         contextVisible:state.modal.openedModals.includes(EnumModals.COMMIT_CONTEXT),
     }),shallowEqual);
@@ -97,7 +101,7 @@ function CommitsComponent(){
         }
     },[store.contextVisible])
 
-    return <div className="h-100 w-100">
+    return <div className={`h-100 w-100 ${props.show?"":"d-none"}`} style={{backgroundColor:"var(--bg-color)"}}>
         <div className="w-100" style={{height:'10%'}}>
             <CommitFilter onSearch={handleSearch} onBranchSelect={br=>setState({selectedBranch:br})} />
         </div>

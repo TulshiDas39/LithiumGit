@@ -1,9 +1,12 @@
 import { ICommitInfo } from "common_library";
-import { UiUtils } from "../../../../lib";
+import { EnumSelectedRepoTab, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import moment from "moment";
 import React, { useRef } from "react";
 import { FaCircle, FaDotCircle, FaEllipsisV, FaHashtag, FaKey, FaKeybase, FaKeycdn, FaUser } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
+import { Dropdown } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface ISingleCommitProps{
     commit:ICommitInfo;
@@ -15,28 +18,40 @@ interface ISingleCommitProps{
 interface IRefData{
     hoverElipsis:boolean;
 }
+
+interface IState{
+    showDropdown:boolean;
+}
 function SingleCommitComponent(props:ISingleCommitProps){
+    const [state,setState] = useMultiState<IState>({showDropdown:false});
     const refData = useRef<IRefData>({hoverElipsis:false});
     const getTimeZonOffsetStr = ()=>{
         return UiUtils.getTimeZonOffsetStr();
     }
-    const handleEllipsisClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>)=>{
-        //e.preventDefault(); 
-        e.stopPropagation();        
-        props.onRightClick(e as any,props.commit);
-        // ModalData.commitContextModal.selectedCommit=props.commit!;            
-        // ModalData.commitContextModal.position = {
-        //     x:e.clientX,
-        //     y:e.clientY,
-        // };
-        // UiUtils.openContextModal();        
-    }
+    const dispatch = useDispatch();
     const handleDivClick = ()=>{
         if(refData.current.hoverElipsis)
             return ;
         props.onSelect(props.commit);
     }
-    return <div className={`py-1 w-100 overflow-auto ${props.isSelected?'selected':''} ${props.highlighted?'highlighted':''}`} onClick={()=>handleDivClick()} onContextMenu={e=>props.onRightClick(e,props.commit)}>
+    const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
+        if(refData.current.hoverElipsis)
+            return ;
+        props.onRightClick(e,props.commit);
+    }
+
+    const showInGraph=()=>{
+        dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.GRAPH));
+        const commit = RepoUtils.repositoryDetails.allCommits.find(c=>c.hash === props.commit.hash);
+        if(commit){            
+            GraphUtils.state.selectedCommit.publish(commit);
+            GraphUtils.state.selectedCommit.focus();
+        }else{
+            GraphUtils.loadAndFocusOnCommit(props.commit);
+        }
+    }
+
+    return <div className={`py-1 w-100 overflow-hidden ${props.isSelected?'selected':''} ${props.highlighted?'highlighted':''}`} onClick={()=>handleDivClick()} onContextMenu={handleContext}>
      <div className="border border-secondary ps-2">
         <div className="d-flex">
             <div className="flex-grow-1">
@@ -44,6 +59,17 @@ function SingleCommitComponent(props:ISingleCommitProps){
                 <span>{props.commit.hash}</span>
                 {!!props.commit.refs && 
                 <b className="text-danger"> ({props.commit.refs})</b>}
+            </div>
+            <div className="d-flex justify-content-end align-items-center">            
+                <Dropdown className="pe-2"
+                onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
+                    <Dropdown.Toggle variant="link" id="dropdown-commit-list-item" className="rounded-0 no-caret p-0">
+                        <FaEllipsisV />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="no-radius">
+                        <Dropdown.Item key={"show_in_graph"} onClick={showInGraph} className="border-bottom">Show in graph</Dropdown.Item>                                
+                    </Dropdown.Menu>
+                </Dropdown>                        
             </div>
             
              {/* <span className="hover" onMouseEnter={()=> refData.current.hoverElipsis = true} 

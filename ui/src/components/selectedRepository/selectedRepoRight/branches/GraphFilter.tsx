@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef } from "react"
 import { FaBuffer } from "react-icons/fa";
 import { GraphUtils, useMultiState } from "../../../../lib";
 import { Overlay } from "react-bootstrap";
-import DatePicker from "react-datepicker";
 import { AppButton, AppDatePicker } from "../../../common";
 import { ModalData } from "../../../modals/ModalData";
 import { useDispatch } from "react-redux";

@@ -1,4 +1,4 @@
-import { EnumNotificationType, EnumTheme, ISavedData, RendererEvents } from "common_library";
+import { EnumNotificationType, EnumTheme, IAppInfo, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
@@ -61,12 +61,10 @@ function MainComponent(){
         const config = getStoreState().savedData.configInfo;
         const lastChecked = config.checkedForUpdateAt;
         const nextCheckDate = new Date(lastChecked);
-        nextCheckDate.setMinutes(nextCheckDate.getMinutes() + checkInterValMinute);
-        console.log(now.toISOString(),nextCheckDate.toISOString());
-        if(nextCheckDate < now){
-            console.log("checking for update.");
+        nextCheckDate.setMinutes(nextCheckDate.getMinutes() + checkInterValMinute);        
+        if(nextCheckDate < now || !store.appFocusV){            
             IpcUtils.checkForUpdate().then(r=>{
-                dispatch(ActionSavedData.updateConfig({...config,checkedForUpdateAt: now.toISOString()}));
+                dispatch(ActionSavedData.setCheckForUpdateTime(now.toISOString()));
             });
         }
     },[store.appFocusV])
@@ -84,6 +82,8 @@ function MainComponent(){
             setTheme(savedData.configInfo.theme);
         }
         dispatch(ActionSavedData.updateConfig(savedData.configInfo));
+        const appInfo:IAppInfo = window.ipcRenderer.sendSync(RendererEvents.getAppInfo);
+        dispatch(ActionSavedData.setAppInfo(appInfo));
         const repos = savedData.recentRepositories;        
         if(!repos?.length){
             setState({isLoading:false});
@@ -106,7 +106,7 @@ function MainComponent(){
         window.ipcRenderer.on(RendererEvents.cloneProgress,(_e,progress:number,stage:FetchState)=>{            
             DataUtils.clone.stage = stage;
             DataUtils.clone.progress = progress;
-        })
+        })        
 
         window.ipcRenderer.on(RendererEvents.notification,(_e,notification:IUiNotification)=>{
             notification.isActive = true;

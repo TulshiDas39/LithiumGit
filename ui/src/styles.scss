@@ -560,6 +560,9 @@ to {
     color: var(--font-color);
   }
 
+  input{
+    color: var(--font-color) !important;
+  }
 }
 
 .dropdown-menu{

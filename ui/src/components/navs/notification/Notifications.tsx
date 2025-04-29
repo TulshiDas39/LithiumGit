@@ -8,13 +8,15 @@ import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { ActionUI } from "../../../store/slices/UiSlice";
+import { EnumNotificationType, INewVersionInfo } from "common_library";
 
 interface IState{
     show:boolean;
 }
 function NotificationsComponent(){
     const store = useSelectorTyped(state=>({
-        notifications:state.ui.notifications,        
+        notifications:state.ui.notifications,
+        appInfo:state.savedData.appInfo,        
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -66,11 +68,30 @@ function NotificationsComponent(){
         }
     },[state.show])
 
-    const renderingNots = useMemo(()=>{
-        const renderingList = store.notifications.slice();
-        renderingList.sort((a,b)=> a.createdAt > b.createdAt?-1:1);
-        return renderingList;
+    const {renderingNots,updateNotification} = useMemo(()=>{
+        const renderingNots = store.notifications.slice();
+        renderingNots.sort((a,b)=> a.createdAt > b.createdAt?-1:1);
+        const updateNotification = store.notifications.find(_=>_.type === EnumNotificationType.UpdateAvailable);
+        return {renderingNots,updateNotification};
     },[store.notifications])
+
+        useEffect(()=>{
+            if(!store.appInfo || !updateNotification)
+                return;         
+            const notifiData = updateNotification?.data as INewVersionInfo;            
+            if(store.appInfo.version === notifiData?.version){                
+                IpcUtils.deleteNotification([updateNotification]);
+                dispatch(ActionUI.removeNotifications([updateNotification]));
+            }
+        },[updateNotification,store.appInfo])
+
+    const getBellIcon=()=>{
+        if(!store.notifications.length)
+            return <FaRegBell />
+        if(unreadCount)
+            return <BellWithDot unread ={true} />
+        return <BellWithDot />
+    }
 
     return <div className="ps-1 pe-2 position-relative">
             {!!activeNotifications.length && <div className="py-2 overflow-auto position-absolute" style={{width:450, maxHeight:`95vh`,bottom:'100%',right:'0px'}}>
@@ -82,7 +103,7 @@ function NotificationsComponent(){
                     </div>}
             <span title="Notifications" ref={target as any} className="d-flex align-items-center" 
                 onClick={() => toogleNotifications()}>
-                {!unreadCount? <FaRegBell />: <BellWithDot /> }
+                {getBellIcon()}
             </span>
             <Overlay target={target.current} show={state.show} placement="top-end"
                 rootClose={true} rootCloseEvent="click" onHide={() => setState({show:false})}>

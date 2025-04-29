@@ -1,12 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EnumTheme, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumTheme, IAppInfo, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { CacheUtils, RepoUtils } from "../../lib";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
     autoStagingEnabled:boolean;
-    configInfo:IConfigInfo;    
+    configInfo:IConfigInfo;
+    appInfo:IAppInfo;
 }
 
 const initialState:ISavedData={
@@ -15,10 +16,11 @@ const initialState:ISavedData={
     configInfo:{
         _id:"",
         createdAt: new Date().toISOString(),
-        theme:EnumTheme.Light,
+        theme:EnumTheme.Dark,
         updateAt:new Date().toISOString(),
         checkedForUpdateAt: new Date().toISOString(),
-    }
+    },
+    appInfo:null!,
 }
 
 const SavedDataSlice = createSlice({
@@ -75,7 +77,10 @@ const SavedDataSlice = createSlice({
             state.configInfo = action.payload;
             IpcUtils.updateConfig(action.payload);
         },
-
+        setCheckForUpdateTime(state,action:PayloadAction<string>){
+            state.configInfo.checkedForUpdateAt = action.payload;
+            IpcUtils.setCheckForUpdateTime(action.payload);
+        },
         toogleTheme(state){
             if(state.configInfo.theme === EnumTheme.Light){
                 state.configInfo.theme = EnumTheme.Dark;
@@ -90,6 +95,9 @@ const SavedDataSlice = createSlice({
             RepoUtils.repositoryDetails.repoInfo.activeOrigin = action.payload;
             IpcUtils.updateRepository(RepoUtils.repositoryDetails.repoInfo);
             CacheUtils.setRepoDetails(RepoUtils.repositoryDetails);
+        },
+        setAppInfo(state,action:PayloadAction<IAppInfo>){
+            state.appInfo = action.payload;
         }
 
     }

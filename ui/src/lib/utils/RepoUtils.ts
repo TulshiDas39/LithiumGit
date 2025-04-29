@@ -388,11 +388,12 @@ export class RepoUtils{
 
     private static getBranchRemote(branchNameStr:string){
         let branchName = "";
-        let remote = "";
-        let splits = branchNameStr.split("/");
-        if (splits.length > 1) {
-          branchName = splits[1];
-          remote = splits[0];
+        let remote = "";        
+        const originPrefs = RepoUtils.repositoryDetails.remotes.map(_=> _.name+'/');
+        const r = originPrefs.find(o=> branchNameStr.startsWith(o));
+        if(r){
+            branchName = branchNameStr.substring(r.length);
+            remote = r;
         }
         else {
           branchName = branchNameStr;

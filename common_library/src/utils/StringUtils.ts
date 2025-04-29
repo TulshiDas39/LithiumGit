@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { EnumChangeType } from '../enums';
+import { Constants } from '../constants';
 
 export class StringUtils{
     static getFolderName(path:string){
@@ -110,6 +111,13 @@ export class StringUtils{
         return StringUtils.filterStrings(str,keys,limit);
     }
 
+    static GetFileExtension(pathOrName:string){
+        const name = StringUtils.getFileName(pathOrName);
+        const index = name.lastIndexOf(".");
+        if(index < 0) return "";
+        return name.slice(index);
+    }
+
     private static getAllSplits(str:string) {
         const result:{splits:string[];score:number;}[] = [];
 
@@ -137,6 +145,12 @@ export class StringUtils{
         generateSplits([], str);
         result.sort((a,b)=> a.score > b.score?-1:1);
         return result;
+    }
+
+    static removeRemotePrefix(branches:string[]){
+        if(!branches)
+            return [];
+        return branches.map(b=> b.startsWith(Constants.originBranPrefix)? b.substring(Constants.originBranPrefix.length):b);
     }
   
 }

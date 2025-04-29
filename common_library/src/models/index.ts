@@ -21,3 +21,5 @@ export * from './IGitConfig';
 export * from './ICommitFilter';
 export * from './IHeadCommitInfo';
 export * from './Interfaces';
+export * from './IAppInfo';
+export * from './IStatusConfig';

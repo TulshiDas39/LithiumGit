@@ -56,6 +56,7 @@ export class GraphUtils{
     static readonly defaultLimit = 400;
 
     static openContextModal=()=>{};
+    static postRefreshActions:(()=>void)[] = [];
    
     static state:IState={
         svgContainerWidth: new PbSvgContainerWidth(null!),
@@ -109,6 +110,8 @@ export class GraphUtils{
         GraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
+        GraphUtils.postRefreshActions.forEach(action => action());
+        GraphUtils.postRefreshActions = [];
     }
     
     static resetStates(){
@@ -532,5 +535,20 @@ export class GraphUtils{
         const verticalRatio = commit.ownerBranch.y/RepoUtils.repositoryDetails.branchPanelHeight;
         GraphUtils.state.horizontalScrollRatio.publish(horizontalRatio);
         GraphUtils.state.verticalScrollRatio.publish(verticalRatio);        
+    }
+
+    static loadAndFocusOnCommit=(commit:ICommitInfo)=>{
+        if(!commit)
+            return;
+        GraphUtils.postRefreshActions.push(() => {
+            const c = RepoUtils.repositoryDetails.allCommits.find(c=>c.hash === commit.hash);  
+            GraphUtils.state.selectedCommit.publish(c);
+            GraphUtils.state.selectedCommit.focus();
+        });
+        GraphUtils.state.filter.publishFilter({
+            limit:GraphUtils.defaultLimit,fromDate:undefined,toDate:undefined,
+            userModified:false,
+            baseDate:commit.date,
+        });
     }
 }
