@@ -4,12 +4,13 @@ import { EnumModals, RepoUtils, useDrag, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { StashProperty } from "./StashProperty";
 import { StashChangeView } from "./StashChangeView";
-import { FaRegPaperPlane, FaReplyAll, FaTrash } from "react-icons/fa";
+import { FaEllipsisV, FaRegPaperPlane, FaReplyAll, FaTrash } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { Dropdown } from "react-bootstrap";
 
 interface IState{
     stashes:IStash[];
@@ -29,7 +30,7 @@ function StashesComponent(){
         refreshKey:"",
     });
 
-    const refData = useRef({hoverToolBar:false});
+    const refData = useRef({hoverToolBar:false,hoverElipsis:false});
     const getAll = ()=>{
         IpcUtils.getStashes().then(res=>{
             if(res.result){                               
@@ -114,6 +115,11 @@ function StashesComponent(){
         }
             
     }
+
+    const exportToFiles=()=>{
+        //IpcUtils.
+        const options = ["show",`stash@{${state.selectedItem?.index}}`];
+    }
     
     useEffect(()=>{
         RepoUtils.enSureUpdate(store.repo!).then((r)=>{
@@ -131,13 +137,25 @@ function StashesComponent(){
                         style={{textOverflow:'ellipsis'}}>
                             <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${index}} ${st.message}`}</span>                            
                         </div>
-                        <div className="col-auto align-items-center flex-nowrap flex-grow-1 overflow-hidden d-flex justify-content-end">                        
-                                {state.hoveredItem?.hash === st.hash && <div onMouseEnter={()=>{refData.current.hoverToolBar = true}} onMouseLeave={()=>{refData.current.hoverToolBar = false}}>
+                        <div className="col-auto align-items-center flex-nowrap flex-grow-1 d-flex justify-content-end">                        
+                                {state.hoveredItem?.hash === st.hash && 
+                                <div className="d-flex" onMouseEnter={()=>{refData.current.hoverToolBar = true}} onMouseLeave={()=>{refData.current.hoverToolBar = false}}>
                                     <span className="hover" title="pop" onClick={_=> popItem(index)}><FaReplyAll /></span>
                                     <span className="px-1" />
-                                    <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaRegPaperPlane /></span>
+                                    <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaRegPaperPlane /></span>                                
                                     <span className="px-1" />
-                                    <span className="hover" title="delete" onClick={_=>deleteItem(index)}><FaTrash /></span>                                                 
+                                    <div className="d-flex justify-content-end align-items-center">            
+                                        <Dropdown className="pe-2"
+                                        onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
+                                            <Dropdown.Toggle title="more" variant="link" id="dropdown-stash-item" className="rounded-0 no-caret p-0">
+                                                <FaEllipsisV />
+                                            </Dropdown.Toggle>
+                                            <Dropdown.Menu className="no-radius">
+                                                <Dropdown.Item key={"export_stash"} onClick={exportToFiles} className="border-bottom">Export changes</Dropdown.Item>                                
+                                                <Dropdown.Item key={"delete_stash"} onClick={_=>deleteItem(index)} className="text-danger">Delete</Dropdown.Item>                                
+                                            </Dropdown.Menu>
+                                        </Dropdown>                        
+                                    </div>
                                 </div>}                                
                         </div>
                     </div>
