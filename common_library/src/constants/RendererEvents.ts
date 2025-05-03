@@ -297,5 +297,6 @@ export class RendererEvents{
     static readonly setCheckForUpdateTime = "setCheckForUpdateTime";
     static readonly getCommitDetails = "getCommitDetails";    
     static readonly apply = "apply";    
+    static readonly showSaveAsDialog = "showSaveAsDialog";    
 }
 

@@ -100,7 +100,10 @@ export class IpcUtils{
         return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
     }
     static browseFolderPath(){
-        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[]);
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openDirectory']]);
+    }
+    static showSaveAsDialog(options:{extensions:string[];name:string;}[]){
+        return IpcUtils.execute<string>(RendererEvents.showSaveAsDialog,[options]);
     }
     static showInFileExplorer(path:string){        
         return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        

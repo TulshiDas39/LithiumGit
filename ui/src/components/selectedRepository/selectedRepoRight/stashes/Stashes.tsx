@@ -117,7 +117,11 @@ function StashesComponent(){
     }
 
     const exportToFiles=()=>{
-        //IpcUtils.
+        IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"changes"}]).then(res=>{
+            if(res.result){
+                console.log("res.result",res.result);
+            }
+        })
         const options = ["show",`stash@{${state.selectedItem?.index}}`];
     }
     

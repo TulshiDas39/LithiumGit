@@ -12,6 +12,7 @@ export class FileManager{
 
     addIpcHandlers(){
         this.handleGetDirectoryPath();
+        this.handleGetFilePathUsingSaveAsDialog();
         this.handleOpenFileExplorer();
         this.handleGetFileContent();
         this.handlePathJoin();
@@ -70,16 +71,30 @@ export class FileManager{
     }
 
     handleGetDirectoryPath(){
-        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e)=>{
-            return this.getDirectoryPathUsingExplorer();
+        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e,options:Electron.OpenDialogOptions['properties'])=>{
+            return this.getDirectoryPathUsingExplorer(options);
         });        
     }
 
-    private getDirectoryPathUsingExplorer(){
+    handleGetFilePathUsingSaveAsDialog(){
+        ipcMain.handle(RendererEvents.showSaveAsDialog,(e,options:Electron.SaveDialogOptions['filters'])=>{
+            return this.getFilePathUsingSaveAsDialog(options);
+        });        
+    }    
+
+    private getDirectoryPathUsingExplorer(options:Electron.OpenDialogOptions['properties']){
         return dialog.showOpenDialog({
-                properties: ['openDirectory']
+                properties: options
             }).then(res=>{
                 return res.filePaths[0];
+            });
+    }
+
+    private getFilePathUsingSaveAsDialog(options:Electron.SaveDialogOptions['filters']){
+        return dialog.showSaveDialog({
+                filters:options,
+            }).then(res=>{
+                return res.filePath;
             });
     }
 
