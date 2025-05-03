@@ -35,6 +35,7 @@ export class GitManager{
         this.addCheckOutCommitHandlder();
         this.addCreateBranchHandler();
         this.addPullHandler();
+        this.addApplyHandler();
         this.addPushHandler();
         this.addFetchHandler();
         this.addCommitHandler();
@@ -677,6 +678,12 @@ export class GitManager{
         });
     }
 
+    private async addApplyHandler(){
+        ipcMain.handle(RendererEvents.apply,async (e,repoPath:string,options:string[])=>{
+            await this.apply(repoPath,options);
+        });
+    }
+
     private async addGetStashListHandler(){
         ipcMain.handle(RendererEvents.stashes,async (e,repoPath:string,options:string[])=>{
             return await this.getStashList(repoPath,options);
@@ -857,6 +864,11 @@ export class GitManager{
     private async takePull(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);    
         await git.pull(options);
+    }
+
+    private async apply(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);    
+        await git.applyPatch(options);
     }
 
     private async takeFetch(repoPath:string,options:string[]){

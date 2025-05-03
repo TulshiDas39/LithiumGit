@@ -344,5 +344,9 @@ export class IpcUtils{
     static getNotifications(){
         return IpcUtils.execute<IUiNotification[]>(RendererEvents.loadNotifications,[]);
     }
+
+    static gitAspply(options:string[]){
+        return IpcUtils.runGitCommand<any>(RendererEvents.apply,options);
+    }
     
 }

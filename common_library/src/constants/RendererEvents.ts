@@ -296,5 +296,6 @@ export class RendererEvents{
     static readonly getAppInfo = "getAppInfo";
     static readonly setCheckForUpdateTime = "setCheckForUpdateTime";
     static readonly getCommitDetails = "getCommitDetails";    
+    static readonly apply = "apply";    
 }
 
