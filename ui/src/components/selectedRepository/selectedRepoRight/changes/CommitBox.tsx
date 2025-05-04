@@ -8,6 +8,8 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { AppButton } from "../../../common";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { ActionModals } from "../../../../store";
+import { ModalData } from "../../../modals/ModalData";
 
 interface IState{
     value:string;
@@ -110,6 +112,22 @@ function CommitBoxComponent(){
         GitUtils.abortMerge();
     }
 
+    const importChanges = () => {
+        IpcUtils.browseFilePath().then(res=>{
+            if(res.result){
+                console.log(res.result);                
+                const options = ["apply","--3way",res.result];
+                IpcUtils.getRaw(options).then(r=>{
+                    if(!r.error){
+                        ModalData.appToast.message = `Changes imported.`;
+                        dispatch(ActionModals.showToast());
+                        GitUtils.getStatus();
+                    }
+                });
+            }
+        })
+    }
+
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
                 <Form.Control as="textarea" rows={2} value={state.value} onChange={e => setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
@@ -157,14 +175,15 @@ function CommitBoxComponent(){
                         <label htmlFor="amend" className="ps-1">Amend</label>
                     </div>
                     <div className="col-2 d-flex justify-content-end pe-1">
-                        {store.isMergingState && <Dropdown>
+                        <Dropdown>
                             <Dropdown.Toggle variant="link" id="abor_merge" className="rounded-0 no-caret">
                                 <FaEllipsisH />
                             </Dropdown.Toggle>
                             <Dropdown.Menu className="no-radius">
-                                <Dropdown.Item onClick={()=>abortMerge()} className="">Abort merge</Dropdown.Item>
+                                {!store.isMergingState && <Dropdown.Item onClick={()=> importChanges()} className="">Import changes</Dropdown.Item>}
+                                {store.isMergingState && <Dropdown.Item onClick={()=>abortMerge()} className="">Abort merge</Dropdown.Item>}
                             </Dropdown.Menu>
-                        </Dropdown>}
+                        </Dropdown>
                     </div>                    
                 </div>
 
