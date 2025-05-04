@@ -72,9 +72,9 @@ export class FileManager{
     }
 
     handleGetDirectoryPath(){
-        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e,options:Electron.OpenDialogOptions['properties'])=>{
-            return this.getDirectoryPathUsingExplorer(options);
-        });        
+        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e,options:Electron.OpenDialogOptions['properties'],filters:Electron.OpenDialogOptions['filters'])=>{
+            return this.getDirectoryPathUsingExplorer(options,filters);
+        });
     }
 
     handleGetFilePathUsingSaveAsDialog(){
@@ -89,8 +89,11 @@ export class FileManager{
         });        
     }
 
-    private getDirectoryPathUsingExplorer(options:Electron.OpenDialogOptions['properties']){
+    private getDirectoryPathUsingExplorer(options:Electron.OpenDialogOptions['properties'],
+        filters:Electron.OpenDialogOptions['filters'])
+    {
         return dialog.showOpenDialog({
+                filters: filters,           
                 properties: options
             }).then(res=>{
                 return res.filePaths[0];

@@ -113,7 +113,7 @@ function CommitBoxComponent(){
     }
 
     const importChanges = () => {
-        IpcUtils.browseFilePath().then(res=>{
+        IpcUtils.browseFilePath([{extensions:["patch"],name:"patch file"}]).then(res=>{
             if(res.result){
                 console.log(res.result);                
                 const options = ["apply","--3way",res.result];

@@ -105,8 +105,8 @@ export class IpcUtils{
     static browseFolderPath(){
         return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openDirectory']]);
     }
-    static browseFilePath(){
-        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openFile']]);
+    static browseFilePath(filters:{extensions:string[];name:string;}[]){
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openFile'],filters]);
     }
     static showSaveAsDialog(options:{extensions:string[];name:string;}[]){
         return IpcUtils.execute<string>(RendererEvents.showSaveAsDialog,[options]);
