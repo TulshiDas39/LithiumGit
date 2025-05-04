@@ -871,6 +871,11 @@ export class GitManager{
         await git.applyPatch(options);
     }
 
+    private async patch(repoPath:string,options:string[]){
+        const git = this.getGitRunner(repoPath);    
+        await git.applyPatch(options);
+    }
+
     private async takeFetch(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);        
         await git.fetch(options);                

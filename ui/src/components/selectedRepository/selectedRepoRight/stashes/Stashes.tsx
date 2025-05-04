@@ -17,6 +17,7 @@ interface IState{
     selectedItem?:IStash;
     hoveredItem?:IStash;
     refreshKey:string;
+    showMore:string;
 }
 
 function StashesComponent(){
@@ -28,6 +29,7 @@ function StashesComponent(){
     const [state,setState] = useMultiState<IState>({
         stashes:[],
         refreshKey:"",
+        showMore:"",
     });
 
     const refData = useRef({hoverToolBar:false,hoverElipsis:false});
@@ -116,13 +118,24 @@ function StashesComponent(){
             
     }
 
-    const exportToFiles=()=>{
-        IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"changes"}]).then(res=>{
-            if(res.result){
-                console.log("res.result",res.result);
+    const exportToFiles=()=>{        
+        //git stash show -p > p.patch
+        //const options = ["stash","show",`"stash@{${state.selectedItem?.index}}"`,"-p",">",`"${res.result}"`];
+        const options = ["stash","show", "-p",`stash@{${state.selectedItem?.index}}`];
+        IpcUtils.getRaw(options).then(rawRes=>{
+            if(rawRes.result){
+                IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
+                    if(pathRes.result){
+                        IpcUtils.writeToFile(pathRes.result!, rawRes.result!).then(r=>{
+                            if(r.result){
+                                ModalData.appToast.message = `Changes exported.`;                                
+                                dispatch(ActionModals.showModal(EnumModals.TOAST));
+                            }                            
+                        });
+                    }
+                })
             }
-        })
-        const options = ["show",`stash@{${state.selectedItem?.index}}`];
+        });                        
     }
     
     useEffect(()=>{
@@ -142,14 +155,14 @@ function StashesComponent(){
                             <span className={`pe-1 flex-shrink-0 text-nowrap`}>{`{${index}} ${st.message}`}</span>                            
                         </div>
                         <div className="col-auto align-items-center flex-nowrap flex-grow-1 d-flex justify-content-end">                        
-                                {state.hoveredItem?.hash === st.hash && 
+                                {(state.hoveredItem?.hash === st.hash || state.showMore === st.hash) && 
                                 <div className="d-flex" onMouseEnter={()=>{refData.current.hoverToolBar = true}} onMouseLeave={()=>{refData.current.hoverToolBar = false}}>
                                     <span className="hover" title="pop" onClick={_=> popItem(index)}><FaReplyAll /></span>
                                     <span className="px-1" />
                                     <span className="hover" title="apply" onClick={_=>applyItem(index)}><FaRegPaperPlane /></span>                                
                                     <span className="px-1" />
                                     <div className="d-flex justify-content-end align-items-center">            
-                                        <Dropdown className="pe-2"
+                                        <Dropdown className="pe-2" onToggle={(show)=> {setState({showMore:show?st.hash:""})}}
                                         onMouseEnter={()=> refData.current.hoverElipsis = true} onMouseLeave={()=> refData.current.hoverElipsis = false}>
                                             <Dropdown.Toggle title="more" variant="link" id="dropdown-stash-item" className="rounded-0 no-caret p-0">
                                                 <FaEllipsisV />

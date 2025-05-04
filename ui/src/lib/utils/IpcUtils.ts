@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static writeToFile(path:string, result: string) {
+        return IpcUtils.execute(RendererEvents.writeToFile,[path, result]);
+    }
     static getCommitInfo(hash: string) {
         return IpcUtils.runGitCommand<ICommitInfo>(RendererEvents.getCommitDetails,[hash]);
     }
@@ -351,5 +354,5 @@ export class IpcUtils{
     static gitAspply(options:string[]){
         return IpcUtils.runGitCommand<any>(RendererEvents.apply,options);
     }
-    
+        
 }

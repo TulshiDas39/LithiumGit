@@ -18,6 +18,7 @@ export class FileManager{
         this.handlePathJoin();
         this.handlePathJoinAsync();
         this.handleLastUpdatedDate();
+        this.handleWriteToFile();
     }
     handleGetFileContent() {
         ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
@@ -80,7 +81,13 @@ export class FileManager{
         ipcMain.handle(RendererEvents.showSaveAsDialog,(e,options:Electron.SaveDialogOptions['filters'])=>{
             return this.getFilePathUsingSaveAsDialog(options);
         });        
-    }    
+    }
+    
+    private handleWriteToFile(){
+        ipcMain.handle(RendererEvents.writeToFile,(e,path:string, content:string)=>{
+            return this.writeToFile(path,content);
+        });        
+    }
 
     private getDirectoryPathUsingExplorer(options:Electron.OpenDialogOptions['properties']){
         return dialog.showOpenDialog({
