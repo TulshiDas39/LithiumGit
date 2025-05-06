@@ -12,11 +12,13 @@ export class FileManager{
 
     addIpcHandlers(){
         this.handleGetDirectoryPath();
+        this.handleGetFilePathUsingSaveAsDialog();
         this.handleOpenFileExplorer();
         this.handleGetFileContent();
         this.handlePathJoin();
         this.handlePathJoinAsync();
         this.handleLastUpdatedDate();
+        this.handleWriteToFile();
     }
     handleGetFileContent() {
         ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
@@ -70,16 +72,39 @@ export class FileManager{
     }
 
     handleGetDirectoryPath(){
-        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e)=>{
-            return this.getDirectoryPathUsingExplorer();
+        ipcMain.handle(RendererEvents.getDirectoryPath().channel,(e,options:Electron.OpenDialogOptions['properties'],filters:Electron.OpenDialogOptions['filters'])=>{
+            return this.getDirectoryPathUsingExplorer(options,filters);
+        });
+    }
+
+    handleGetFilePathUsingSaveAsDialog(){
+        ipcMain.handle(RendererEvents.showSaveAsDialog,(e,options:Electron.SaveDialogOptions['filters'])=>{
+            return this.getFilePathUsingSaveAsDialog(options);
+        });        
+    }
+    
+    private handleWriteToFile(){
+        ipcMain.handle(RendererEvents.writeToFile,(e,path:string, content:string)=>{
+            return this.writeToFile(path,content);
         });        
     }
 
-    private getDirectoryPathUsingExplorer(){
+    private getDirectoryPathUsingExplorer(options:Electron.OpenDialogOptions['properties'],
+        filters:Electron.OpenDialogOptions['filters'])
+    {
         return dialog.showOpenDialog({
-                properties: ['openDirectory']
+                filters: filters,           
+                properties: options
             }).then(res=>{
                 return res.filePaths[0];
+            });
+    }
+
+    private getFilePathUsingSaveAsDialog(options:Electron.SaveDialogOptions['filters']){
+        return dialog.showSaveDialog({
+                filters:options,
+            }).then(res=>{
+                return res.filePath;
             });
     }
 

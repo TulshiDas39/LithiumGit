@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static writeToFile(path:string, result: string) {
+        return IpcUtils.execute(RendererEvents.writeToFile,[path, result]);
+    }
     static getCommitInfo(hash: string) {
         return IpcUtils.runGitCommand<ICommitInfo>(RendererEvents.getCommitDetails,[hash]);
     }
@@ -100,7 +103,13 @@ export class IpcUtils{
         return IpcUtils.execute(RendererEvents.createNewRepo,[path]);
     }
     static browseFolderPath(){
-        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[]);
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openDirectory']]);
+    }
+    static browseFilePath(filters:{extensions:string[];name:string;}[]){
+        return IpcUtils.execute<string>(RendererEvents.getDirectoryPath().channel,[['openFile'],filters]);
+    }
+    static showSaveAsDialog(options:{extensions:string[];name:string;}[]){
+        return IpcUtils.execute<string>(RendererEvents.showSaveAsDialog,[options]);
     }
     static showInFileExplorer(path:string){        
         return IpcUtils.execute(RendererEvents.openFileExplorer,[path]);        
@@ -344,5 +353,9 @@ export class IpcUtils{
     static getNotifications(){
         return IpcUtils.execute<IUiNotification[]>(RendererEvents.loadNotifications,[]);
     }
-    
+
+    static gitAspply(options:string[]){
+        return IpcUtils.runGitCommand<any>(RendererEvents.apply,options);
+    }
+        
 }

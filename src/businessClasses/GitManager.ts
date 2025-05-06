@@ -857,16 +857,11 @@ export class GitManager{
     private async takePull(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);    
         await git.pull(options);
-    }
+    }  
 
     private async takeFetch(repoPath:string,options:string[]){
         const git = this.getGitRunner(repoPath);        
         await git.fetch(options);                
-    }
-
-    private hasChangesInPush(result:PushResult){
-        const hasChange = !!result.update?.hash;
-        return hasChange;
     }
 
     private async givePush(repoPath:string,options:string[]){
