@@ -1,9 +1,9 @@
 import { RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useRef  } from "react"
 import { Dropdown, Form } from "react-bootstrap";
-import { FaCaretDown, FaCheck, FaEllipsisH } from "react-icons/fa";
+import { FaCaretDown, FaCheck, FaEllipsisH, FaEllipsisV } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { RepoUtils, UiUtils, useMultiState } from "../../../../lib";
+import { EnumModals, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { AppButton } from "../../../common";
@@ -127,6 +127,26 @@ function CommitBoxComponent(){
             }
         })
     }
+    
+    const exportChanges = () =>{
+
+        const options = ["diff","HEAD"];
+        IpcUtils.getRaw(options).then(rawRes=>{
+            if(rawRes.result){
+                IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
+                    if(pathRes.result){
+                        IpcUtils.writeToFile(pathRes.result!, rawRes.result!).then(r=>{
+                            if(r.result){
+                                ModalData.appToast.message = `Changes exported.`;                                
+                                dispatch(ActionModals.showModal(EnumModals.TOAST));
+                            }                            
+                        });
+                    }
+                });
+            }
+        });
+        
+    }
 
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
@@ -174,14 +194,15 @@ function CommitBoxComponent(){
                         <input id="amend" type="checkbox" className="m-0" checked={state.amend} onChange={_=>setState({amend: _.target.checked})} />
                         <label htmlFor="amend" className="ps-1">Amend</label>
                     </div>
-                    <div className="col-2 d-flex justify-content-end pe-1">
+                    <div className="col-2 d-flex justify-content-end">
                         <Dropdown>
                             <Dropdown.Toggle variant="link" id="abor_merge" className="rounded-0 no-caret">
-                                <FaEllipsisH />
+                                <FaEllipsisV />
                             </Dropdown.Toggle>
                             <Dropdown.Menu className="no-radius">
-                                {!store.isMergingState && <Dropdown.Item onClick={()=> importChanges()} className="">Import changes</Dropdown.Item>}
-                                {store.isMergingState && <Dropdown.Item onClick={()=>abortMerge()} className="">Abort merge</Dropdown.Item>}
+                                <Dropdown.Item onClick={()=> importChanges()} className="border-bottom">Import changes</Dropdown.Item>
+                                <Dropdown.Item onClick={()=> exportChanges()} className="">Export changes</Dropdown.Item>
+                                {store.isMergingState && <Dropdown.Item onClick={()=>abortMerge()} className="border-top">Abort merge</Dropdown.Item>}
                             </Dropdown.Menu>
                         </Dropdown>
                     </div>                    
