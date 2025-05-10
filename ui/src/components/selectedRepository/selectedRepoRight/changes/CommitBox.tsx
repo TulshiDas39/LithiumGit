@@ -129,7 +129,11 @@ function CommitBoxComponent(){
     }
     
     const exportChanges = () =>{
-
+        if(RepoUtils.repositoryDetails.status.isClean){
+            ModalData.appToast.message = `No changes to export.`;
+            dispatch(ActionModals.showModal(EnumModals.TOAST));
+            return;
+        }
         const options = ["diff","HEAD"];
         IpcUtils.getRaw(options).then(rawRes=>{
             if(rawRes.result){
