@@ -121,7 +121,7 @@ function StashesComponent(){
     const exportToFiles=()=>{        
         //git stash show -p > p.patch
         //const options = ["stash","show",`"stash@{${state.selectedItem?.index}}"`,"-p",">",`"${res.result}"`];
-        const options = ["stash","show", "-p",`stash@{${state.selectedItem?.index}}`];
+        const options = ["stash","show", "-p","--include-untracked","--binary",`stash@{${state.selectedItem?.index}}`];
         IpcUtils.getRaw(options).then(rawRes=>{
             if(rawRes.result){
                 IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
