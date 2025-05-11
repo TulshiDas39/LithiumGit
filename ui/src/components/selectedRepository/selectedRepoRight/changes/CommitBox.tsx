@@ -1,4 +1,4 @@
-import { RendererEvents, StringUtils } from "common_library";
+import { EnumChangeType, RendererEvents, StringUtils } from "common_library";
 import React, { useEffect, useRef  } from "react"
 import { Dropdown, Form } from "react-bootstrap";
 import { FaCaretDown, FaCheck, FaEllipsisH, FaEllipsisV } from "react-icons/fa";
@@ -134,21 +134,37 @@ function CommitBoxComponent(){
             dispatch(ActionModals.showModal(EnumModals.TOAST));
             return;
         }
-        const options = ["diff","HEAD"];
-        IpcUtils.getRaw(options).then(rawRes=>{
-            if(rawRes.result){
-                IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
-                    if(pathRes.result){
-                        IpcUtils.writeToFile(pathRes.result!, rawRes.result!).then(r=>{
-                            if(r.result){
-                                ModalData.appToast.message = `Changes exported.`;                                
-                                dispatch(ActionModals.showModal(EnumModals.TOAST));
-                            }                            
-                        });
-                    }
-                });
-            }
-        });
+
+        const executeExport =()=>{
+            const options = ["diff","HEAD"];
+            return IpcUtils.getRaw(options).then(rawRes=>{
+                if(rawRes.result){
+                    IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
+                        if(pathRes.result){
+                            IpcUtils.writeToFile(pathRes.result!, rawRes.result!).then(r=>{
+                                if(r.result){
+                                    ModalData.appToast.message = `Changes exported.`;                                
+                                    dispatch(ActionModals.showModal(EnumModals.TOAST));
+                                }                            
+                            });
+                        }
+                    });
+                }
+                return rawRes;
+            });
+        }
+
+        const untackedFiles = RepoUtils.repositoryDetails.status.unstaged.filter(_=> _.changeType === EnumChangeType.CREATED);
+        if(untackedFiles.length){
+            IpcUtils.stageItems(untackedFiles.map(_=> _.path)).then(r=>{
+                executeExport().then(r=>{
+                    IpcUtils.unstageItem(untackedFiles.map(_=> _.path));
+                })                
+            })
+        }else{
+            executeExport();
+        }
+        
         
     }
 
