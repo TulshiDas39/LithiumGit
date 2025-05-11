@@ -136,7 +136,7 @@ function CommitBoxComponent(){
         }
 
         const executeExport =()=>{
-            const options = ["diff","HEAD"];
+            const options = ["diff","HEAD","--binary"];
             return IpcUtils.getRaw(options).then(rawRes=>{
                 if(rawRes.result){
                     IpcUtils.showSaveAsDialog([{extensions:["patch"],name:"patch file"}]).then(pathRes=>{
