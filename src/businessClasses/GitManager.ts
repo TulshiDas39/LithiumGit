@@ -241,7 +241,8 @@ export class GitManager{
 
     private async unStageItem(paths:string[],repoInfo:RepositoryInfo){
         const git = this.getGitRunner(repoInfo);
-        await git.reset(['head', ...paths]);
+        const options = ['HEAD', ...paths];
+        await git.reset(options);
     }
 
     private async resetItem(repoPath:string,options:string[]){

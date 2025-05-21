@@ -267,8 +267,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                             <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
                             style={{textOverflow:'ellipsis'}}>
                                 <span className={`pe-1 flex-shrink-0 text-nowrap ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
-                                <span className="small text-secondary text-nowrap">
-                                    <span>{f.path}</span>
+                                <span className="small text-nowrap">
+                                    <span className="text-secondary">{f.path}</span>
                                 </span>
                             </div>                            
                             

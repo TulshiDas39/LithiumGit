@@ -159,7 +159,9 @@ export class IpcUtils{
         return IpcUtils.runGitCommand(RendererEvents.pull().channel,[options])        
     }
 
-    static unstageItem(paths:string[],repoInfo:RepositoryInfo){
+    static unstageItem(paths:string[],repoInfo?:RepositoryInfo){
+        if(!repoInfo)
+            repoInfo = RepoUtils.repositoryDetails.repoInfo;
         return window.ipcRenderer.invoke(RendererEvents.unStageItem().channel,paths,repoInfo);
     }
 
