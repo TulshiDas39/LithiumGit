@@ -171,7 +171,7 @@ function CommitBoxComponent(){
     return <div className="w-100 pb-2 d-flex flex-column" style={{height:116}}>
             <div className="col">
                 <Form.Control as="textarea" rows={2} value={state.value} onChange={e => setState({value:e.target.value})} onKeyUp={e=> {if (e.key === 'Enter' ) e.preventDefault(); }}        
-                    type="textarea" className="w-100 h-100 rounded-0 no-resize bg-color" placeholder="Commit message" />
+                    type="textarea" className="w-100 h-100 rounded-0 no-resize bg-color" placeholder="Enter message" />
             </div>
             
             <div className="col d-flex pt-1">
