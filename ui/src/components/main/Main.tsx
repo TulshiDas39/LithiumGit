@@ -56,7 +56,7 @@ function MainComponent(){
     },[store.notificationLoadV])
 
     useEffect(()=>{
-        const checkInterValMinute = 2*24*60;
+        const checkInterValMinute = 1*24*60;
         const now = new Date();
         const config = getStoreState().savedData.configInfo;
         const lastChecked = config.checkedForUpdateAt;
