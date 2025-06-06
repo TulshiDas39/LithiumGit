@@ -51,7 +51,7 @@ function PushToModalComponent(){
     }
 
     const clearState = ()=>{
-        setState({branch:""});
+        setState({branch:"",force:false});
     }
 
     const updateAnnotation=()=>{
