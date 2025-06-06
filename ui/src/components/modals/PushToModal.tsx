@@ -74,6 +74,9 @@ function PushToModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
+        if(state.force){
+            options.push("--force");
+        }
         const loader :ILoaderInfo = {text:Messages.push,id:StringUtils.uuidv4()};
         dispatch(ActionUI.setLoader(loader));
         IpcUtils.trigerPush(options).then((r)=>{
