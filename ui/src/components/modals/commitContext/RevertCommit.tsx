@@ -26,7 +26,7 @@ function RevertCommitComponent(props:IProps){
         IpcUtils.getRaw(options).then(r=>{
             GitUtils.getStatus();
         }).catch(e=>{
-            const message = e?.toString() || "Failed to perform cherry-pick.";
+            const message = e?.toString() || "Failed to perform revert.";
             ModalData.errorModal.message = message;
             dispatch(ActionModals.showModal(EnumModals.ERROR));
         });
