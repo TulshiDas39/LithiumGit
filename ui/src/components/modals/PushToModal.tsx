@@ -18,6 +18,7 @@ interface IState{
     options:string[];
     isSelected:boolean;
     inputFocused:boolean;
+    force:boolean;
 }
 
 function PushToModalComponent(){
@@ -37,6 +38,7 @@ function PushToModalComponent(){
         options:[],
         isSelected:false,
         inputFocused:true,
+        force:false,
     });
 
     const dispatch = useDispatch();
@@ -154,6 +156,10 @@ function PushToModalComponent(){
                         }                        
                     </div>                    
                 </div>
+            </div>
+            <div className="d-flex justify-content-center pt-2">
+                <Form.Check id="force_push" checked={state.force} type="checkbox" onChange={e=> setState({force:e.target.checked})} />
+                <Form.Label htmlFor="force_push" className="ps-2">Force push</Form.Label>
             </div>
             <div className="row g-0">
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>
