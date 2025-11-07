@@ -359,5 +359,9 @@ export class IpcUtils{
     static gitAspply(options:string[]){
         return IpcUtils.runGitCommand<any>(RendererEvents.apply,options);
     }
+
+    static isBinaryFile(path:string,checkContent=false){
+        return IpcUtils.execute<boolean>(RendererEvents.isBinary,[path,checkContent]);
+    }
         
 }
