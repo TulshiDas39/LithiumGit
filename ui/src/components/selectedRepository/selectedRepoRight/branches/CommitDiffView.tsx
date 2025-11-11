@@ -3,6 +3,7 @@ import { DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../..
 import { EnumChangeType, ICommitInfo, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { CommitDiffNavigation } from "./CommitDiffNavigation";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IProps{
     file?:IFile;
@@ -68,6 +69,32 @@ function CommitDiffViewComponent(props:IProps){
         }
     }
 
+    const showPreview=(file:IFile)=>{
+        const selectedCommit = props.commit;
+        if(file.changeType !== EnumChangeType.DELETED){
+            GitUtils.getFileProps(file.path,selectedCommit.hash).then(filePropsCurrent=>{                                 
+                if(file?.changeType === EnumChangeType.MODIFIED){
+                    GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
+                        changeUtils.showPreview(filePropsPrevs,filePropsCurrent);
+                        resetStepNavigation();
+                    })
+                }
+                else{                    
+                    changeUtils.showPreview(null!,filePropsCurrent);
+                    resetStepNavigation();
+                }
+                
+            })
+        }
+        else{
+            GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
+                changeUtils.showPreview(filePropsPrevs);
+                resetStepNavigation();
+            })                      
+        }
+
+    }
+
     useEffect(()=>{
         const selectedCommit = props.commit;
         if(!props.file || !selectedCommit){
@@ -75,11 +102,10 @@ function CommitDiffViewComponent(props:IProps){
             return;
         }
 
-        IpcUtils.isBinaryFile(props.file.path).then(isBinary=>{
-            if(isBinary){
-                //sample command to get file size
-                //git ls-tree -l 00e8d6153b5f3f33ec0fd07e3e44af693472f93bb6 package.json
-
+        IpcUtils.isBinaryFile(props.file.path).then(r=>{
+            console.log('isBinary',r);
+            if(r.result){                
+                showPreview(props.file!);
             }else{
                 showDiff(props.file!);
             }

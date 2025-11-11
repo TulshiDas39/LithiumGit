@@ -7,6 +7,7 @@ import { ModalData } from "../../components/modals/ModalData";
 import { Messages } from "../constants";
 import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { RepoUtils } from "./RepoUtils";
+import { IFileProps } from "../interfaces";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
@@ -200,4 +201,21 @@ export class GitUtils{
         })
     }
     
+    static getFileProps(path:string,commitHash:string){
+        //sample command to get file size
+        //git ls-tree -l 00e8d6153b5f3f33ec0fd07e3e44af693472f93bb6 package.json
+        const options = ["ls-tree","-l",commitHash,path];
+        return IpcUtils.getRaw(options).then(r=>{
+            if(r.result){
+                console.log(r.result);
+                return {
+
+                } as IFileProps;                
+            }
+            return {
+                sizeKB:0,
+            } as IFileProps;
+        })
+
+    }
 }

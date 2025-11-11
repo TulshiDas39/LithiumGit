@@ -1,5 +1,5 @@
 import ReactDOMServer from "react-dom/server";
-import { ILine } from "../interfaces";
+import { IFileProps, ILine } from "../interfaces";
 import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
 import { IFile } from "common_library";
 
@@ -31,6 +31,10 @@ export class ChangeUtils{
         this.SetHeighlightedLines();
 
         // ReduxUtils.resetChangeNavigation();
+    }
+
+    showPreview(prevFileProps?:IFileProps,currentFileProps?:IFileProps){
+        
     }
 
     FocusHightlightedLine(step:number){
