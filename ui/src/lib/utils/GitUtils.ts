@@ -206,14 +206,14 @@ export class GitUtils{
         //git ls-tree -l 00e8d6153b5f3f33ec0fd07e3e44af693472f93bb6 package.json
         const options = ["ls-tree","-l",commitHash,path];
         return IpcUtils.getRaw(options).then(r=>{
+            let sizeKB = 0;
             if(r.result){
-                console.log(r.result);
-                return {
-
-                } as IFileProps;                
+                const subStrs = StringUtils.getWords(r.result);
+                sizeKB = Number((Number(subStrs[3])/1024).toFixed(2));           
             }
             return {
-                sizeKB:0,
+                sizeKB,
+                path,
             } as IFileProps;
         })
 

@@ -7,7 +7,7 @@ interface IProps{
     currentFileProps?:IFileProps;
 }
 
-function DifferencePreview(props:IProps){
+export function DifferencePreview(props:IProps){
     return <div className="d-flex w-100 h-100 difference" style={{overflowY:'hidden'}}>
             {!!props.prevFileProps && <div className={`h-100 w-${!!props.currentFileProps?"50":"100"} previous `}>
                 <FilePreview changeType="previous" fileInfo={props.prevFileProps!} />
@@ -29,15 +29,19 @@ function FilePreview(props:IFilePreviewProps){
     },[props.fileInfo.path])
 
     const sizeMB = useMemo(()=>{
-        return props.fileInfo.sizeKB/1024;
+        return Number((props.fileInfo.sizeKB/1024).toFixed(2));
     },[props.fileInfo.sizeKB])
 
     return <div>
-        <div className="text-center">
-            {fileName}
+        <div className="d-flex justify-content-center pt-4" >
+            <span className="overflow-ellipsis" style={{maxWidth:300}} title={fileName}>
+                {fileName}
+            </span>
         </div>
-        <div>
-            {sizeMB} MB
+        <div className="d-flex justify-content-center">
+            <span className="overflow-ellipsis" style={{maxWidth:100}} title={sizeMB+" MB"}>
+                {sizeMB} MB
+            </span>
         </div>
     </div>
 }
