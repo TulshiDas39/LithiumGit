@@ -44,8 +44,8 @@ function CommitDiffNavigationComponent(props:IProps){
             </Fragment>}
         </div>
         <div className="pe-4">
-            <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep} 
-                onNextClick={props.handleNext} onPreviousClick={props.handlePrevious} />
+            {props.totalStep > -1 && <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep} 
+                onNextClick={props.handleNext} onPreviousClick={props.handlePrevious} />}
         </div>
         
     </div>

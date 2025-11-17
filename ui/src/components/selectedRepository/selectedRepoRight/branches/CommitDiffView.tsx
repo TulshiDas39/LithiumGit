@@ -29,6 +29,12 @@ function CommitDiffViewComponent(props:IProps){
         setState({totalStep:totalChange,currentStep,stepResetVersion:state.stepResetVersion+1});
     }
 
+    const hideStepNavigation = ()=>{
+        const totalChange = changeUtils.totalChangeCount;
+        const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
+        setState({totalStep:-1,currentStep:0});
+    }
+
 
     const showDiff=(file:IFile)=>{
         const selectedCommit = props.commit;
@@ -76,12 +82,12 @@ function CommitDiffViewComponent(props:IProps){
                 if(file?.changeType === EnumChangeType.MODIFIED){
                     GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
                         changeUtils.showPreview(filePropsPrevs,filePropsCurrent);
-                        resetStepNavigation();
+                        hideStepNavigation();
                     })
                 }
                 else{                    
                     changeUtils.showPreview(null!,filePropsCurrent);
-                    resetStepNavigation();
+                    hideStepNavigation();
                 }
                 
             })
@@ -89,7 +95,7 @@ function CommitDiffViewComponent(props:IProps){
         else{
             GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
                 changeUtils.showPreview(filePropsPrevs);
-                resetStepNavigation();
+                hideStepNavigation();
             })                      
         }
 
@@ -137,6 +143,7 @@ function CommitDiffViewComponent(props:IProps){
     return <div className="h-100 w-100">
         <CommitDiffNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
             handleNext={handleNext} handlePrevious={handlePrevious} file={props.file!} />
+
         <div id={props.containerId} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>
