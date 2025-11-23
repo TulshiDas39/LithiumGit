@@ -1,4 +1,4 @@
-import { EnumChangeGroup, EnumChangeType, IFile, IStash, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, IFileProps, IStash, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -7,7 +7,6 @@ import { ModalData } from "../../components/modals/ModalData";
 import { Messages } from "../constants";
 import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { RepoUtils } from "./RepoUtils";
-import { IFileProps } from "../interfaces";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
@@ -218,4 +217,24 @@ export class GitUtils{
         })
 
     }
+
+    static async getStagedFileProps(path:string){
+        const options = ["ls-files", "-s", path];
+        const r = await IpcUtils.getRaw(options);
+        let sizeKB = 0;
+        if(r.result){
+            const subStrs = StringUtils.getWords(r.result);
+            const blobHash = subStrs[1];
+            //now get size from blob
+            const res = await IpcUtils.getRaw(["cat-file","-s",blobHash]);
+            if(res.result){
+                sizeKB = Number((Number(res.result)/1024).toFixed(2));           
+            }
+        }
+        return {
+            sizeKB,
+            path,
+        } as IFileProps;
+    }
+
 }

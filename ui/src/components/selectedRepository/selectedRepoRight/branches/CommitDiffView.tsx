@@ -30,8 +30,6 @@ function CommitDiffViewComponent(props:IProps){
     }
 
     const hideStepNavigation = ()=>{
-        const totalChange = changeUtils.totalChangeCount;
-        const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
         setState({totalStep:-1,currentStep:0});
     }
 

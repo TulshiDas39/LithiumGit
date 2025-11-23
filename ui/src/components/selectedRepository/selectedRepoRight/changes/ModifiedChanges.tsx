@@ -88,7 +88,38 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         ModalData.confirmationModal.message = text;
         ModalData.confirmationModal.YesHandler = yesHandler;
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
-    }    
+    }
+    const hideStepNavigation = ()=>{
+        dispatch(ActionChanges.updateData({currentStep:-1, totalStep:0}));
+    }
+    const showPreview=(file:IFile)=>{
+        // const selectedCommit = props.commit;
+        if(file.changeType !== EnumChangeType.DELETED){
+            const fullPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+            IpcUtils.getFileProps(fullPath).then(filePropsCurrent=>{
+                if(filePropsCurrent.error)
+                    return;
+                if(file?.changeType === EnumChangeType.MODIFIED){
+                    GitUtils.getStagedFileProps(file.path).then(filePropsPrevs=>{                        
+                        ChangesData.changeUtils.showPreview(filePropsPrevs,filePropsCurrent.result);
+                        hideStepNavigation();
+                    })
+                }
+                else{                    
+                    ChangesData.changeUtils.showPreview(null!,filePropsCurrent.result);
+                    hideStepNavigation();
+                }
+                
+            })
+        }
+        else{
+            GitUtils.getStagedFileProps(file.path).then(filePropsPrevs=>{                        
+                ChangesData.changeUtils.showPreview(filePropsPrevs);
+                hideStepNavigation();
+            })                      
+        }
+
+    }
 
     const displayChanges = async(path:string)=>{
         return new Promise<boolean>((res)=>{
@@ -129,14 +160,22 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             }
         })
     }
+    
 
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return ;
-        
-        displayChanges(store.selectedFile.path).then(()=>{
-            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+
+        IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
+            if(r.result){                
+                showPreview(store.selectedFile!);
+            }else{
+                displayChanges(store.selectedFile!.path).then(()=>{
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                })
+            }
         })
+                
         ChangesData.changeUtils.file = store.selectedFile;
 
         IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{

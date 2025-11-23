@@ -1,4 +1,4 @@
-import {RendererEvents } from "common_library";
+import {IFileProps, RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
@@ -21,6 +21,13 @@ export class FileManager{
         this.handleLastUpdatedDate();
         this.handleWriteToFile();
         this.handleIsBinary();
+        this.handleGetFileProps();
+    }
+
+    private handleGetFileProps(){
+        ipcMain.handle(RendererEvents.getFileProps,async (e,pathStr:string)=>{
+            return await this.getFileProps(pathStr);
+        });
     }
     handleGetFileContent() {
         ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
@@ -52,6 +59,16 @@ export class FileManager{
 
         return false;
         
+    }
+
+    private getFileProps(path:string){
+        return fs.promises.stat(path).then(stats=>{
+                const sizeKB = Number((stats.size / 1024).toFixed(2));
+                return {
+                    sizeKB,
+                    path,
+                } as IFileProps;
+        });
     }
 
     readFirstChars(filePath: string, length: number) {

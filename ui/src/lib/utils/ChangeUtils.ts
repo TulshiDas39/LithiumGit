@@ -1,7 +1,7 @@
 import ReactDOMServer from "react-dom/server";
-import { IFileProps, ILine } from "../interfaces";
+import { ILine } from "../interfaces";
 import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
-import { IFile } from "common_library";
+import { IFile, IFileProps } from "common_library";
 import { DifferencePreview } from "../../components/selectedRepository/selectedRepoRight/changes/DifferencePreview";
 
 export class ChangeUtils{

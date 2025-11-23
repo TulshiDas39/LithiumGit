@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { IFileProps } from "../../../../lib";
-import { StringUtils } from "common_library";
+import { IFileProps, StringUtils } from "common_library";
 
 interface IProps{
     prevFileProps?:IFileProps;

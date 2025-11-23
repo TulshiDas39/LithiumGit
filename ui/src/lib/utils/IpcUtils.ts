@@ -1,4 +1,4 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
@@ -362,6 +362,10 @@ export class IpcUtils{
 
     static isBinaryFile(path:string,checkContent=false){
         return IpcUtils.execute<boolean>(RendererEvents.isBinary,[path,checkContent]);
+    }
+
+    static getFileProps(path:string){
+        return IpcUtils.execute<IFileProps>(RendererEvents.getFileProps,[path]);
     }
         
 }

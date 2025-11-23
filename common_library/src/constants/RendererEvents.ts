@@ -299,6 +299,7 @@ export class RendererEvents{
     static readonly apply = "apply";    
     static readonly showSaveAsDialog = "showSaveAsDialog";
     static readonly writeToFile = "writeToFile";    
-    static readonly isBinary = "isBinary";    
+    static readonly isBinary = "isBinary";
+    static readonly getFileProps = "getFileProps";
 }
 
