@@ -647,3 +647,8 @@ to {
 input[type=checkbox]{
   background-color: #fff;
 }
+
+.hover-danger:hover, .hover-danger:hover *{
+  cursor: default;
+  color: var(--gs-danger);
+}
