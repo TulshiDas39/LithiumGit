@@ -5,7 +5,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../../../store/slices";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
-import { EnumModals } from "../../../../lib";
+import { CacheUtils, EnumModals } from "../../../../lib";
 import { FaTrashAlt } from "react-icons/fa";
 
 export interface IRecentRepositoryListProps{
@@ -50,6 +50,7 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
         ModalData.confirmationModal.message = "Are you sure you want to remove this repository from recent list?";
         ModalData.confirmationModal.YesHandler = ()=>{
             dispatch(ActionSavedData.removeRepositoryFromRecentList(repo));
+            CacheUtils.clearRepoDetails(repo.path);
         }
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }
