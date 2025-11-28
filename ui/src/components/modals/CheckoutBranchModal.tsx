@@ -69,7 +69,7 @@ function CheckoutBranchModalComponent(){
         if(!state.isSelected && state.inputFocused){
             branches = branches = resolveOptions();
             if(state.searchText){            
-                branches = branches.filter(_ => _.includes(state.searchText));
+                branches = branches.filter(_ => _?.toLowerCase().includes(state.searchText?.toLowerCase()));
             }
         }
         
