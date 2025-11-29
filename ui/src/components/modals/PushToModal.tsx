@@ -1,6 +1,6 @@
 import { Form, Modal } from "react-bootstrap";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { RepoUtils, EnumModals, useMultiState, Data } from "../../lib";
+import { RepoUtils, EnumModals, useMultiState, Data, useEscape } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -26,6 +26,9 @@ function PushToModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.PUSH_TO),        
     }),shallowEqual);
 
+    const clearState = ()=>{
+        setState({branch:"",force:false});
+    }
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
@@ -47,12 +50,9 @@ function PushToModalComponent(){
 
     const closeModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.PUSH_TO));
-        clearState();
     }
-
-    const clearState = ()=>{
-        setState({branch:"",force:false});
-    }
+    
+    useEscape(store.show,closeModal);
 
     const updateAnnotation=()=>{
         if(annotations.some(_=> _.value == state.branch))
@@ -102,8 +102,10 @@ function PushToModalComponent(){
     }
 
     useEffect(()=>{
-        if(!store.show)
+        if(!store.show){
+            clearState();
             return ;
+        }
         const pushToBranch = RepoUtils.repositoryDetails.repoInfo.pushToBranch || "";        
         setState({options:[],isSelected:!!pushToBranch,branch:pushToBranch});        
     },[store.show])

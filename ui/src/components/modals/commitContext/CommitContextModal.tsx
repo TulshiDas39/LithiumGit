@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Modal } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, GraphUtils, IPositition, RepoUtils, UiUtils, useMultiState } from "../../../lib";
+import { EnumModals, GraphUtils, IPositition, RepoUtils, UiUtils, useEscape, useMultiState } from "../../../lib";
 import { ActionModals } from "../../../store";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { ModalData, InitialModalData } from "../ModalData";
@@ -42,10 +42,13 @@ function CommitContextModalComponent(){
         }
     },[store.show,state.position])
 
+
     const hideModal=()=>{
         ModalData.commitContextModal = InitialModalData.commitContextModal;
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
-    }    
+    }
+    
+    useEscape(store.show,hideModal);
 
     useEffect(()=>{
         const modalOpenEventListener = ()=>{

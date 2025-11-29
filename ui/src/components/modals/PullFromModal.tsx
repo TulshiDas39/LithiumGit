@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { AppButton } from "../common";
 import { Modal, Form } from "react-bootstrap";
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals, useMultiState, RepoUtils, Data } from "../../lib";
+import { EnumModals, useMultiState, RepoUtils, Data, useEscape } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ActionModals, ActionSavedData } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
@@ -35,21 +35,24 @@ function PullFromModalComponent(){
     const dispatch = useDispatch();
     const refData = useRef({hoverOptions:false});
 
+    const clearState = ()=>{
+        setState({branch:""});
+    }
+
     const annotations = useMemo(()=>{
-        if(!store.show)
+        if(!store.show){
+            clearState();
             return [];
+        }
         const repoId = RepoUtils.repositoryDetails.repoInfo._id;
         return Data.annotations.filter(_=> _.type === EnumAnnotationType.PullFrom && _.repoId === repoId);
     },[store.show])
 
     const closeModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.PULL_FROM));
-        clearState();
     }
 
-    const clearState = ()=>{
-        setState({branch:""});;
-    }
+    useEscape(store.show,closeModal);
 
     const updateAnnotation=()=>{
         if(annotations.some(_=> _.value == state.branch))

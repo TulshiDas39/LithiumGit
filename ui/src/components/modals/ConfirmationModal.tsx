@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
-import { Button, Modal } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
-import { EnumModals } from "../../lib";
+import { EnumModals, useEscape } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ModalData, InitialModalData } from "./ModalData";
@@ -14,6 +14,13 @@ function ConfirmationModalComponent(){
     const store = useSelectorTyped(state=>({
         show:state.modal.openedModals.includes(EnumModals.CONFIRMATION),
     }),shallowEqual)
+
+
+    const hideModal=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.CONFIRMATION));
+    }
+
+    useEscape(store.show,hideModal);
 
     useEffect(()=>{
         if(!store.show){
