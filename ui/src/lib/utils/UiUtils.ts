@@ -4,6 +4,7 @@ import * as ReactDOMServer from 'react-dom/server';
 
 
 export class UiUtils {
+    private static escapeHandlers:(()=>void)[]=[];
     static removeIpcListeners(channels: string[],listeners?:any[]) {
         if(listeners){
             channels.forEach((c,index)=>{
@@ -220,5 +221,24 @@ export class UiUtils {
 
     static openCommitContextModal=()=>{};
     static openContextModal=()=>{};
+
+    static registerEscapeHandler(handler:()=>void){
+        if(!UiUtils.escapeHandlers.includes(handler)){
+            UiUtils.escapeHandlers.push(handler);
+        }
+    }
+
+    static removeEscapeHandler(handler:()=>void){
+        const index = UiUtils.escapeHandlers.indexOf(handler); 
+        if(index !== -1){
+            UiUtils.escapeHandlers.splice(index, 1);
+        }
+    }
+
+    static handleEscape(){
+        if(UiUtils.escapeHandlers.length){
+            UiUtils.escapeHandlers[UiUtils.escapeHandlers.length -1 ]();
+        }
+    }
 
 }

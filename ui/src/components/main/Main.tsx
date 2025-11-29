@@ -125,9 +125,16 @@ function MainComponent(){
             }
         })
 
+        const escapeHandler = (e:KeyboardEvent)=>{
+            if(e.key === "Escape"){
+                UiUtils.handleEscape();
+            }
+        }
+        window.addEventListener("keydown",escapeHandler);
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
+            window.removeEventListener("keydown",escapeHandler);
         }
 
     },[]);
