@@ -8,8 +8,8 @@ import { EnumTheme, IRemoteInfo } from "common_library";
 import { RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
-import {BellWithDot} from "../common"
 import { Notifications } from "./notification";
+import icon from "../../assets/img/icon_blue.png";
 
 interface IState{
     remote?:IRemoteInfo;
@@ -64,8 +64,11 @@ function FooterNavComponent(){
     }
 
     return <div className="bg-second-color h-100 row g-0 align-items-center">
-        <div className="col-5">
-            <div className="d-flex align-items-center">
+        <div className="col-5 h-100">
+            <div className="d-flex align-items-center h-100">
+                <div className="px-1 h-100 d-flex align-items-center hover">
+                    <img src={icon} alt="icon" height={"80%"} width={"auto"} />   
+                </div>
                 {!!state.remote && <span className="ps-1 d-flex">
                         <span onClick={()=>openOrigin()} className="hover-color cur-point overflow-ellipsis" title={state.remote.url} style={{maxWidth:'120px'}}>{state.remote.name}</span>
                         <span className="ps-1 small"> <span onClick={()=>copyOrigin()} title="Copy origin" className="small hover-color cur-point overflow-ellipsis"><FaCopy className="click-effect" /></span></span>
