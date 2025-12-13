@@ -113,16 +113,17 @@ function FooterNavComponent(){
                     }) => (
                     <div
                         {...props}
+                        className="rounded-0"
                         style={{
                         position: 'absolute',
-                        // backgroundColor: 'rgba(255, 100, 100, 0.85)',
-                        padding: '2px 10px',
-                        color: 'white',
-                        borderRadius: 3,
+                        backgroundColor: 'inherit',
+                        padding: '2px 20px',
+                        borderRadius: 3,                        
                         ...props.style,
                         }}
                     >
-                        Simple tooltip
+                        <div onClick={(e)=>handleIconClik(e)} className="hover-color cur-point py-1">About LithiumGit</div>
+                        <div onClick={(e)=>handleIconClik(e)} className="hover-color cur-point py-1">Settings</div>
                     </div>
                     )}
                 </Overlay>
