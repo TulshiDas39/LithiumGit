@@ -5,7 +5,7 @@ import { FaAdjust, FaCopy, FaRegBell, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumTheme, IRemoteInfo } from "common_library";
-import { IContextItem, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { EnumModals, IContextItem, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
@@ -122,8 +122,8 @@ function FooterNavComponent(){
                         ...props.style,
                         }}
                     >
-                        <div onClick={(e)=>handleIconClik(e)} className="hover-color cur-point py-1">About LithiumGit</div>
-                        <div onClick={(e)=>handleIconClik(e)} className="hover-color cur-point py-1">Settings</div>
+                        <div onClick={(e)=>dispatch(ActionModals.showModal(EnumModals.ABOUT_LITHIUMGIT))} className="hover-color cur-point py-1">About LithiumGit</div>
+                        <div onClick={(e)=>{}} className="hover-color cur-point py-1">Settings</div>
                     </div>
                     )}
                 </Overlay>

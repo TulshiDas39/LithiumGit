@@ -8,4 +8,5 @@ export enum EnumModals{
     PULL_FROM="PULL_FROM",
     CHECKOUT="CHECKOUT",
     TOAST="TOAST",
+    ABOUT_LITHIUMGIT="ABOUT_LITHIUMGIT"
 }
