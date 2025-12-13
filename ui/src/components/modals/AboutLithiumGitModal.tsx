@@ -14,7 +14,7 @@ function AboutLithiumGitModalComponent() {
     const dispatch = useDispatch();
 
     return <Modal show={store.show} dialogClassName="" 
-        centered backdropClassName="bg-transparent" animation={false} size="lg" >
+        backdropClassName="bg-transparent" animation={false} size="lg" >
         <Modal.Body>
             <div className="row g-0 border-bottom align-items-center py-2">
                 <div className="col-11">
