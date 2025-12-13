@@ -13,33 +13,26 @@ function AboutLithiumGitModalComponent() {
 
     const dispatch = useDispatch();
 
-    return <Modal show={store.show} dialogClassName="createBranchModal" 
-        centered backdropClassName="bg-transparent" animation={false} >
+    return <Modal show={store.show} dialogClassName="" 
+        centered backdropClassName="bg-transparent" animation={false} size="lg" >
         <Modal.Body>
             <div className="row g-0 border-bottom align-items-center py-2">
                 <div className="col-11">
-                    Create new branch
+                    About
                 </div>
                 <div className="col-1 text-end">
                     <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.ABOUT_LITHIUMGIT))}><FaTimes className="" /></span>
                 </div>
             </div>
             <div className="row g-0 py-3 align-items-center">
-                <div className="col-auto">
-                    Branch Name:
+                <div className="col-2">
+                    <div className="py-2 ps-2 pe-4 bg-third-color border-bottom cur-default hover">About</div>
+                    <div className="py-2 ps-2 pe-4 bg-third-color cur-default hover">What's new?</div>
                 </div>
-                <div className="col">
-                    {/* <Form.Control type="text" value={state.branchName} onChange={e=> setState({branchName:e.target.value})} /> */}
+                <div className="col-10">
+                    
                 </div>
-            </div>
-            <div className="row g-0 py-3 align-items-center">
-                <div className="col-auto pe-2">
-                    {/* <Form.Check id="create_branch" checked={state.checkout} onChange={_=> setState({checkout:!state.checkout})} /> */}
-                </div>
-                <div className="col-8">
-                    <label htmlFor="create_branch">Checkout this branch</label>
-                </div>
-            </div>            
+            </div>           
         </Modal.Body>
     </Modal>
 }
