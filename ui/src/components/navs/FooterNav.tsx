@@ -2,10 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaCopy, FaRegBell, FaSpinner } from "react-icons/fa";
-import { ProgressBar } from "react-bootstrap";
+import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumTheme, IRemoteInfo } from "common_library";
-import { RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { IContextItem, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
@@ -13,6 +13,7 @@ import icon from "../../assets/img/icon_green.png";
 
 interface IState{
     remote?:IRemoteInfo;
+    showOptions?:boolean;
 }
 
 function FooterNavComponent(){
@@ -24,9 +25,10 @@ function FooterNavComponent(){
     }),shallowEqual);
 
     const [state,setState]=useMultiState<IState>({});
+    const optionTarget = useRef(null);
 
     const dispatch = useDispatch();
-    const refData = useRef({isMounted:false});
+    const refData = useRef({isMounted:false,hoverIcon:false});
 
     useEffect(()=>{
         if(!refData.current.isMounted)
@@ -62,13 +64,68 @@ function FooterNavComponent(){
         ModalData.appToast.message = "Copied.";
         dispatch(ActionModals.showToast());
     }
+   
+
+    const handleIconClik = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
+        const items:IContextItem[] = [
+                {
+                    text:`About LithiumGit`,
+                    onClick:()=>{},
+                },
+                {
+                    text:`Settings`,
+                    onClick:()=>{},
+                }            
+            ]
+
+            ModalData.contextModal.items = items;
+            ModalData.contextModal.position = {x:e.clientX,y:e.clientY};
+            UiUtils.openContextModal();
+    }
+
+    useEffect(()=>{
+        const hideOptions = ()=>{
+            if(refData.current.hoverIcon)
+                return;
+            setState({showOptions:false});
+        }
+        document.addEventListener("click",hideOptions);
+        return ()=>{
+            document.removeEventListener("click",hideOptions);
+        }
+    },[])
 
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-5 h-100">
             <div className="d-flex align-items-center h-100">
-                <div className="px-1 h-100 d-flex align-items-center hover-bg">
+                <div ref={optionTarget} className="px-1 h-100 d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
+                onMouseEnter={()=>refData.current.hoverIcon=true} onMouseLeave={()=> refData.current.hoverIcon = false}>
                     <img src={icon} alt="icon" height={"80%"} width={"auto"} />   
                 </div>
+                <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                    {({
+                    placement: _placement,
+                    arrowProps: _arrowProps,
+                    show: _show,
+                    popper: _popper,
+                    hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                    ...props
+                    }) => (
+                    <div
+                        {...props}
+                        style={{
+                        position: 'absolute',
+                        // backgroundColor: 'rgba(255, 100, 100, 0.85)',
+                        padding: '2px 10px',
+                        color: 'white',
+                        borderRadius: 3,
+                        ...props.style,
+                        }}
+                    >
+                        Simple tooltip
+                    </div>
+                    )}
+                </Overlay>
                 {!!state.remote && <span className="ps-1 d-flex">
                         <span onClick={()=>openOrigin()} className="hover-color cur-point overflow-ellipsis" title={state.remote.url} style={{maxWidth:'120px'}}>{state.remote.name}</span>
                         <span className="ps-1 small"> <span onClick={()=>copyOrigin()} title="Copy origin" className="small hover-color cur-point overflow-ellipsis"><FaCopy className="click-effect" /></span></span>
