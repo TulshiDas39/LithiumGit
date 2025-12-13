@@ -9,7 +9,7 @@ import { RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
-import icon from "../../assets/img/icon_blue.png";
+import icon from "../../assets/img/icon_green.png";
 
 interface IState{
     remote?:IRemoteInfo;
@@ -66,7 +66,7 @@ function FooterNavComponent(){
     return <div className="bg-second-color h-100 row g-0 align-items-center">
         <div className="col-5 h-100">
             <div className="d-flex align-items-center h-100">
-                <div className="px-1 h-100 d-flex align-items-center hover">
+                <div className="px-1 h-100 d-flex align-items-center hover-bg">
                     <img src={icon} alt="icon" height={"80%"} width={"auto"} />   
                 </div>
                 {!!state.remote && <span className="ps-1 d-flex">
