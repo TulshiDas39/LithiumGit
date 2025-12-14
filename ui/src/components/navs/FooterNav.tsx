@@ -105,7 +105,7 @@ function FooterNavComponent(){
                         }}
                     >
                         <div onClick={(e)=>dispatch(ActionModals.showModal(EnumModals.ABOUT_LITHIUMGIT))} className="hover-color cur-point py-1">About LithiumGit</div>
-                        <div onClick={(e)=>{}} className="hover-color cur-point py-1">Settings</div>
+                        {/* <div onClick={(e)=>{}} className="hover-color cur-point py-1">Settings</div> */}
                     </div>
                     )}
                 </Overlay>
