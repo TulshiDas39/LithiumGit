@@ -112,16 +112,16 @@ function AboutInfoComponent() {
     return <div>
         <h4 className="text-center">About LithiumGit</h4>
         <div className="ps-4">
-            <div>Product Name: LithiumGit</div>
-            <div>Version: {store.version}</div>
-            <div>Release date:  {moment(store.releaseDate).format('MMMM DD, YYYY')}</div>
-            <div>Website: <span className="hover-color cur-point" onClick={openWebsite}>{store.website}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
-            <div>Software Category: Open Source Software</div>            
-            <div>License: MIT License</div>     
-            <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
-            <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
-            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>            
-            <div>Copyright: &copy;2020-Present LithiumGit community</div>
+            <div className="py-1">Product Name: LithiumGit</div>
+            <div className="py-1">Version: {store.version}</div>
+            <div className="py-1">Release date:  {moment(store.releaseDate).format('MMMM DD, YYYY')}</div>
+            <div className="py-1">Website: <span className="hover-color cur-point" onClick={openWebsite}>{store.website}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
+            <div className="py-1">Software Category: Open Source Software</div>            
+            <div className="py-1">License: MIT License</div>     
+            <div className="py-1">Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
+            <div className="py-1">Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
+            <div className="py-1">Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>            
+            <div className="py-1">Copyright: &copy;2020-Present LithiumGit community</div>
         </div>
     </div>
 }
@@ -137,7 +137,7 @@ function NewFeaturesComponent() {
             <h4>New features in LithiumGit version {store.version}</h4>
         </div>
         <div className="pt-2">
-            {Data.newChangesInLatestVersion.map((change,idx)=><div key={idx} className="pb-2">
+            {Data.newChangesInLatestVersion.map((change,idx)=><div key={idx} className="pb-2 py-1">
                 <div><FaHandPointRight /> <strong>{change}</strong></div>
             </div>)
             }

@@ -63,25 +63,7 @@ function FooterNavComponent(){
         UiUtils.copy(state.remote!.url);
         ModalData.appToast.message = "Copied.";
         dispatch(ActionModals.showToast());
-    }
-   
-
-    const handleIconClik = (e: React.MouseEvent<HTMLDivElement, MouseEvent>)=>{
-        const items:IContextItem[] = [
-                {
-                    text:`About LithiumGit`,
-                    onClick:()=>{},
-                },
-                {
-                    text:`Settings`,
-                    onClick:()=>{},
-                }            
-            ]
-
-            ModalData.contextModal.items = items;
-            ModalData.contextModal.position = {x:e.clientX,y:e.clientY};
-            UiUtils.openContextModal();
-    }
+    }    
 
     useEffect(()=>{
         const hideOptions = ()=>{
