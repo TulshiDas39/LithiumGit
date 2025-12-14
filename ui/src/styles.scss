@@ -658,3 +658,7 @@ input[type=checkbox]{
 .hover-bg:hover{
   background-color: var(--hover-bg);
 }
+
+.word-break-all{
+  word-break: break-all;
+}

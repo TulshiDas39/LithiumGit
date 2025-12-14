@@ -51,7 +51,7 @@ function ConfirmationModalComponent(){
                 </div>
                 <hr />
                 <div className="row g-0">
-                    <div className="col-12">
+                    <div className="col-12 word-break-all">
                         {Data.message || "Please confirm."}
                     </div>
                 </div>
