@@ -1,11 +1,12 @@
 import { Modal } from "react-bootstrap";
-import { EnumModals, UiUtils, useMultiState } from "../../lib";
+import { EnumModals, UiUtils, useEscape, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../store";
 import { FaCopy, FaTimes } from "react-icons/fa";
 import React from "react";
 import { ModalData } from "./ModalData";
+import moment from "moment";
 
 
 enum AboutTabs{
@@ -26,6 +27,8 @@ function AboutLithiumGitModalComponent() {
     const [state,setState] = useMultiState<IState>({
         activeTab: AboutTabs.ABOUT,
     });
+
+    useEscape(store.show,()=> dispatch(ActionModals.hideModal(EnumModals.ABOUT_LITHIUMGIT)));
 
     return <Modal show={store.show} dialogClassName="" 
         backdropClassName="bg-transparent" animation={false} size="lg" >
@@ -58,6 +61,10 @@ export const AboutLithiumGitModal = React.memo(AboutLithiumGitModalComponent);
 
 
 function AboutInfoComponent() {
+    const store = useSelectorTyped(state => ({
+        version:state.savedData.appInfo.version,
+        releaseDate:state.savedData.appInfo.releaseDate,
+    }), shallowEqual);
     const dispatch = useDispatch();
 
     const handleSiteCopy = () => {
@@ -69,7 +76,8 @@ function AboutInfoComponent() {
         <h4 className="text-center">About LithiumGit</h4>
         <div className="ps-4">
             <div>Product Name: LithiumGit</div>
-            <div>Version: 1.0.7</div>
+            <div>Version: {store.version}</div>
+            <div>Release date:  {moment(store.releaseDate).format('MMMM DD, YYYY')}</div>
             <div>Website: https://lithiumgit.com  <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}><FaCopy className="click-effect" /></span> </div>
         </div>
     </div>
@@ -78,9 +86,12 @@ function AboutInfoComponent() {
 export const AboutInfo = React.memo(AboutInfoComponent);
 
 function NewFeaturesComponent() {
+    const store = useSelectorTyped(state => ({
+        version:state.savedData.appInfo.version,
+    }), shallowEqual);
     return <div>
         <div>
-            Whats new in LithiumGit version 1.0.7:
+            Whats new in LithiumGit version {store.version}:
         </div>
         <div className="pt-2">
         </div>
