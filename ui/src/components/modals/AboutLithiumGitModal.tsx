@@ -1,9 +1,9 @@
 import { Modal } from "react-bootstrap";
-import { EnumModals, UiUtils, useEscape, useMultiState } from "../../lib";
+import { Data, EnumModals, UiUtils, useEscape, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals } from "../../store";
-import { FaCopy, FaTimes } from "react-icons/fa";
+import { FaCopy, FaFingerprint, FaHandPointRight, FaTimes } from "react-icons/fa";
 import React from "react";
 import { ModalData } from "./ModalData";
 import moment from "moment";
@@ -120,8 +120,7 @@ function AboutInfoComponent() {
             <div>License: MIT License</div>     
             <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
             <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
-            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
-            
+            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>            
             <div>Copyright: &copy;2020-Present LithiumGit community</div>
         </div>
     </div>
@@ -133,11 +132,15 @@ function NewFeaturesComponent() {
     const store = useSelectorTyped(state => ({
         version:state.savedData.appInfo.version,
     }), shallowEqual);
-    return <div>
-        <div>
-            Whats new in LithiumGit version {store.version}:
+    return <div className="px-5">
+        <div className="">
+            <h4>New features in LithiumGit version {store.version}</h4>
         </div>
         <div className="pt-2">
+            {Data.newChangesInLatestVersion.map((change,idx)=><div key={idx} className="pb-2">
+                <div><FaHandPointRight /> <strong>{change}</strong></div>
+            </div>)
+            }
         </div>
     </div> 
 }
