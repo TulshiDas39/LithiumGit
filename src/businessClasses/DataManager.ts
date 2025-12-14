@@ -52,6 +52,10 @@ export class DataManager{
             const info:IAppInfo = {
                 version:app.getVersion(),
                 releaseDate:BUILD_INFO.timestamp,
+                documentation:"https://lithiumgit.com/docs",
+                website:"https://lithiumgit.com",
+                repository:"https://github.com/tulshidas39/lithiumgit",
+                issueTracker:"https://github.com/tulshidas39/lithiumgit/issues"
             };
             console.log("app version",info.version);
             event.returnValue = info;

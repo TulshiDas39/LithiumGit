@@ -65,28 +65,48 @@ function AboutInfoComponent() {
     const store = useSelectorTyped(state => ({
         version:state.savedData.appInfo.version,
         releaseDate:state.savedData.appInfo.releaseDate,
+        website:state.savedData.appInfo.website,
+        repository:state.savedData.appInfo.repository,
+        documentation:state.savedData.appInfo.documentation,
+        issueTracker:state.savedData.appInfo.issueTracker,
     }), shallowEqual);
     const dispatch = useDispatch();
 
     const handleSiteCopy = () => {
-        UiUtils.copy("https://lithiumgit.com");
+        UiUtils.copy(store.website);
         ModalData.appToast.message = "Website URL copied to clipboard";
         dispatch(ActionModals.showToast());
     }
+    const handleRepositoryCopy = () => {
+        UiUtils.copy(store.repository);
+        ModalData.appToast.message = "Repository URL copied to clipboard";
+        dispatch(ActionModals.showToast());
+    }
+
+    const handleDocumentationCopy = () => {
+        UiUtils.copy(store.documentation);
+        ModalData.appToast.message = "Documentation URL copied to clipboard";
+        dispatch(ActionModals.showToast());
+    }
+    const handleIssueTrackerCopy = () => {
+        UiUtils.copy(store.issueTracker);
+        ModalData.appToast.message = "Issue Tracker URL copied to clipboard";
+        dispatch(ActionModals.showToast());
+    }
     const openWebsite = () => {
-        IpcUtils.openLink("https://lithiumgit.com");
+        IpcUtils.openLink(store.website);
     }
 
     const openGitHub = () => {
-        IpcUtils.openLink("https://github.com/tulshidas39/lithiumgit");
+        IpcUtils.openLink(store.repository);
     }
 
     const openDocumentation = () => {
-        IpcUtils.openLink("https://lithiumgit.com/docs");
+        IpcUtils.openLink(store.documentation);
     }
 
     const openIssueTracker = () => {
-        IpcUtils.openLink("https://github.com/tulshidas39/lithiumgit/issues")
+        IpcUtils.openLink(store.issueTracker);
     }
 
     return <div>
@@ -95,12 +115,12 @@ function AboutInfoComponent() {
             <div>Product Name: LithiumGit</div>
             <div>Version: {store.version}</div>
             <div>Release date:  {moment(store.releaseDate).format('MMMM DD, YYYY')}</div>
-            <div>Website: <span className="hover-color cur-point" onClick={openWebsite}>https://lithiumgit.com</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}><FaCopy className="click-effect" /></span> </div>
+            <div>Website: <span className="hover-color cur-point" onClick={openWebsite}>{store.website}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}> <FaCopy className="click-effect" /></span> </div>
             <div>Software Category: Open Source Software</div>            
             <div>License: MIT License</div>     
-            <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>https://github.com/tulshidas39/lithiumgit</span></div>
-            <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>https://lithiumgit.com/docs</span></div>
-            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>https://github.com/tulshidas39/lithiumgit/issues</span></div>
+            <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy className="click-effect" /></span></div>
+            <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy className="click-effect" /></span> </div>
+            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy className="click-effect" /></span></div>
             
             <div>Copyright: &copy;2020-Present LithiumGit community</div>
         </div>
