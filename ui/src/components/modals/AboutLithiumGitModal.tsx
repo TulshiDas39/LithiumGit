@@ -115,12 +115,12 @@ function AboutInfoComponent() {
             <div>Product Name: LithiumGit</div>
             <div>Version: {store.version}</div>
             <div>Release date:  {moment(store.releaseDate).format('MMMM DD, YYYY')}</div>
-            <div>Website: <span className="hover-color cur-point" onClick={openWebsite}>{store.website}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}> <FaCopy className="click-effect" /></span> </div>
+            <div>Website: <span className="hover-color cur-point" onClick={openWebsite}>{store.website}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={()=> handleSiteCopy()}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
             <div>Software Category: Open Source Software</div>            
             <div>License: MIT License</div>     
-            <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy className="click-effect" /></span></div>
-            <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy className="click-effect" /></span> </div>
-            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy className="click-effect" /></span></div>
+            <div>Github: <span className="hover-color cur-point" onClick={openGitHub}>{store.repository}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleRepositoryCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
+            <div>Documentation: <span className="hover-color cur-point" onClick={openDocumentation}>{store.documentation}</span> <span className="small hover-color cur-point overflow-ellipsis" onClick={handleDocumentationCopy}> <FaCopy title="Copy url" className="click-effect" /></span> </div>
+            <div>Issue Tracker: <span className="hover-color cur-point" onClick={openIssueTracker}>{store.issueTracker}</span><span className="small hover-color cur-point overflow-ellipsis" onClick={handleIssueTrackerCopy}> <FaCopy title="Copy url" className="click-effect" /></span></div>
             
             <div>Copyright: &copy;2020-Present LithiumGit community</div>
         </div>
