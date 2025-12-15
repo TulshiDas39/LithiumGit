@@ -25,7 +25,9 @@ export class GitUtils{
         const statResult = await GitUtils.getNumStat(commitHash);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[words.length-1];
+            let path = words[5];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
+
             if(files.some(_=> _.path === path))
                 continue;
             const file = statResult.files.find(_=> _.path === path);
@@ -54,7 +56,8 @@ export class GitUtils{
         const lines = allFiles.slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[2];
+            let path = words[2];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             if(!files.some(_=> path === _.path)){
                 files.push({
                     addCount:Number(words[0]),
