@@ -84,7 +84,8 @@ export class GitUtils{
         const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[1];
+            let path = words[1];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             if(!files.some(_=> path === _.path)){
                 files.push({                                        
                     path,
@@ -115,7 +116,8 @@ export class GitUtils{
         }
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[2];
+            let path = words[2];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             const changeType = fileStatus.find(_=> _.path == path)?.changeType || EnumChangeType.MODIFIED;
             if(!files.some(_=> path === _.path)){
                 files.push({
