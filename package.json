@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A git gui application",
   "scripts": {
     "genereate_build_info": "node scripts/generateBuildInfo.js",
@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "chardet": "^2.1.1",
     "common_library": "file:common_library",
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-updater": "^5.0.1",
