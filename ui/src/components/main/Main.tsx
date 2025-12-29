@@ -56,7 +56,7 @@ function MainComponent(){
     },[store.notificationLoadV])
 
     useEffect(()=>{
-        const checkInterValMinute = 2*24*60;
+        const checkInterValMinute = 1*24*60;
         const now = new Date();
         const config = getStoreState().savedData.configInfo;
         const lastChecked = config.checkedForUpdateAt;
@@ -125,9 +125,16 @@ function MainComponent(){
             }
         })
 
+        const escapeHandler = (e:KeyboardEvent)=>{
+            if(e.key === "Escape"){
+                UiUtils.handleEscape();
+            }
+        }
+        window.addEventListener("keydown",escapeHandler);
 
         return ()=>{
             UiUtils.removeIpcListeners([RendererEvents.refreshBranchPanel().channel]);
+            window.removeEventListener("keydown",escapeHandler);
         }
 
     },[]);

@@ -24,6 +24,10 @@ export class CacheUtils{
     }
 
     static async clearRepoDetails(path:string){
-        await localforage.removeItem(CacheKey.repoDetails+path);
+        try{
+            await localforage.removeItem(CacheKey.repoDetails+path);
+        }catch(e){
+            console.error("Error clearing cache for repo details",e);
+        }
     }
 }

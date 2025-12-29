@@ -12,6 +12,7 @@ html {
 html {
     --font-color: #282828;   
     --hover: #56a696;
+    --hover-bg:#c4c4c4;  
     --bg-color:rgb(241, 236, 236);
     --bg-default-button:rgb(192, 193, 201);
     --border-color:rgba(0,0,0,.2);
@@ -78,6 +79,7 @@ html {
     --highlight-color:rgb(92, 92, 243);
     --svg-lite: #E5E6EB;
     --hover: #56a696;        
+    --hover-bg:#464747;        
     --search-bg: #181818;
     --svg-dark: #909090;
     --scrollbar-color: #563D7C;
@@ -642,4 +644,21 @@ to {
 
 .react-datepicker__year-option:hover, .react-datepicker__month-option:hover, .react-datepicker__month-year-option:hover{
   background-color: var(--bg-select-color);
+}
+
+input[type=checkbox]{
+  background-color: #fff;
+}
+
+.hover-danger:hover, .hover-danger:hover *{
+  cursor: default;
+  color: var(--gs-danger);
+}
+
+.hover-bg:hover{
+  background-color: var(--hover-bg);
+}
+
+.word-break-all{
+  word-break: break-all;
 }

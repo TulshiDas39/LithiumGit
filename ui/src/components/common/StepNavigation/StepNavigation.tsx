@@ -8,6 +8,9 @@ interface IProps{
     onPreviousClick:()=>void;
 }
 function StepNavigationComponent(props:IProps){
+    if(props.currentStep < 0)
+        return null;
+    
     return <div style={{height:30}} className="d-flex align-items-center justify-content-center">
     <span>Showing {props.currentStep} of {props.totalStep}</span>
     <span className="px-1 d-flex align-items-center">

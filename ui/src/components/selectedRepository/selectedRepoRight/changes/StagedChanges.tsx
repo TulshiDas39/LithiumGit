@@ -139,11 +139,47 @@ function StagedChangesComponent(props:IStagedChangesProps){
         })
     }
 
+    const showPreview=(file:IFile)=>{
+        refData.current.fileContentAfterChange = ["file preview"];
+        if(file.changeType !== EnumChangeType.DELETED){
+            GitUtils.getStagedFileProps(file.path).then(filePropsCurrent=>{
+                if(file?.changeType === EnumChangeType.MODIFIED){
+                    GitUtils.getFileProps(file.path,"HEAD").then(filePropsPrevs=>{                        
+                        ChangesData.changeUtils.showPreview(filePropsPrevs,filePropsCurrent);
+                        hideStepNavigation();
+                    })
+                }
+                else{                    
+                    ChangesData.changeUtils.showPreview(null!,filePropsCurrent);
+                    hideStepNavigation();                            
+                }
+                
+            })
+        }
+        else{
+            GitUtils.getFileProps(file.path,"HEAD").then(filePropsPrevs=>{                        
+                ChangesData.changeUtils.showPreview(filePropsPrevs);
+                hideStepNavigation();
+            })                      
+        }
+    
+    }
+
+    const hideStepNavigation = ()=>{
+        dispatch(ActionChanges.updateData({currentStep:-1, totalStep:0}));
+    }
+
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return ;
-        showChanges().then(()=>{
-            dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));
+        IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
+            if(r.result){                
+                showPreview(store.selectedFile!);
+            }else{
+                showChanges().then(()=>{
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                })
+            }
         })
     },[store.selectedFile])
 

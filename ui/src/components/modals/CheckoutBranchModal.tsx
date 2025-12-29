@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import { Form, Modal } from "react-bootstrap";
 import { useDispatch, shallowEqual } from "react-redux";
-import { EnumModals, RepoUtils, useMultiState } from "../../lib";
+import { EnumModals, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { AppButton } from "../common";
@@ -40,11 +40,21 @@ function CheckoutBranchModalComponent(){
     }
 
     useEffect(()=>{
+        const escapeHandler = ()=>{
+            hideModal();
+        }
         if(!store.show){            
             return;            
         }
+        else{
+            UiUtils.registerEscapeHandler(escapeHandler);
+        }
         const branches = RepoUtils.repositoryDetails?.branchList || [];
         setState({branchList:branches,isSelected:false,searchText:""});
+
+        return ()=>{
+            UiUtils.removeEscapeHandler(escapeHandler);
+        }
     },[store.show])
 
     const getBranchDisplayName = (branch:string)=>{
@@ -67,9 +77,9 @@ function CheckoutBranchModalComponent(){
     useEffect(()=>{
         let branches:string[] = [];
         if(!state.isSelected && state.inputFocused){
-            branches = branches = resolveOptions();
+            branches = resolveOptions();
             if(state.searchText){            
-                branches = branches.filter(_ => _.includes(state.searchText));
+                branches = branches.filter(_ => _?.toLowerCase().includes(state.searchText?.toLowerCase()));
             }
         }
         

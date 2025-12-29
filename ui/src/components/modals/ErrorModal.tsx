@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import { Modal } from "react-bootstrap"
 import { shallowEqual, useDispatch } from "react-redux";
-import { EnumModals } from "../../lib";
+import { EnumModals, useEscape } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -13,6 +13,12 @@ function ErrorModalComponent(){
     const store = useSelectorTyped(state=>({
         show:state.modal.openedModals.includes(EnumModals.ERROR),
     }),shallowEqual)
+
+    const hideModal=()=>{
+        dispatch(ActionModals.hideModal(EnumModals.ERROR));
+    }
+
+    useEscape(store.show,hideModal);
 
     useEffect(()=>{
         if(!store.show){
@@ -28,7 +34,7 @@ function ErrorModalComponent(){
                         <span className="text-danger">Error</span>                        
                     </div>
                     <div className="col-1 text-end">
-                        <span className="hover" onClick={_=> dispatch(ActionModals.hideModal(EnumModals.ERROR))}><FaTimes /></span>
+                        <span className="hover" onClick={_=> hideModal()}><FaTimes /></span>
                     </div>
                 </div>
                 <hr />

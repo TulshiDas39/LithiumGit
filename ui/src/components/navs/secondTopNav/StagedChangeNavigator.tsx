@@ -23,7 +23,7 @@ function StagedChangeNavigatorComponent(props:IProps){
     },[props.currentStep,props.stepResetVersion])
     
     return <div className="w-100 h-100 d-flex align-items-center">
-        <div className="d-flex align-items-center" style={{width:'80%'}}>
+        <div className="d-flex align-items-center justify-content-center" style={{width:'80%'}}>
             {props.selectedFile.changeType !== EnumChangeType.RENAMED && <div title={props.selectedFile.path} className="overflow-ellipsis" style={{maxWidth:300}}>
                 {props.selectedFile.fileName}                
             </div>}

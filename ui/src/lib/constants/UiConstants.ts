@@ -24,7 +24,7 @@ export class UiConstants{
         return this.screenWidth - this.selectedRepoLeftWidth - this.selectedRepoRightsWidth;
     }
     
-    static readonly siteBaseUrl = "https://lithiumgit.github.io";
+    static readonly siteBaseUrl = "https://lithiumgit.com";
     static get downloadUrl(){
         return UiConstants.siteBaseUrl + "/download";
     }

@@ -24,8 +24,6 @@ const slice = createSlice({
             const newState = {...state, ...action.payload};
             if(newState.currentStep > newState.totalStep)
                 newState.currentStep = newState.totalStep;
-            if(newState.currentStep < 0)
-                newState.currentStep = 0;
             return newState;
         },
         increamentStepRefreshVersion(state){

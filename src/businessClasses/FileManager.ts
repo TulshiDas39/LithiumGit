@@ -1,8 +1,9 @@
-import {RendererEvents } from "common_library";
+import {IFileProps, RendererEvents } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
-import * as languageEncoding from "detect-file-encoding-and-language";
+import { isText, isBinary } from 'istextorbinary'
+
 
 
 export class FileManager{
@@ -19,6 +20,14 @@ export class FileManager{
         this.handlePathJoinAsync();
         this.handleLastUpdatedDate();
         this.handleWriteToFile();
+        this.handleIsBinary();
+        this.handleGetFileProps();
+    }
+
+    private handleGetFileProps(){
+        ipcMain.handle(RendererEvents.getFileProps,async (e,pathStr:string)=>{
+            return await this.getFileProps(pathStr);
+        });
     }
     handleGetFileContent() {
         ipcMain.handle(RendererEvents.getFileContent().channel,async (e,path:string)=>{
@@ -26,6 +35,61 @@ export class FileManager{
             return lines;
         });
     }
+
+    handleIsBinary() {
+        ipcMain.handle(RendererEvents.isBinary,async (e,path:string)=>{
+            return await this.isBinary(path);            
+        });
+    }
+
+    private async isBinary(pathStr:string,checkContent=false){
+        const fileName = path.basename(pathStr);
+        if(fileName.includes('.')){
+            return isBinary(fileName);
+        }
+        else if(checkContent){
+            try{
+                const dataChunk = await this.readFirstChars(pathStr,1000);
+                const isTextFile = isText(null,Buffer.from(dataChunk));
+                return !isTextFile;
+            }catch{
+                return true;
+            }
+        }
+
+        return false;
+        
+    }
+
+    private getFileProps(path:string){
+        return fs.promises.stat(path).then(stats=>{
+                const sizeKB = Number((stats.size / 1024).toFixed(2));
+                return {
+                    sizeKB,
+                    path,
+                } as IFileProps;
+        });
+    }
+
+    readFirstChars(filePath: string, length: number) {
+        return new Promise<string>((resolve, reject) => {
+            const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
+            let result = '';
+            stream.on('data', chunk => {
+                result += chunk;
+                if (result.length >= length) {
+                    stream.destroy();
+                    resolve(result.slice(0, length));
+                }
+            });
+            stream.on('end', () => {
+                resolve(result.slice(0, length));
+            });
+            stream.on('error', err => {
+                reject(err);
+            });
+        });
+    }    
 
     handlePathJoin(){
         ipcMain.on(RendererEvents.joinPath().channel,(e,...pathSegments:string[])=>{
@@ -114,13 +178,13 @@ export class FileManager{
         })
     }
 
-    getFileEncoding(path:string):Promise<string>{
-        const langEnc = languageEncoding as any;
-        return langEnc(path).then((fileInfo:any) => {
-            return fileInfo.encoding;
-        }).catch((_:any)=> {
-            return "";
-        });
+    getFileEncoding(path:string){
+        // const langEnc = languageEncoding as any;
+        // return langEnc(path).then((fileInfo:any) => {
+        //     return fileInfo.encoding;
+        // }).catch((_:any)=> {
+        //     return "";
+        // });
     }
 
     async writeToFile(path:string,data:string){

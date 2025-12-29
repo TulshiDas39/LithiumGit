@@ -2,7 +2,7 @@ import React, { useEffect } from "react"
 import { Button, Form, Modal } from "react-bootstrap";
 import { FaTimes } from "react-icons/fa";
 import { shallowEqual, useDispatch } from "react-redux";
-import { RepoUtils, EnumModals, useMultiState } from "../../lib";
+import { RepoUtils, EnumModals, useMultiState, useEscape } from "../../lib";
 import { ActionModals } from "../../store";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { InitialModalData, ModalData } from "./ModalData";
@@ -24,6 +24,10 @@ function CreateBranchModalComponent(){
 
     const [state,setState]= useMultiState({branchName:"",checkout:true} as IState);
 
+    const hideModal=()=>{        
+        dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
+    }
+
     useEffect(()=>{
         if(!store.show) {
             ModalData.createBranchModal = InitialModalData.createBranchModal;
@@ -33,6 +37,8 @@ function CreateBranchModalComponent(){
             })
         }
     },[store.show])
+
+    useEscape(store.show,hideModal);
 
     const handleBranchCreateClick=()=>{
         const branchNames = RepoUtils.getAllBranchNames();
@@ -44,7 +50,7 @@ function CreateBranchModalComponent(){
         IpcUtils.createBranch(state.branchName,Data.sourceCommit,state.checkout).then(_=>{
             GitUtils.getStatus();
         });        
-        dispatch(ActionModals.hideModal(EnumModals.CREATE_BRANCH));
+        hideModal();
     }
 
     return <Modal show={store.show} dialogClassName="createBranchModal" 

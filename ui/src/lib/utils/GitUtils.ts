@@ -1,4 +1,4 @@
-import { EnumChangeGroup, EnumChangeType, IFile, IStash, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, IFileProps, IStash, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -25,7 +25,9 @@ export class GitUtils{
         const statResult = await GitUtils.getNumStat(commitHash);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[words.length-1];
+            let path = words[5];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
+
             if(files.some(_=> _.path === path))
                 continue;
             const file = statResult.files.find(_=> _.path === path);
@@ -54,7 +56,8 @@ export class GitUtils{
         const lines = allFiles.slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[2];
+            let path = words[2];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             if(!files.some(_=> path === _.path)){
                 files.push({
                     addCount:Number(words[0]),
@@ -81,7 +84,8 @@ export class GitUtils{
         const lines = StringUtils.getLines(result.result).filter(l => !!l).slice(0,1000);
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[1];
+            let path = words[1];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             if(!files.some(_=> path === _.path)){
                 files.push({                                        
                     path,
@@ -112,7 +116,8 @@ export class GitUtils{
         }
         for(let line of lines){
             const words = StringUtils.getWords(line);
-            const path = words[2];
+            let path = words[2];
+            path = line.endsWith(path) ? path : line.substring(line.indexOf(path));
             const changeType = fileStatus.find(_=> _.path == path)?.changeType || EnumChangeType.MODIFIED;
             if(!files.some(_=> path === _.path)){
                 files.push({
@@ -200,4 +205,41 @@ export class GitUtils{
         })
     }
     
+    static getFileProps(path:string,commitHash:string){
+        //sample command to get file size
+        //git ls-tree -l 00e8d6153b5f3f33ec0fd07e3e44af693472f93bb6 package.json
+        const options = ["ls-tree","-l",commitHash,path];
+        return IpcUtils.getRaw(options).then(r=>{
+            let sizeKB = 0;
+            if(r.result){
+                const subStrs = StringUtils.getWords(r.result);
+                sizeKB = Number((Number(subStrs[3])/1024).toFixed(2));           
+            }
+            return {
+                sizeKB,
+                path,
+            } as IFileProps;
+        })
+
+    }
+
+    static async getStagedFileProps(path:string){
+        const options = ["ls-files", "-s", path];
+        const r = await IpcUtils.getRaw(options);
+        let sizeKB = 0;
+        if(r.result){
+            const subStrs = StringUtils.getWords(r.result);
+            const blobHash = subStrs[1];
+            //now get size from blob
+            const res = await IpcUtils.getRaw(["cat-file","-s",blobHash]);
+            if(res.result){
+                sizeKB = Number((Number(res.result)/1024).toFixed(2));           
+            }
+        }
+        return {
+            sizeKB,
+            path,
+        } as IFileProps;
+    }
+
 }

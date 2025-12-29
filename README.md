@@ -14,7 +14,7 @@
 - **⚙️ Advanced Git Operations**: Perform even the most complex Git tasks effortlessly. From branching to cherry-picking, we've got you covered.
 
 - **📈 Interactive Graph View**: Visualize the history and structure of your repositories with a sophisticated graph view.  
-  ![Graph View](https://lithiumgit.github.io/_next/static/media/graph.e4449400.png)
+  ![Graph View](https://lithiumgit.com/_next/static/media/graph.e4449400.png)
 
 - **💻 Cross-Platform Support**: LithiumGit works everywhere you code: Windows, macOS, and Linux.  
 
@@ -109,7 +109,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](./LICENSE)
 ## 🌐 Website
 
 For detailed usage instructions, and resources, visit our  website:  
-👉 **[LithiumGit Documentation & Guide](https://lithiumgit.github.io/)**  
+👉 **[LithiumGit Documentation & Guide](https://lithiumgit.com/)**  
 
 ---
 

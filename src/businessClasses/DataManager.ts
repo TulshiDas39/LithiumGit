@@ -2,6 +2,7 @@ import { Annotation, EnumNotificationType, IAppInfo, IConfigInfo, INotification,
 import { app, ipcMain } from "electron";
 import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
+import { BUILD_INFO } from "../buildInfo";
 
 export class DataManager{
     start(){
@@ -49,7 +50,12 @@ export class DataManager{
     private handleAppInfoRequest(){
         ipcMain.on(RendererEvents.getAppInfo, (event, arg) => {
             const info:IAppInfo = {
-                version:app.getVersion()
+                version:app.getVersion(),
+                releaseDate:BUILD_INFO.timestamp,
+                documentation:"https://lithiumgit.com/docs",
+                website:"https://lithiumgit.com",
+                repository:"https://github.com/tulshidas39/lithiumgit",
+                issueTracker:"https://github.com/tulshidas39/lithiumgit/issues"
             };
             console.log("app version",info.version);
             event.returnValue = info;

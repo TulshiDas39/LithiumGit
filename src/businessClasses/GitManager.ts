@@ -196,7 +196,7 @@ export class GitManager{
     }
     async getDiff(options: string[], repoInfo: RepositoryInfo) {
         const git = this.getGitRunner(repoInfo);        
-        const result = await git.diff(options);
+        const result = await git.diff(options);        
         AppData.mainWindow.webContents.send(RendererEvents.logger,result);
         return result;
     }

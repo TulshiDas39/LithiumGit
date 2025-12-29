@@ -3,6 +3,7 @@ import { DiffUtils, EnumHtmlIds, ILine, useMultiState, DiffData } from "../../..
 import { EnumChangeType, ICommitInfo, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { CommitDiffNavigation } from "./CommitDiffNavigation";
+import { GitUtils } from "../../../../lib/utils/GitUtils";
 
 interface IProps{
     file?:IFile;
@@ -27,19 +28,21 @@ function CommitDiffViewComponent(props:IProps){
         const currentStep = changeUtils.totalChangeCount > 0 ? 1:0;
         setState({totalStep:totalChange,currentStep,stepResetVersion:state.stepResetVersion+1});
     }
-    useEffect(()=>{
+
+    const hideStepNavigation = ()=>{
+        setState({totalStep:-1,currentStep:0});
+    }
+
+
+    const showDiff=(file:IFile)=>{
         const selectedCommit = props.commit;
-        if(!props.file || !selectedCommit){
-            changeUtils.ClearView();
-            return;
-        }
-        
-        if(props.file.changeType !== EnumChangeType.DELETED){
-            IpcUtils.getFileContentAtSpecificCommit(selectedCommit.hash, props.file.path).then(res=>{
+
+        if(file.changeType !== EnumChangeType.DELETED){
+            IpcUtils.getFileContentAtSpecificCommit(selectedCommit.hash, file.path).then(res=>{
                 const content = res.result || "";
                 const lines = StringUtils.getLines(content);
-                if(props.file?.changeType === EnumChangeType.MODIFIED){
-                    const options =  [selectedCommit.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",props.file.path];            
+                if(file?.changeType === EnumChangeType.MODIFIED){
+                    const options =  [selectedCommit.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",file.path];            
                     IpcUtils.getGitShowResult(options).then(res=>{
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
                         changeUtils.currentLines = lineConfigs.currentLines;
@@ -59,7 +62,7 @@ function CommitDiffViewComponent(props:IProps){
             })
         }
         else{            
-            IpcUtils.getGitShowResult([`${selectedCommit.hash}^:${props.file.path}`]).then(content=>{                
+            IpcUtils.getGitShowResult([`${selectedCommit.hash}^:${file.path}`]).then(content=>{                
                 const lines = StringUtils.getLines(content);                
                 const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                 changeUtils.currentLines = null!;
@@ -68,7 +71,49 @@ function CommitDiffViewComponent(props:IProps){
                 resetStepNavigation();
             })            
         }
-        
+    }
+
+    const showPreview=(file:IFile)=>{
+        const selectedCommit = props.commit;
+        if(file.changeType !== EnumChangeType.DELETED){
+            GitUtils.getFileProps(file.path,selectedCommit.hash).then(filePropsCurrent=>{                                 
+                if(file?.changeType === EnumChangeType.MODIFIED){
+                    GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
+                        changeUtils.showPreview(filePropsPrevs,filePropsCurrent);
+                        hideStepNavigation();
+                    })
+                }
+                else{                    
+                    changeUtils.showPreview(null!,filePropsCurrent);
+                    hideStepNavigation();
+                }
+                
+            })
+        }
+        else{
+            GitUtils.getFileProps(file.path,selectedCommit.hash+"~1").then(filePropsPrevs=>{                        
+                changeUtils.showPreview(filePropsPrevs);
+                hideStepNavigation();
+            })                      
+        }
+
+    }
+
+    useEffect(()=>{
+        const selectedCommit = props.commit;
+        if(!props.file || !selectedCommit){
+            changeUtils.ClearView();
+            return;
+        }
+
+        IpcUtils.isBinaryFile(props.file.path).then(r=>{
+            console.log('isBinary',r);
+            if(r.result){                
+                showPreview(props.file!);
+            }else{
+                showDiff(props.file!);
+            }
+        });                
     },[props.file])
 
     useEffect(()=>{
@@ -96,6 +141,7 @@ function CommitDiffViewComponent(props:IProps){
     return <div className="h-100 w-100">
         <CommitDiffNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
             handleNext={handleNext} handlePrevious={handlePrevious} file={props.file!} />
+
         <div id={props.containerId} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>

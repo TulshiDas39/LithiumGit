@@ -1,6 +1,6 @@
 import { Form, Modal } from "react-bootstrap";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { RepoUtils, EnumModals, useMultiState, Data } from "../../lib";
+import { RepoUtils, EnumModals, useMultiState, Data, useEscape } from "../../lib";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionModals, ActionSavedData } from "../../store";
 import React, { useEffect, useMemo, useRef } from "react";
@@ -18,6 +18,7 @@ interface IState{
     options:string[];
     isSelected:boolean;
     inputFocused:boolean;
+    force:boolean;
 }
 
 function PushToModalComponent(){
@@ -25,6 +26,9 @@ function PushToModalComponent(){
         show:state.modal.openedModals.includes(EnumModals.PUSH_TO),        
     }),shallowEqual);
 
+    const clearState = ()=>{
+        setState({branch:"",force:false});
+    }
     const annotations = useMemo(()=>{
         if(!store.show)
             return [];
@@ -37,6 +41,7 @@ function PushToModalComponent(){
         options:[],
         isSelected:false,
         inputFocused:true,
+        force:false,
     });
 
     const dispatch = useDispatch();
@@ -45,12 +50,9 @@ function PushToModalComponent(){
 
     const closeModal=()=>{
         dispatch(ActionModals.hideModal(EnumModals.PUSH_TO));
-        clearState();
     }
-
-    const clearState = ()=>{
-        setState({branch:""});
-    }
+    
+    useEscape(store.show,closeModal);
 
     const updateAnnotation=()=>{
         if(annotations.some(_=> _.value == state.branch))
@@ -72,6 +74,9 @@ function PushToModalComponent(){
             return ;
         const originName = RepoUtils.activeOriginName;
         const options = [originName,state.branch];
+        if(state.force){
+            options.push("--force");
+        }
         const loader :ILoaderInfo = {text:Messages.push,id:StringUtils.uuidv4()};
         dispatch(ActionUI.setLoader(loader));
         IpcUtils.trigerPush(options).then((r)=>{
@@ -97,8 +102,10 @@ function PushToModalComponent(){
     }
 
     useEffect(()=>{
-        if(!store.show)
+        if(!store.show){
+            clearState();
             return ;
+        }
         const pushToBranch = RepoUtils.repositoryDetails.repoInfo.pushToBranch || "";        
         setState({options:[],isSelected:!!pushToBranch,branch:pushToBranch});        
     },[store.show])
@@ -154,6 +161,10 @@ function PushToModalComponent(){
                         }                        
                     </div>                    
                 </div>
+            </div>
+            <div className="d-flex justify-content-center pt-2">
+                <Form.Check id="force_push" checked={state.force} type="checkbox" onChange={e=> setState({force:e.target.checked})} />
+                <Form.Label htmlFor="force_push" className="ps-2">Force push</Form.Label>
             </div>
             <div className="row g-0">
                 <div className="col-12 pt-2 text-break overflow-auto d-flex align-items-center justify-content-center" style={{maxWidth:600,maxHeight:500}}>

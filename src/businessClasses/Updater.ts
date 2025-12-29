@@ -98,7 +98,8 @@ export class Updater{
    private handleCheckForUpdate(){
     ipcMain.handle(RendererEvents.checkForUpdate, async (_e)=>{
       if(AppUtility.getPlatform() === EnumPlatform.WINDOWS){
-        await this.checkForUpdate();
+        //prevent update check on windows as microsoft store handles the updates.
+        //await this.checkForUpdate();
       }else{
         await this.checkForUpdateManually();
       }

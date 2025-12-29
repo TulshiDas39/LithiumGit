@@ -8,6 +8,7 @@ import { CheckoutBranchModal } from "./CheckoutBranchModal";
 import { AppToast } from "./AppToast";
 import { CommitContextModal } from "./commitContext";
 import { ContextModal } from "./ContextModal";
+import { AboutLithiumGitModal } from "./AboutLithiumGitModal";
 
 function ModalsComponent(){
     return(
@@ -21,6 +22,7 @@ function ModalsComponent(){
             <PullFromModal />
             <CheckoutBranchModal />
             <AppToast />
+            <AboutLithiumGitModal />
         </Fragment>
     )
 }
