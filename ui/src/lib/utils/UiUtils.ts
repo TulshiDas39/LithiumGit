@@ -1,6 +1,7 @@
 import { EnumChangeType, ICommitInfo } from "common_library";
 import { IPositionDiff, IPositition } from "../interfaces";
 import * as ReactDOMServer from 'react-dom/server';
+import { JSX } from "react";
 
 
 export class UiUtils {
