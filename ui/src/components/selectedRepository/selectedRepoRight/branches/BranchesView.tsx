@@ -28,7 +28,7 @@ function BranchesViewComponent() {
 
     const bottomHeightRef = useRef(200);
     const positionRef = useRef(0);
-    const graphViewRef = useRef<HTMLDivElement>();
+    const graphViewRef = useRef<HTMLDivElement>(null);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
     const prevBottomHeightRef = useRef(bottomHeightRef.current);

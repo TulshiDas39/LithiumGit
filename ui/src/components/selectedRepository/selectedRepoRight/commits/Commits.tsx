@@ -65,7 +65,7 @@ function CommitsComponent(props:IProps){
     const bottomHeightRef = useRef(200);
     const prevBottomHeightRef = useRef(bottomHeightRef.current);
     const positionRef = useRef(0);
-    const commitListRef = useRef<HTMLDivElement>();
+    const commitListRef = useRef<HTMLDivElement>(null);
     
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
     console.log("rendering.");
