@@ -14,7 +14,7 @@
     "build_common_library": "cd common_library && npm run build",
     "copy_files": "copyfiles -u 2 \"ui/build/**/*\" dist/ui",
     "build_all": "npm run build_ui && npm run copy_files && npm run genereate_build_info && npm run build",
-    "package": "set NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build",
+    "package": "npm run build_all && electron-builder build",
     "package-linux": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --linux",
     "package-mac": "export NODE_OPTIONS=--openssl-legacy-provider && npm run build_all && electron-builder build --mac"
   },

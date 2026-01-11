@@ -1,8 +1,6 @@
 import React, { useMemo, useRef } from 'react';
-import { Route, Routes } from 'react-router-dom';
 import './layout.scss'
 import { Main } from '../main/Main';
-import { UiRoutes } from '../../lib/UiRoutes';
 import { TopNav } from '../navs/TopNav';
 import { Modals } from '../modals';
 import { FooterNav } from '../navs/FooterNav';
@@ -33,9 +31,7 @@ function LayoutComponent(props:ILayoutProps) {
                     <TopNav />
                 </div>
                 <div className="" style={{height:`90%`}}>
-                    <Routes>
-                        <Route path={UiRoutes.Root} element={<Main />} />
-                    </Routes>
+                    <Main />                    
                 </div>
                 <div style={{height:`3%`}}>
                     <FooterNav />
