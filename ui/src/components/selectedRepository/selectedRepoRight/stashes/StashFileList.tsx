@@ -27,7 +27,7 @@ function StashFileListComponent(props:IProps){
                                  <span className="ps-1">{f.addCount || 0}</span>
                             </span>
                             <span className="px-1">
-                                 {<FaMinusCircle className="text-danger small"/>}
+                                <FaMinusCircle className="text-danger small"/>
                                 <span className="ps-1">{f.deleteCount || 0}</span>
                             </span>
                             {/* <span className="ps-1">{f.path}</span> */}
