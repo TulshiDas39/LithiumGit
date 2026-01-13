@@ -1,0 +1,291 @@
+# LithiumGit - Parent Prompt
+
+## Project Overview
+LithiumGit is a cross-platform desktop Git GUI application built with Electron, React, and TypeScript. It provides an advanced, user-friendly interface for managing Git repositories with features like interactive graph visualization, conflict resolution, stash management, and comprehensive Git operations.
+
+**Version:** 1.0.8  
+**Author:** Tulshi Chandra Das <tulshidas37@gmail.com>  
+**License:** MIT  
+**Repository:** https://github.com/tulshidas39/lithiumgit
+
+## Technology Stack
+
+### Main Process (Electron - Backend)
+- **Runtime:** Electron 39.2.7
+- **Language:** TypeScript 5.9.3
+- **Git Operations:** simple-git 3.30.0
+- **Database:** NeDB 1.8.0 (embedded NoSQL database)
+- **File Operations:** fs-extra 11.3.3
+- **Updates:** electron-updater 6.7.3
+- **HTTP Client:** axios 1.13.2
+- **Encoding Detection:** chardet 2.1.1, detect-file-encoding-and-language 2.4.0
+
+### Renderer Process (React - Frontend)
+- **Framework:** React 19.2.3
+- **Language:** TypeScript 4.9.5
+- **Build Tool:** react-scripts 5.0.1 (Create React App)
+- **State Management:** Redux Toolkit 2.11.2, React Redux 9.2.0
+- **UI Framework:** React Bootstrap 2.10.10, Bootstrap 5.3.8
+- **Styling:** SASS 1.97.2
+- **Icons:** react-icons 5.4.0
+- **Date Picker:** react-datepicker 9.1.0
+- **Select Component:** react-select 5.10.2
+- **Loading Indicators:** react-spinners 0.17.0
+- **Storage:** localforage 1.10.0
+- **Date Utilities:** moment 2.30.1
+
+### Common Library
+- Shared TypeScript library containing:
+  - Constants (MainEvents, RendererEvents)
+  - Enums (EnumChangeType, EnumTheme, EnumConflictSide, EnumAnnotationType, EnumNotificationType, EnumChangeGroup)
+  - Models (IFile, IActionTaken, IAppInfo, IConfigInfo, etc.)
+  - Schemas
+  - Utilities (StringUtils, etc.)
+
+## Project Architecture
+
+### Multi-Module Structure
+The project is organized into three main modules:
+
+1. **Root Module** (`/`) - Main Electron process
+2. **UI Module** (`/ui`) - React renderer process
+3. **Common Library** (`/common_library`) - Shared code between main and renderer
+
+### Main Process Structure (`/src`)
+```
+src/
+├── main.ts                    # Entry point
+├── Startup.ts                 # Application initialization
+├── config.ts                  # Configuration management
+├── preload.ts                 # Preload script for IPC bridge
+├── buildInfo.ts               # Build information
+├── businessClasses/           # Business logic layer
+│   ├── GitManager.ts          # Git operations (commit, branch, merge, etc.)
+│   ├── FileManager.ts         # File system operations
+│   ├── DataManager.ts         # Data management and IPC handlers
+│   ├── ConflictResolver.ts    # Git conflict resolution
+│   ├── CommitParser.ts        # Parse Git commit data
+│   ├── ShellManager.ts        # Execute shell commands
+│   ├── Updater.ts             # Auto-update functionality
+│   ├── AppUtility.ts          # General utilities
+│   └── Interceptor.ts         # Request/response interception
+├── dataClasses/               # Data models
+│   ├── AppData.ts             # Application-wide data
+│   ├── SavedData.ts           # Persistent data management
+│   └── LogFields.ts           # Logging structures
+├── db_service/                # Database layer
+│   ├── db_service.ts          # Database service aggregator
+│   ├── BaseDB.ts              # Base database class
+│   ├── RepositoryDB.ts        # Repository data storage
+│   ├── ConfigDB.ts            # Configuration storage
+│   ├── AnnotationDB.ts        # Annotation storage
+│   └── NotificationDB.ts      # Notification storage
+└── types/                     # TypeScript type definitions
+    ├── global.d.ts
+    ├── interfaces.ts
+    └── enums/
+```
+
+### Renderer Process Structure (`/ui/src`)
+```
+ui/src/
+├── index.tsx                  # React entry point
+├── App.tsx                    # Root React component
+├── styles.scss                # Global styles
+├── components/                # React components
+│   ├── layouts/               # Layout components
+│   │   └── layout.tsx         # Main layout wrapper
+│   ├── navs/                  # Navigation components
+│   │   ├── TopNav.tsx         # Top navigation bar
+│   │   └── FooterNav.tsx      # Footer navigation
+│   ├── main/                  # Main content components
+│   │   └── Main.tsx
+│   ├── modals/                # Modal dialogs
+│   │   ├── index.ts
+│   │   └── ModalData.ts
+│   ├── repositorySelection/   # Repository selection UI
+│   ├── selectedRepository/    # Repository details view
+│   │   └── selectedRepoRight/
+│   │       └── stashes/
+│   │           └── StashFileList.tsx
+│   └── common/                # Reusable components
+├── store/                     # Redux state management
+│   ├── index.ts
+│   └── slices/
+│       └── UiSlice.ts
+└── lib/                       # Utility libraries
+    ├── constants/
+    │   └── UiConstants.ts
+    ├── utils/
+    │   ├── IpcUtils.ts        # IPC communication utilities
+    │   └── UiUtils.ts
+    ├── GraphUtils.ts          # Graph visualization utilities
+    ├── ReduxUtils.ts
+    └── EnumModals.ts
+```
+
+## Key Features & Functionality
+
+### Git Operations (GitManager)
+- Clone repositories
+- Commit changes (with staging)
+- Branch management (create, delete, checkout, rename)
+- Merge operations
+- Cherry-pick commits
+- Rebase operations
+- Stash management (create, apply, pop, drop)
+- Tag management
+- Push/Pull/Fetch operations
+- Conflict resolution
+- Diff viewing
+- Commit history with graph visualization
+
+### File Management (FileManager)
+- File system operations
+- File encoding detection
+- Text/binary file detection
+- File diff generation
+- Change tracking
+
+### Data Persistence (DB Service)
+- Stores recent repositories
+- Configuration settings (theme, update checks)
+- Annotations
+- Notifications
+- Uses NeDB (embedded NoSQL database)
+
+### UI Features
+- **Graph View:** Interactive commit graph visualization
+- **File List View:** Staged/unstaged changes with add/delete counts
+- **Diff View:** Side-by-side or unified diff display
+- **Conflict Resolution:** Visual conflict resolution tools
+- **Stash Management:** View and manage stashes with file lists
+- **Theme Support:** Dark/Light themes
+- **Auto-updates:** Electron-updater integration
+
+### IPC Communication
+- Main process exposes events via `MainEvents`
+- Renderer listens via `RendererEvents`
+- Preload script provides secure IPC bridge
+- Error handling with `showError` modal
+
+## Build & Development
+
+### Development Scripts
+```bash
+# Install dependencies
+npm install
+cd ui && npm install
+cd ../common_library && npm install
+
+# Start development
+npm run watch          # Watch TypeScript compilation
+cd ui && npm start     # Start React dev server
+npm start              # Start Electron
+
+# Build
+npm run build_common_library  # Build common library
+npm run build_ui              # Build React app
+npm run build                 # Build Electron main process
+npm run build_all             # Build everything
+
+# Package
+npm run package        # Package for current platform
+npm run package-linux  # Package for Linux
+npm run package-mac    # Package for macOS
+```
+
+### Important Configuration
+- **UI Port:** Configured in `config.ts` (default: 54533 for dev)
+- **Environment:** Development uses `NODE_ENV=development`
+- **Homepage:** Set to `"./"` for Electron compatibility
+- **Build Output:** `release/build/`
+- **Distribution:** Windows (NSIS), macOS (DMG), Linux (AppImage, DEB)
+
+## Code Patterns & Best Practices
+
+### TypeScript
+- Strict mode enabled
+- Interfaces for all data structures (prefixed with `I`)
+- Enums for constants (prefixed with `Enum`)
+- Type safety throughout
+
+### React
+- **React 19** with new JSX transform (`react-jsx`)
+- Functional components with hooks
+- `React.memo()` for performance optimization
+- Redux Toolkit for state management
+- Custom hooks pattern (e.g., `useMultiState`)
+
+### IPC Communication
+```typescript
+// Main Process
+window.ipcRenderer.send(MainEvents.someEvent, data);
+
+// Renderer Process
+window.ipcRenderer.on(RendererEvents.someEvent, (e, data) => {
+  // Handle event
+});
+```
+
+### Database Operations
+```typescript
+// CRUD operations via DB service
+await DB.repository.getAll();
+await DB.config.updateOneAsync(record);
+await DB.annotation.insertAndRemainOneAsync(record);
+```
+
+### Error Handling
+- Global exception handler in Startup.ts
+- Errors sent to renderer via IPC
+- Modal dialogs for user-facing errors
+
+## Platform Support
+- **Windows:** NSIS installer (`.exe`)
+- **macOS:** DMG installer (ARM64 & x64)
+- **Linux:** AppImage & Debian packages (x64)
+
+## Update Mechanism
+- Auto-update via electron-updater
+- GitHub releases as update source
+- Check for updates tracked in ConfigDB
+- Repository: tulshidas39/lithiumgit
+
+## Important Notes for AI Assistants
+
+1. **React Router v6:** Use `<Routes>` instead of `<Switch>`, and `element` prop instead of `render` or `component`
+2. **React 19:** Use `createRoot` from `react-dom/client`, not `ReactDOM.render`
+3. **Icon Imports:** Use `react-icons/fa6` for Font Awesome icons with React 19+
+4. **File Editing:** Always read files before editing to understand context
+5. **IPC Safety:** All IPC communication goes through preload script
+6. **Database:** NeDB is synchronous-style but returns promises
+7. **Common Library:** Shared types must be compiled before use in main/renderer
+8. **Build Process:** UI must be built and copied to `dist/ui` before packaging
+9. **Path Handling:** Use absolute paths in Electron, relative in React
+10. **Git Operations:** All Git operations are asynchronous via simple-git
+
+## Common Issues & Solutions
+
+1. **"Property 'render' does not exist"** - Upgrade to React 18+ createRoot API
+2. **"Module has no exported member 'Switch'"** - Use `Routes` (React Router v6)
+3. **"cannot be used as a JSX component"** - Type mismatch, check React/TypeScript versions
+4. **"No routes matched location"** - Add catch-all route or check basename
+5. **Network errors during install** - DNS/firewall issues, check internet connection
+
+## Security Considerations
+- `nodeIntegration` disabled
+- `contextIsolation` enabled (via preload)
+- IPC communication through secure bridge
+- No direct Node.js access from renderer
+
+## Performance Optimizations
+- React.memo for expensive components
+- Lazy loading for routes/modals
+- Incremental TypeScript compilation
+- Production builds minified and optimized
+
+---
+
+**Last Updated:** January 2026  
+**For Questions:** Open issues on GitHub or contact tulshidas37@gmail.com
