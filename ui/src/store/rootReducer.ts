@@ -1,5 +1,5 @@
 import { combineReducers } from '@reduxjs/toolkit';
-import {createSelectorHook} from 'react-redux';
+import {createSelectorHook, TypedUseSelectorHook} from 'react-redux';
 import { ReducerChanges, ReducerClone, ReducerConflict, ReducerModals, ReducerSavedData } from './slices';
 import { ReducerUI } from './slices/UiSlice';
 const AppReducer = combineReducers({
@@ -25,4 +25,4 @@ export const RootReducer: (...param: Parameters<typeof AppReducer>) => ReturnTyp
 export type ReduxState= ReturnType<typeof AppReducer>;
 
 
-export const useSelectorTyped = createSelectorHook<ReduxState>();
+export const useSelectorTyped = createSelectorHook() as TypedUseSelectorHook<ReduxState>;

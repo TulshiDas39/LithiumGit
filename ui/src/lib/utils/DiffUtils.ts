@@ -1,5 +1,4 @@
 import { ILine } from "../interfaces";
-import { DeltaStatic,DeltaOperation ,Quill} from "quill";
 import { EnumCustomBlots } from "../enums";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
@@ -335,44 +334,6 @@ export class DiffUtils{
     //     return delta;        
     // }
 
-    static getDeltaForLineNumber(lines:ILine[]){
-        const operations:DeltaOperation[]=[];
-
-        let lineNumber = 1;
-        for(let i=0;i<lines.length;i++){
-            let line = lines[i];
-            if(line.text !== undefined){
-                operations.push({insert:`${lineNumber}\n`});
-                lineNumber++;
-            }
-            else
-                operations.push({insert:"\n"});
-        }
-
-        const delta = {
-            ops:operations,
-        } as DeltaStatic;
-        
-        return delta;
-    }
-
-    static formatLinesBackground(quill:Quill,lines:ILine[],format:EnumCustomBlots){                
-        let index = 0;
-        for(let i = 0;i<lines.length;i++){
-            let line = lines[i];            
-            if(line.hightLightBackground)
-                quill?.formatLine(index,line?.text?.length??0,format,true,"silent");
-
-            else if(line.text === undefined){
-                quill?.formatLine(index,0,EnumCustomBlots.TransparentBackground,true,"silent");
-            }
-            if(line.text !== undefined){
-                index = index + line.text.length+1 
-            }
-            else
-            index += 1;
-        }              
-    }
 
     static getCoparableLineNumbers(currentLines:ILine[]){
         const lineNumbers:number[] = [];
