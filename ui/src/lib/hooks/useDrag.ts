@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 
 
 export function useDrag(){
-    const elementRef = useRef<HTMLElement>();
-    const initialMousePosition = useRef<{x:number;y:number;}>();
+    const elementRef = useRef<HTMLElement>(null);
+    const initialMousePosition = useRef<{x:number;y:number;}>(null);
     const [currentMousePosition,setCurrentMousePosition] = useState<{x:number,y:number}>();
 
     useEffect(()=>{

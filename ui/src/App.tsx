@@ -1,7 +1,6 @@
 import { MainEvents, RendererEvents } from 'common_library';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
 import { Layout } from './components/layouts/layout';
 import { EnumModals, ReduxUtils, useMultiState } from './lib';
 import { UiConstants } from './lib/constants';
@@ -43,9 +42,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-        <Layout height={UiConstants.screenHeight} />
-    </BrowserRouter>
+      <Layout height={UiConstants.screenHeight} />
   );
 }
 

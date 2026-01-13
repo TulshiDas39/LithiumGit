@@ -48,7 +48,7 @@ function ConflictedChangesComponent(props:IProps){
     const [state,setState] = useMultiState<IState>({});
     const dispatch = useDispatch();
 
-    const headerRef = useRef<HTMLDivElement>();
+    const headerRef = useRef<HTMLDivElement>(null);
     const refData = useRef({fileContentAfterChange:[] as string[]});
 
     useEffect(()=>{

@@ -46,7 +46,7 @@ function CommitBoxComponent(){
     },[])
 
     const refData = useRef({onHoverStash:false});
-    const ref = useRef<HTMLDivElement>();
+    const ref = useRef<HTMLDivElement>(null);
 
     const [state,setState]= useMultiState<IState>({
         value:"",

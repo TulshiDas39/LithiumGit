@@ -21,8 +21,3 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.eslintcache
-node_modules/
-dist
-release/
-package-lock.json

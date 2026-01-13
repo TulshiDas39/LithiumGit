@@ -1,12 +1,9 @@
 import React, { useMemo, useRef } from 'react';
-import { Route, Switch } from 'react-router-dom';
 import './layout.scss'
 import { Main } from '../main/Main';
-import { UiRoutes } from '../../lib/UiRoutes';
 import { TopNav } from '../navs/TopNav';
 import { Modals } from '../modals';
 import { FooterNav } from '../navs/FooterNav';
-import { IDimension } from '../../lib';
 
 interface ILayoutProps{
     height:number
@@ -34,9 +31,7 @@ function LayoutComponent(props:ILayoutProps) {
                     <TopNav />
                 </div>
                 <div className="" style={{height:`90%`}}>
-                    <Switch>
-                        <Route path={UiRoutes.Root} render={()=><Main />} />
-                    </Switch>
+                    <Main />                    
                 </div>
                 <div style={{height:`3%`}}>
                     <FooterNav />
