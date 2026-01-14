@@ -16,7 +16,6 @@
     "bootstrap": "^5.3.8",
     "common_library": "file:../common_library",
     "localforage": "^1.10.0",
-    "moment": "^2.30.1",
     "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-datepicker": "^9.1.0",

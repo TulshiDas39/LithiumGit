@@ -6,7 +6,7 @@ import { ActionModals } from "../../store";
 import { FaCopy, FaFingerprint, FaHandPointRight, FaTimes } from "react-icons/fa";
 import React from "react";
 import { ModalData } from "./ModalData";
-import moment from "moment";
+import {moment} from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 
 

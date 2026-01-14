@@ -1,6 +1,6 @@
 import { ICommitInfo } from "common_library";
 import { EnumSelectedRepoTab, GraphUtils, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
-import moment from "moment";
+import {moment} from "common_library";
 import React, { useRef } from "react";
 import { FaCircle, FaDotCircle, FaEllipsisV, FaHashtag, FaKey, FaKeybase, FaKeycdn, FaUser } from "react-icons/fa";
 import { ModalData } from "../../../modals/ModalData";

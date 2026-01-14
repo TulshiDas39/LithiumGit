@@ -1,5 +1,5 @@
 import { RendererEvents, RepositoryInfo } from "common_library";
-import moment from "moment";
+import {moment} from "common_library";
 import React from "react"
 import { Button } from "react-bootstrap";
 import { useDispatch } from "react-redux";

@@ -1,5 +1,5 @@
 import { IStash } from "common_library";
-import moment from "moment";
+import {moment} from "common_library";
 import React, { useMemo } from "react"
 import { InputText } from "../../../common";
 

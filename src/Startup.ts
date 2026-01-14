@@ -115,8 +115,8 @@ export class Startup{
         mainWindow.maximize();                
         mainWindow.show();
         
-        // if(Config.env === Env.DEVELOPMENT)
-        //   mainWindow.webContents.openDevTools();
+        if(Config.env === Env.DEVELOPMENT)
+          mainWindow.webContents.openDevTools();
     }
 
     private handleReadyState(){
