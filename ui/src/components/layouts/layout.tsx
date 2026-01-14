@@ -4,7 +4,6 @@ import { Main } from '../main/Main';
 import { TopNav } from '../navs/TopNav';
 import { Modals } from '../modals';
 import { FooterNav } from '../navs/FooterNav';
-import { Loader } from '../Loader'; // import your loader
 
 interface ILayoutProps{
     height:number
@@ -23,15 +22,7 @@ function LayoutComponent(props:ILayoutProps) {
         const height = props.height * (data.current.bottomNavHeightPercent/100);
         if(height > 20) return 20;
         return height;
-    },[props.height])
-
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        // Simulate loading, replace with real logic if needed
-        const timer = setTimeout(() => setLoading(false), 1200);
-        return () => clearTimeout(timer);
-    }, []);
+    },[props.height])    
 
     return (
         <div className="h-100" style={{height:props.height+"px", position: "relative"}}>
