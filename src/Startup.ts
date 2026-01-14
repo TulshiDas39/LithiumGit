@@ -102,9 +102,9 @@ export class Startup{
             contextIsolation:false,
           },
           width: 800,
-          icon: path.join(__dirname, 'icons/256x256.png')
+          icon: path.join(__dirname, 'icons/256x256.png'),
+          show: false,          
         });
-        mainWindow.maximize();
         AppData.mainWindow = mainWindow;
         if(Config.env === Env.DEVELOPMENT)          
           mainWindow.loadURL(`http://localhost:${this.uiPort}`);
@@ -112,9 +112,11 @@ export class Startup{
           const htmlFile =   path.resolve(__dirname,"ui", 'index.html');
           mainWindow.loadFile(htmlFile);
         }
+        mainWindow.maximize();                
+        mainWindow.show();
         
-        if(Config.env === Env.DEVELOPMENT)
-          mainWindow.webContents.openDevTools();
+        // if(Config.env === Env.DEVELOPMENT)
+        //   mainWindow.webContents.openDevTools();
     }
 
     private handleReadyState(){

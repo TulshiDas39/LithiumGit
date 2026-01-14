@@ -10,9 +10,11 @@ import { ReduxStore } from './store';
 import { GraphUtils } from './lib';
 
 export {}
-GraphUtils.init();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+
+GraphUtils.init();
+root.render(
   <React.StrictMode>
     <Provider store={ReduxStore}>
       <App />

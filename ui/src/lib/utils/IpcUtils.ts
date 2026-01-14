@@ -367,5 +367,9 @@ export class IpcUtils{
     static getFileProps(path:string){
         return IpcUtils.execute<IFileProps>(RendererEvents.getFileProps,[path]);
     }
+
+    static displayApp(){
+        return IpcUtils.execute<boolean>(RendererEvents.displayApp,[]);
+    }
         
 }

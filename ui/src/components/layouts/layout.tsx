@@ -1,9 +1,10 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import './layout.scss'
 import { Main } from '../main/Main';
 import { TopNav } from '../navs/TopNav';
 import { Modals } from '../modals';
 import { FooterNav } from '../navs/FooterNav';
+import { Loader } from '../Loader'; // import your loader
 
 interface ILayoutProps{
     height:number
@@ -24,8 +25,17 @@ function LayoutComponent(props:ILayoutProps) {
         return height;
     },[props.height])
 
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Simulate loading, replace with real logic if needed
+        const timer = setTimeout(() => setLoading(false), 1200);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
-        <div className="h-100" style={{height:props.height+"px"}}>
+        <div className="h-100" style={{height:props.height+"px", position: "relative"}}>
+            {/* {loading && <Loader />} */}
             <div id="layout" className="d-flex flex-column overflow-auto h-100">
                 <div className="d-flex" style={{height:`7%`}}>
                     <TopNav />

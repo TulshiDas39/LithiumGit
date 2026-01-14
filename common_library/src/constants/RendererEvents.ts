@@ -301,5 +301,6 @@ export class RendererEvents{
     static readonly writeToFile = "writeToFile";    
     static readonly isBinary = "isBinary";
     static readonly getFileProps = "getFileProps";
+    static readonly displayApp = "displayApp";
 }
 
