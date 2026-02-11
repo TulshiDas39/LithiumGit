@@ -174,7 +174,7 @@ export class IpcUtils{
     }
 
     static discardItems(paths:string[],repoInfo:RepositoryInfo){
-        return window.ipcRenderer.invoke(RendererEvents.discardItem().channel,paths,repoInfo);
+        return IpcUtils.runGitCommand(RendererEvents.discardItem().channel,[paths]);        
     }
 
     static cleanItems(paths:string[],repoInfo:RepositoryInfo){

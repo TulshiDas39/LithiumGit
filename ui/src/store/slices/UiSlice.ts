@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EnumNotificationType, INotification, IRemoteInfo, IStatus } from "common_library";
+import { EnumChangeType, EnumNotificationType, IFile, INotification, IRemoteInfo, IStatus } from "common_library";
 import { EnumConfigTab, EnumSelectedRepoTab, IUiNotification } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -152,6 +152,32 @@ const UISlice = createSlice({
             if(notification){
                 notification.isActive = false;
             }
+        },
+        stageAll(state){
+            state.status!.staged = [...state.status!.staged,...state.status!.unstaged];
+            state.status!.unstaged = [];
+        },
+        stageItem(state,action:PayloadAction<string>){       
+            const file = state.status!.unstaged.find(x=> x.path === action.payload);   
+            if(!file) return;             
+            state.status!.staged = [...state.status!.staged, file];
+            state.status!.unstaged = state.status!.unstaged.filter(x=> x.path !== action.payload);
+        },
+        unstageAll(state){
+            state.status!.unstaged = [...state.status!.unstaged,...state.status!.staged];
+            state.status!.staged = [];
+        },
+        unstageItem(state,action:PayloadAction<string>){
+            const file = state.status!.staged.find(x=> x.path === action.payload);
+            if(!file) return;
+            state.status!.unstaged = [...state.status!.unstaged, file];
+            state.status!.staged = state.status!.staged.filter(x=> x.path !== action.payload);
+        },
+        discardAllModifiedChanges(state){
+            state.status!.unstaged = [];            
+        },
+        discardModifiedItem(state,action:PayloadAction<string>){
+            state.status!.unstaged = state.status!.unstaged.filter(x=> x.path !== action.payload);
         }
     }
 });

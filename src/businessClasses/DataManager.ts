@@ -56,8 +56,7 @@ export class DataManager{
                 website:"https://lithiumgit.com",
                 repository:"https://github.com/tulshidas39/lithiumgit",
                 issueTracker:"https://github.com/tulshidas39/lithiumgit/issues"
-            };
-            console.log("app version",info.version);
+            };            
             event.returnValue = info;
         });
     }

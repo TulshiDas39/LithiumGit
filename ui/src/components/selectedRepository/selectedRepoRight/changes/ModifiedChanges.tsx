@@ -9,6 +9,7 @@ import { ActionChanges, ActionModals } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -38,6 +39,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
+        dispatch(ActionUI.stageItem(file.path));
         IpcUtils.stageItems([file.path]).then(_=>{
             GitUtils.getStatus();
         });
@@ -45,6 +47,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
+        dispatch(ActionUI.stageAll());
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
             GitUtils.getStatus();
         });        
@@ -56,6 +59,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(item.changeType === EnumChangeType.CREATED){
             text = `Delete ${item.fileName}?`;
             yesHandler= ()=>{
+                dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
                 });
@@ -64,6 +68,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         else if(item.changeType === EnumChangeType.MODIFIED){
             text = `Discard the changes of ${item.fileName}?`;
             yesHandler = () =>{
+                dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
                 });
@@ -79,10 +84,15 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!props.changes?.length) return;        
         let text = "Discard all?";
         const yesHandler = ()=>{
-            IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
-                IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+            dispatch(ActionUI.discardAllModifiedChanges());
+            IpcUtils.discardItems(["."],props.repoInfoInfo!).then(r=>{
+                if(!r.error){
+                    IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+                        GitUtils.getStatus();
+                    });
+                }else{
                     GitUtils.getStatus();
-                });
+                }
             });
         }
         ModalData.confirmationModal.message = text;

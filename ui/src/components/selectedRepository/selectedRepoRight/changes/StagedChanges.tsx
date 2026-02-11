@@ -8,6 +8,7 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { ActionUI } from "../../../../store/slices/UiSlice";
 
 interface ISingleFileProps{
     item:IFile
@@ -69,6 +70,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleUnstageItem = (item:IFile)=>{
+        dispatch(ActionUI.unstageItem(item.path));
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
             GitUtils.getStatus();
         });
@@ -76,6 +78,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
+        dispatch(ActionUI.unstageAll());
         IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
             GitUtils.getStatus();
         });        
