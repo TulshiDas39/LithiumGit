@@ -35,6 +35,7 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
             ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionSavedData.removeRepositoryFromRecentList(item));
+                CacheUtils.clearRepoDetails(item.path);
             }
             dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         }
