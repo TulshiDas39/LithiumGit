@@ -39,6 +39,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
+        GitUtils.cancelGetStatus();
         dispatch(ActionUI.stageItem(file.path));
         IpcUtils.stageItems([file.path]).then(_=>{
             GitUtils.getStatus();
@@ -47,6 +48,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
+        GitUtils.cancelGetStatus();
         dispatch(ActionUI.stageAll());
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
             GitUtils.getStatus();
@@ -59,6 +61,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(item.changeType === EnumChangeType.CREATED){
             text = `Delete ${item.fileName}?`;
             yesHandler= ()=>{
+                GitUtils.cancelGetStatus();
                 dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
@@ -68,6 +71,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         else if(item.changeType === EnumChangeType.MODIFIED){
             text = `Discard the changes of ${item.fileName}?`;
             yesHandler = () =>{
+                GitUtils.cancelGetStatus();
                 dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
@@ -84,6 +88,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!props.changes?.length) return;        
         let text = "Discard all?";
         const yesHandler = ()=>{
+            GitUtils.cancelGetStatus();
             dispatch(ActionUI.discardAllModifiedChanges());
             IpcUtils.discardItems(["."],props.repoInfoInfo!).then(r=>{
                 if(!r.error){

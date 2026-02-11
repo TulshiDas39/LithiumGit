@@ -37,13 +37,13 @@ function CherryPickActionBoxComponent(){
 
         if(!store.stagedFiles.length){
             IpcUtils.doCommit([state.value],["--allow-empty"]).then(r=>{
-                IpcUtils.getRepoStatus();
+                GitUtils.getStatus();
             });
             return ;
         }
 
         IpcUtils.continueCherryPick().then(()=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });
     }
 

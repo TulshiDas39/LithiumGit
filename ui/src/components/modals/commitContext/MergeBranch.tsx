@@ -25,10 +25,10 @@ function MergeBranchComponent(props:IProps){
         IpcUtils.merge(options).then(()=>{
             GitUtils.getStatus().then((r)=>{
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-                if(r.conflicted?.length){
+                if(r.result?.conflicted?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
                 }
-                else if(r.staged?.length){
+                else if(r.result?.staged?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
                 }
             });
@@ -42,10 +42,10 @@ function MergeBranchComponent(props:IProps){
         IpcUtils.merge(options).then((r)=>{            
             GitUtils.getStatus().then(r=>{
                 dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
-                if(r.conflicted?.length){
+                if(r.result?.conflicted?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
                 }
-                else if(r.staged?.length){
+                else if(r.result?.staged?.length){
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.STAGED}));
                 }
             });

@@ -310,7 +310,7 @@ export class GitManager{
 
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const result = await this.notifyStatus(repoInfo);
+            const result = await this.getStatus(repoInfo); //await this.notifyStatus(repoInfo);
             return result;
         });
     }

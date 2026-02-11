@@ -22,7 +22,7 @@ function CherryPickComponent(props:IProps){
         const options = [Data.selectedCommit.hash];
         IpcUtils.cherryPick(options).then(r=>{
             GitUtils.getStatus().then(r=>{
-                if(r.conflicted?.length){
+                if(r.result?.conflicted?.length){
                     dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                     dispatch(ActionChanges.updateData({selectedTab:EnumChangeGroup.CONFLICTED}));
                 }

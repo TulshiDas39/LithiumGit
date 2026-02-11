@@ -70,6 +70,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleUnstageItem = (item:IFile)=>{
+        GitUtils.cancelGetStatus();
         dispatch(ActionUI.unstageItem(item.path));
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
             GitUtils.getStatus();
@@ -78,6 +79,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
+        GitUtils.cancelGetStatus();
         dispatch(ActionUI.unstageAll());
         IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
             GitUtils.getStatus();

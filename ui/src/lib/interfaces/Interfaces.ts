@@ -9,3 +9,8 @@ export interface IContextItem{
     onClick:()=>void;
     icon?:JSX.Element;
 }
+
+export interface IResult<T>{
+    result?: T;
+    error?: string;
+}
