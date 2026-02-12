@@ -109,7 +109,7 @@ function ChangesComponent() {
             {getActionBox()}
             <ChangesTabPane  />
         </div>
-        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
+        <div className="bg-second-color cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
 
         <div className="ps-2" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
