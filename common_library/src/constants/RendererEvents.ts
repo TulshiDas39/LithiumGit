@@ -302,5 +302,7 @@ export class RendererEvents{
     static readonly isBinary = "isBinary";
     static readonly getFileProps = "getFileProps";
     static readonly displayApp = "displayApp";
+    static readonly getLineFeedType = "getLineFeedType";
+    
 }
 

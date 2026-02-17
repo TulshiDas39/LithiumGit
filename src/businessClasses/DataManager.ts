@@ -3,6 +3,7 @@ import { app, ipcMain } from "electron";
 import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
 import { BUILD_INFO } from "../buildInfo";
+import { EOL } from "os";
 
 export class DataManager{
     start(){
@@ -25,6 +26,13 @@ export class DataManager{
         this.handleUpdateNotifications();
         this.handleAppInfoRequest();
         this.setCheckForUpdateTime();
+        this.handleGetLineFeedType();
+    }
+
+    private handleGetLineFeedType(){
+        ipcMain.on(RendererEvents.getLineFeedType, async(_e) => {
+            _e.returnValue = EOL;
+        });
     }
 
     private handleConfigUpdate(){
