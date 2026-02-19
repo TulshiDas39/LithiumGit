@@ -1,4 +1,4 @@
-import { Annotation } from "common_library";
+import { Annotation, EnumLinefeed } from "common_library";
 
 export class Data{
     static annotations:Annotation[] = [];
@@ -13,4 +13,6 @@ export class Data{
                 "Deleting repositories from recent list."
             ];
     }
+
+    static systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
 }

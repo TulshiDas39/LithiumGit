@@ -10,6 +10,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { TextEditor } from "../../../../lib/utils/TextEditor";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -29,7 +30,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false});
+    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new TextEditor("#"+EnumHtmlIds.diffview_container+" .current .content")});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -145,9 +146,10 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
+                            ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
                             ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
                             ChangesData.changeUtils.showChanges();
+                            refData.current.editor.renderILines(lineConfigs.currentLines);
                             res(true);                            
                         });
                     }

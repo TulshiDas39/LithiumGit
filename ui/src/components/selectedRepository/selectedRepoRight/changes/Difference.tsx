@@ -4,10 +4,11 @@ import { DiffView } from "./DiffView";
 interface IProps{
     linesBeforeChange:ILine[];
     linesAfterChange:ILine[];
+    id?:string;
 }
 
 export function Difference(props:IProps){
-    return <div className="d-flex w-100 h-100 difference" style={{overflowY:'hidden'}}>
+    return <div id={props.id} className="d-flex w-100 h-100 difference" style={{overflowY:'hidden'}}>
         {!!props.linesBeforeChange && <div className={`h-100 w-${!!props.linesAfterChange?"50":"100"} previous `}>
             <DiffView changeType="previous" lines={props.linesBeforeChange} />
         </div>}

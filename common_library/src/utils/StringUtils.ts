@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { EnumChangeType, EnumLinefeedType } from '../enums';
+import { EnumChangeType, EnumLinefeed } from '../enums';
 import { Constants } from '../constants';
 
 export class StringUtils{
@@ -160,9 +160,9 @@ export class StringUtils{
         const lf = (contentNoCRLF.match(/\n/g) || []).length;
         const cr = (contentNoCRLF.match(/\r/g) || []).length;
 
-        if (crlf === 0 && lf === 0 && cr === 0) return EnumLinefeedType.CRLF;
-        if (crlf >= lf && crlf >= cr) return EnumLinefeedType.CRLF;
-        if (lf >= crlf && lf >= cr) return EnumLinefeedType.LF;
-        return EnumLinefeedType.CR;
+        if (crlf === 0 && lf === 0 && cr === 0) return EnumLinefeed.CRLF;
+        if (crlf >= lf && crlf >= cr) return EnumLinefeed.CRLF;
+        if (lf >= crlf && lf >= cr) return EnumLinefeed.LF;
+        return EnumLinefeed.CR;
     }
 }

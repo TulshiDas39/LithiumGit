@@ -1,4 +1,4 @@
-import { Annotation, EnumLinefeedType, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, EnumLinefeed, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
@@ -373,7 +373,7 @@ export class IpcUtils{
     }
 
     static getLineFeedType(){
-        return IpcUtils.executeSync<EnumLinefeedType>(RendererEvents.getLineFeedType,[]);
+        return IpcUtils.executeSync<EnumLinefeed>(RendererEvents.getLineFeedType,[]);
     }
         
 }

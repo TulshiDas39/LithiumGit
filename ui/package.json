@@ -16,6 +16,8 @@
     "bootstrap": "^5.3.8",
     "common_library": "file:../common_library",
     "localforage": "^1.10.0",
+    "prosemirror-schema-basic": "^1.2.4",
+    "prosemirror-state": "^1.4.4",
     "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-datepicker": "^9.1.0",
