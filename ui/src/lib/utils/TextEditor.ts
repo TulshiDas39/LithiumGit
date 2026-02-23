@@ -3,7 +3,7 @@ import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
 import {schema} from "prosemirror-schema-basic"
-import {EditorState} from "prosemirror-state"
+import {EditorState, Transaction} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 
 export class TextEditor {
@@ -29,10 +29,19 @@ export class TextEditor {
         this.render();        
     }
 
+    private handleTransaction = (transaction: Transaction)=>{
+        console.log("Document size went from", transaction.before.content.size,
+                "to", transaction.doc.content.size);
+        let newState = this._editView.state.apply(transaction);
+        this._editView.updateState(newState)
+    }
 
     private render(){
         this._editState = EditorState.create({schema})
-        this._editView = new EditorView(document.querySelector(this._containerSelector)!, {state:this._editState});
+        this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
+            state:this._editState,
+            dispatchTransaction:this.handleTransaction
+        });
     } 
 
 }
