@@ -5,6 +5,10 @@ import { ILine } from "../interfaces";
 import {schema} from "prosemirror-schema-basic"
 import {EditorState, Transaction} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
+import {undo, redo, history} from "prosemirror-history"
+import {keymap} from "prosemirror-keymap"
+
+
 
 export class TextEditor {
     private _containerSelector:string = '';    
@@ -36,11 +40,20 @@ export class TextEditor {
         this._editView.updateState(newState)
     }
 
+    private getPlugins(){
+        return [history(),
+            keymap({
+                "Mod-z": undo,
+                "Mod-y": redo,              
+            })
+        ];
+    }
+
     private render(){
-        this._editState = EditorState.create({schema})
+        this._editState = EditorState.create({schema,plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
-            dispatchTransaction:this.handleTransaction
+            dispatchTransaction:this.handleTransaction,            
         });
     } 
 
