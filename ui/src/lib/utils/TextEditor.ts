@@ -70,7 +70,8 @@ export class TextEditor {
                 doc: { content: "paragraph+" },
                 paragraph: {
                     content: "text*",
-                    toDOM: () => ["p", 0] as any,
+                    whitespace: "pre",
+                    toDOM: () => ["p", { style: "white-space: pre-wrap" }, 0] as any,
                     parseDOM: [{ tag: "p" }],
                 },
                 text: { inline: true },
