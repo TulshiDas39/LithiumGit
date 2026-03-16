@@ -2,7 +2,7 @@ import { EnumLinefeed } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
-import {Schema} from "prosemirror-model"
+import {Schema, Node} from "prosemirror-model"
 import {EditorState, Transaction} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
@@ -20,9 +20,11 @@ export class TextEditor {
     private readonly _systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
     private _editState:EditorState = null!;
     private _editView:EditorView = null!;
+    private _schema:Schema= null!;
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
-        this._systemLineFeedType = Data.systemLineFeedType;       
+        this._systemLineFeedType = Data.systemLineFeedType;    
+        this._schema = this.getSchema();   
     }
 
     setContent(content:string){        
@@ -33,6 +35,16 @@ export class TextEditor {
     renderILines(lines:ILine[]){
         this._lines = lines.map(l=>l.text || '');
         this.render();        
+    }
+
+    private createDocument(){
+        const paragraphs:Node[] =  [];
+        for(let line of this._lines){
+            const p = this._schema.node('paragraph', null, line? [this._schema.text(line)]:[]);
+            paragraphs.push(p);
+        }
+        const doc = this._schema.node('doc', null, paragraphs);
+        return doc;
     }
 
     private handleTransaction = (transaction: Transaction)=>{
@@ -54,16 +66,21 @@ export class TextEditor {
 
     private getSchema(){
         return new Schema({
-        nodes: {
-            doc: {content: "paragraph+"},
-            paragraph: {content: "text*"},
-            text: {inline: true},            
-        }
-       });
+            nodes: {
+                doc: { content: "paragraph+" },
+                paragraph: {
+                    content: "text*",
+                    toDOM: () => ["p", 0] as any,
+                    parseDOM: [{ tag: "p" }],
+                },
+                text: { inline: true },
+            }
+        });
     }
 
     private render(){
-        this._editState = EditorState.create({schema:this.getSchema(),plugins:this.getPlugins()});
+        const doc = this.createDocument();        
+        this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,            
