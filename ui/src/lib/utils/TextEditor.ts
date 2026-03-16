@@ -2,7 +2,7 @@ import { EnumLinefeed } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
-import {schema} from "prosemirror-schema-basic"
+import {Schema} from "prosemirror-model"
 import {EditorState, Transaction} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
@@ -52,8 +52,18 @@ export class TextEditor {
         ];
     }
 
+    private getSchema(){
+        return new Schema({
+        nodes: {
+            doc: {content: "paragraph+"},
+            paragraph: {content: "text*"},
+            text: {inline: true},            
+        }
+       });
+    }
+
     private render(){
-        this._editState = EditorState.create({schema,plugins:this.getPlugins()});
+        this._editState = EditorState.create({schema:this.getSchema(),plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,            
