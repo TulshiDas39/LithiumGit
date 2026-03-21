@@ -79,6 +79,11 @@ export class TextEditor {
         ];
     }
 
+    private updateContainers=()=>{
+        const contentContainer = document.querySelector(this._containerSelector)!;
+        contentContainer.classList.add("h-100");
+    }
+
     private getSchema(){
         return new Schema({
             nodes: {
@@ -95,6 +100,7 @@ export class TextEditor {
     }
 
     private render(){
+        this.updateContainers();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
