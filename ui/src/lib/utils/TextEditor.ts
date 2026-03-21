@@ -3,8 +3,8 @@ import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
 import {Schema, Node} from "prosemirror-model"
-import {EditorState, Transaction, Command, Plugin} from "prosemirror-state"
-import {EditorView, Decoration, DecorationSet} from "prosemirror-view"
+import {EditorState, Transaction, Command} from "prosemirror-state"
+import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
@@ -49,34 +49,24 @@ export class TextEditor {
 
     private handleTransaction = (transaction: Transaction)=>{
         let newState = this._editView.state.apply(transaction);
-        this._editView.updateState(newState)
+        this._editView.updateState(newState);
+        if(transaction.docChanged){
+            this.renderLineNumbers(newState.doc.childCount);
+        }
+    }
+
+    private renderLineNumbers(lineCount: number){
+        const currentPanel = document.querySelector(this._containerSelector)?.closest(".current");
+        const lineNumbers = currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
+        if(!lineNumbers) return;
+        lineNumbers.style.width = `${String(lineCount).length + 2}ch`;
+        lineNumbers.innerHTML = Array.from({length: lineCount}, (_, i) => `<p>${i + 1}</p>`).join("");
     }
 
     private readonly insertTab: Command = (state, dispatch) => {
         dispatch?.(state.tr.insertText("\t"));
         return true;
     };
-
-    private lineNumberPlugin(){
-        return new Plugin({
-            props: {
-                decorations(state) {
-                    const decorations: Decoration[] = [];
-                    let lineNo = 1;
-                    state.doc.forEach((node, offset) => {
-                        if (node.type.name === "paragraph") {
-                            const widget = document.createElement("span");
-                            widget.className = "pm-line-number noselect";
-                            widget.setAttribute("contenteditable", "false");
-                            widget.textContent = String(lineNo++);
-                            decorations.push(Decoration.widget(offset + 1, widget, { side: -1 }));
-                        }
-                    });
-                    return DecorationSet.create(state.doc, decorations);
-                }
-            }
-        });
-    }
 
     private getPlugins(){
         return [history(),
@@ -86,7 +76,6 @@ export class TextEditor {
                 "Tab": this.insertTab,
             }),
             keymap(baseKeymap),
-            this.lineNumberPlugin(),
         ];
     }
 
@@ -112,6 +101,7 @@ export class TextEditor {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,            
         });
+        this.renderLineNumbers(this._editState.doc.childCount);
     } 
 
 }
