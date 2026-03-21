@@ -106,7 +106,8 @@ export class TextEditor {
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
-            dispatchTransaction:this.handleTransaction,            
+            dispatchTransaction:this.handleTransaction,
+            attributes: { spellcheck: "false" },
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
