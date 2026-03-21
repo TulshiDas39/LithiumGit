@@ -3,7 +3,7 @@ import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
 import {Schema, Node} from "prosemirror-model"
-import {EditorState, Transaction} from "prosemirror-state"
+import {EditorState, Transaction, Command} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
@@ -54,11 +54,17 @@ export class TextEditor {
         this._editView.updateState(newState)
     }
 
+    private readonly insertTab: Command = (state, dispatch) => {
+        dispatch?.(state.tr.insertText("\t"));
+        return true;
+    };
+
     private getPlugins(){
         return [history(),
             keymap({
                 "Mod-z": undo,
                 "Mod-y": redo,              
+                "Tab": this.insertTab,
             }),
             keymap(baseKeymap),
         ];
