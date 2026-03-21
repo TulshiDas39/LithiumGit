@@ -675,7 +675,10 @@ input[type=checkbox]{
 
 .ProseMirror{
   outline: none;
-  overflow-x: auto;
-  height: 100%;
+  overflow-x: hidden;
   white-space: pre;
+}
+
+.pm-odd-line{
+  background-color: var(--bg-second-color);
 }

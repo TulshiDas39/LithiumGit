@@ -3,8 +3,8 @@ import { IpcUtils } from "./IpcUtils";
 import { Data } from "../data";
 import { ILine } from "../interfaces";
 import {Schema, Node} from "prosemirror-model"
-import {EditorState, Transaction, Command} from "prosemirror-state"
-import {EditorView} from "prosemirror-view"
+import {EditorState, Transaction, Command, Plugin} from "prosemirror-state"
+import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
@@ -69,8 +69,29 @@ export class TextEditor {
         return true;
     };
 
+    private getOddLinePlugin(){
+        const buildDecorations = (doc: any) => {
+            const decorations: Decoration[] = [];
+            doc.forEach((node: any, offset: number, index: number) => {
+                if(index % 2 === 0){
+                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'pm-odd-line' }));
+                }
+            });
+            return DecorationSet.create(doc, decorations);
+        };
+        return new Plugin({
+            state: {
+                init: (_: any, { doc }: any) => buildDecorations(doc),
+                apply: (tr: any, set: any) => tr.docChanged ? buildDecorations(tr.doc) : set,
+            },
+            props: {
+                decorations(state: any) { return this.getState(state); },
+            },
+        });
+    }
+
     private getPlugins(){
-        return [history(),
+        return [this.getOddLinePlugin(), history(),
             keymap({
                 "Mod-z": undo,
                 "Mod-y": redo,              
@@ -82,7 +103,7 @@ export class TextEditor {
 
     private updateContainers=()=>{
         const contentContainer = document.querySelector(this._containerSelector)!;
-        contentContainer.classList.add("h-100");
+        contentContainer.classList.add("h-100","w-100","overflow-x-auto");
     }
 
     private getSchema(){
@@ -100,6 +121,11 @@ export class TextEditor {
         });
     }
 
+    private calculateTentitiveEditorWidth=()=>{
+        const maxLen = Math.max(...this._lines.map(l => l.length), 0);
+        return `${maxLen + 2}ch`;
+    }
+
     private render(){
         this.updateContainers();
         const doc = this.createDocument();        
@@ -107,7 +133,7 @@ export class TextEditor {
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,
-            attributes: { spellcheck: "false" },
+            attributes: { spellcheck: "false", style: `min-width: ${this.calculateTentitiveEditorWidth()};` },
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
