@@ -15,7 +15,7 @@ export class DiffUtils{
                 length += tabCount * (this.tabSize) - tabCount;
             }
             return length;
-        }));
+        }),0);
         return width+20;
     }
 

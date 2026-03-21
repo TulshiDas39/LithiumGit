@@ -8,6 +8,7 @@ import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
+import { DiffUtils } from "./DiffUtils";
 
 
 
@@ -122,8 +123,7 @@ export class TextEditor {
     }
 
     private calculateTentitiveEditorWidth=()=>{
-        const maxLen = Math.max(...this._lines.map(l => l.length), 0);
-        return `${maxLen + 2}ch`;
+        return DiffUtils.getEditorWidth(this._lines);
     }
 
     private render(){
@@ -133,7 +133,7 @@ export class TextEditor {
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,
-            attributes: { spellcheck: "false", style: `min-width: ${this.calculateTentitiveEditorWidth()};` },
+            attributes: { spellcheck: "false", style: `min-width: ${this.calculateTentitiveEditorWidth()}ch;` },
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
