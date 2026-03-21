@@ -48,9 +48,10 @@ export class TextEditor {
     }
 
     private handleTransaction = (transaction: Transaction)=>{
+        const prevLineCount = this._editView.state.doc.childCount;
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);
-        if(transaction.docChanged){
+        if(transaction.docChanged && newState.doc.childCount !== prevLineCount){
             this.renderLineNumbers(newState.doc.childCount);
         }
     }
