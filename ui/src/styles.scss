@@ -668,7 +668,13 @@ input[type=checkbox]{
 .pm-line-number{
   display: inline-block;
   padding-right: 1ch;
-  min-width: 3ch;
+  min-width: 6ch;
   text-align: right;
   opacity: 0.5;
+}
+
+.ProseMirror{
+  outline: none;
+  overflow-x: auto;
+  white-space: pre;
 }

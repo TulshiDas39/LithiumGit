@@ -97,7 +97,7 @@ export class TextEditor {
                 paragraph: {
                     content: "text*",
                     whitespace: "pre",
-                    toDOM: () => ["p", { style: "white-space: pre-wrap" }, 0] as any,
+                    toDOM: () => ["p", { style: "white-space: pre" }, 0] as any,
                     parseDOM: [{ tag: "p" }],
                 },
                 text: { inline: true },
