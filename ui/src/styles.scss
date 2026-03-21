@@ -336,6 +336,8 @@ html {
   user-select: none;
 }
 
+
+
 .hover-bg-secondary:hover{
   background: gray;
   *{
@@ -661,4 +663,12 @@ input[type=checkbox]{
 
 .word-break-all{
   word-break: break-all;
+}
+
+.pm-line-number{
+  display: inline-block;
+  padding-right: 1ch;
+  min-width: 3ch;
+  text-align: right;
+  opacity: 0.5;
 }
