@@ -71,9 +71,9 @@ export class TextEditor {
     };
 
     private getOddLinePlugin(){
-        const buildDecorations = (doc: any) => {
+        const buildDecorations = (doc: Node) => {
             const decorations: Decoration[] = [];
-            doc.forEach((node: any, offset: number, index: number) => {
+            doc.forEach((node: Node, offset: number, index: number) => {
                 if(index % 2 === 0){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'pm-odd-line' }));
                 }
@@ -82,8 +82,8 @@ export class TextEditor {
         };
         return new Plugin({
             state: {
-                init: (_: any, { doc }: any) => buildDecorations(doc),
-                apply: (tr: any, set: any) => tr.docChanged ? buildDecorations(tr.doc) : set,
+                init: (_: any, { doc }: {doc:Node}) => buildDecorations(doc),
+                apply: (tr: Transaction, set: any) => tr.docChanged ? buildDecorations(tr.doc) : set,
             },
             props: {
                 decorations(state: any) { return this.getState(state); },
@@ -116,10 +116,6 @@ export class TextEditor {
                 text: { inline: true },
             }
         });
-    }
-
-    private calculateTentitiveEditorWidth(){
-        return DiffUtils.getEditorWidth(this._lines);
     }
 
     private render(){
