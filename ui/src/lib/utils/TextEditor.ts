@@ -102,10 +102,6 @@ export class TextEditor {
         ];
     }
 
-    private updateContainers=()=>{
-        const contentContainer = document.querySelector(this._containerSelector)!;
-        contentContainer.classList.add("h-100","w-100","overflow-x-auto");
-    }
 
     private getSchema(){
         return new Schema({
@@ -122,12 +118,11 @@ export class TextEditor {
         });
     }
 
-    private calculateTentitiveEditorWidth=()=>{
+    private calculateTentitiveEditorWidth(){
         return DiffUtils.getEditorWidth(this._lines);
     }
 
     private render(){
-        this.updateContainers();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
