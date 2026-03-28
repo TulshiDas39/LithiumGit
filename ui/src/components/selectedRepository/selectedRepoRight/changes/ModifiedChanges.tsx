@@ -10,7 +10,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { ActionUI } from "../../../../store/slices/UiSlice";
-import { TextEditor } from "../../../../lib/utils/TextEditor";
+import { TextEditor } from "../../../../lib/utils/editors/TextEditor";
 
 interface IModifiedChangesProps{
     changes:IFile[];

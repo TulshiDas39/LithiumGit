@@ -1,14 +1,14 @@
 import { EnumLinefeed } from "common_library";
-import { IpcUtils } from "./IpcUtils";
-import { Data } from "../data";
-import { ILine } from "../interfaces";
+import { IpcUtils } from "../IpcUtils";
+import { Data } from "../../data";
+import { ILine } from "../../interfaces";
 import {Schema, Node} from "prosemirror-model"
 import {EditorState, Transaction, Command, Plugin} from "prosemirror-state"
 import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
-import { DiffUtils } from "./DiffUtils";
+import { DiffUtils } from "../DiffUtils";
 
 
 
@@ -91,7 +91,7 @@ export class TextEditor {
         });
     }
 
-    private getPlugins(){
+    protected getPlugins(){
         return [this.getOddLinePlugin(), history(),
             keymap({
                 "Mod-z": undo,
@@ -103,7 +103,7 @@ export class TextEditor {
     }
 
 
-    private getSchema(){
+    protected getSchema(){
         return new Schema({
             nodes: {
                 doc: { content: "paragraph+" },
