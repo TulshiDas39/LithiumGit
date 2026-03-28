@@ -70,29 +70,9 @@ export class TextEditor {
         return true;
     };
 
-    private getOddLinePlugin(){
-        const buildDecorations = (doc: Node) => {
-            const decorations: Decoration[] = [];
-            doc.forEach((node: Node, offset: number, index: number) => {
-                if(index % 2 === 0){
-                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'pm-odd-line' }));
-                }
-            });
-            return DecorationSet.create(doc, decorations);
-        };
-        return new Plugin({
-            state: {
-                init: (_: any, { doc }: {doc:Node}) => buildDecorations(doc),
-                apply: (tr: Transaction, set: any) => tr.docChanged ? buildDecorations(tr.doc) : set,
-            },
-            props: {
-                decorations(state: any) { return this.getState(state); },
-            },
-        });
-    }
 
     protected getPlugins(){
-        return [this.getOddLinePlugin(), history(),
+        return [history(),
             keymap({
                 "Mod-z": undo,
                 "Mod-y": redo,              

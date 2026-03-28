@@ -10,7 +10,7 @@ import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { ActionUI } from "../../../../store/slices/UiSlice";
-import { TextEditor } from "../../../../lib/utils/editors/TextEditor";
+import { ChangeEditor } from "../../../../lib/utils/editors";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -30,7 +30,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new TextEditor("#"+EnumHtmlIds.diffview_container+" .current .content")});
+    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content")});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
