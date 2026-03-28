@@ -85,7 +85,6 @@ export class ChangeUtils{
             const previousLineNumberScroll = document.querySelector(`#${this.containerId} .difference .previous .line_numbers`);
             const group1 = [currentChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
             const group2 = [previousChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
-        //line_numbers
             let handler1 = (e:Event)=>{
                 for(let g of group1){
                     g?.scrollTo({
