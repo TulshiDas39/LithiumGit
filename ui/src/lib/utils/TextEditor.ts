@@ -128,7 +128,7 @@ export class TextEditor {
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,
-            attributes: { spellcheck: "false", style: `min-width: ${this.calculateTentitiveEditorWidth()}ch;` },
+            attributes: { spellcheck: "false", style: `width: fit-content` },
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
