@@ -1,14 +1,11 @@
 import { EnumLinefeed } from "common_library";
-import { IpcUtils } from "../IpcUtils";
 import { Data } from "../../data";
-import { ILine } from "../../interfaces";
 import {Schema, Node} from "prosemirror-model"
-import {EditorState, Transaction, Command, Plugin} from "prosemirror-state"
-import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
+import {EditorState, Transaction, Command} from "prosemirror-state"
+import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
-import { DiffUtils } from "../DiffUtils";
 
 
 

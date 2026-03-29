@@ -5,6 +5,7 @@ import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
 
 export class ChangeEditor extends TextEditor{
+    private _ilines:ILine[] = [];
     constructor(containerSelector:string){
         super(containerSelector);
     }
@@ -14,7 +15,8 @@ export class ChangeEditor extends TextEditor{
     }
 
     renderILines(lines:ILine[]){
-        this._lines = lines.map(l=>l.text || '');
+        this._ilines = lines;
+        this._lines = this._ilines.map(l => l.text || '');
         this.render();        
     }
 
@@ -22,9 +24,10 @@ export class ChangeEditor extends TextEditor{
         const buildDecorations = (doc: Node) => {
             const decorations: Decoration[] = [];
             doc.forEach((node: Node, offset: number, index: number) => {
-                if(index % 2 === 0){
-                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'pm-odd-line' }));
-                    node.forEach((child, childOffset) => {
+                const iline = this._ilines[index];
+                if(iline.hightLightBackground){
+                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
+                    node.forEach((_child, childOffset) => {
                         const start = offset + 1 + childOffset;
                         const end = start + 10;
                         decorations.push(Decoration.inline(start, end, { class: 'pm-highlight-line' }));
