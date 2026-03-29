@@ -1,7 +1,7 @@
 import ReactDOMServer from "react-dom/server";
 import { ILine } from "../interfaces";
 import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
-import { IFile, IFileProps } from "common_library";
+import { EnumChangeGroup, IFile, IFileProps } from "common_library";
 import { DifferencePreview } from "../../components/selectedRepository/selectedRepoRight/changes/DifferencePreview";
 
 export class ChangeUtils{
@@ -58,11 +58,14 @@ export class ChangeUtils{
     private SetHeighlightedLines(){
         this.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;
-        if(!this.currentLines?.length || !this.previousLines?.length)
+        let ilines = this.currentLines;
+        if(this.file?.changeGroup === EnumChangeGroup.UN_STAGED)
+            ilines = this.previousLines;
+        if(!ilines?.length)
             return;
-        const lenght = this.currentLines?.length;
+        const lenght = ilines?.length;
         for(let i = 0;i < lenght; i++){
-            if(this.currentLines?.[i].hightLightBackground || this.currentLines?.[i].text === undefined){
+            if(ilines?.[i].hightLightBackground || ilines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
                     this.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
