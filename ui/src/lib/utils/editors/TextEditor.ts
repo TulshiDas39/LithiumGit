@@ -82,8 +82,8 @@ export class TextEditor {
                 paragraph: {
                     content: "text*",
                     whitespace: "pre",
-                    toDOM: () => ["p", { style: "white-space: pre" }, 0] as any,
-                    parseDOM: [{ tag: "p" }],
+                    toDOM: () => ["div", { style: "white-space: pre" }, 0] as any,
+                    parseDOM: [{ tag: "div" }],
                 },
                 text: { inline: true },
             }
