@@ -683,6 +683,10 @@ input[type=checkbox]{
   background-color: var(--bg-second-color);
 }
 
+.pm-highlight-line{
+  color: var(--bg-current-change-deep);
+}
+
 .fit-content{
   width: fit-content;
 }

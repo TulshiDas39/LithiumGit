@@ -15,7 +15,7 @@ import { DiffUtils } from "../DiffUtils";
 
 export class TextEditor {
     private _containerSelector:string = '';    
-    private _lines:string[] = [];
+    protected _lines:string[] = [];
     private _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
     private _encoding:string = 'utf-8';
     private readonly _systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
@@ -31,11 +31,6 @@ export class TextEditor {
     setContent(content:string){        
         this._lines = content?.split('\n') || [];
         return this;
-    }
-
-    renderILines(lines:ILine[]){
-        this._lines = lines.map(l=>l.text || '');
-        this.render();        
     }
 
     private createDocument(){
@@ -98,7 +93,7 @@ export class TextEditor {
         });
     }
 
-    private render(){
+    protected render(){
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
