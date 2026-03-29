@@ -34,6 +34,9 @@ export class ChangeEditor extends TextEditor{
                         decorations.push(Decoration.inline(start, end, { class: 'bg-current-change-deep' }));
                     }
                 }
+                if(iline.text === undefined){
+                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'transparent-background noselect',contenteditable:"false" }));
+                }
             });
             return DecorationSet.create(doc, decorations);
         };
