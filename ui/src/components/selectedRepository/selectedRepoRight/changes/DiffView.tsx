@@ -70,7 +70,7 @@ export function DiffView(props:IProps){
             {getLineElems()}
         </div>
         <div className="h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>
-            <div className="ps-1 content fit-content">
+            <div className="ps-1 content fit-content min-w-100">
                 {props.lines.map((l, i)=>(
                     <SingleDiff key={i} line={l} backGroupColorCss={`bg-${props.changeType}-change`} forGroupColorCss={`bg-${props.changeType}-change-deep`} maxLineWidth={editorWidth}  />
                 ))}
