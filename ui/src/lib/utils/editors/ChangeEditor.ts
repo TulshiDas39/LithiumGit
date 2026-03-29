@@ -27,11 +27,14 @@ export class ChangeEditor extends TextEditor{
                 const iline = this._ilines[index];
                 if(iline.hightLightBackground){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
-                    node.forEach((_child, childOffset) => {
-                        const start = offset + 1 + childOffset;
-                        const end = start + 10;
-                        decorations.push(Decoration.inline(start, end, { class: 'pm-highlight-line' }));
-                    });
+                    // node.forEach((_child, _childOffset) => {                      
+                        for(let i=0; i<iline.textHightlightIndex.length; i++){
+                            const range = iline.textHightlightIndex[i];
+                            const start = offset + 1 + range.fromIndex;
+                            const end = start + range.count;
+                            decorations.push(Decoration.inline(start, end, { class: 'bg-current-change-deep h-100' }));
+                        }
+                    // });
                 }
             });
             return DecorationSet.create(doc, decorations);
