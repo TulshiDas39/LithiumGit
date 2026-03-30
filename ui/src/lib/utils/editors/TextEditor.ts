@@ -97,6 +97,7 @@ export class TextEditor {
             state:this._editState,
             dispatchTransaction:this.handleTransaction,
             attributes: { spellcheck: "false", style: `width: fit-content` },
+            clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, "\n"),
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
