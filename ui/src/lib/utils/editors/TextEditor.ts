@@ -40,7 +40,7 @@ export class TextEditor {
         return doc;
     }
 
-    private handleTransaction = (transaction: Transaction)=>{
+    protected handleTransaction (transaction: Transaction){
         const prevLineCount = this._editView.state.doc.childCount;
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);
@@ -95,7 +95,7 @@ export class TextEditor {
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
-            dispatchTransaction:this.handleTransaction,
+            dispatchTransaction:(tr) => this.handleTransaction(tr),
             attributes: { spellcheck: "false", style: `width: fit-content` },
             clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, "\n"),
         });

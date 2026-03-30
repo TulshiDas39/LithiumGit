@@ -11,7 +11,11 @@ export class ChangeEditor extends TextEditor{
     }
 
     protected override getPlugins(){
-        return [this.getOddLinePlugin(), ...super.getPlugins()];
+        return [this.getHighlightPlugin(), ...super.getPlugins()];
+    }
+
+    protected override handleTransaction(transaction: Transaction) {
+        super.handleTransaction(transaction);
     }
 
     renderILines(lines:ILine[]){
@@ -20,11 +24,12 @@ export class ChangeEditor extends TextEditor{
         this.render();        
     }
 
-    private getOddLinePlugin(){
+    private getHighlightPlugin(){
         const buildDecorations = (doc: Node) => {
             const decorations: Decoration[] = [];
             doc.forEach((node: Node, offset: number, index: number) => {
                 const iline = this._ilines[index];
+                if(!iline) return;
                 if(iline.hightLightBackground){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
                     for(let i=0; i<iline.textHightlightIndex.length; i++){
