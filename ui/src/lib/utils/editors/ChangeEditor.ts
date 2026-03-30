@@ -1,4 +1,5 @@
 import { EditorState, Plugin, Transaction } from "prosemirror-state";
+import { ReplaceStep } from "prosemirror-transform";
 import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {Schema, Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
@@ -15,6 +16,21 @@ export class ChangeEditor extends TextEditor{
     }
 
     protected override handleTransaction(transaction: Transaction) {
+        //check if the transaction is a change transaction by checking if the doc has changed and if the new doc is different from the old doc, we can do this by comparing the old and new doc's text content, if they are different then it's a change transaction
+        if(transaction.docChanged){
+            console.log("Document changed");
+            for(let i = 0; i < transaction.steps.length; i++){
+                const step = transaction.steps[i];
+                if(step instanceof ReplaceStep){
+                    const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+                    const $pos = transaction.docs[i].resolve(step.from);
+                    const paragraphIndex = $pos.index(0);
+                    console.log("Paragraph index:", paragraphIndex);
+                    console.log("Inserted text:", insertedText);
+                }
+            }
+        }
+        //const oldText = this._editView.state.doc.textContent;
         super.handleTransaction(transaction);
     }
 

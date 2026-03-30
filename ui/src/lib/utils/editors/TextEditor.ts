@@ -16,8 +16,8 @@ export class TextEditor {
     private _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
     private _encoding:string = 'utf-8';
     private readonly _systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
-    private _editState:EditorState = null!;
-    private _editView:EditorView = null!;
+    protected _editState:EditorState = null!;
+    protected _editView:EditorView = null!;
     private _schema:Schema= null!;
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
@@ -53,7 +53,9 @@ export class TextEditor {
         const currentPanel = document.querySelector(this._containerSelector)?.closest(".current");
         const lineNumbers = currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
         if(!lineNumbers) return;
+        //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
         lineNumbers.style.width = `${String(lineCount).length + 2}ch`;
+        //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
         lineNumbers.innerHTML = Array.from({length: lineCount}, (_, i) => `<p>${i + 1}</p>`).join("");
     }
 
