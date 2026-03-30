@@ -29,6 +29,7 @@ export class ChangeEditor extends TextEditor{
             const decorations: Decoration[] = [];
             doc.forEach((node: Node, offset: number, index: number) => {
                 const iline = this._ilines[index];
+                //TODO: null check not required after we make sure ilines are always in sync with lines, but for safety we can keep it for now
                 if(!iline) return;
                 if(iline.hightLightBackground){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
