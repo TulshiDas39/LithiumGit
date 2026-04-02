@@ -690,3 +690,15 @@ input[type=checkbox]{
 .min-w-100{
   min-width: 100%;
 }
+
+.diff-view{
+  .save-btn-container{
+    width: 100px;
+    bottom: 25px;
+    right: 25px;
+    z-index: 1;
+  }
+  .line_numbers, .content{
+    padding-bottom: 50px;
+  }
+}

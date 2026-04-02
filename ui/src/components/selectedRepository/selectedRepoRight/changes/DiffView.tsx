@@ -1,4 +1,6 @@
+import { FaCheck } from "react-icons/fa";
 import { DiffUtils, ILine } from "../../../../lib";
+import { AppButton } from "../../../common";
 
 interface ISingleDiffProps{
     line:ILine;    
@@ -65,7 +67,7 @@ export function DiffView(props:IProps){
         return elems;
     }
     const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
-    return <div className="d-flex w-100 h-100">
+    return <div className="d-flex w-100 h-100 position-relative diff-view">
         <div className="noselect line_numbers overflow-hidden h-100" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
@@ -74,8 +76,13 @@ export function DiffView(props:IProps){
                 {props.lines.map((l, i)=>(
                     <SingleDiff key={i} line={l} backGroupColorCss={`bg-${props.changeType}-change`} forGroupColorCss={`bg-${props.changeType}-change-deep`} maxLineWidth={editorWidth}  />
                 ))}
-            </div>
+            </div>            
         </div>
-        
+        {props.changeType === "current" && <div className="position-absolute save-btn-container">
+                <AppButton type="success" className="h-100 w-100 py-2 btn-save">
+                    <span className="">Save</span>                    
+                </AppButton>
+            </div>}
     </div>
 }
+
