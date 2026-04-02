@@ -25,8 +25,11 @@ export class ChangeEditor extends TextEditor{
                     const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
                     const $pos = transaction.docs[i].resolve(step.from);
                     const paragraphIndex = $pos.index(0);
-                    console.log("Paragraph index:", paragraphIndex);
+                    const indexInParagraph = $pos.parentOffset;
+                    console.log("Paragraph index:",    paragraphIndex);
+                    console.log("Index in paragraph:", indexInParagraph);
                     console.log("Inserted text:", insertedText);
+
                 }
             }
         }
