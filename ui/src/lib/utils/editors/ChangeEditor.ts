@@ -31,6 +31,7 @@ export class ChangeEditor extends TextEditor{
                     console.log("Index in paragraph:", indexInParagraph);
                     console.log("Inserted text:", insertedText);
                     console.log("Deleted count:", deletedCount);
+                    
 
                 }
             }

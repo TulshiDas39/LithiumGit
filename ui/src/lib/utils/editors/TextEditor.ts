@@ -1,6 +1,6 @@
 import { EnumLinefeed } from "common_library";
 import { Data } from "../../data";
-import {Schema, Node} from "prosemirror-model"
+import {Schema, Node, Slice, Fragment} from "prosemirror-model"
 import {EditorState, Transaction, Command} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
@@ -92,6 +92,20 @@ export class TextEditor {
         });
     }
 
+    private handlePaste(view: EditorView, event: ClipboardEvent) {
+        const text = event.clipboardData?.getData('text/plain');
+        if (!text) return false;
+        const lines = text.split(/\r?\n/);
+        const { state } = view;
+        const { schema } = state;
+        const nodes = lines.map(line =>
+            schema.node('paragraph', null, line ? [schema.text(line)] : [])
+        );
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        view.dispatch(state.tr.replaceSelection(slice));
+        return true;
+    }
+
     protected render(){
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
@@ -100,6 +114,7 @@ export class TextEditor {
             dispatchTransaction:(tr) => this.handleTransaction(tr),
             attributes: { spellcheck: "false", style: `width: fit-content` },
             clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, "\n"),
+            handlePaste: (view, event) => this.handlePaste(view, event),
         });
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
