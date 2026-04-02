@@ -78,7 +78,7 @@ export function DiffView(props:IProps){
                 ))}
             </div>            
         </div>
-        {props.changeType === "current" && <div className="position-absolute save-btn-container">
+        {props.changeType === "current" && <div className="position-absolute save-btn-container d-none">
                 <AppButton type="success" className="h-100 w-100 py-2 btn-save">
                     <span className="">Save</span>                    
                 </AppButton>

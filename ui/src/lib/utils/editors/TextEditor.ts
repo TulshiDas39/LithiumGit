@@ -11,7 +11,7 @@ import {baseKeymap} from "prosemirror-commands"
 
 
 export class TextEditor {
-    private _containerSelector:string = '';    
+    protected _containerSelector:string = '';    
     protected _lines:string[] = [];
     private _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
     private _encoding:string = 'utf-8';
@@ -19,6 +19,8 @@ export class TextEditor {
     protected _editState:EditorState = null!;
     protected _editView:EditorView = null!;
     private _schema:Schema= null!;
+    private _initialDoc: Node = null!;
+
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
         this._systemLineFeedType = Data.systemLineFeedType;    
@@ -106,6 +108,10 @@ export class TextEditor {
         return true;
     }
 
+    protected IsDocChanged(){
+        return !this._editView.state.doc.eq(this._initialDoc);
+    }
+
     protected render(){
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
@@ -116,6 +122,8 @@ export class TextEditor {
             clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, "\n"),
             handlePaste: (view, event) => this.handlePaste(view, event),
         });
+        this._initialDoc = this._editView.state.doc;
+
         this.renderLineNumbers(this._editState.doc.childCount);
     } 
 

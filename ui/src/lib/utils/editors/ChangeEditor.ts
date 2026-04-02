@@ -7,6 +7,7 @@ import { ILine } from "../../interfaces";
 
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
+    private _saveBtn:HTMLElement | null = null;
     constructor(containerSelector:string){
         super(containerSelector);
     }
@@ -27,16 +28,25 @@ export class ChangeEditor extends TextEditor{
                     const $pos = transaction.docs[i].resolve(step.from);
                     const paragraphIndex = $pos.index(0);
                     const indexInParagraph = $pos.parentOffset;
-                    console.log("Paragraph index:",    paragraphIndex);
-                    console.log("Index in paragraph:", indexInParagraph);
-                    console.log("Inserted text:", insertedText);
-                    console.log("Deleted count:", deletedCount);
 
                 }
             }
         }
         //const oldText = this._editView.state.doc.textContent;
         super.handleTransaction(transaction);
+        const savebtn = this.saveBtn();
+        if(this.IsDocChanged()){            
+            savebtn?.classList.remove("d-none");
+        }else{
+            savebtn?.classList.add("d-none");
+        }
+    }
+
+    private saveBtn(){
+        if(!this._saveBtn){
+            this._saveBtn = document.querySelector(`${this._containerSelector}`)?.closest(".diff-view")?.querySelector(".save-btn-container")!;
+        }
+        return this._saveBtn;
     }
 
     renderILines(lines:ILine[]){
