@@ -202,6 +202,18 @@ export class FileManager{
         
     }
 
+    exists(path:string){
+        return fs.existsSync(path);
+    }
+
+    async deleteFolder(path:string){
+        await fs.promises.rm(path, { recursive: true, force: true });
+    }
+
+    createPathAsync(path:string){
+        return fs.promises.mkdir(path, { recursive: true });
+    }
+
     createPathIfNotExist(path:string){
         if (!fs.existsSync(path)){
             fs.mkdirSync(path, { recursive: true });

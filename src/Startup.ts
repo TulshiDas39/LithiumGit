@@ -1,4 +1,4 @@
-import { EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
+import { Constants, EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
@@ -63,6 +63,21 @@ export class Startup{
         await this.loadDatabases();
         await this.loadRecentRepositories();
         await this.loadConfigInfo();
+        await this.createFilesAndFolders();
+    }
+
+    private async createFilesAndFolders(){
+      try{
+        const tempPath = path.join(AppData.dataPath,Constants.tempFolder);
+        const fileMgr = new FileManager();
+        if(fileMgr.exists(tempPath)){
+          await fileMgr.deleteFolder(tempPath);
+        }
+        await fileMgr.createPathAsync(tempPath);
+      }catch(err){
+        console.error("Error while creating temp folder:",err);
+      }
+      
     }
 
     private async loadRecentRepositories(){                        
