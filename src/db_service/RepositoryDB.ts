@@ -4,6 +4,6 @@ import { DBPath } from "./db_service";
 
 export class RepositoryDB extends BaseDB<RepositoryInfo>{    
     constructor(){
-        super(DBPath.repository);
+        super(DBPath.repository());
     }
 }

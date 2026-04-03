@@ -4,7 +4,7 @@ import { DBPath } from "./db_service";
 
 export class ConfigDB extends BaseDB<IConfigInfo>{    
     constructor(){
-        super(DBPath.config);
+        super(DBPath.config());
     }
 
     async insertAndRemainOneAsync(record:IConfigInfo){

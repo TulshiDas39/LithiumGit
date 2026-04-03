@@ -15,9 +15,10 @@ import { ShellManager } from "./businessClasses/ShellManager";
 export class Startup{
     private readonly uiPort = Config.UI_PORT;
 
-    async initilise(){
+    async initialise(){
       //this.initAppData();
       this.addExceptionHandler();
+      AppData.initialize();
       await this.loadSavedData();      
       this.startIpcManagers();
     }
@@ -53,10 +54,7 @@ export class Startup{
     }
 
     private async loadDatabases(){
-      await DB.config.load();
-      await DB.repository.load();
-      await DB.annotation.load();
-      await DB.notification.load();
+      await DB.load();
     }
 
     private async loadSavedData(){
@@ -147,7 +145,7 @@ export class Startup{
         // });
 
         app.whenReady().then(async ()=>{
-          await this.initilise();
+          await this.initialise();
           await this.createWindow();
         
           app.on("activate", function () {

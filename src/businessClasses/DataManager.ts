@@ -40,6 +40,7 @@ export class DataManager{
         ipcMain.on(RendererEvents.getAppData, async(_e) => {
             const appData:IAppData = {
                 dataPath:AppData.dataPath,
+                tempPath:AppData.tempPath,
             }
             _e.returnValue = appData;
         });

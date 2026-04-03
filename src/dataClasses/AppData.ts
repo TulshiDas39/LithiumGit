@@ -1,12 +1,21 @@
-import { EnumLinefeed } from "common_library/lib";
+import { Constants, EnumLinefeed } from "common_library/lib";
 import { app, BrowserWindow } from "electron";
 import path = require("path");
 import { EOL } from 'os';
 
 export class AppData{
-    static appPath:string = app.getAppPath();
-    private static homePath = app.getPath('home');
-    static dataPath = path.join(AppData.homePath,".lithiumgit");
+    static appPath = '';
+    private static homePath = '';
+    static dataPath = '';
+    static tempPath = '';
     static mainWindow:BrowserWindow;
-    static systemLineFeedType:EnumLinefeed = EOL as EnumLinefeed;
+    static systemLineFeedType:EnumLinefeed = null!;
+
+    static initialize() {
+        AppData.appPath = app.getAppPath();
+        AppData.homePath = app.getPath('home');
+        AppData.dataPath = path.join(AppData.homePath, ".lithiumgit");
+        AppData.tempPath = path.join(AppData.dataPath, Constants.tempFolder);
+        AppData.systemLineFeedType = EOL as EnumLinefeed;
+    }
 }
