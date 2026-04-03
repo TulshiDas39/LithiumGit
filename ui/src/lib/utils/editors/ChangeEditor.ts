@@ -4,6 +4,7 @@ import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {Schema, Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
+import { IChange } from "common_library";
 
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
@@ -18,28 +19,90 @@ export class ChangeEditor extends TextEditor{
 
     protected override handleTransaction(transaction: Transaction) {
         //check if the transaction is a change transaction by checking if the doc has changed and if the new doc is different from the old doc, we can do this by comparing the old and new doc's text content, if they are different then it's a change transaction
+        let changes:IChange[] = [];
         if(transaction.docChanged){
             console.log("Document changed");
-            for(let i = 0; i < transaction.steps.length; i++){
-                const step = transaction.steps[i];
-                if(step instanceof ReplaceStep){
-                    const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
-                    const deletedCount = step.to - step.from;
-                    const $pos = transaction.docs[i].resolve(step.from);
-                    const paragraphIndex = $pos.index(0);
-                    const indexInParagraph = $pos.parentOffset;
-
-                }
-            }
+            changes = this.populateChanges(transaction);
+            console.log("Changes: ", changes);
+            // for(let i = 0; i < transaction.steps.length; i++){
+            //     const step = transaction.steps[i];
+            //     if(step instanceof ReplaceStep){
+            //         const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+            //         const deletedCount = step.to - step.from;
+            //         const $pos = transaction.docs[i].resolve(step.from);
+            //         const paragraphIndex = $pos.index(0);
+            //         const indexInParagraph = $pos.parentOffset;
+            //         changes.push({
+            //             lineIndex: paragraphIndex,
+            //             offset: indexInParagraph,
+            //             text: insertedText,
+            //             deleteCount: deletedCount
+            //         });
+            //     }
+            // }
         }
         //const oldText = this._editView.state.doc.textContent;
         super.handleTransaction(transaction);
+        if(changes.length) {
+            this.handleChanges(changes);
+        }
         const savebtn = this.saveBtn();
         if(this.IsDocChanged()){            
             savebtn?.classList.remove("d-none");
         }else{
             savebtn?.classList.add("d-none");
         }
+    }
+
+    private populateChanges(transaction: Transaction){
+        const changeMap = new Map<number, IChange>(); // keyed by final paragraph index
+        for (let i = 0; i < transaction.steps.length; i++) {
+            const step = transaction.steps[i];
+            if (!(step instanceof ReplaceStep)) continue;
+
+            const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+            const deletedCount = step.to - step.from;
+            
+            // Map this step's `from` position into the FINAL document coordinates
+            const finalFrom = transaction.mapping.slice(i + 1).map(step.from);
+
+            const $pos = transaction.doc.resolve(finalFrom);
+            const paragraphIndex = $pos.index(0);
+            const indexInParagraph = $pos.parentOffset;
+
+            if (changeMap.has(paragraphIndex)) {
+                // Merge into existing change for this paragraph
+                const existing = changeMap.get(paragraphIndex)!;
+                existing.text += insertedText;
+                existing.deleteCount += deletedCount;
+            } else {
+                changeMap.set(paragraphIndex, {
+                    lineIndex: paragraphIndex,
+                    offset: indexInParagraph,
+                    text: insertedText,
+                    deleteCount: deletedCount,
+                });
+            }
+        }
+
+        return Array.from(changeMap.values());
+    }
+
+    private handleChanges(changes:IChange[]){
+        let curChange = changes[changes.length - 1];
+        for(let i = changes.length - 2;i >= 0 ;i--){
+            const prevChange = changes[i];
+            const currOffDiff = curChange.text.length - curChange.deleteCount;
+            if(prevChange.lineIndex === curChange.lineIndex){
+                //merge the changes
+                if(curChange.offset >= prevChange.offset){
+                    prevChange.text += curChange.text;
+                    prevChange.deleteCount += curChange.deleteCount;
+                    curChange = prevChange;
+                }
+            }
+        }
+
     }
 
     private saveBtn(){
