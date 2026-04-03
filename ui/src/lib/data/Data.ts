@@ -1,4 +1,4 @@
-import { Annotation, EnumLinefeed } from "common_library";
+import { Annotation, EnumLinefeed, IAppData } from "common_library";
 
 export class Data{
     static annotations:Annotation[] = [];
@@ -15,4 +15,5 @@ export class Data{
     }
 
     static systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
+    static appData:IAppData = null!;
 }

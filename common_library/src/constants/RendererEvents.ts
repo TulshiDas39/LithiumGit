@@ -303,6 +303,7 @@ export class RendererEvents{
     static readonly getFileProps = "getFileProps";
     static readonly displayApp = "displayApp";
     static readonly getLineFeedType = "getLineFeedType";
+    static readonly getAppData = "getAppData";    
     
 }
 

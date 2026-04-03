@@ -4,13 +4,19 @@ import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {Schema, Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { IChange } from "common_library";
+import { IChange, IFile } from "common_library";
+import { IpcUtils } from "../IpcUtils";
+import { RepoUtils } from "../RepoUtils";
+import { DataUtils } from "../DataUtils";
+import { Data } from "../../data";
 
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
+    private _file:IFile = null!;
+    //private _tempFilePath = Data.
     constructor(containerSelector:string){
-        super(containerSelector);
+        super(containerSelector);        
     }
 
     protected override getPlugins(){
@@ -22,24 +28,8 @@ export class ChangeEditor extends TextEditor{
         let changes:IChange[] = [];
         if(transaction.docChanged){
             console.log("Document changed");
-            changes = this.populateChanges(transaction);
-            console.log("Changes: ", changes);
-            // for(let i = 0; i < transaction.steps.length; i++){
-            //     const step = transaction.steps[i];
-            //     if(step instanceof ReplaceStep){
-            //         const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
-            //         const deletedCount = step.to - step.from;
-            //         const $pos = transaction.docs[i].resolve(step.from);
-            //         const paragraphIndex = $pos.index(0);
-            //         const indexInParagraph = $pos.parentOffset;
-            //         changes.push({
-            //             lineIndex: paragraphIndex,
-            //             offset: indexInParagraph,
-            //             text: insertedText,
-            //             deleteCount: deletedCount
-            //         });
-            //     }
-            // }
+            //changes = this.populateChanges(transaction);            
+            this.updateILines(transaction);
         }
         //const oldText = this._editView.state.doc.textContent;
         super.handleTransaction(transaction);
@@ -52,6 +42,44 @@ export class ChangeEditor extends TextEditor{
         }else{
             savebtn?.classList.add("d-none");
         }
+    }
+
+    private updateILines(transaction: Transaction){
+        for(let i = 0; i < transaction.steps.length; i++){
+                const step = transaction.steps[i];
+                if(step instanceof ReplaceStep){
+                    const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+                    console.log("Inserted text:", insertedText);
+                    const insertedLines = insertedText.split(/\r?\n/);
+                    console.log("Line count:", insertedLines.length);
+                    const deletedCount = step.to - step.from;
+                    const $pos = transaction.docs[i].resolve(step.from);
+                    const $posTo = transaction.docs[i].resolve(step.to);
+                    const lineIndexFrom = $pos.index(0);
+                    const lineIndexTo = $posTo.index(0);
+                    console.log("Paragraph index from:", lineIndexFrom, "to:", lineIndexTo);
+                    const lineOffsetFrom = $pos.parentOffset;
+                    const lineOffsetTo = $posTo.parentOffset;
+                    console.log("Index in from paragraph:", lineOffsetFrom, "to:", lineOffsetTo);
+                    if(step.from != step.to){
+                        console.log("Deletion detected");
+                        for(let lineIndex = lineIndexFrom; lineIndex < lineIndexTo; lineIndex++){
+                            this._lines.splice(lineIndex,1);                            
+                        }
+                        this._ilines[lineIndexTo].text = this._ilines[lineIndexTo].text?.slice(lineOffsetTo) || '';
+                    }
+                    
+                    if(insertedLines.length){
+                        this._ilines[lineIndexFrom].text += insertedLines[0];
+                        for(let i=1; i<insertedLines.length; i++){
+                            const newILine: ILine = {text: insertedLines[i], hightLightBackground: false,
+                                textHightlightIndex: []};
+                            this._ilines.splice(lineIndexFrom + i, 0, newILine);
+                        }
+                    }
+
+                }
+            }
     }
 
     private populateChanges(transaction: Transaction){
@@ -89,20 +117,7 @@ export class ChangeEditor extends TextEditor{
     }
 
     private handleChanges(changes:IChange[]){
-        let curChange = changes[changes.length - 1];
-        for(let i = changes.length - 2;i >= 0 ;i--){
-            const prevChange = changes[i];
-            const currOffDiff = curChange.text.length - curChange.deleteCount;
-            if(prevChange.lineIndex === curChange.lineIndex){
-                //merge the changes
-                if(curChange.offset >= prevChange.offset){
-                    prevChange.text += curChange.text;
-                    prevChange.deleteCount += curChange.deleteCount;
-                    curChange = prevChange;
-                }
-            }
-        }
-
+        
     }
 
     private saveBtn(){
@@ -112,10 +127,17 @@ export class ChangeEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    renderILines(lines:ILine[]){
+    renderILines(lines:ILine[],file:IFile){
+        this._file = file;
+        this.createTempFile();
         this._ilines = lines;
         this._lines = this._ilines.map(l => l.text || '');
         this.render();        
+    }
+
+    createTempFile(){
+        const fullPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
+        // IpcUtils.copyFile(fullPath, this._file.content);
     }
 
     private getHighlightPlugin(){

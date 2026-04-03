@@ -1,4 +1,4 @@
-import { Annotation, EnumNotificationType, IAppInfo, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, EnumNotificationType, IAppData, IAppInfo, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
 import { app, ipcMain } from "electron";
 import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
@@ -27,11 +27,21 @@ export class DataManager{
         this.handleAppInfoRequest();
         this.setCheckForUpdateTime();
         this.handleGetLineFeedType();
+        this.handleGetAppData();
     }
 
     private handleGetLineFeedType(){
         ipcMain.on(RendererEvents.getLineFeedType, async(_e) => {
             _e.returnValue = EOL;
+        });
+    }
+
+    private handleGetAppData(){
+        ipcMain.on(RendererEvents.getAppData, async(_e) => {
+            const appData:IAppData = {
+                dataPath:AppData.dataPath,
+            }
+            _e.returnValue = appData;
         });
     }
 

@@ -14,3 +14,7 @@ export interface IChange{
     text:string;
     deleteCount:number;
 }
+
+export interface IAppData{
+    dataPath:string;
+}

@@ -149,7 +149,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                             ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
                             ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
                             ChangesData.changeUtils.showChanges();
-                            refData.current.editor.renderILines(lineConfigs.currentLines);
+                            refData.current.editor.renderILines(lineConfigs.currentLines,store.selectedFile!);
                             res(true);                            
                         });
                     }
