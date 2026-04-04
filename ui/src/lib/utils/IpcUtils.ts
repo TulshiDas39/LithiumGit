@@ -4,6 +4,10 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static copyFile(fromFilePath: string, toFilePath: string,displayError=true) {
+        return IpcUtils.execute(RendererEvents.copyFile,[fromFilePath, toFilePath],displayError);
+    }
+        
     static writeToFile(path:string, result: string) {
         return IpcUtils.execute(RendererEvents.writeToFile,[path, result]);
     }

@@ -4,7 +4,7 @@ import {EditorView, DecorationSet, Decoration} from "prosemirror-view"
 import {Schema, Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { IChange, IFile } from "common_library";
+import { IChange, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { DataUtils } from "../DataUtils";
@@ -127,17 +127,26 @@ export class ChangeEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    renderILines(lines:ILine[],file:IFile){
+    async renderILines(lines:ILine[],file:IFile){
         this._file = file;
-        this.createTempFile();
+        const success = await this.createTempFile();
         this._ilines = lines;
         this._lines = this._ilines.map(l => l.text || '');
-        this.render();        
+        this.render();
+        if(!success) return false;
+        return true;        
     }
 
-    createTempFile(){
+    async createTempFile(){
         const fullPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
-        // IpcUtils.copyFile(fullPath, this._file.content);
+        const fileExtension = StringUtils.GetFileExtension(this._file.path);
+        const tempFileName = `temp${fileExtension}`;
+        const tempFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempFileName);
+        const r = await IpcUtils.copyFile(fullPath, tempFilePath,false);
+        console.log("Copy file result:", r);
+        if(r.error)
+            return false;
+        return true;
     }
 
     private getHighlightPlugin(){

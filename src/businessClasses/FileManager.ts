@@ -22,6 +22,17 @@ export class FileManager{
         this.handleWriteToFile();
         this.handleIsBinary();
         this.handleGetFileProps();
+        this.handleCopyFile();
+    }
+    
+    private handleCopyFile(){
+        ipcMain.handle(RendererEvents.copyFile,async (e,fromFilePath:string,toFilePath:string)=>{
+            return await this.copyFile(fromFilePath,toFilePath);
+        });
+    }
+
+    copyFile(fromFilePath: string, toFilePath: string) {
+        return fs.promises.copyFile(fromFilePath, toFilePath);        
     }
 
     private handleGetFileProps(){

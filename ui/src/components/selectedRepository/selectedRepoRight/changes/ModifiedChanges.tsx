@@ -147,10 +147,15 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
                             ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
-                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
+                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;                            
                             ChangesData.changeUtils.showChanges();
-                            refData.current.editor.renderILines(lineConfigs.currentLines,store.selectedFile!);
-                            res(true);                            
+                            refData.current.editor.renderILines(lineConfigs.currentLines,store.selectedFile!).then(success=>{
+                                if(!success) {
+                                    ModalData.appToast.message = "There was an error reading the content.";
+                                    dispatch(ActionModals.showToast());
+                                }                            
+                                res(true);                            
+                            });
                         });
                     }
                     if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
