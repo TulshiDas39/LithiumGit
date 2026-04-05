@@ -9,12 +9,16 @@ import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { DataUtils } from "../DataUtils";
 import { Data } from "../../data";
+import { Mapping } from 'prosemirror-transform';
+
 
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
     private _file:IFile = null!;
-    //private _tempFilePath = Data.
+    // private _untrackedTransactions: Transaction[] = [];
+    private _untrackedChanges: IChange[] = [];
+    private _tempFilePath = '';
     constructor(containerSelector:string){
         super(containerSelector);        
     }
@@ -25,23 +29,26 @@ export class ChangeEditor extends TextEditor{
 
     protected override handleTransaction(transaction: Transaction) {
         //check if the transaction is a change transaction by checking if the doc has changed and if the new doc is different from the old doc, we can do this by comparing the old and new doc's text content, if they are different then it's a change transaction
-        let changes:IChange[] = [];
-        if(transaction.docChanged){
-            console.log("Document changed");
-            //changes = this.populateChanges(transaction);            
-            this.updateILines(transaction);
-        }
+        
         //const oldText = this._editView.state.doc.textContent;
         super.handleTransaction(transaction);
-        if(changes.length) {
-            this.handleChanges(changes);
+        if(transaction.docChanged){
+            console.log("Document changed");
+            //changes = this.populateChanges(transaction); 
+            // this._untrackedTransactions.push(transaction);           
+            // this.updateILines(transaction);
+            // this.populateChangesAcrossTransactions();
+            this.populateChanges(transaction);
+
+            const savebtn = this.saveBtn();
+            if(this.IsDocChanged()){            
+                savebtn?.classList.remove("d-none");
+            }else{
+                savebtn?.classList.add("d-none");
+            }
         }
-        const savebtn = this.saveBtn();
-        if(this.IsDocChanged()){            
-            savebtn?.classList.remove("d-none");
-        }else{
-            savebtn?.classList.add("d-none");
-        }
+
+        
     }
 
     private updateILines(transaction: Transaction){
@@ -83,42 +90,77 @@ export class ChangeEditor extends TextEditor{
     }
 
     private populateChanges(transaction: Transaction){
-        const changeMap = new Map<number, IChange>(); // keyed by final paragraph index
         for (let i = 0; i < transaction.steps.length; i++) {
             const step = transaction.steps[i];
             if (!(step instanceof ReplaceStep)) continue;
 
             const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
-            const deletedCount = step.to - step.from;
-            
-            // Map this step's `from` position into the FINAL document coordinates
-            const finalFrom = transaction.mapping.slice(i + 1).map(step.from);
 
-            const $pos = transaction.doc.resolve(finalFrom);
-            const paragraphIndex = $pos.index(0);
-            const indexInParagraph = $pos.parentOffset;
+            const $posFrom = transaction.docs[i].resolve(step.from);
+            const $posTo = transaction.docs[i].resolve(step.to);
+            const lineIndexFrom = $posFrom.index(0);
+            const lineIndexTo = $posTo.index(0);
+            const parentOffsetFrom = $posFrom.parentOffset;
+            const parentOffsetTo = $posTo.parentOffset;
 
-            if (changeMap.has(paragraphIndex)) {
-                // Merge into existing change for this paragraph
-                const existing = changeMap.get(paragraphIndex)!;
-                existing.text += insertedText;
-                existing.deleteCount += deletedCount;
-            } else {
-                changeMap.set(paragraphIndex, {
-                    lineIndex: paragraphIndex,
-                    offset: indexInParagraph,
-                    text: insertedText,
-                    deleteCount: deletedCount,
-                });
-            }
+            const change:IChange = {
+                startlineIndex: lineIndexFrom,
+                startOffset: parentOffsetFrom,
+                endlineIndex: lineIndexTo,
+                endOffset: parentOffsetTo,
+                text: insertedText,
+            };
+            this._untrackedChanges.push(change);            
         }
-
-        return Array.from(changeMap.values());
+        this.trackChanges();
     }
 
-    private handleChanges(changes:IChange[]){
-        
+    private trackChanges(){
+        IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges);
     }
+
+
+    // private populateChangesAcrossTransactions() {
+    //     const transactions = this._untrackedTransactions;
+    //     const lastDoc = transactions[transactions.length - 1].doc; // final doc
+    //     const changeMap = new Map<number, IChange>();
+
+    //     for (let t = 0; t < transactions.length; t++) {
+    //         const transaction = transactions[t];
+
+    //         // Build mapping: end of transaction t → final doc
+    //         // (append all transactions AFTER t)
+    //         const suffixMapping = new Mapping();
+    //         for (let k = t + 1; k < transactions.length; k++) {
+    //             suffixMapping.appendMapping(transactions[k].mapping);
+    //         }
+
+    //         for (let i = 0; i < transaction.steps.length; i++) {
+    //             const step = transaction.steps[i];
+    //             if (!(step instanceof ReplaceStep)) continue;
+
+    //             const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+    //             const deletedCount = step.to - step.from;
+
+    //             // Step 1: map step.from to end of current transaction
+    //             const posAtEndOfTr = transaction.mapping.slice(i + 1).map(step.from);
+    //             // Step 2: map through all subsequent transactions → final doc position
+    //             const finalPos = suffixMapping.map(posAtEndOfTr);
+
+    //             const $pos = lastDoc.resolve(finalPos); // ← always final doc
+    //             const paragraphIndex = $pos.index(0);
+    //             const parentOffset = $pos.parentOffset;
+
+            
+    //         }
+    //     }
+
+    //     const arr = Array.from(changeMap.values());
+    //     console.log("Aggregated changes across transactions:", arr);
+    //     return arr;
+    // }
+
+    
 
     private saveBtn(){
         if(!this._saveBtn){
@@ -138,11 +180,12 @@ export class ChangeEditor extends TextEditor{
     }
 
     async createTempFile(){
-        const fullPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
+        const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
         const fileExtension = StringUtils.GetFileExtension(this._file.path);
         const tempFileName = `temp${fileExtension}`;
         const tempFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempFileName);
-        const r = await IpcUtils.copyFile(fullPath, tempFilePath,false);
+        this._tempFilePath = tempFilePath;
+        const r = await IpcUtils.copyFile(sourceFilePath, tempFilePath,false);
         console.log("Copy file result:", r);
         if(r.error)
             return false;

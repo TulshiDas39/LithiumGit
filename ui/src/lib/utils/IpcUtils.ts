@@ -1,9 +1,12 @@
-import { Annotation, EnumLinefeed, IActionTaken, IAppData, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, EnumLinefeed, IActionTaken, IAppData, IChange, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static trackFileChanges(_tempFilePath: string, _untrackedChanges: IChange[]) {
+        return IpcUtils.execute(RendererEvents.trackFileChanges,[_tempFilePath, _untrackedChanges]);
+    }
     static copyFile(fromFilePath: string, toFilePath: string,displayError=true) {
         return IpcUtils.execute(RendererEvents.copyFile,[fromFilePath, toFilePath],displayError);
     }

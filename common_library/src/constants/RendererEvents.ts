@@ -305,6 +305,7 @@ export class RendererEvents{
     static readonly getLineFeedType = "getLineFeedType";
     static readonly getAppData = "getAppData";    
     static readonly copyFile = "copyFile";    
+    static readonly trackFileChanges = "trackFileChanges";    
     
 }
 

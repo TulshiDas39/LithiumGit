@@ -9,10 +9,11 @@ export interface IFileProps{
 }
 
 export interface IChange{
-    lineIndex:number;
-    offset:number;
+    startlineIndex:number;
+    endlineIndex:number;
+    startOffset:number;
+    endOffset:number;
     text:string;
-    deleteCount:number;
 }
 
 export interface IAppData{

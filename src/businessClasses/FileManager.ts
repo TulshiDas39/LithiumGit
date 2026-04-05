@@ -1,8 +1,9 @@
-import {IFileProps, RendererEvents } from "common_library";
+import {IChange, IFileProps, RendererEvents, StringUtils } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
 import { isText, isBinary } from 'istextorbinary'
+import { AppData } from "../dataClasses";
 
 
 
@@ -23,7 +24,16 @@ export class FileManager{
         this.handleIsBinary();
         this.handleGetFileProps();
         this.handleCopyFile();
+        this.handleFileTracking();
     }
+    private handleFileTracking() {
+        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
+            for(let change of untrackedChanges){
+                await this.saveFileChanges(tempFilePath,change);
+            }
+        });
+    }
+    
     
     private handleCopyFile(){
         ipcMain.handle(RendererEvents.copyFile,async (e,fromFilePath:string,toFilePath:string)=>{
@@ -276,7 +286,61 @@ export class FileManager{
             writeStream.write(buffer);
         }
 
-        await new Promise<void>((res, rej) => writeStream.end(err => err ? rej(err) : res()));
+        await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
         await fs.promises.rename(tmpPath, filePath);
+    }
+
+    async saveFileChanges(sourceFilePath: string, change: IChange) {
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
+        const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
+        const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
+        const tmpPath = path.join(AppData.tempPath, tempFileName);
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
+
+        let currLineIndex = 0;
+        let inserted = false;
+        let buffer = '';
+        const lineFeed = AppData.systemLineFeedType;
+
+        let hasDeletion = change.startlineIndex !== change.endlineIndex || change.startOffset !== change.endOffset;
+
+        for await (const chunk of readStream) {
+            buffer += chunk;
+
+            // Split while preserving each line's original ending
+            const parts = buffer.split(/(\r\n|\r|\n)/);
+            // Last element is incomplete — keep it in buffer
+            buffer = parts.pop()!;
+
+            for (let i = 0; i < parts.length; i += 2) {
+                const line = parts[i];
+                const ending = parts[i + 1] ?? '';
+                if (!ending) continue; // skip if no ending matched yet
+
+                currLineIndex++;
+                if (currLineIndex >= change.startlineIndex && !inserted) {
+                    if(hasDeletion){
+                        let updatedLine = '';
+                        if(change.startlineIndex === currLineIndex){
+                            updatedLine = line.substring(0, change.startOffset);
+                            if(change.endlineIndex === currLineIndex){
+                                updatedLine += line.substring(change.endOffset+1);
+                                hasDeletion = false; // deletion fully handled
+                            }
+                            writeStream.write(updatedLine + ending);
+                        }else if(change.endlineIndex === currLineIndex){
+                            updatedLine = line.substring(change.endOffset+1);
+                            writeStream.write(updatedLine + ending);
+                            hasDeletion = false; // deletion fully handled
+                        }                        
+                        continue;
+                    }
+                    
+                    writeStream.write(change.text + lineFeed);
+                    inserted = true;
+                }
+                writeStream.write(line + ending); // preserve original ending
+            }
+        }
     }
 }
