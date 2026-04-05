@@ -1,4 +1,4 @@
-import { EnumLinefeed } from "common_library";
+import { EnumLinefeed, IChange, StringUtils } from "common_library";
 import { Data } from "../../data";
 import {Schema, Node, Slice, Fragment} from "prosemirror-model"
 import {EditorState, Transaction, Command} from "prosemirror-state"
@@ -6,6 +6,9 @@ import {EditorView} from "prosemirror-view"
 import {undo, redo, history} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
+import { ReplaceStep } from "prosemirror-transform";
+import { IpcUtils } from "../IpcUtils";
+import { RepoUtils } from "../RepoUtils";
 
 
 
@@ -20,6 +23,11 @@ export class TextEditor {
     protected _editView:EditorView = null!;
     private _schema:Schema= null!;
     private _initialDoc: Node = null!;
+    private _untrackedChanges: IChange[] = [];
+    private _trackingChanges = false;
+    private _tempFilePath = '';
+    private _sourceFilePath = '';
+
 
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
@@ -46,9 +54,65 @@ export class TextEditor {
         const prevLineCount = this._editView.state.doc.childCount;
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);
-        if(transaction.docChanged && newState.doc.childCount !== prevLineCount){
-            this.renderLineNumbers(newState.doc.childCount);
+
+        if(transaction.docChanged){
+            if(newState.doc.childCount !== prevLineCount){
+                this.renderLineNumbers(newState.doc.childCount);
+            }
+            this.populateChanges(transaction);
         }
+    }
+
+    private populateChanges(transaction: Transaction){
+        for (let i = 0; i < transaction.steps.length; i++) {
+            const step = transaction.steps[i];
+            if (!(step instanceof ReplaceStep)) continue;
+
+            const insertedText = step.slice.content.textBetween(0, step.slice.content.size, Data.systemLineFeedType);
+
+            const $posFrom = transaction.docs[i].resolve(step.from);
+            const $posTo = transaction.docs[i].resolve(step.to);
+            const lineIndexFrom = $posFrom.index(0);
+            const lineIndexTo = $posTo.index(0);
+            const parentOffsetFrom = $posFrom.parentOffset;
+            const parentOffsetTo = $posTo.parentOffset;
+
+            const change:IChange = {
+                startlineIndex: lineIndexFrom,
+                startOffset: parentOffsetFrom,
+                endlineIndex: lineIndexTo,
+                endOffset: parentOffsetTo,
+                text: insertedText,
+            };
+            this._untrackedChanges.push(change);            
+        }
+        this.trackChanges();
+    }
+
+    private trackChanges(){
+        if(this._trackingChanges || this._untrackedChanges.length === 0)
+            return;
+
+        this._trackingChanges = true;
+        const perform = ()=>{
+            const itemCount = this._untrackedChanges.length;
+            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges).then((result)=>{
+                if(result.error){
+                    console.error("Error tracking changes:", result.error);
+                    this._trackingChanges = false;
+                }else{
+                    this._untrackedChanges.splice(0,itemCount);
+                    if(this._untrackedChanges.length) {
+                        perform();
+                    }
+                    else {
+                        this._trackingChanges = false;
+                    }
+                }
+            });
+        }
+        perform();
+
     }
 
     private renderLineNumbers(lineCount: number){
@@ -112,7 +176,9 @@ export class TextEditor {
         return !this._editView.state.doc.eq(this._initialDoc);
     }
 
-    protected render(){
+    protected async render(sourceFilePath:string){
+        this._sourceFilePath = sourceFilePath;
+        const success = await this.createTempFile();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
@@ -125,6 +191,21 @@ export class TextEditor {
         this._initialDoc = this._editView.state.doc;
 
         this.renderLineNumbers(this._editState.doc.childCount);
-    } 
+
+        if(!success) return false;
+        return true;   
+    }
+    
+    private async createTempFile(){
+        const fileExtension = StringUtils.GetFileExtension(this._sourceFilePath);
+        const tempFileName = `temp${fileExtension}`;
+        const tempFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempFileName);
+        this._tempFilePath = tempFilePath;
+        const r = await IpcUtils.copyFile(this._sourceFilePath, tempFilePath,false);
+        console.log("Copy file result:", r);
+        if(r.error)
+            return false;
+        return true;
+    }
 
 }
