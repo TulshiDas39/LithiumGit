@@ -241,55 +241,6 @@ export class FileManager{
         }
     }
 
-    async updateFileContent(path:string,content:string){
-
-    }
-
-    async insertLineAt(filePath: string, lineNumber: number, text: string, newLineEnding = '\n'): Promise<void> {
-        const tmpPath =""; // path.join(os.tmpdir(), `tmp_${Date.now()}`);
-
-        const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-        const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
-
-        let currentLine = 0;
-        let inserted = false;
-        let buffer = '';
-
-        for await (const chunk of readStream) {
-            buffer += chunk;
-
-            // Split while preserving each line's original ending
-            const parts = buffer.split(/(\r\n|\r|\n)/);
-            // Last element is incomplete — keep it in buffer
-            buffer = parts.pop()!;
-
-            for (let i = 0; i < parts.length; i += 2) {
-                const line = parts[i];
-                const ending = parts[i + 1] ?? '';
-                if (!ending) continue; // skip if no ending matched yet
-
-                currentLine++;
-                if (currentLine === lineNumber && !inserted) {
-                    writeStream.write(newLineEnding === '\r\n' ? text + '\r\n' : text + '\n');
-                    inserted = true;
-                }
-                writeStream.write(line + ending); // preserve original ending
-            }
-        }
-
-        // Write remaining buffer (last line with no trailing newline)
-        if (buffer.length > 0) {
-            currentLine++;
-            if (currentLine === lineNumber && !inserted) {
-                writeStream.write(text + '\n');
-            }
-            writeStream.write(buffer);
-        }
-
-        await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
-        await fs.promises.rename(tmpPath, filePath);
-    }
-
     async saveFileChanges(sourceFilePath: string, change: IChange) {
         const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
@@ -322,11 +273,6 @@ export class FileManager{
                         segment = line.substring(0, change.startOffset);
                         writeStream.write(segment);
                         writeStream.write(change.text);
-                        // if(change.endlineIndex === currLineIndex && change.startOffset !== change.endOffset){
-                        //     segment += line.substring(change.endOffset+1);
-                        //     hasDeletion = false; // deletion fully handled
-                        // }
-                        // writeStream.write(segment);
                     }
                     if(change.endlineIndex === currLineIndex){
                         segment = line.substring(change.endOffset);

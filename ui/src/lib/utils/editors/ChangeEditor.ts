@@ -56,7 +56,7 @@ export class ChangeEditor extends TextEditor{
         for(let i = 0; i < transaction.steps.length; i++){
                 const step = transaction.steps[i];
                 if(step instanceof ReplaceStep){
-                    const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+                    const insertedText = step.slice.content.textBetween(0, step.slice.content.size, '\n');
                     console.log("Inserted text:", insertedText);
                     const insertedLines = insertedText.split(/\r?\n/);
                     console.log("Line count:", insertedLines.length);
@@ -94,7 +94,7 @@ export class ChangeEditor extends TextEditor{
             const step = transaction.steps[i];
             if (!(step instanceof ReplaceStep)) continue;
 
-            const insertedText = step.slice.content.textBetween(0, step.slice.content.size);
+            const insertedText = step.slice.content.textBetween(0, step.slice.content.size, Data.systemLineFeedType);
 
             const $posFrom = transaction.docs[i].resolve(step.from);
             const $posTo = transaction.docs[i].resolve(step.to);
