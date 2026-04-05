@@ -8,7 +8,6 @@ import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
 import { ReplaceStep } from "prosemirror-transform";
 import { IpcUtils } from "../IpcUtils";
-import { RepoUtils } from "../RepoUtils";
 
 
 
@@ -27,6 +26,7 @@ export class TextEditor {
     private _trackingChanges = false;
     private _tempFilePath = '';
     private _sourceFilePath = '';
+    private _changeTrackingTimer: NodeJS.Timeout | null = null;
 
 
     constructor(containerSelector:string){
@@ -86,7 +86,17 @@ export class TextEditor {
             };
             this._untrackedChanges.push(change);            
         }
-        this.trackChanges();
+        this.trackChangesDebounced();
+    }
+
+    private trackChangesDebounced(){
+        if(this._changeTrackingTimer){
+            clearTimeout(this._changeTrackingTimer);
+        }
+        this._changeTrackingTimer = setTimeout(() => {
+            this.trackChanges();
+            this._changeTrackingTimer = null;
+        }, 1000);
     }
 
     private trackChanges(){
