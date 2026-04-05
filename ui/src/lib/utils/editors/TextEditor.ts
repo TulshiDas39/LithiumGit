@@ -218,4 +218,15 @@ export class TextEditor {
         return true;
     }
 
+    protected async save(){
+        if(this._tempFilePath && this._sourceFilePath){
+            const r = await IpcUtils.copyFile(this._tempFilePath, this._sourceFilePath,true);
+            console.log("Save file result:", r);
+            if(r.error)
+                return false;
+            return true;
+        }
+        return false;
+    }
+
 }

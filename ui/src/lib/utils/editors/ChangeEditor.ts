@@ -6,6 +6,10 @@ import { ILine } from "../../interfaces";
 import { IFile } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
+import { ReduxUtils } from "../ReduxUtils";
+import { ActionUI } from "../../../store/slices/UiSlice";
+import { ActionModals } from "../../../store";
+import { ModalData } from "../../../components/modals/ModalData";
 
 
 export class ChangeEditor extends TextEditor{
@@ -36,6 +40,20 @@ export class ChangeEditor extends TextEditor{
     private saveBtn(){
         if(!this._saveBtn){
             this._saveBtn = document.querySelector(`${this._containerSelector}`)?.closest(".diff-view")?.querySelector(".save-btn-container")!;
+            this._saveBtn.addEventListener('click',() => {
+                ReduxUtils.dispatch(ActionUI.setSync({text:"Saving changes..."}));
+                this.save().then((r)=>{
+                    ReduxUtils.dispatch(ActionUI.setSync(undefined));
+                    if(r){
+                        ModalData.appToast.message = "Saved successful.";
+                        ReduxUtils.dispatch(ActionModals.showToast());
+                    }else{
+                        ModalData.appToast.message = "Failed to save changes.";
+                        ReduxUtils.dispatch(ActionModals.showToast());
+                    }
+                });
+
+            });
         }
         return this._saveBtn;
     }
