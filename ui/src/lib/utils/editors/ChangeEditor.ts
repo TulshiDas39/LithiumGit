@@ -18,6 +18,7 @@ export class ChangeEditor extends TextEditor{
     private _file:IFile = null!;
     // private _untrackedTransactions: Transaction[] = [];
     private _untrackedChanges: IChange[] = [];
+    private _trackingChanges = false;
     private _tempFilePath = '';
     constructor(containerSelector:string){
         super(containerSelector);        
@@ -59,7 +60,6 @@ export class ChangeEditor extends TextEditor{
                     console.log("Inserted text:", insertedText);
                     const insertedLines = insertedText.split(/\r?\n/);
                     console.log("Line count:", insertedLines.length);
-                    const deletedCount = step.to - step.from;
                     const $pos = transaction.docs[i].resolve(step.from);
                     const $posTo = transaction.docs[i].resolve(step.to);
                     const lineIndexFrom = $pos.index(0);
@@ -116,7 +116,29 @@ export class ChangeEditor extends TextEditor{
     }
 
     private trackChanges(){
-        IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges);
+        if(this._trackingChanges || this._untrackedChanges.length === 0)
+            return;
+
+        this._trackingChanges = true;
+        const perform = ()=>{
+            const itemCount = this._untrackedChanges.length;
+            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges).then((result)=>{
+                if(result.error){
+                    console.error("Error tracking changes:", result.error);
+                    this._trackingChanges = false;
+                }else{
+                    this._untrackedChanges.splice(0,itemCount);
+                    if(this._untrackedChanges.length) {
+                        perform();
+                    }
+                    else {
+                        this._trackingChanges = false;
+                    }
+                }
+            });
+        }
+        perform();
+
     }
 
 

@@ -297,12 +297,10 @@ export class FileManager{
         const tmpPath = path.join(AppData.tempPath, tempFileName);
         const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
 
-        let currLineIndex = 0;
+        let currLineIndex = -1;
         let inserted = false;
         let buffer = '';
         const lineFeed = AppData.systemLineFeedType;
-
-        let hasDeletion = change.startlineIndex !== change.endlineIndex || change.startOffset !== change.endOffset;
 
         for await (const chunk of readStream) {
             buffer += chunk;
@@ -318,29 +316,42 @@ export class FileManager{
                 if (!ending) continue; // skip if no ending matched yet
 
                 currLineIndex++;
-                if (currLineIndex >= change.startlineIndex && !inserted) {
-                    if(hasDeletion){
-                        let updatedLine = '';
-                        if(change.startlineIndex === currLineIndex){
-                            updatedLine = line.substring(0, change.startOffset);
-                            if(change.endlineIndex === currLineIndex){
-                                updatedLine += line.substring(change.endOffset+1);
-                                hasDeletion = false; // deletion fully handled
-                            }
-                            writeStream.write(updatedLine + ending);
-                        }else if(change.endlineIndex === currLineIndex){
-                            updatedLine = line.substring(change.endOffset+1);
-                            writeStream.write(updatedLine + ending);
-                            hasDeletion = false; // deletion fully handled
-                        }                        
-                        continue;
+                if (!inserted && currLineIndex >= change.startlineIndex) {                    
+                    let segment = '';
+                    if(change.startlineIndex === currLineIndex){
+                        segment = line.substring(0, change.startOffset);
+                        writeStream.write(segment);
+                        writeStream.write(change.text);
+                        // if(change.endlineIndex === currLineIndex && change.startOffset !== change.endOffset){
+                        //     segment += line.substring(change.endOffset+1);
+                        //     hasDeletion = false; // deletion fully handled
+                        // }
+                        // writeStream.write(segment);
                     }
-                    
-                    writeStream.write(change.text + lineFeed);
-                    inserted = true;
+                    if(change.endlineIndex === currLineIndex){
+                        segment = line.substring(change.endOffset);
+                        writeStream.write(segment + ending);
+                        inserted = true;
+                    }                        
+                    continue;                                        
                 }
                 writeStream.write(line + ending); // preserve original ending
             }
         }
+
+        if (buffer.length > 0) {
+            console.log("Buffer at end:", buffer);
+            writeStream.write(buffer);
+        }
+
+        await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
+        await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
+            if (err.code === 'EXDEV') {
+                await fs.promises.copyFile(tmpPath, sourceFilePath);
+                await fs.promises.unlink(tmpPath);
+            } else {
+                throw err;
+            }
+        });
     }
 }
