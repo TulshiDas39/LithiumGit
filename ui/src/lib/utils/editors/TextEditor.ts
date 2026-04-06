@@ -221,9 +221,9 @@ export class TextEditor {
     protected async save(){
         if(this._tempFilePath && this._sourceFilePath){
             const r = await IpcUtils.copyFile(this._tempFilePath, this._sourceFilePath,true);
-            console.log("Save file result:", r);
             if(r.error)
                 return false;
+            this._initialDoc = this._editView.state.doc;
             return true;
         }
         return false;
