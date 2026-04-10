@@ -251,7 +251,6 @@ export class FileManager{
         let currLineIndex = -1;
         let inserted = false;
         let buffer = '';
-        const lineFeed = AppData.systemLineFeedType;
 
         for await (const chunk of readStream) {
             buffer += chunk;
