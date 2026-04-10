@@ -286,7 +286,6 @@ export class FileManager{
         }
 
         if (buffer.length > 0) {
-            console.log("Buffer at end:", buffer);
             writeStream.write(buffer);
         }
 
