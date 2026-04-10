@@ -84,7 +84,7 @@ export class ChangeEditor extends TextEditor{
                         spacer.innerText = " ";
                         spacer.className = 'transparent-background noselect pm-spacer-widget';
                         return spacer;
-                    }, { side: -1, key: `spacer-${index}` }));
+                    }, { side: -1, key: `spacer-${ilineIndex}` }));
                     ilineIndex++;
                     iline = this._ilines[ilineIndex];                    
                 }
