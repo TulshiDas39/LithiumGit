@@ -84,6 +84,7 @@ export class TextEditor {
                 endOffset: parentOffsetTo,
                 text: insertedText,
             };
+            console.log("Detected change:", change);
             this._untrackedChanges.push(change);            
         }
         this.trackChangesDebounced();

@@ -62,7 +62,7 @@ export class ChangeEditor extends TextEditor{
     async renderILines(lines:ILine[],file:IFile){
         this._file = file;
         this._ilines = lines;
-        this._lines = this._ilines.map(l => l.text || '');
+        this._lines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
         const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
         return await this.render(sourceFilePath);             
     }
@@ -71,10 +71,23 @@ export class ChangeEditor extends TextEditor{
     private getHighlightPlugin(){
         const buildDecorations = (doc: Node) => {
             const decorations: Decoration[] = [];
+            let ilineIndex = 0;
             doc.forEach((node: Node, offset: number, index: number) => {
-                const iline = this._ilines[index];
+                console.log("index",index,"ilineIndex",ilineIndex);
+                let iline = this._ilines[ilineIndex];
                 //TODO: null check not required after we make sure ilines are always in sync with lines, but for safety we can keep it for now
                 if(!iline) return;
+                while(!!iline && iline.text === undefined){
+                    if(ilineIndex >= this._ilines.length) break;
+                    decorations.push(Decoration.widget(offset, () => {
+                        const spacer = document.createElement('div');
+                        spacer.innerText = " ";
+                        spacer.className = 'transparent-background noselect pm-spacer-widget';
+                        return spacer;
+                    }, { side: -1, key: `spacer-${index}` }));
+                    ilineIndex++;
+                    iline = this._ilines[ilineIndex];                    
+                }
                 if(iline.hightLightBackground){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
                     for(let i=0; i<iline.textHightlightIndex.length; i++){
@@ -84,9 +97,8 @@ export class ChangeEditor extends TextEditor{
                         decorations.push(Decoration.inline(start, end, { class: 'bg-current-change-deep' }));
                     }
                 }
-                if(iline.text === undefined){
-                    decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'transparent-background noselect',contenteditable:"false" }));
-                }
+                ilineIndex++;                
+                
             });
             return DecorationSet.create(doc, decorations);
         };
