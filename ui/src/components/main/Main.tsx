@@ -72,7 +72,6 @@ function MainComponent(){
     useEffect(()=>{
         Data.systemLineFeedType = IpcUtils.getLineFeedType().result || EnumLinefeed.CRLF;        
         Data.appData = IpcUtils.getAppData().result!;
-        console.log("App data:",Data.appData);
         registerIpcEvents();        
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
         if(!savedData){

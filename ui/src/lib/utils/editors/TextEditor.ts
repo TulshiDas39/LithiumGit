@@ -27,6 +27,7 @@ export class TextEditor {
     private _tempFilePath = '';
     private _sourceFilePath = '';
     private _changeTrackingTimer: NodeJS.Timeout | null = null;
+    protected saveHandler: ((success:boolean) => void) | null = null;
 
 
     constructor(containerSelector:string){
@@ -140,6 +141,11 @@ export class TextEditor {
         return true;
     };
 
+    private readonly triggerSave: Command = (state, dispatch) => {
+        this.save();
+        return true;
+    };
+
 
     protected getPlugins(){
         return [history(),
@@ -147,6 +153,7 @@ export class TextEditor {
                 "Mod-z": undo,
                 "Mod-y": redo,              
                 "Tab": this.insertTab,
+                "Mod-s": this.triggerSave,
             }),
             keymap(baseKeymap),
         ];
@@ -226,11 +233,15 @@ export class TextEditor {
                     if(!this._trackingChanges){
                         console.log("Change tracking completed, proceeding with save...");
                         clearInterval(timer);
-                        this.executeSave().then((success) => resolve(success));
+                        this.executeSave().then((success) =>{
+                            this.saveHandler?.(success);
+                            resolve(success)
+                        });
                     }                        
                 }, 100);
             }else{
                 const success = await this.executeSave();
+                this.saveHandler?.(success);
                 resolve(success);
             }
         });

@@ -17,7 +17,8 @@ export class ChangeEditor extends TextEditor{
     private _saveBtn:HTMLElement | null = null;
     private _file:IFile = null!;
     constructor(containerSelector:string){
-        super(containerSelector);        
+        super(containerSelector);
+        this.saveHandler = success => this.onSave(success);
     }
 
     protected override getPlugins(){
@@ -37,23 +38,25 @@ export class ChangeEditor extends TextEditor{
     }
     
 
+    private onSave(success:boolean){
+        ReduxUtils.dispatch(ActionUI.setSync(undefined));
+        
+        if(success){
+            this._saveBtn?.classList.add("d-none");
+            ModalData.appToast.message = "Saved successful.";
+            ReduxUtils.dispatch(ActionModals.showToast());
+        }else{
+            ModalData.appToast.message = "Failed to save changes.";
+            ReduxUtils.dispatch(ActionModals.showToast());
+        }
+    }
+
     private saveBtn(){
-        if(!this._saveBtn){
+        if(!this._saveBtn || !this._saveBtn.isConnected){
             this._saveBtn = document.querySelector(`${this._containerSelector}`)?.closest(".diff-view")?.querySelector(".save-btn-container")!;
             this._saveBtn.addEventListener('click',() => {
                 ReduxUtils.dispatch(ActionUI.setSync({text:"Saving changes..."}));
-                this.save().then((r)=>{
-                    ReduxUtils.dispatch(ActionUI.setSync(undefined));
-                    if(r){
-                        this._saveBtn?.classList.add("d-none");
-                        ModalData.appToast.message = "Saved successful.";
-                        ReduxUtils.dispatch(ActionModals.showToast());
-                    }else{
-                        ModalData.appToast.message = "Failed to save changes.";
-                        ReduxUtils.dispatch(ActionModals.showToast());
-                    }
-                });
-
+                this.save();
             });
         }
         return this._saveBtn;
