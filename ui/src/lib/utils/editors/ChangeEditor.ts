@@ -73,7 +73,6 @@ export class ChangeEditor extends TextEditor{
             const decorations: Decoration[] = [];
             let ilineIndex = 0;
             doc.forEach((node: Node, offset: number, index: number) => {
-                console.log("index",index,"ilineIndex",ilineIndex);
                 let iline = this._ilines[ilineIndex];
                 //TODO: null check not required after we make sure ilines are always in sync with lines, but for safety we can keep it for now
                 if(!iline) return;

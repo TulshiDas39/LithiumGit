@@ -84,7 +84,6 @@ export class TextEditor {
                 endOffset: parentOffsetTo,
                 text: insertedText,
             };
-            console.log("Detected change:", change);
             this._untrackedChanges.push(change);            
         }
         this.trackChangesDebounced();
@@ -220,6 +219,26 @@ export class TextEditor {
     }
 
     protected async save(){
+        return new Promise<boolean>(async (resolve) => {
+            if(this._changeTrackingTimer){
+                console.log("Waiting for change tracking to complete before saving...");
+                const timer = setInterval(() => {
+                    if(!this._trackingChanges){
+                        console.log("Change tracking completed, proceeding with save...");
+                        clearInterval(timer);
+                        this.executeSave().then((success) => resolve(success));
+                    }                        
+                }, 100);
+            }else{
+                const success = await this.executeSave();
+                resolve(success);
+            }
+        });
+        
+        
+    }
+
+    private async executeSave(){
         if(this._tempFilePath && this._sourceFilePath){
             const r = await IpcUtils.copyFile(this._tempFilePath, this._sourceFilePath,true);
             if(r.error)

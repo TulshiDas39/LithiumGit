@@ -107,7 +107,6 @@ function CommitDiffViewComponent(props:IProps){
         }
 
         IpcUtils.isBinaryFile(props.file.path).then(r=>{
-            console.log('isBinary',r);
             if(r.result){                
                 showPreview(props.file!);
             }else{
