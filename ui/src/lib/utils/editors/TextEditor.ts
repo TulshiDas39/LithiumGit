@@ -17,7 +17,6 @@ export class TextEditor {
     protected _lines:string[] = [];
     private _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
     private _encoding:string = 'utf-8';
-    private readonly _systemLineFeedType:EnumLinefeed = EnumLinefeed.CRLF;
     protected _editState:EditorState = null!;
     protected _editView:EditorView = null!;
     private _schema:Schema= null!;
@@ -32,13 +31,8 @@ export class TextEditor {
 
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
-        this._systemLineFeedType = Data.systemLineFeedType;    
+        this._lineFeedType = Data.systemLineFeedType;    
         this._schema = this.getSchema();   
-    }
-
-    setContent(content:string){        
-        this._lines = content?.split('\n') || [];
-        return this;
     }
 
     private createDocument(){
@@ -69,7 +63,7 @@ export class TextEditor {
             const step = transaction.steps[i];
             if (!(step instanceof ReplaceStep)) continue;
 
-            const insertedText = step.slice.content.textBetween(0, step.slice.content.size, Data.systemLineFeedType);
+            const insertedText = step.slice.content.textBetween(0, step.slice.content.size, this._lineFeedType);
 
             const $posFrom = transaction.docs[i].resolve(step.from);
             const $posTo = transaction.docs[i].resolve(step.to);
@@ -202,7 +196,7 @@ export class TextEditor {
             state:this._editState,
             dispatchTransaction:(tr) => this.handleTransaction(tr),
             attributes: { spellcheck: "false", style: `width: fit-content` },
-            clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, "\n"),
+            clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, this._lineFeedType),
             handlePaste: (view, event) => this.handlePaste(view, event),
         });
         this._initialDoc = this._editView.state.doc;
@@ -219,7 +213,6 @@ export class TextEditor {
         const tempFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempFileName);
         this._tempFilePath = tempFilePath;
         const r = await IpcUtils.copyFile(this._sourceFilePath, tempFilePath,false);
-        console.log("Copy file result:", r);
         if(r.error)
             return false;
         return true;
