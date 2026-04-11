@@ -21,12 +21,13 @@ export class TextEditor {
     protected _editView:EditorView = null!;
     private _schema:Schema= null!;
     private _initialDoc: Node = null!;
-    private _untrackedChanges: IChange[] = [];
+    protected _untrackedChanges: IChange[] = [];
     private _trackingChanges = false;
-    private _tempFilePath = '';
-    private _sourceFilePath = '';
+    protected _tempFilePath = '';
+    protected _sourceFilePath = '';
     private _changeTrackingTimer: NodeJS.Timeout | null = null;
     protected saveHandler: ((success:boolean) => void) | null = null;
+    protected onSync: (() => void) | null = null;
 
 
     constructor(containerSelector:string){
@@ -112,10 +113,13 @@ export class TextEditor {
                     }
                     else {
                         this._trackingChanges = false;
+                        this.onSync?.();
                     }
                 }
             });
         }
+        
+
         perform();
 
     }
@@ -185,6 +189,12 @@ export class TextEditor {
 
     protected IsDocChanged(){
         return !this._editView.state.doc.eq(this._initialDoc);
+    }
+
+    getContentLines(): string[] {
+        const lines: string[] = [];
+        this._editView.state.doc.forEach(node => lines.push(node.textContent ?? ''));
+        return lines;
     }
 
     protected async render(sourceFilePath:string){

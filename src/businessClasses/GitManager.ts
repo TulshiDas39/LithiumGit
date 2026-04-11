@@ -58,6 +58,20 @@ export class GitManager{
         this.addIgnore();
         this.addRemoveFromGitHandler();
         this.addCommitDetailsHandler();
+        this.addCopyStagedContentHandler();
+    }
+
+    private addCopyStagedContentHandler() {
+        ipcMain.handle(RendererEvents.copyStagedContent, async (e,repoPath: string, path: string, destinationPath: string) => {
+            const result = await this.copyStagedContent(path, destinationPath, repoPath);
+            return result;
+        });
+    }
+
+    private async copyStagedContent(path: string, destinationPath: string, repoPath: string) {
+        const git = this.getGitRunner(repoPath);
+        const stagedContent = await git.show([`:${path}`]);
+        return await new FileManager().writeToFile(destinationPath, stagedContent);
     }
 
 
@@ -133,15 +147,15 @@ export class GitManager{
         
         const localUser = {} as IUserConfig;
         let result = await git.getConfig("user.name","local");
-        localUser.name = result.value;
+        localUser.name = result.value!;
         result = await git.getConfig("user.email","local");
-        localUser.email = result.value;
+        localUser.email = result.value!;
 
         const globalUser = {} as IUserConfig;
         result = await git.getConfig("user.name","global");
-        globalUser.name = result.value;
+        globalUser.name = result.value!;
         result = await git.getConfig("user.email","global");
-        globalUser.email = result.value;
+        globalUser.email = result.value!;
         const userConfig:ITypedConfig<IUserConfig> = {
             local:localUser,
             global:globalUser
@@ -272,9 +286,9 @@ export class GitManager{
                 e.returnValue = false;
                 return;
             }
-            const subDirNames = readdirSync(path, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
+            const subDirNames = readdirSync(path, { withFileTypes: true }).filter((dirent:any) => dirent.isDirectory()).map(dirent => dirent.name);
             
-            if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
+            if(subDirNames.every((name:any)=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
         })        
     }
@@ -576,6 +590,7 @@ export class GitManager{
             return commits;            
         }catch(e){
             console.error("error on get logs:", e);
+            return [];
         }
     
     }
@@ -877,7 +892,7 @@ export class GitManager{
             repoPath = repoInfo as string;
         }
         else{
-            repoPath = (repoInfo as RepositoryInfo).path;
+            repoPath = (repoInfo as RepositoryInfo)?.path;
         }
         const options: Partial<SimpleGitOptions> = {
             baseDir: repoPath,

@@ -306,6 +306,7 @@ export class RendererEvents{
     static readonly getAppData = "getAppData";    
     static readonly copyFile = "copyFile";    
     static readonly trackFileChanges = "trackFileChanges";    
+    static readonly copyStagedContent = "copyStagedContent";
     
 }
 

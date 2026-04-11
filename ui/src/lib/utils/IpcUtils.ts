@@ -4,6 +4,9 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
+    static copyStagedContent(path: string, destinationPath: string) {
+        return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
+    }
     static trackFileChanges(_tempFilePath: string, _untrackedChanges: IChange[]) {
         return IpcUtils.execute(RendererEvents.trackFileChanges,[_tempFilePath, _untrackedChanges]);
     }
