@@ -43,7 +43,7 @@ export class ChangeEditor extends TextEditor{
         
         if(success){
             this._saveBtn?.classList.add("d-none");
-            ModalData.appToast.message = "Saved successful.";
+            ModalData.appToast.message = "Saved successfully.";
             ReduxUtils.dispatch(ActionModals.showToast());
         }else{
             ModalData.appToast.message = "Failed to save changes.";
