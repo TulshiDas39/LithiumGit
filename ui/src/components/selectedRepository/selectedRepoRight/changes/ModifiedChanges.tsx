@@ -145,7 +145,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     refData.current.selectedFileContent = lines;
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{
+                            console.log("Diff result received", str);
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
+                            console.log("current content lines", refData.current.selectedFileContent);
                             ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
                             ChangesData.changeUtils.previousLines = lineConfigs.previousLines;                            
                             ChangesData.changeUtils.showChanges();

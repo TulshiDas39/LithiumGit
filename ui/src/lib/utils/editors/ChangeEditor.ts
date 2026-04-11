@@ -58,7 +58,7 @@ export class ChangeEditor extends TextEditor{
         // const result = await git.diff(["--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--no-index", tmpFile, externalFilePath]);
         console.log("Updating diff with content from editor...");
         // const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",filePath];
-        const options = ["-c", "core.autocrlf=false", "diff", "--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--no-index", this._tempStagedFilePath, this._tempFilePath];
+        const options = ["-c", "core.autocrlf=false", "diff", "--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
         IpcUtils.getRaw(options).then((r) => {
             const diffResult = r.result!;
             console.log("Diff result received", diffResult);
@@ -68,7 +68,7 @@ export class ChangeEditor extends TextEditor{
             const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
             console.log("UI lines after diff", uiLines);
             this._ilines = uiLines.currentLines;
-            console.log("Diff updated",this._lines);
+            console.log("Diff updated",this._ilines);
             //build decorations again with new ilines
             const tr = this._editView.state.tr;
             this._haveDecorationUpdate = true;
@@ -108,6 +108,7 @@ export class ChangeEditor extends TextEditor{
         await this.saveStagedContent();
         this._ilines = lines;
         this._lines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
+        console.log("Rendering ChangeEditor with lines", this._lines);
         const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
         return await this.render(sourceFilePath);             
     }
