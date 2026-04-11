@@ -255,9 +255,7 @@ export class FileManager{
         for await (const chunk of readStream) {
             buffer += chunk;
 
-            // Split while preserving each line's original ending
             const parts = buffer.split(/(\r\n|\r|\n)/);
-            // Last element is incomplete — keep it in buffer
             buffer = parts.pop()!;
 
             for (let i = 0; i < parts.length; i += 2) {
