@@ -28,9 +28,17 @@ export class FileManager{
     }
     private handleFileTracking() {
         ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
+            let succeededCount = 0;
             for(let change of untrackedChanges){
-                await this.saveFileChanges(tempFilePath,change);
+                try{
+                    await this.saveFileChanges(tempFilePath,change);
+                    succeededCount++;
+                }catch(err){
+                    console.error("Error saving file changes:", err);
+                    return succeededCount;
+                }
             }
+            return succeededCount;
         });
     }
     
@@ -275,26 +283,32 @@ export class FileManager{
                 writeStream.write(line + ending);
             }
         }
+        try{
 
-        for await (const chunk of readStream) {
-            buffer += chunk;
-            const parts = buffer.split(/(\r\n|\r|\n)/);
-            buffer = parts.pop()!;
-            update(parts);            
-        }
-
-        const lParts = buffer.split(/(\r\n|\r|\n)/);
-        update(lParts);
-        
-
-        await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
-        await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
-            if (err.code === 'EXDEV') {
-                await fs.promises.copyFile(tmpPath, sourceFilePath);
-                await fs.promises.unlink(tmpPath);
-            } else {
-                throw err;
+            for await (const chunk of readStream) {
+                buffer += chunk;
+                const parts = buffer.split(/(\r\n|\r|\n)/);
+                buffer = parts.pop()!;
+                update(parts);            
             }
-        });
+
+            const lParts = buffer.split(/(\r\n|\r|\n)/);
+            update(lParts);
+            
+
+            await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
+            await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
+                if (err.code === 'EXDEV') {
+                    await fs.promises.copyFile(tmpPath, sourceFilePath);
+                    await fs.promises.unlink(tmpPath);
+                } else {
+                    throw err;
+                }
+            });
+        }catch(err){
+            console.error("Error saving file changes:", err);
+            fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
+            throw err;
+        }
     }
 }

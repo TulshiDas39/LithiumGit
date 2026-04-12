@@ -106,7 +106,13 @@ export class TextEditor {
                 if(result.error){
                     console.error("Error tracking changes:", result.error);
                     this._trackingChanges = false;
-                }else{
+                }
+                else if(result.result !== itemCount){
+                    console.warn(`Mismatch in tracked changes count. Expected: ${itemCount}, Tracked: ${result.result}`);
+                    this._untrackedChanges.splice(0,result.result);
+                    this._trackingChanges = false;
+                }
+                else{
                     this._untrackedChanges.splice(0,itemCount);
                     if(this._untrackedChanges.length) {
                         perform();
