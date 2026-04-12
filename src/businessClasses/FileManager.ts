@@ -252,16 +252,10 @@ export class FileManager{
         let inserted = false;
         let buffer = '';
 
-        for await (const chunk of readStream) {
-            buffer += chunk;
-
-            const parts = buffer.split(/(\r\n|\r|\n)/);
-            buffer = parts.pop()!;
-
+        const update=(parts:string[])=>{
             for (let i = 0; i < parts.length; i += 2) {
                 const line = parts[i];
                 const ending = parts[i + 1] ?? '';
-                if (!ending) continue; // skip if no ending matched yet
 
                 currLineIndex++;
                 if (!inserted && currLineIndex >= change.startlineIndex) {                    
@@ -278,13 +272,20 @@ export class FileManager{
                     }                        
                     continue;                                        
                 }
-                writeStream.write(line + ending); // preserve original ending
+                writeStream.write(line + ending);
             }
         }
 
-        if (buffer.length > 0) {
-            writeStream.write(buffer);
+        for await (const chunk of readStream) {
+            buffer += chunk;
+            const parts = buffer.split(/(\r\n|\r|\n)/);
+            buffer = parts.pop()!;
+            update(parts);            
         }
+
+        const lParts = buffer.split(/(\r\n|\r|\n)/);
+        update(lParts);
+        
 
         await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
         await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
