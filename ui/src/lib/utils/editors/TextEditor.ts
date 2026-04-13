@@ -82,17 +82,7 @@ export class TextEditor {
             };
             this._untrackedChanges.push(change);            
         }
-        this.trackChangesDebounced();
-    }
-
-    private trackChangesDebounced(){
-        if(this._changeTrackingTimer){
-            clearTimeout(this._changeTrackingTimer);
-        }
-        this._changeTrackingTimer = setTimeout(() => {
-            this.trackChanges();
-            this._changeTrackingTimer = null;
-        }, 1000);
+        this.trackChanges();
     }
 
     private trackChanges(){
