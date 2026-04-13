@@ -81,7 +81,10 @@ export class DiffUtils{
 
         let previousLine:ILine ={
             textHightlightIndex:[],
-        }        
+        }
+        
+        let preLine = '';
+        let curLine = '';
 
         for(let i=startIndexesOfSections;i<diffLines.length;i++){
             const diffLine = diffLines[i];
@@ -113,134 +116,154 @@ export class DiffUtils{
             }            
 
             else if(diffLine.startsWith(" ")){
-                if(previousLine.text === undefined){                                                                                                                          
-                    previousLine.text = "";
-                }
-                if(currentLine.text === undefined) {
-                    currentLine.text = "";
-                }
-                previousLine.text += diffLine.substring(1);
-                currentLine.text += diffLine.substring(1);
+                // if(previousLine.text === undefined){                                                                                                                          
+                //     previousLine.text = "";
+                // }
+                // if(currentLine.text === undefined) {
+                //     currentLine.text = "";
+                // }
+                preLine += diffLine.substring(1);
+                curLine += diffLine.substring(1);
                 currentCharTrackingIndex += diffLine.length-1;
                 previousCharTrackingIndex += diffLine.length-1;                
             }
             else if(diffLine.startsWith("+")){
-                if(currentLine.text === undefined)currentLine.text = "";                
-                currentLine.text! += diffLine.substring(1);
-                currentLine.textHightlightIndex.push({fromIndex:currentCharTrackingIndex,count:diffLine.length-1});
+                // if(currentLine.text === undefined)currentLine.text = ""; 
+                currentLine.textHightlightIndex.push({fromIndex:curLine.length,count:diffLine.length-1});
+                curLine += diffLine.substring(1);
                 currentCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("-")){
-                if(!previousLine.text) previousLine.text = "";
-                previousLine.text += diffLine.substring(1);                
-                previousLine.textHightlightIndex.push({fromIndex:previousCharTrackingIndex,count:diffLine.length-1});
+                // if(!previousLine.text) previousLine.text = "";
+                previousLine.textHightlightIndex.push({fromIndex:preLine.length,count:diffLine.length-1});
+                preLine += diffLine.substring(1);                
                 previousCharTrackingIndex += diffLine.length-1;
             }
             else if(diffLine.startsWith("~")){                
-                if(diffLines[i-1].startsWith("~")){                    
-                    let isAdded = true;
-                    let count = 1;
-                    while(diffLines[i+count]?.startsWith("~"))
-                        count++;                                                
-                    if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
-                        isAdded=false;
+                // if(diffLines[i-1].startsWith("~")){                    
+                //     let isAdded = true;
+                //     let count = 1;
+                //     while(diffLines[i+count]?.startsWith("~"))
+                //         count++;                                                
+                //     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
+                //         isAdded=false;
                     
-                    if(isAdded){                        
-                        for(let x=0;x < count; x++){
-                            currentLine.text = "";
-                            currentLine.hightLightBackground = true;
+                //     if(isAdded){                        
+                //         for(let x=0;x < count; x++){
+                //             currentLine.text = "";
+                //             currentLine.hightLightBackground = true;
                             
-                            currentLines.push(currentLine);
-                            previousLines.push(previousLine);                            
+                //             currentLines.push(currentLine);
+                //             previousLines.push(previousLine);                            
                             
-                            currentLine ={
-                                textHightlightIndex:[],
-                            }
-                            previousLine ={
-                                textHightlightIndex:[],
-                            }
+                //             currentLine ={
+                //                 textHightlightIndex:[],
+                //             }
+                //             previousLine ={
+                //                 textHightlightIndex:[],
+                //             }
                             
-                        }
-                        lineNumberOfCurrentChange += count;
-                        currentCharTrackingIndex = 0;
-                    }
-                    else{                        
-                        for(let x=0;x < count; x++){
-                            previousLine.text = "";
-                            previousLine.hightLightBackground = true;                            
+                //         }
+                //         lineNumberOfCurrentChange += count;
+                //         currentCharTrackingIndex = 0;
+                //     }
+                //     else{                        
+                //         for(let x=0;x < count; x++){
+                //             previousLine.text = "";
+                //             previousLine.hightLightBackground = true;                            
                             
-                            currentLines.push(currentLine);
-                            previousLines.push(previousLine);
+                //             currentLines.push(currentLine);
+                //             previousLines.push(previousLine);
                             
-                            currentLine = {
-                                textHightlightIndex:[],
-                            }
-                            previousLine = {
-                                textHightlightIndex:[],
-                            }                                
+                //             currentLine = {
+                //                 textHightlightIndex:[],
+                //             }
+                //             previousLine = {
+                //                 textHightlightIndex:[],
+                //             }                                
                             
-                        }
-                        lineNumberOfPreviousChange += count;                            
-                        previousCharTrackingIndex = 0;
-                    }                    
-                    i = i + count - 1;                    
+                //         }
+                //         lineNumberOfPreviousChange += count;                            
+                //         previousCharTrackingIndex = 0;
+                //     }                    
+                //     i = i + count - 1;                    
+                // }                
+                
+                if(curLine || !!currentLine.textHightlightIndex.length){
+                    currentLine.text = curLine;
                 }
-                else if(diffLines[i-1].startsWith("+")){                    
-                    currentLine.hightLightBackground = true;
-                    if(previousLine.text !== undefined) previousLine.hightLightBackground = true;                    
-                    currentLines.push(currentLine);
-
-                    currentLine = {
-                        textHightlightIndex:[]
-                    }
-                    lineNumberOfCurrentChange++;
-                    currentCharTrackingIndex = 0;
-                }
-                else if(diffLines[i-1].startsWith("-")){
-                    previousLine.hightLightBackground = true;
-                    if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
-                    previousLines.push(previousLine);
-                    previousLine = {
-                        textHightlightIndex:[],
-                    }
-                    lineNumberOfPreviousChange++;
-                    previousCharTrackingIndex = 0;
+                if(preLine || !!previousLine.textHightlightIndex.length){
+                    currentLine.text = curLine;
                 }
 
-                else if(diffLines[i-1].startsWith(" ")){
-                    if(previousLine.textHightlightIndex.length || currentLine.textHightlightIndex.length){
-                        currentLine.hightLightBackground = true;
-                        previousLine.hightLightBackground = true;
-                    }
-                    currentLines.push(currentLine);
-                    previousLines.push(previousLine);
+                currentLines.push(currentLine);
+                previousLines.push(previousLine);
+                currentLine = {
+                    textHightlightIndex:[],
+                };
+                previousLine = {
+                    textHightlightIndex:[],
+                }
 
-                    currentLine = {
-                        textHightlightIndex:[]
-                    }
-                    previousLine = {
-                        textHightlightIndex:[],
-                    }
+                preLine = '';
+                curLine = '';
 
-                    while(previousLines.length > currentLines.length){
-                        currentLines.push(currentLine);
-                        currentLine = {
-                            textHightlightIndex:[],
-                        }                        
-                    }
+                // else if(diffLines[i-1].startsWith("+")){                    
+                //     currentLine.hightLightBackground = true;
+                //     if(previousLine.text !== undefined) previousLine.hightLightBackground = true;                    
+                //     currentLines.push(currentLine);
 
-                    while(previousLines.length < currentLines.length){
-                        previousLines.push(previousLine);
-                        previousLine = {
-                            textHightlightIndex:[],
-                        }                        
-                    }                    
+                //     currentLine = {
+                //         textHightlightIndex:[]
+                //     }
+                //     lineNumberOfCurrentChange++;
+                //     currentCharTrackingIndex = 0;
+                // }
+                // else if(diffLines[i-1].startsWith("-")){
+                //     previousLine.hightLightBackground = true;
+                //     if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
+                //     previousLines.push(previousLine);
+                //     previousLine = {
+                //         textHightlightIndex:[],
+                //     }
+                //     lineNumberOfPreviousChange++;
+                //     previousCharTrackingIndex = 0;
+                // }
+
+                // else if(diffLines[i-1].startsWith(" ")){
+                //     if(previousLine.textHightlightIndex.length || currentLine.textHightlightIndex.length){
+                //         currentLine.hightLightBackground = true;
+                //         previousLine.hightLightBackground = true;
+                //     }
+                //     currentLines.push(currentLine);
+                //     previousLines.push(previousLine);
+
+                //     currentLine = {
+                //         textHightlightIndex:[]
+                //     }
+                //     previousLine = {
+                //         textHightlightIndex:[],
+                //     }
+
+                //     while(previousLines.length > currentLines.length){
+                //         currentLines.push(currentLine);
+                //         currentLine = {
+                //             textHightlightIndex:[],
+                //         }                        
+                //     }
+
+                //     while(previousLines.length < currentLines.length){
+                //         previousLines.push(previousLine);
+                //         previousLine = {
+                //             textHightlightIndex:[],
+                //         }                        
+                //     }                    
                     
-                    lineNumberOfCurrentChange++;
-                    lineNumberOfPreviousChange++;
-                    previousCharTrackingIndex = 0;
-                    currentCharTrackingIndex = 0;
-                }
+                //     lineNumberOfCurrentChange++;
+                //     lineNumberOfPreviousChange++;
+                //     previousCharTrackingIndex = 0;
+                //     currentCharTrackingIndex = 0;
+                // }
                                               
             }
         }
