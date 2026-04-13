@@ -25,9 +25,9 @@ export class TextEditor {
     private _trackingChanges = false;
     protected _tempFilePath = '';
     protected _sourceFilePath = '';
-    private _changeTrackingTimer: NodeJS.Timeout | null = null;
     protected saveHandler: ((success:boolean) => void) | null = null;
     protected onSync: (() => void) | null = null;
+    private onSyncWaitingCalls: (() => void)[] = [];
 
 
     constructor(containerSelector:string){
@@ -109,6 +109,8 @@ export class TextEditor {
                     }
                     else {
                         this._trackingChanges = false;
+                        this.onSyncWaitingCalls.forEach(call => call());
+                        this.onSyncWaitingCalls = [];
                         this.onSync?.();
                     }
                 }
@@ -226,25 +228,22 @@ export class TextEditor {
 
     protected async save(){
         return new Promise<boolean>(async (resolve) => {
-            if(this._changeTrackingTimer){
-                console.log("Waiting for change tracking to complete before saving...");
-                const timer = setInterval(() => {
-                    if(!this._trackingChanges){
-                        console.log("Change tracking completed, proceeding with save...");
-                        clearInterval(timer);
-                        this.executeSave().then((success) =>{
-                            this.saveHandler?.(success);
-                            resolve(success)
-                        });
-                    }                        
-                }, 100);
+            const func = () => {
+                    this.executeSave().then((success) =>{
+                        this.saveHandler?.(success);
+                        resolve(success)
+                    });
+                };
+            if(this._trackingChanges){
+                this.onSyncWaitingCalls.push(func);
+            }
+            else if(this._untrackedChanges.length){
+                this.onSyncWaitingCalls.push(func);
+                this.trackChanges();
             }else{
-                const success = await this.executeSave();
-                this.saveHandler?.(success);
-                resolve(success);
+                func();
             }
         });
-        
         
     }
 
