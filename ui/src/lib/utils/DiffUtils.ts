@@ -21,7 +21,7 @@ export class DiffUtils{
         return width+20;
     }
 
-    static myersDiff(a: string, b: string): MyersOp[] {
+    private static myersDiff(a: string, b: string): MyersOp[] {
             const n = a.length, m = b.length;
             const max = n + m;
             // V[k] maps diagonal k to the furthest-reaching x index
