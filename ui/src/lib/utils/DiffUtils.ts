@@ -40,242 +40,133 @@ export class DiffUtils{
             }
         }
 
-        const setFileLineNumber=(line:string)=>{
-            const lineNumber = getFileLineNumber(line);            
-            lineNumberOfPreviousChange = lineNumber.lineNumberOfPreviousChange;
-            lineNumberOfCurrentChange = lineNumber.lineNumberOfCurrentChange;
-
-        }
-
         for(let i=0;i<diffLines.length; i++){
             const line = diffLines[i];
             if(line.startsWith("@@")) {
-                startIndexesOfSections=i+1;
-                setFileLineNumber(line);
+                startIndexesOfSections=i;
+                const lineNumber = getFileLineNumber(line);
+                lineNumberOfCurrentChange = lineNumber.lineNumberOfCurrentChange;
+                lineNumberOfPreviousChange = lineNumber.lineNumberOfPreviousChange;
                 break;
             }
+        }
+
+        // No hunks found (no changes)
+        if(lineNumberOfCurrentChange === 0){
+            const lines:ILine[] = textLines.map(text=>({ text, textHightlightIndex:[] }));
+            return { currentLines: lines, previousLines: [...lines] };
         }
 
         let currentLines:ILine[]=[];
         let previousLines:ILine[]=[];
 
+        // Fill lines before the first hunk
         for(let i=0;i<lineNumberOfCurrentChange-1;i++){
-            const previousLine:ILine={
-                text:textLines[i],
-                textHightlightIndex:[],
-            }
-
-            const currentLine:ILine={
-                text:textLines[i],
-                textHightlightIndex:[],
-            }
-            currentLines.push(currentLine);
-            previousLines.push(previousLine);            
+            const line:ILine={ text:textLines[i], textHightlightIndex:[] };
+            currentLines.push(line);
+            previousLines.push(line);
         }
-                
-        let currentLine:ILine ={
-            textHightlightIndex:[],
-        }        
 
-        let previousLine:ILine ={
-            textHightlightIndex:[],
-        }
-        
-        let preLine = '';
-        let curLine = '';
+        // Character-level diff: highlight the changed middle section between common prefix/suffix
+        const computeCharDiff=(oldStr:string, newStr:string)=>{
+            let start = 0;
+            while(start < oldStr.length && start < newStr.length && oldStr[start] === newStr[start])
+                start++;
+            let oldEnd = oldStr.length - 1;
+            let newEnd = newStr.length - 1;
+            while(oldEnd >= start && newEnd >= start && oldStr[oldEnd] === newStr[newEnd]){
+                oldEnd--;
+                newEnd--;
+            }
+            const prevHighlights = oldEnd >= start ? [{ fromIndex:start, count:oldEnd-start+1 }] : [];
+            const currHighlights = newEnd >= start ? [{ fromIndex:start, count:newEnd-start+1 }] : [];
+            return { prevHighlights, currHighlights };
+        };
+
+        let removedBuffer:string[] = [];
+        let addedBuffer:string[] = [];
+
+        const flushBuffers=()=>{
+            const maxLen = Math.max(removedBuffer.length, addedBuffer.length);
+            for(let i=0;i<maxLen;i++){
+                const hasOld = i < removedBuffer.length;
+                const hasNew = i < addedBuffer.length;
+                if(hasOld && hasNew){
+                    const { prevHighlights, currHighlights } = computeCharDiff(removedBuffer[i], addedBuffer[i]);
+                    previousLines.push({
+                        text: removedBuffer[i],
+                        textHightlightIndex: prevHighlights,
+                        hightLightBackground: prevHighlights.length > 0,
+                    });
+                    currentLines.push({
+                        text: addedBuffer[i],
+                        textHightlightIndex: currHighlights,
+                        hightLightBackground: currHighlights.length > 0,
+                    });
+                } else if(hasOld){
+                    previousLines.push({ text:removedBuffer[i], textHightlightIndex:[], hightLightBackground:true });
+                    currentLines.push({ textHightlightIndex:[] });
+                } else {
+                    currentLines.push({ text:addedBuffer[i], textHightlightIndex:[], hightLightBackground:true });
+                    previousLines.push({ textHightlightIndex:[] });
+                }
+            }
+            removedBuffer = [];
+            addedBuffer = [];
+        };
 
         for(let i=startIndexesOfSections;i<diffLines.length;i++){
             const diffLine = diffLines[i];
-            
+
             if(diffLine.startsWith("@@")){
-                const nextStartingFileLineNumber = getFileLineNumber(diffLine);
-                for(let i = lineNumberOfCurrentChange-1; i < nextStartingFileLineNumber.lineNumberOfCurrentChange -1;i++){                    
-                    currentLines.push({
-                        text:textLines[i],
-                        textHightlightIndex:[],
-                    });
-                    previousLines.push({
-                        text:textLines[i],
-                        textHightlightIndex:[],
-                    });                    
+                flushBuffers();
+                const nextLineNumbers = getFileLineNumber(diffLine);
+                // Fill unchanged gap between hunks
+                for(let j=lineNumberOfCurrentChange-1;j<nextLineNumbers.lineNumberOfCurrentChange-1;j++){
+                    const line:ILine={ text:textLines[j], textHightlightIndex:[] };
+                    currentLines.push(line);
+                    previousLines.push(line);
                 }
-                currentLine ={           
-                    textHightlightIndex:[],
-                }
-                previousLine ={                        
-                    textHightlightIndex:[],
-                }
-
-                currentLines.push(currentLine);
-                previousLines.push(previousLine);
-
-                lineNumberOfCurrentChange = nextStartingFileLineNumber.lineNumberOfCurrentChange;
-                lineNumberOfPreviousChange = nextStartingFileLineNumber.lineNumberOfPreviousChange;
-            }            
-
-            else if(diffLine.startsWith(" ")){
-                preLine += diffLine.substring(1);
-                curLine += diffLine.substring(1);
-                previousLine.text = preLine;
-                currentLine.text = curLine;
+                lineNumberOfCurrentChange = nextLineNumbers.lineNumberOfCurrentChange;
+                lineNumberOfPreviousChange = nextLineNumbers.lineNumberOfPreviousChange;
             }
-            else if(diffLine.startsWith("+")){
-                currentLine.textHightlightIndex.push({fromIndex:curLine.length,count:diffLine.length-1});
-                curLine += diffLine.substring(1);
-                currentLine.text = curLine;
+            else if(diffLine.startsWith(" ")){
+                flushBuffers();
+                const text = diffLine.substring(1);
+                const line:ILine={ text, textHightlightIndex:[] };
+                currentLines.push(line);
+                previousLines.push(line);
+                lineNumberOfCurrentChange++;
+                lineNumberOfPreviousChange++;
             }
             else if(diffLine.startsWith("-")){
-                previousLine.textHightlightIndex.push({fromIndex:preLine.length,count:diffLine.length-1});
-                preLine += diffLine.substring(1);                
-                previousLine.text = preLine;
+                if(addedBuffer.length > 0) flushBuffers();
+                removedBuffer.push(diffLine.substring(1));
+                lineNumberOfPreviousChange++;
             }
-            else if(diffLine.startsWith("~")){                                
-                if(diffLines[i-1].startsWith("~")){                    
-                    let isAdded = true;
-                    let count = 1;
-                    while(diffLines[i+count]?.startsWith("~"))
-                        count++;                                                
-                    if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
-                        isAdded=false;
-                    
-                    if(isAdded){                        
-                        for(let x=0;x < count; x++){
-                            currentLine.text = "";
-                            currentLine.hightLightBackground = true;
-                            
-                            currentLines.push(currentLine);
-                            previousLines.push(previousLine);                            
-                            
-                            currentLine ={
-                                textHightlightIndex:[],
-                            }
-                            previousLine ={
-                                textHightlightIndex:[],
-                            }
-                            
-                        }
-                        lineNumberOfCurrentChange += count;
-                    }
-                    else{                        
-                        for(let x=0;x < count; x++){
-                            previousLine.text = "";
-                            previousLine.hightLightBackground = true;                            
-                            
-                            currentLines.push(currentLine);
-                            previousLines.push(previousLine);
-                            
-                            currentLine = {
-                                textHightlightIndex:[],
-                            }
-                            previousLine = {
-                                textHightlightIndex:[],
-                            }                                
-                            
-                        }
-                        lineNumberOfPreviousChange += count;                            
-                    }                    
-                    i = i + count - 1;                    
-                }
-                else{
-                    currentLine.hightLightBackground = !!currentLine.textHightlightIndex.length;
-                    currentLine.textHightlightIndex = currentLine.textHightlightIndex.filter( x=> !!x.count);
-                    
-                    previousLine.hightLightBackground =  !!previousLine.textHightlightIndex.length;
-                    previousLine.textHightlightIndex = previousLine.textHightlightIndex.filter( x=> !!x.count);
-
-                    currentLines.push(currentLine);
-                    previousLines.push(previousLine);
-                    currentLine = {
-                        textHightlightIndex:[],
-                    };
-                    previousLine = {
-                        textHightlightIndex:[],
-                    }
-                    
-                    lineNumberOfCurrentChange++;
-                    lineNumberOfPreviousChange++;
-                }                
-
-                preLine = '';
-                curLine = '';
-                
-
-                // else if(diffLines[i-1].startsWith("+")){                    
-                //     currentLine.hightLightBackground = true;
-                //     if(previousLine.text !== undefined) previousLine.hightLightBackground = true;                    
-                //     currentLines.push(currentLine);
-
-                //     currentLine = {
-                //         textHightlightIndex:[]
-                //     }
-                //     lineNumberOfCurrentChange++;
-                //     currentCharTrackingIndex = 0;
-                // }
-                // else if(diffLines[i-1].startsWith("-")){
-                //     previousLine.hightLightBackground = true;
-                //     if(currentLine.text !== undefined) currentLine.hightLightBackground = true;
-                //     previousLines.push(previousLine);
-                //     previousLine = {
-                //         textHightlightIndex:[],
-                //     }
-                //     lineNumberOfPreviousChange++;
-                //     previousCharTrackingIndex = 0;
-                // }
-
-                // else if(diffLines[i-1].startsWith(" ")){
-                //     if(previousLine.textHightlightIndex.length || currentLine.textHightlightIndex.length){
-                //         currentLine.hightLightBackground = true;
-                //         previousLine.hightLightBackground = true;
-                //     }
-                //     currentLines.push(currentLine);
-                //     previousLines.push(previousLine);
-
-                //     currentLine = {
-                //         textHightlightIndex:[]
-                //     }
-                //     previousLine = {
-                //         textHightlightIndex:[],
-                //     }
-
-                //     while(previousLines.length > currentLines.length){
-                //         currentLines.push(currentLine);
-                //         currentLine = {
-                //             textHightlightIndex:[],
-                //         }                        
-                //     }
-
-                //     while(previousLines.length < currentLines.length){
-                //         previousLines.push(previousLine);
-                //         previousLine = {
-                //             textHightlightIndex:[],
-                //         }                        
-                //     }                    
-                    
-                //     lineNumberOfCurrentChange++;
-                //     lineNumberOfPreviousChange++;
-                //     previousCharTrackingIndex = 0;
-                //     currentCharTrackingIndex = 0;
-                // }
-                                              
+            else if(diffLine.startsWith("+")){
+                addedBuffer.push(diffLine.substring(1));
+                lineNumberOfCurrentChange++;
             }
+            // Other lines (diff --git, index, etc.) are ignored
         }
 
-        while(currentLines.length< previousLines.length)
+        flushBuffers();
+
+        // Fill remaining lines after last hunk
+        while(lineNumberOfCurrentChange <= textLines.length){
+            const line:ILine={ text:textLines[lineNumberOfCurrentChange-1], textHightlightIndex:[] };
+            currentLines.push(line);
+            previousLines.push(line);
+            lineNumberOfCurrentChange++;
+            lineNumberOfPreviousChange++;
+        }
+
+        while(currentLines.length < previousLines.length)
             currentLines.push({textHightlightIndex:[]})
         while(currentLines.length > previousLines.length)
             previousLines.push({textHightlightIndex:[]})
 
-        while(lineNumberOfCurrentChange <= textLines.length){
-            let lineConfig:ILine = {
-                textHightlightIndex:[],
-                text:textLines[lineNumberOfCurrentChange-1],
-            };
-            currentLines.push(lineConfig);
-            previousLines.push(lineConfig);
-            lineNumberOfCurrentChange++;
-            lineNumberOfPreviousChange++;
-        }
-        
         return {
             currentLines,
             previousLines,
@@ -370,7 +261,7 @@ export class DiffUtils{
     }
 
     static async getDiff(filePath:string, isSgated?:boolean){
-        const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",filePath];
+        const options =  ["--diff-algorithm=minimal",filePath];
         if(isSgated){
             options.splice(0,0,"--staged");
         }
