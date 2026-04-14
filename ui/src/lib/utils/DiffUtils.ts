@@ -129,72 +129,76 @@ export class DiffUtils{
                 preLine += diffLine.substring(1);                
                 previousLine.text = preLine;
             }
-            else if(diffLine.startsWith("~")){                
-                // if(diffLines[i-1].startsWith("~")){                    
-                //     let isAdded = true;
-                //     let count = 1;
-                //     while(diffLines[i+count]?.startsWith("~"))
-                //         count++;                                                
-                //     if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
-                //         isAdded=false;
+            else if(diffLine.startsWith("~")){                                
+                if(diffLines[i-1].startsWith("~")){                    
+                    let isAdded = true;
+                    let count = 1;
+                    while(diffLines[i+count]?.startsWith("~"))
+                        count++;                                                
+                    if(textLines.slice(lineNumberOfCurrentChange-1,lineNumberOfCurrentChange-1+count).some(text=> text !== ""))
+                        isAdded=false;
                     
-                //     if(isAdded){                        
-                //         for(let x=0;x < count; x++){
-                //             currentLine.text = "";
-                //             currentLine.hightLightBackground = true;
+                    if(isAdded){                        
+                        for(let x=0;x < count; x++){
+                            currentLine.text = "";
+                            currentLine.hightLightBackground = true;
                             
-                //             currentLines.push(currentLine);
-                //             previousLines.push(previousLine);                            
+                            currentLines.push(currentLine);
+                            previousLines.push(previousLine);                            
                             
-                //             currentLine ={
-                //                 textHightlightIndex:[],
-                //             }
-                //             previousLine ={
-                //                 textHightlightIndex:[],
-                //             }
+                            currentLine ={
+                                textHightlightIndex:[],
+                            }
+                            previousLine ={
+                                textHightlightIndex:[],
+                            }
                             
-                //         }
-                //         lineNumberOfCurrentChange += count;
-                //         currentCharTrackingIndex = 0;
-                //     }
-                //     else{                        
-                //         for(let x=0;x < count; x++){
-                //             previousLine.text = "";
-                //             previousLine.hightLightBackground = true;                            
+                        }
+                        lineNumberOfCurrentChange += count;
+                    }
+                    else{                        
+                        for(let x=0;x < count; x++){
+                            previousLine.text = "";
+                            previousLine.hightLightBackground = true;                            
                             
-                //             currentLines.push(currentLine);
-                //             previousLines.push(previousLine);
+                            currentLines.push(currentLine);
+                            previousLines.push(previousLine);
                             
-                //             currentLine = {
-                //                 textHightlightIndex:[],
-                //             }
-                //             previousLine = {
-                //                 textHightlightIndex:[],
-                //             }                                
+                            currentLine = {
+                                textHightlightIndex:[],
+                            }
+                            previousLine = {
+                                textHightlightIndex:[],
+                            }                                
                             
-                //         }
-                //         lineNumberOfPreviousChange += count;                            
-                //         previousCharTrackingIndex = 0;
-                //     }                    
-                //     i = i + count - 1;                    
-                // }                
-                currentLine.hightLightBackground = !!currentLine.textHightlightIndex.length;
-                currentLine.textHightlightIndex = currentLine.textHightlightIndex.filter( x=> !!x.count);
-                
-                previousLine.hightLightBackground =  !!previousLine.textHightlightIndex.length;
-                previousLine.textHightlightIndex = previousLine.textHightlightIndex.filter( x=> !!x.count);
-
-                currentLines.push(currentLine);
-                previousLines.push(previousLine);
-                currentLine = {
-                    textHightlightIndex:[],
-                };
-                previousLine = {
-                    textHightlightIndex:[],
+                        }
+                        lineNumberOfPreviousChange += count;                            
+                    }                    
+                    i = i + count - 1;                    
                 }
+                else{
+                    currentLine.hightLightBackground = !!currentLine.textHightlightIndex.length;
+                    currentLine.textHightlightIndex = currentLine.textHightlightIndex.filter( x=> !!x.count);
+                    
+                    previousLine.hightLightBackground =  !!previousLine.textHightlightIndex.length;
+                    previousLine.textHightlightIndex = previousLine.textHightlightIndex.filter( x=> !!x.count);
+
+                    currentLines.push(currentLine);
+                    previousLines.push(previousLine);
+                    currentLine = {
+                        textHightlightIndex:[],
+                    };
+                    previousLine = {
+                        textHightlightIndex:[],
+                    }
+                    
+                    lineNumberOfCurrentChange++;
+                    lineNumberOfPreviousChange++;
+                }                
 
                 preLine = '';
                 curLine = '';
+                
 
                 // else if(diffLines[i-1].startsWith("+")){                    
                 //     currentLine.hightLightBackground = true;
