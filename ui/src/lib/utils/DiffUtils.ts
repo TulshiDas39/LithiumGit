@@ -3,6 +3,8 @@ import { EnumCustomBlots } from "../enums";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
 
+type MyersOp = { type: 'equal'|'delete'|'insert'; oldIdx: number; newIdx: number; len: number };
+
 export class DiffUtils{
 
     static tabSize = 4;
@@ -18,6 +20,61 @@ export class DiffUtils{
         }),0);
         return width+20;
     }
+
+    static myersDiff(a: string, b: string): MyersOp[] {
+            const n = a.length, m = b.length;
+            const max = n + m;
+            // V[k] maps diagonal k to the furthest-reaching x index
+            const V = new Int32Array(2 * max + 2);
+            // trace[d] stores snapshot of V after each d step
+            const trace: Int32Array[] = [];
+
+            outer:
+            for(let d = 0; d <= max; d++){
+                trace.push(V.slice());
+                for(let k = -d; k <= d; k += 2){
+                    const vi = k + max;
+                    let x: number;
+                    if(k === -d || (k !== d && V[vi - 1] < V[vi + 1])){
+                        x = V[vi + 1];         // move down (insert)
+                    } else {
+                        x = V[vi - 1] + 1;     // move right (delete)
+                    }
+                    let y = x - k;
+                    // follow diagonal (equal characters)
+                    while(x < n && y < m && a[x] === b[y]){ x++; y++; }
+                    V[vi] = x;
+                    if(x >= n && y >= m){ trace.push(V.slice()); break outer; }
+                }
+            }
+
+            // Backtrack through trace to reconstruct the edit path
+            const ops: MyersOp[] = [];
+            let x = n, y = m;
+            for(let d = trace.length - 1; d > 0; d--){
+                const Vprev = trace[d - 1];
+                const k = x - y;
+                const vi = k + max;
+                const prevK = (k === -( d-1) || (k !== (d-1) && Vprev[vi - 1] < Vprev[vi + 1]))
+                    ? k + 1
+                    : k - 1;
+                const prevX = Vprev[prevK + max];
+                const prevY = prevX - prevK;
+                // walk diagonals (equals) from (prevX,prevY) to snake end
+                while(x > prevX + (x - prevX - (y - prevY)) && y > prevY + (y - prevY - (x - prevX))){
+                    x--; y--;
+                    ops.push({ type: 'equal', oldIdx: x, newIdx: y, len: 1 });
+                }
+                if(d > 0){
+                    if(x > prevX){ x--; ops.push({ type: 'delete', oldIdx: x, newIdx: y, len: 1 }); }
+                    else if(y > prevY){ y--; ops.push({ type: 'insert', oldIdx: x, newIdx: y, len: 1 }); }
+                }
+            }
+            // Any remaining diagonal at start
+            while(x > 0 && y > 0){ x--; y--; ops.push({ type: 'equal', oldIdx: x, newIdx: y, len: 1 }); }
+
+            return ops.reverse();
+        };
 
     static GetUiLines(diff:string,textLines:string[]){
         
@@ -67,20 +124,51 @@ export class DiffUtils{
             previousLines.push(line);
         }
 
-        // Character-level diff: highlight the changed middle section between common prefix/suffix
+        // Myers Diff Algorithm (O(ND) shortest edit script).
+        // Returns the edit script as an array of operations: equal | delete | insert.
+        
+
         const computeCharDiff=(oldStr:string, newStr:string)=>{
-            let start = 0;
-            while(start < oldStr.length && start < newStr.length && oldStr[start] === newStr[start])
-                start++;
-            let oldEnd = oldStr.length - 1;
-            let newEnd = newStr.length - 1;
-            while(oldEnd >= start && newEnd >= start && oldStr[oldEnd] === newStr[newEnd]){
-                oldEnd--;
-                newEnd--;
+            // Trim common prefix/suffix to reduce the problem size before running Myers
+            let prefixLen = 0;
+            const minLen = Math.min(oldStr.length, newStr.length);
+            while(prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++;
+
+            let oldSuffixStart = oldStr.length, newSuffixStart = newStr.length;
+            while(oldSuffixStart > prefixLen && newSuffixStart > prefixLen
+                && oldStr[oldSuffixStart - 1] === newStr[newSuffixStart - 1]){
+                oldSuffixStart--; newSuffixStart--;
             }
-            const prevHighlights = oldEnd >= start ? [{ fromIndex:start, count:oldEnd-start+1 }] : [];
-            const currHighlights = newEnd >= start ? [{ fromIndex:start, count:newEnd-start+1 }] : [];
-            return { prevHighlights, currHighlights };
+
+            const oldCore = oldStr.substring(prefixLen, oldSuffixStart);
+            const newCore = newStr.substring(prefixLen, newSuffixStart);
+
+            if(oldCore.length === 0 && newCore.length === 0)
+                return { prevHighlights: [], currHighlights: [] };
+
+            const oldChanged = new Array(oldStr.length).fill(false);
+            const newChanged = new Array(newStr.length).fill(false);
+
+            const ops = DiffUtils.myersDiff(oldCore, newCore);
+            for(const op of ops){
+                if(op.type === 'delete')  oldChanged[prefixLen + op.oldIdx] = true;
+                else if(op.type === 'insert') newChanged[prefixLen + op.newIdx] = true;
+            }
+
+            const toRanges = (changed: boolean[]) => {
+                const ranges: { fromIndex: number; count: number }[] = [];
+                let k = 0;
+                while(k < changed.length){
+                    if(changed[k]){
+                        const from = k;
+                        while(k < changed.length && changed[k]) k++;
+                        ranges.push({ fromIndex: from, count: k - from });
+                    } else { k++; }
+                }
+                return ranges;
+            };
+
+            return { prevHighlights: toRanges(oldChanged), currHighlights: toRanges(newChanged) };
         };
 
         let removedBuffer:string[] = [];
