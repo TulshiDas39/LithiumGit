@@ -72,9 +72,7 @@ export class DiffUtils{
             currentLines.push(currentLine);
             previousLines.push(previousLine);            
         }
-        
-        let currentCharTrackingIndex = 0;
-        let previousCharTrackingIndex = 0;
+                
         let currentLine:ILine ={
             textHightlightIndex:[],
         }        
@@ -116,28 +114,20 @@ export class DiffUtils{
             }            
 
             else if(diffLine.startsWith(" ")){
-                // if(previousLine.text === undefined){                                                                                                                          
-                //     previousLine.text = "";
-                // }
-                // if(currentLine.text === undefined) {
-                //     currentLine.text = "";
-                // }
                 preLine += diffLine.substring(1);
                 curLine += diffLine.substring(1);
-                currentCharTrackingIndex += diffLine.length-1;
-                previousCharTrackingIndex += diffLine.length-1;                
+                previousLine.text = preLine;
+                currentLine.text = curLine;
             }
             else if(diffLine.startsWith("+")){
-                // if(currentLine.text === undefined)currentLine.text = ""; 
                 currentLine.textHightlightIndex.push({fromIndex:curLine.length,count:diffLine.length-1});
                 curLine += diffLine.substring(1);
-                currentCharTrackingIndex += diffLine.length-1;
+                currentLine.text = curLine;
             }
             else if(diffLine.startsWith("-")){
-                // if(!previousLine.text) previousLine.text = "";
                 previousLine.textHightlightIndex.push({fromIndex:preLine.length,count:diffLine.length-1});
                 preLine += diffLine.substring(1);                
-                previousCharTrackingIndex += diffLine.length-1;
+                previousLine.text = preLine;
             }
             else if(diffLine.startsWith("~")){                
                 // if(diffLines[i-1].startsWith("~")){                    
@@ -188,13 +178,11 @@ export class DiffUtils{
                 //     }                    
                 //     i = i + count - 1;                    
                 // }                
+                currentLine.hightLightBackground = !!currentLine.textHightlightIndex.length;
+                currentLine.textHightlightIndex = currentLine.textHightlightIndex.filter( x=> !!x.count);
                 
-                if(curLine || !!currentLine.textHightlightIndex.length){
-                    currentLine.text = curLine;
-                }
-                if(preLine || !!previousLine.textHightlightIndex.length){
-                    currentLine.text = curLine;
-                }
+                previousLine.hightLightBackground =  !!previousLine.textHightlightIndex.length;
+                previousLine.textHightlightIndex = previousLine.textHightlightIndex.filter( x=> !!x.count);
 
                 currentLines.push(currentLine);
                 previousLines.push(previousLine);
