@@ -52,6 +52,7 @@ export class DiffUtils{
             const ops: MyersOp[] = [];
             let x = n, y = m;
             for(let d = trace.length - 1; d > 0; d--){
+                if(x === 0 && y === 0) break;
                 const Vprev = trace[d - 1];
                 const k = x - y;
                 const vi = k + max;
@@ -82,6 +83,8 @@ export class DiffUtils{
             const minLen = Math.min(oldStr.length, newStr.length);
             while(prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++;
 
+            console.log("Common prefix length:", prefixLen);
+
             let oldSuffixStart = oldStr.length, newSuffixStart = newStr.length;
             while(oldSuffixStart > prefixLen && newSuffixStart > prefixLen
                 && oldStr[oldSuffixStart - 1] === newStr[newSuffixStart - 1]){
@@ -90,6 +93,7 @@ export class DiffUtils{
 
             const oldCore = oldStr.substring(prefixLen, oldSuffixStart);
             const newCore = newStr.substring(prefixLen, newSuffixStart);
+            console.log("Computing char diff with oldCore:", oldCore, "newCore:", newCore);
 
             if(oldCore.length === 0 && newCore.length === 0)
                 return { prevHighlights: [], currHighlights: [] };
@@ -180,15 +184,16 @@ export class DiffUtils{
                 const hasNew = i < addedBuffer.length;
                 if(hasOld && hasNew){
                     const { prevHighlights, currHighlights } = DiffUtils.computeCharDiff(removedBuffer[i], addedBuffer[i]);
+                    const highlightBackground = prevHighlights.length > 0 || currHighlights.length > 0;
                     previousLines.push({
                         text: removedBuffer[i],
                         textHightlightIndex: prevHighlights,
-                        hightLightBackground: prevHighlights.length > 0,
+                        hightLightBackground: highlightBackground,
                     });
                     currentLines.push({
                         text: addedBuffer[i],
                         textHightlightIndex: currHighlights,
-                        hightLightBackground: currHighlights.length > 0,
+                        hightLightBackground: highlightBackground,
                     });
                 } else if(hasOld){
                     previousLines.push({ text:removedBuffer[i], textHightlightIndex:[], hightLightBackground:true });
