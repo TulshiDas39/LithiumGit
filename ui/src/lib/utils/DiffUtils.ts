@@ -76,6 +76,49 @@ export class DiffUtils{
             return ops.reverse();
         };
 
+        private static computeCharDiff=(oldStr:string, newStr:string)=>{
+            // Trim common prefix/suffix to reduce the problem size before running Myers
+            let prefixLen = 0;
+            const minLen = Math.min(oldStr.length, newStr.length);
+            while(prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++;
+
+            let oldSuffixStart = oldStr.length, newSuffixStart = newStr.length;
+            while(oldSuffixStart > prefixLen && newSuffixStart > prefixLen
+                && oldStr[oldSuffixStart - 1] === newStr[newSuffixStart - 1]){
+                oldSuffixStart--; newSuffixStart--;
+            }
+
+            const oldCore = oldStr.substring(prefixLen, oldSuffixStart);
+            const newCore = newStr.substring(prefixLen, newSuffixStart);
+
+            if(oldCore.length === 0 && newCore.length === 0)
+                return { prevHighlights: [], currHighlights: [] };
+
+            const oldChanged = new Array(oldStr.length).fill(false) as boolean[];
+            const newChanged = new Array(newStr.length).fill(false) as boolean[];
+
+            const ops = DiffUtils.myersDiff(oldCore, newCore);
+            for(const op of ops){
+                if(op.type === 'delete')  oldChanged[prefixLen + op.oldIdx] = true;
+                else if(op.type === 'insert') newChanged[prefixLen + op.newIdx] = true;
+            }
+
+            const toRanges = (changed: boolean[]) => {
+                const ranges: { fromIndex: number; count: number }[] = [];
+                let k = 0;
+                while(k < changed.length){
+                    if(changed[k]){
+                        const from = k;
+                        while(k < changed.length && changed[k]) k++;
+                        ranges.push({ fromIndex: from, count: k - from });
+                    } else { k++; }
+                }
+                return ranges;
+            };
+
+            return { prevHighlights: toRanges(oldChanged), currHighlights: toRanges(newChanged) };
+        };
+
     static GetUiLines(diff:string,textLines:string[]){
         
         diff = diff.replace(/\n\r/g,"\n").replace(/\r/g,"\n");
@@ -125,51 +168,7 @@ export class DiffUtils{
         }
 
         // Myers Diff Algorithm (O(ND) shortest edit script).
-        // Returns the edit script as an array of operations: equal | delete | insert.
-        
-
-        const computeCharDiff=(oldStr:string, newStr:string)=>{
-            // Trim common prefix/suffix to reduce the problem size before running Myers
-            let prefixLen = 0;
-            const minLen = Math.min(oldStr.length, newStr.length);
-            while(prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++;
-
-            let oldSuffixStart = oldStr.length, newSuffixStart = newStr.length;
-            while(oldSuffixStart > prefixLen && newSuffixStart > prefixLen
-                && oldStr[oldSuffixStart - 1] === newStr[newSuffixStart - 1]){
-                oldSuffixStart--; newSuffixStart--;
-            }
-
-            const oldCore = oldStr.substring(prefixLen, oldSuffixStart);
-            const newCore = newStr.substring(prefixLen, newSuffixStart);
-
-            if(oldCore.length === 0 && newCore.length === 0)
-                return { prevHighlights: [], currHighlights: [] };
-
-            const oldChanged = new Array(oldStr.length).fill(false);
-            const newChanged = new Array(newStr.length).fill(false);
-
-            const ops = DiffUtils.myersDiff(oldCore, newCore);
-            for(const op of ops){
-                if(op.type === 'delete')  oldChanged[prefixLen + op.oldIdx] = true;
-                else if(op.type === 'insert') newChanged[prefixLen + op.newIdx] = true;
-            }
-
-            const toRanges = (changed: boolean[]) => {
-                const ranges: { fromIndex: number; count: number }[] = [];
-                let k = 0;
-                while(k < changed.length){
-                    if(changed[k]){
-                        const from = k;
-                        while(k < changed.length && changed[k]) k++;
-                        ranges.push({ fromIndex: from, count: k - from });
-                    } else { k++; }
-                }
-                return ranges;
-            };
-
-            return { prevHighlights: toRanges(oldChanged), currHighlights: toRanges(newChanged) };
-        };
+        // Returns the edit script as an array of operations: equal | delete | insert.        
 
         let removedBuffer:string[] = [];
         let addedBuffer:string[] = [];
@@ -180,7 +179,7 @@ export class DiffUtils{
                 const hasOld = i < removedBuffer.length;
                 const hasNew = i < addedBuffer.length;
                 if(hasOld && hasNew){
-                    const { prevHighlights, currHighlights } = computeCharDiff(removedBuffer[i], addedBuffer[i]);
+                    const { prevHighlights, currHighlights } = DiffUtils.computeCharDiff(removedBuffer[i], addedBuffer[i]);
                     previousLines.push({
                         text: removedBuffer[i],
                         textHightlightIndex: prevHighlights,
