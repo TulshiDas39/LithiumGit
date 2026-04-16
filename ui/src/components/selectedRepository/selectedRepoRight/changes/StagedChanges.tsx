@@ -98,7 +98,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     }
                     refData.current.fileContentAfterChange = lines;
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                        const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
+                        const options =  ["--staged", "--diff-algorithm=minimal",store.selectedFile!.path];            
                         IpcUtils.getDiff(options).then(res=>{
                             let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
                             ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
