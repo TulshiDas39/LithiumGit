@@ -33,7 +33,6 @@ export class ChangeEditor extends TextEditor{
     }
 
     protected override handleTransaction(transaction: Transaction) {
-        console.log("Handling transaction in ChangeEditor");                    
         super.handleTransaction(transaction);
         if(transaction.docChanged){
             const savebtn = this.saveBtn();
@@ -58,7 +57,7 @@ export class ChangeEditor extends TextEditor{
         // const result = await git.diff(["--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--no-index", tmpFile, externalFilePath]);
         console.log("Updating diff with content from editor...");
         // const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",filePath];
-        const options = ["-c", "core.autocrlf=false", "diff", "--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
+        const options = ["-c", "core.autocrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
         IpcUtils.getRaw(options).then((r) => {
             const diffResult = r.result!;
             console.log("Diff result received", diffResult);
