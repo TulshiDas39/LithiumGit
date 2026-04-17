@@ -307,6 +307,7 @@ export class FileManager{
             });
         }catch(err){
             console.error("Error saving file changes:", err);
+            writeStream.destroy();
             fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
             throw err;
         }
