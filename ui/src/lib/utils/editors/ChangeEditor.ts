@@ -42,22 +42,34 @@ export class ChangeEditor extends TextEditor{
         }
     }
 
-    private updateDiff(){
-        // const result = await git.diff(["--word-diff=porcelain","--word-diff-regex=.","--diff-algorithm=minimal","--no-index", tmpFile, externalFilePath]);
-        console.log("Updating diff with content from editor...");
-        // const options =  ["--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",filePath];
+    protected override renderLineNumbers(){
+        const lineElems:string[] = [];
+        let lineNo = 1;
+        for(let line of this._ilines){
+            let text = "<br/>";
+            if(line.text !== undefined){
+                text = lineNo+"";     
+                lineNo++;
+            }            
+            lineElems.push(`<p>${text}</p>`);
+        }
+        const lineNumbers = this.getLineNumberContainer();
+        if(!lineNumbers) return;
+        //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
+        lineNumbers.style.width = `${String(this.lineCount).length + 2}ch`;
+        //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
+        lineNumbers.innerHTML = lineElems.join("");
+    }
+
+    private updateDiff(){                
         const options = ["-c", "core.autocrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
         IpcUtils.getRaw(options).then((r) => {
             const diffResult = r.result!;
-            console.log("Diff result received", diffResult);
-            console.log("diff error", r.error);
             const contentLines = this.getContentLines();
-            console.log("Content lines from editor", contentLines);
             const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
-            console.log("UI lines after diff", uiLines);
             this._ilines = uiLines.currentLines;
-            console.log("Diff updated",this._ilines);
             //build decorations again with new ilines
+            this.renderLineNumbers();
             const tr = this._editView.state.tr;
             this._haveDecorationUpdate = true;
             this._editView.dispatch(tr);            

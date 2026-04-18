@@ -143,7 +143,7 @@ export class TextEditor {
         return currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
     }
 
-    private renderLineNumbers(){
+    protected renderLineNumbers(){
         const lineNumbers = this.getLineNumberContainer();
         if(!lineNumbers) return;
         //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
