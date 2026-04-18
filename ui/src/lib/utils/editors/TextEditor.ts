@@ -28,6 +28,7 @@ export class TextEditor {
     protected saveHandler: ((success:boolean) => void) | null = null;
     protected onSync: (() => void) | null = null;
     private onSyncWaitingCalls: (() => void)[] = [];
+    protected lineCount = 0;
 
 
     constructor(containerSelector:string){
@@ -47,16 +48,31 @@ export class TextEditor {
     }
 
     protected handleTransaction (transaction: Transaction){
-        const prevLineCount = this._editView.state.doc.childCount;
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);
 
         if(transaction.docChanged){
-            if(newState.doc.childCount !== prevLineCount){
-                this.renderLineNumbers(newState.doc.childCount);
+            if(newState.doc.childCount !== this.lineCount){
+                this.adjustLineNumbers(newState.doc.childCount);
             }
             this.populateChanges(transaction);
         }
+    }
+
+    private adjustLineNumbers(newLineCount: number){
+        const lineNumbers = this.getLineNumberContainer();
+        while(newLineCount > this.lineCount){
+            this.lineCount++;
+            const p = document.createElement('p');
+            p.textContent = `${this.lineCount}`;
+            lineNumbers?.appendChild(p);
+        }
+
+        while(newLineCount < this.lineCount){
+            this.lineCount--;
+            lineNumbers?.lastChild?.remove();
+        }
+        
     }
 
     private populateChanges(transaction: Transaction){
@@ -122,14 +138,18 @@ export class TextEditor {
 
     }
 
-    private renderLineNumbers(lineCount: number){
+    protected getLineNumberContainer(){
         const currentPanel = document.querySelector(this._containerSelector)?.closest(".current");
-        const lineNumbers = currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
+        return currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
+    }
+
+    private renderLineNumbers(){
+        const lineNumbers = this.getLineNumberContainer();
         if(!lineNumbers) return;
         //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
-        lineNumbers.style.width = `${String(lineCount).length + 2}ch`;
+        lineNumbers.style.width = `${String(this.lineCount).length + 2}ch`;
         //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
-        lineNumbers.innerHTML = Array.from({length: lineCount}, (_, i) => `<p>${i + 1}</p>`).join("");
+        lineNumbers.innerHTML = Array.from({length: this.lineCount}, (_, i) => `<p>${i + 1}</p>`).join("");        
     }
 
     private readonly insertTab: Command = (state, dispatch) => {
@@ -209,8 +229,8 @@ export class TextEditor {
             handlePaste: (view, event) => this.handlePaste(view, event),
         });
         this._initialDoc = this._editView.state.doc;
-
-        this.renderLineNumbers(this._editState.doc.childCount);
+        this.lineCount = this._editState.doc.childCount;
+        this.renderLineNumbers();
 
         if(!success) return false;
         return true;   
