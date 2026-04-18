@@ -90,13 +90,13 @@ export class ChangeEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    async renderILines(lines:ILine[],file:IFile){
+    async renderILines(ilines:ILine[],file:IFile){
         this._file = file;
         await this.saveStagedContent();
-        this._ilines = lines;
-        this._lines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
+        this._ilines = ilines;
+        const textLines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
         const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
-        return await this.render(sourceFilePath);             
+        return await this.render(sourceFilePath,textLines);             
     }
 
     private saveStagedContent(){

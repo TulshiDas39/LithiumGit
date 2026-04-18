@@ -195,15 +195,16 @@ export class TextEditor {
         return lines;
     }
 
-    protected async render(sourceFilePath:string){
+    protected async render(sourceFilePath:string,lines:string[]){
         this._sourceFilePath = sourceFilePath;
+        this._lines = lines;
         const success = await this.createTempFile();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:(tr) => this.handleTransaction(tr),
-            attributes: { spellcheck: "false", style: `width: fit-content` },
+            attributes: { spellcheck: "false", style: `width: fit-content; min-width: 100%;` },
             clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, this._lineFeedType),
             handlePaste: (view, event) => this.handlePaste(view, event),
         });
@@ -256,6 +257,11 @@ export class TextEditor {
             return true;
         }
         return false;
+    }
+
+    destroy(){
+        console.log("Destroying editor");
+        this._editView?.destroy();
     }
 
 }
