@@ -3,7 +3,7 @@ import {DecorationSet, Decoration} from "prosemirror-view"
 import {Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { IFile, StringUtils } from "common_library";
+import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
@@ -17,15 +17,13 @@ import { DiffUtils } from "../DiffUtils";
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
-    private _file:IFile = null!;
-    private _diffUpdateTimer: NodeJS.Timeout | null = null;
+    private _file:IFile = null!;    
     private _tempStagedFilePath = '';
     private _haveDecorationUpdate = false;
     constructor(containerSelector:string){
         super(containerSelector);
         this.saveHandler = success => this.onSave(success);
-        this.onSync = () => this.updateDiffDebounced();
-
+        this.onSync = () => this.updateDiff();
     }
 
     protected override getPlugins(){
@@ -42,15 +40,6 @@ export class ChangeEditor extends TextEditor{
                 savebtn?.classList.add("d-none");
             }
         }
-    }
-
-    private updateDiffDebounced(){
-        if(this._diffUpdateTimer){
-            clearTimeout(this._diffUpdateTimer);
-        }
-        this._diffUpdateTimer = setTimeout(() => {
-            this.updateDiff();
-        }, 1000);
     }
 
     private updateDiff(){
@@ -72,8 +61,7 @@ export class ChangeEditor extends TextEditor{
             const tr = this._editView.state.tr;
             this._haveDecorationUpdate = true;
             this._editView.dispatch(tr);            
-        });
-        this._diffUpdateTimer = null;
+        });        
 
     }
     
@@ -107,7 +95,6 @@ export class ChangeEditor extends TextEditor{
         await this.saveStagedContent();
         this._ilines = lines;
         this._lines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
-        console.log("Rendering ChangeEditor with lines", this._lines);
         const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
         return await this.render(sourceFilePath);             
     }
