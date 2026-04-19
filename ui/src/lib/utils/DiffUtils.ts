@@ -91,7 +91,6 @@ export class DiffUtils{
 
             const oldCore = oldStr.substring(prefixLen, oldSuffixStart);
             const newCore = newStr.substring(prefixLen, newSuffixStart);
-            console.log("Computing char diff with oldCore:", oldCore, "newCore:", newCore);
 
             if(oldCore.length === 0 && newCore.length === 0)
                 return { prevHighlights: [], currHighlights: [] };
