@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { FaAdjust, FaCopy, FaRegBell, FaSpinner } from "react-icons/fa";
+import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
-import { EnumTheme, IRemoteInfo } from "common_library";
-import { EnumModals, IContextItem, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
+import { EnumModals, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
 import icon from "../../assets/img/icon_green.png";
+import { ActionUI } from "../../store/slices/UiSlice";
 
 interface IState{
     remote?:IRemoteInfo;
@@ -132,7 +133,8 @@ function FooterNavComponent(){
             </div>            
         </div>
         
-        <div className="col-1 d-flex align-items-center justify-content-end">            
+        <div className="col-1 d-flex align-items-center justify-content-end"> 
+            <CrlfSelection />
             <span className="pe-2 d-flex align-items-center">
                 <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
             </span>
@@ -144,3 +146,48 @@ function FooterNavComponent(){
 }
 
 export const FooterNav = React.memo(FooterNavComponent);
+
+
+function CrlfSelection(){
+    const store = useSelectorTyped(state=>({
+        lfType: state.ui.lfType
+    }),shallowEqual);
+
+    const dispatch = useDispatch();
+    const optionTarget = useRef(null);
+    const [state,setState] = useMultiState<{showOptions?:boolean}>({});
+
+    const handleOptionClick = (type:EnumLinefeed)=>{
+        dispatch(ActionUI.setLinefeedType(type));
+        setState({showOptions:false});
+    }
+
+    if(!store.lfType)
+        return null;
+
+    return <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                    {({
+                    placement: _placement,
+                    arrowProps: _arrowProps,
+                    show: _show,
+                    popper: _popper,
+                    hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                    ...props
+                    }) => (
+                    <div
+                        {...props}
+                        className="rounded-0"
+                        style={{
+                        position: 'absolute',
+                        backgroundColor: 'inherit',
+                        padding: '2px 20px',
+                        borderRadius: 3,                        
+                        ...props.style,
+                        }}
+                    >
+                        <div onClick={(e)=>handleOptionClick(EnumLinefeed.LF)} className="hover-color cur-point py-1">LF</div>
+                        <div onClick={(e)=>handleOptionClick(EnumLinefeed.CRLF)} className="hover-color cur-point py-1">CRLF</div>
+                    </div>
+                    )}
+                </Overlay>
+}

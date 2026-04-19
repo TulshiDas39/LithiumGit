@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EnumChangeType, EnumNotificationType, IFile, INotification, IRemoteInfo, IStatus } from "common_library";
+import { EnumChangeType, EnumLinefeed, EnumNotificationType, IFile, INotification, IRemoteInfo, IStatus } from "common_library";
 import { EnumConfigTab, EnumSelectedRepoTab, IUiNotification } from "../../lib";
 
 export enum EnumHomePageTab{
@@ -44,6 +44,7 @@ interface IUIState{
     branchList:string[];
     refreshingGraph:boolean;
     notifications:IUiNotification[];
+    lfType?:EnumLinefeed;
 }
 
 const initialState:IUIState={
@@ -64,7 +65,7 @@ const initialState:IUIState={
     refreshingGraph:false,
     configTab:EnumConfigTab.USER,
     loaders:[],
-    notifications:[],
+    notifications:[],        
 }
 
 const UISlice = createSlice({
@@ -178,6 +179,9 @@ const UISlice = createSlice({
         },
         discardModifiedItem(state,action:PayloadAction<string>){
             state.status!.unstaged = state.status!.unstaged.filter(x=> x.path !== action.payload);
+        },
+        setLinefeedType(state,action:PayloadAction<EnumLinefeed | undefined>){
+            state.lfType = action.payload;
         }
     }
 });
