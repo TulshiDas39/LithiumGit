@@ -83,8 +83,6 @@ export class DiffUtils{
             const minLen = Math.min(oldStr.length, newStr.length);
             while(prefixLen < minLen && oldStr[prefixLen] === newStr[prefixLen]) prefixLen++;
 
-            console.log("Common prefix length:", prefixLen);
-
             let oldSuffixStart = oldStr.length, newSuffixStart = newStr.length;
             while(oldSuffixStart > prefixLen && newSuffixStart > prefixLen
                 && oldStr[oldSuffixStart - 1] === newStr[newSuffixStart - 1]){

@@ -32,7 +32,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content") as TextEditor});
+    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -148,7 +148,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
                         DiffUtils.getDiff(store.selectedFile.path).then(str=>{                            
                             let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                            const editor = new ChangeEditor(editorContainer);
+                            const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
                             refData.current.editor = editor;
                             ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
                             ChangesData.changeUtils.previousLines = lineConfigs.previousLines;                            

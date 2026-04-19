@@ -12,6 +12,7 @@ import { ActionModals } from "../../../store";
 import { ModalData } from "../../../components/modals/ModalData";
 import { Data } from "../../data";
 import { DiffUtils } from "../DiffUtils";
+import { ChangeUtils } from "../ChangeUtils";
 
 
 export class ChangeEditor extends TextEditor{
@@ -20,8 +21,10 @@ export class ChangeEditor extends TextEditor{
     private _file:IFile = null!;    
     private _tempStagedFilePath = '';
     private _haveDecorationUpdate = false;
-    constructor(containerSelector:string){
+    private _changeUitl: ChangeUtils = null!;
+    constructor(containerSelector:string,changeUtil: ChangeUtils){
         super(containerSelector);
+        this._changeUitl = changeUtil;
         this.saveHandler = success => this.onSave(success);
         this.onSync = () => this.updateDiff();
     }
@@ -68,6 +71,8 @@ export class ChangeEditor extends TextEditor{
             const contentLines = this.getContentLines();
             const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
             this._ilines = uiLines.currentLines;
+            this._changeUitl.previousLines = uiLines.previousLines;
+            this._changeUitl.updatePreviousChanges(uiLines.previousLines);
             //build decorations again with new ilines
             this.renderLineNumbers();
             const tr = this._editView.state.tr;
