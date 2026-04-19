@@ -3,7 +3,7 @@ import {DecorationSet, Decoration} from "prosemirror-view"
 import {Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { EnumChangeType, IFile, StringUtils } from "common_library";
+import { EnumChangeType, IFile, RendererEvents, StringUtils } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
@@ -17,6 +17,7 @@ import { ChangeUtils } from "../ChangeUtils";
 
 export class ChangeEditor extends TextEditor{
     private _ilines:ILine[] = [];
+    private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
     private _file:IFile = null!;    
     private _tempStagedFilePath = '';
@@ -107,13 +108,29 @@ export class ChangeEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    async renderILines(ilines:ILine[],file:IFile){
-        this._file = file;
+    protected override async readFile(filePath: string){
+        const succeeded = await super.readFile(filePath);
+        if(!succeeded) return false;
+        const options =  ["--diff-algorithm=minimal",this._file.path];
+        const diff = await IpcUtils.getDiff(options);
+        let lineConfigs = DiffUtils.GetUiLines(diff,this._lines);
+        this._ilines = lineConfigs.currentLines;
+        this._prevIlines = lineConfigs.previousLines;
+        return true;
+    }
+
+    async renderILines(file:IFile){
+        this._file = file;        
+        const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);;
+        const succeed = await this.readFile(filePath);
+        if(!succeed) return false;
         await this.saveStagedContent();
-        this._ilines = ilines;
-        const textLines = this._ilines.filter(x=>x.text !== undefined).map(l => l.text || '');
-        const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, this._file.path);
-        return await this.render(sourceFilePath,textLines);             
+        this._changeUitl.currentLines = [];
+        this._changeUitl.previousLines = this._prevIlines;
+        this._changeUitl.showChanges();
+        const r = await this.render();
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        return r;
     }
 
     private saveStagedContent(){

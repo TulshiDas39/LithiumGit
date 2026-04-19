@@ -207,6 +207,10 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.getFileContent().channel,path) as string[];
     }
 
+    static async getFileContentRaw(path:string){
+        return await IpcUtils.execute<string>(RendererEvents.getFileContentRaw,[path]);
+    }
+
     static async getDiff(options:string[]){
         return await window.ipcRenderer.invoke(RendererEvents.diff().channel,options,RepoUtils.selectedRepo) as string;
     }

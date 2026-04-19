@@ -17,6 +17,7 @@ export class FileManager{
         this.handleGetFilePathUsingSaveAsDialog();
         this.handleOpenFileExplorer();
         this.handleGetFileContent();
+        this.hangleGetFileContentRaw();
         this.handlePathJoin();
         this.handlePathJoinAsync();
         this.handleLastUpdatedDate();
@@ -64,6 +65,14 @@ export class FileManager{
             return lines;
         });
     }
+
+    private hangleGetFileContentRaw() {
+        ipcMain.handle(RendererEvents.getFileContentRaw,async (e,path:string)=>{
+            const content = await this.getFileContentRaw(path);
+            return content;
+        });
+    }
+
 
     handleIsBinary() {
         ipcMain.handle(RendererEvents.isBinary,async (e,path:string)=>{
@@ -158,6 +167,17 @@ export class FileManager{
                 if(!err){
                     const lines = data.split(/\r\n|\r|\n/g);
                     resolve(lines);
+                }
+                else if(err) reject(err);
+            })
+        })
+    }
+
+    getFileContentRaw(path: string) {
+        return new Promise<string>((resolve,reject)=>{
+            fs.readFile(path,{encoding:"utf8"},(err,data)=>{
+                if(!err){                    
+                    resolve(data);
                 }
                 else if(err) reject(err);
             })

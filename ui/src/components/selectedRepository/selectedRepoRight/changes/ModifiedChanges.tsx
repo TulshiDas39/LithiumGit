@@ -32,7 +32,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
+    const refData = useRef({lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -139,52 +139,40 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     }
 
-    const displayChanges = async(path:string)=>{
-        return new Promise<boolean>((res)=>{
-            const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,path);
-            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
-                IpcUtils.getFileContent(joinedPath).then(lines=>{
-                    refData.current.selectedFileContent = lines;
-                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                        DiffUtils.getDiff(store.selectedFile.path).then(str=>{                            
-                            let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                            const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
-                            refData.current.editor = editor;
-                            ChangesData.changeUtils.currentLines = [];//lineConfigs.currentLines;
-                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;                            
-                            ChangesData.changeUtils.showChanges();
-                            editor.renderILines(lineConfigs.currentLines,store.selectedFile!).then(success=>{
-                                if(!success) {
-                                    ModalData.appToast.message = "There was an error reading the content.";
-                                    dispatch(ActionModals.showToast());
-                                }                            
-                                res(true);                            
-                            });
-                        });
-                    }
-                    else if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
-                        ChangesData.changeUtils.currentLines = [];
-                        ChangesData.changeUtils.previousLines = null!;
-                        ChangesData.changeUtils.showChanges();
-                        const editor = new PlainTextEditor(editorContainer);
-                        refData.current.editor = editor;
-                        const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
-                        editor.render(sourceFilePath,lines).then(success=>{
-                            if(!success) {
-                                ModalData.appToast.message = "There was an error reading the content.";
-                                dispatch(ActionModals.showToast());
-                            }                            
-                            res(true);                            
-                        });                        
-                    }
-                })
+    const displayChanges = async()=>{
+        return new Promise<boolean>((res)=>{            
+            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){                
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
+                    refData.current.editor = editor;
+                    editor.renderILines(store.selectedFile!).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }                            
+                        res(true);                            
+                    });
+                    
+                }
+                else if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
+                    ChangesData.changeUtils.currentLines = [];
+                    ChangesData.changeUtils.previousLines = null!;
+                    ChangesData.changeUtils.showChanges();
+                    const editor = new PlainTextEditor(editorContainer);
+                    refData.current.editor = editor;
+                    const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+                    editor.renderLines(sourceFilePath).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }                            
+                        res(true);                            
+                    });                        
+                }                
             }
             else{            
                 IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
                     const lines = StringUtils.getLines(content);
-                    const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
-                    if(!hasChanges) return;
-                    refData.current.selectedFileContent = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                     ChangesData.changeUtils.currentLines = null!;
                     ChangesData.changeUtils.previousLines = lineConfigs!;
@@ -204,7 +192,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             if(r.result){                
                 showPreview(store.selectedFile!);
             }else{
-                displayChanges(store.selectedFile!.path).then(()=>{
+                displayChanges().then(()=>{
                     dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
                 })
             }
@@ -225,7 +213,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;
-        displayChanges(store.selectedFile.path).then(()=>{
+        displayChanges().then(()=>{
             dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
             dispatch(ActionChanges.increamentStepRefreshVersion());
         });                

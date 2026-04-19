@@ -1,4 +1,4 @@
-import { EnumLinefeed, IChange, StringUtils } from "common_library";
+import { EnumLinefeed, IChange, RendererEvents, StringUtils } from "common_library";
 import { Data } from "../../data";
 import {Schema, Node, Slice, Fragment} from "prosemirror-model"
 import {EditorState, Transaction, Command} from "prosemirror-state"
@@ -8,6 +8,7 @@ import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
 import { ReplaceStep } from "prosemirror-transform";
 import { IpcUtils } from "../IpcUtils";
+import { RepoUtils } from "../RepoUtils";
 
 
 
@@ -15,7 +16,7 @@ import { IpcUtils } from "../IpcUtils";
 export class TextEditor {
     protected _containerSelector:string = '';    
     protected _lines:string[] = [];
-    private _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
+    protected _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
     private _encoding:string = 'utf-8';
     protected _editState:EditorState = null!;
     protected _editView:EditorView = null!;
@@ -215,9 +216,32 @@ export class TextEditor {
         return lines;
     }
 
-    protected async render(sourceFilePath:string,lines:string[]){
-        this._sourceFilePath = sourceFilePath;
+    protected async readFile(filePath:string){
+        this._sourceFilePath = filePath;
+        const r = await IpcUtils.getFileContentRaw(filePath);
+        if(r.error){
+            console.error("Error reading file content:", r.error);
+            return false;
+        }
+        const parts = r.result?.split(/(\r\n|\r|\n)/) || [];
+        let lfCount = 0;
+        let crlfCount = 0;
+        const lines:string[] = [];
+        for(let i=0;i<parts.length;i=i+2){
+            lines.push(parts[i]);
+            if(parts[i+1] === "\r\n"){
+                crlfCount++;
+            }else{
+                lfCount++;
+            }
+        }
+        this._lineFeedType = crlfCount > lfCount ? EnumLinefeed.CRLF : EnumLinefeed.LF;
         this._lines = lines;
+
+        return true;
+    }
+
+    protected async render(){
         const success = await this.createTempFile();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});

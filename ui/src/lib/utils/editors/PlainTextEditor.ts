@@ -47,8 +47,10 @@ export class PlainTextEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    override async render(sourceFilePath:string,lines:string[]){
-        return await super.render(sourceFilePath,lines);
+    async renderLines(filePath:string){
+        const r = await this.readFile(filePath);
+        if(!r) return false;
+        return await super.render();
     }
 
 }
