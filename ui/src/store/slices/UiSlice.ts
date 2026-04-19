@@ -65,7 +65,8 @@ const initialState:IUIState={
     refreshingGraph:false,
     configTab:EnumConfigTab.USER,
     loaders:[],
-    notifications:[],        
+    notifications:[],
+    lfType:EnumLinefeed.CRLF
 }
 
 const UISlice = createSlice({

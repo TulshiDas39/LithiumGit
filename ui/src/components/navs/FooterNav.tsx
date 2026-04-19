@@ -147,8 +147,8 @@ function FooterNavComponent(){
 
 export const FooterNav = React.memo(FooterNavComponent);
 
-
-function CrlfSelection(){
+//TODO: investigate why this comonent is rendering on every click on document.
+function CrlfSelectionComponent(){
     const store = useSelectorTyped(state=>({
         lfType: state.ui.lfType
     }),shallowEqual);
@@ -162,32 +162,54 @@ function CrlfSelection(){
         setState({showOptions:false});
     }
 
+    const refData = useRef({hoverTarget:false});    
+
+    useEffect(()=>{
+        const hideOptions = ()=>{
+            if(refData.current.hoverTarget)
+                return;
+            setState({showOptions:false});
+        }
+        document.addEventListener("click",hideOptions);
+        return ()=>{
+            document.removeEventListener("click",hideOptions);
+        }
+    },[])
+
     if(!store.lfType)
         return null;
 
-    return <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
-                    {({
-                    placement: _placement,
-                    arrowProps: _arrowProps,
-                    show: _show,
-                    popper: _popper,
-                    hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
-                    ...props
-                    }) => (
-                    <div
-                        {...props}
-                        className="rounded-0"
-                        style={{
-                        position: 'absolute',
-                        backgroundColor: 'inherit',
-                        padding: '2px 20px',
-                        borderRadius: 3,                        
-                        ...props.style,
-                        }}
-                    >
-                        <div onClick={(e)=>handleOptionClick(EnumLinefeed.LF)} className="hover-color cur-point py-1">LF</div>
-                        <div onClick={(e)=>handleOptionClick(EnumLinefeed.CRLF)} className="hover-color cur-point py-1">CRLF</div>
-                    </div>
-                    )}
-                </Overlay>
+    return <div className="px-1">
+                <div ref={optionTarget} className="cur-default px-1 h-100 d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
+                    onMouseEnter={()=>refData.current.hoverTarget=true} onMouseLeave={()=> refData.current.hoverTarget = false}>
+                        {store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"}   
+                </div>
+                <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                        {({
+                        placement: _placement,
+                        arrowProps: _arrowProps,
+                        show: _show,
+                        popper: _popper,
+                        hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                        ...props
+                        }) => (
+                        <div
+                            {...props}
+                            className="rounded-0 border"
+                            style={{
+                            position: 'absolute',
+                            backgroundColor: 'inherit',
+                            padding: '2px 0px',
+                            borderRadius: 3,                        
+                            ...props.style,
+                            }}
+                        >
+                            <div onClick={(e)=>handleOptionClick(EnumLinefeed.LF)} className="hover-color cur-point py-1 px-4 hover-bg">LF</div>
+                            <div onClick={(e)=>handleOptionClick(EnumLinefeed.CRLF)} className="hover-color cur-point py-1 px-4 hover-bg">CRLF</div>
+                        </div>
+                        )}
+                    </Overlay>
+                </div>
 }
+
+const CrlfSelection = React.memo(CrlfSelectionComponent);
