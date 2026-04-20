@@ -231,11 +231,13 @@ export class TextEditor {
             lines.push(parts[i]);
             if(parts[i+1] === "\r\n"){
                 crlfCount++;
-            }else{
+            }else if(parts[i+1] === "\n"){
                 lfCount++;
             }
         }
-        this._lineFeedType = crlfCount > lfCount ? EnumLinefeed.CRLF : EnumLinefeed.LF;
+        if(!!lfCount || !!crlfCount){
+            this._lineFeedType = crlfCount > lfCount ? EnumLinefeed.CRLF : EnumLinefeed.LF;
+        }
         this._lines = lines;
 
         return true;
