@@ -1,4 +1,4 @@
-import {IChange, IFileProps, RendererEvents, StringUtils } from "common_library";
+import {EnumLinefeed, IChange, IFileProps, RendererEvents, StringUtils } from "common_library";
 import { dialog, ipcMain, shell } from "electron";
 import * as fs from 'fs';
 import path = require("path");
@@ -28,11 +28,11 @@ export class FileManager{
         this.handleFileTracking();
     }
     private handleFileTracking() {
-        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
+        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[],lineFeedType:EnumLinefeed)=>{
             let succeededCount = 0;
             for(let change of untrackedChanges){
                 try{
-                    await this.saveFileChanges(tempFilePath,change);
+                    await this.saveFileChanges(tempFilePath,change,lineFeedType);
                     succeededCount++;
                 }catch(err){
                     console.error("Error saving file changes:", err);
@@ -269,7 +269,7 @@ export class FileManager{
         }
     }
 
-    async saveFileChanges(sourceFilePath: string, change: IChange) {
+    async saveFileChanges(sourceFilePath: string, change: IChange, lineFeedType: EnumLinefeed) {
         const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
@@ -283,7 +283,7 @@ export class FileManager{
         const update=(parts:string[])=>{
             for (let i = 0; i < parts.length; i += 2) {
                 const line = parts[i];
-                const ending = parts[i + 1] ?? '';
+                const ending = parts[i + 1] ? lineFeedType: '';
 
                 currLineIndex++;
                 if (!inserted && currLineIndex >= change.startlineIndex) {                    

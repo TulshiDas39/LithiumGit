@@ -109,7 +109,7 @@ export class TextEditor {
         this._trackingChanges = true;
         const perform = ()=>{
             const itemCount = this._untrackedChanges.length;
-            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges).then((result)=>{
+            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges,this._lineFeedType).then((result)=>{
                 if(result.error){
                     console.error("Error tracking changes:", result.error);
                     this._trackingChanges = false;
@@ -211,6 +211,7 @@ export class TextEditor {
     }
 
     protected async switchLfType(){
+        this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
         this._untrackedChanges.push({
             startlineIndex: 0,
             startOffset: 0,
