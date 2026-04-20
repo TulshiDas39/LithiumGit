@@ -50,7 +50,9 @@ export class PlainTextEditor extends TextEditor{
     async renderLines(filePath:string){
         const r = await this.readFile(filePath);
         if(!r) return false;
-        return await super.render();
+        const succeeded = await super.render();
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        return succeeded;
     }
 
 }
