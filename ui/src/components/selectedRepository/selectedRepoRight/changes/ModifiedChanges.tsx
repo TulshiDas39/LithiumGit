@@ -211,6 +211,12 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     },[store.selectedFile]);
 
     useEffect(()=>{
+        if(!store.selectedFile){
+            dispatch(ActionUI.setLinefeedType(undefined));
+        }
+    },[!!store.selectedFile])
+
+    useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;
         displayChanges().then(()=>{
@@ -246,6 +252,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     useEffect(()=>{
         refData.current.isMounted = true;
+        return ()=>{
+            dispatch(ActionUI.setLinefeedType(undefined));
+        }
     },[])
 
     const copyFile=(file:IFile)=>{

@@ -5,7 +5,7 @@ import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
-import { EnumModals, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
@@ -150,7 +150,8 @@ export const FooterNav = React.memo(FooterNavComponent);
 //TODO: investigate why this comonent is rendering on every click on document.
 function CrlfSelectionComponent(){
     const store = useSelectorTyped(state=>({
-        lfType: state.ui.lfType
+        lfType: state.ui.lfType,
+        selectedTab:state.ui.selectedRepoTab,
     }),shallowEqual);
 
     const dispatch = useDispatch();
@@ -176,7 +177,7 @@ function CrlfSelectionComponent(){
         }
     },[])
 
-    if(!store.lfType)
+    if(!store.lfType|| store.selectedTab !== EnumSelectedRepoTab.CHANGES)
         return null;
 
     return <div className="px-1">
