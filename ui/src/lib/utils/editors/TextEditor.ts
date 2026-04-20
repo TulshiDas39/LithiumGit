@@ -210,6 +210,17 @@ export class TextEditor {
         return !this._editView.state.doc.eq(this._initialDoc);
     }
 
+    protected async switchLfType(){
+        this._untrackedChanges.push({
+            startlineIndex: 0,
+            startOffset: 0,
+            endlineIndex:0,
+            endOffset:0,
+            text: "",
+        });
+        await this.save();
+    }
+
     getContentLines(): string[] {
         const lines: string[] = [];
         this._editView.state.doc.forEach(node => lines.push(node.textContent ?? ''));

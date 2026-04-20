@@ -13,6 +13,7 @@ import { ModalData } from "../../../components/modals/ModalData";
 import { Data } from "../../data";
 import { DiffUtils } from "../DiffUtils";
 import { ChangeUtils } from "../ChangeUtils";
+import { DataUtils } from "../DataUtils";
 
 
 export class ChangeEditor extends TextEditor{
@@ -130,6 +131,7 @@ export class ChangeEditor extends TextEditor{
         this._changeUitl.showChanges();
         const r = await this.render();
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
         return r;
     }
 

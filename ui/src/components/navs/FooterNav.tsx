@@ -5,7 +5,7 @@ import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
-import { EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { DataUtils, EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
@@ -159,7 +159,16 @@ function CrlfSelectionComponent(){
     const [state,setState] = useMultiState<{showOptions?:boolean}>({});
 
     const handleOptionClick = (type:EnumLinefeed)=>{
-        dispatch(ActionUI.setLinefeedType(type));
+        if(type === store.lfType)
+            return;
+        ModalData.confirmationModal.message  = `Are you sure you want to switch line feed type to '${type === EnumLinefeed.CRLF? "CRLF":"LF"}'?`;
+        ModalData.confirmationModal.YesHandler = ()=>{
+            dispatch(ActionUI.setLinefeedType(type));
+            if(store.selectedTab === EnumSelectedRepoTab.CHANGES){
+                DataUtils.handleLFTypeChangeOfModifiedFile();
+            }
+        };
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         setState({showOptions:false});
     }
 

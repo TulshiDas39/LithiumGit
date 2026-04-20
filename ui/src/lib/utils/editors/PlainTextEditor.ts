@@ -4,6 +4,7 @@ import { ActionModals } from "../../../store";
 import { ActionUI } from "../../../store/slices/UiSlice";
 import { ReduxUtils } from "../ReduxUtils";
 import { TextEditor } from "./TextEditor";
+import { DataUtils } from "../DataUtils";
 
 export class PlainTextEditor extends TextEditor{  
     private _saveBtn:HTMLElement | null = null;  
@@ -52,6 +53,7 @@ export class PlainTextEditor extends TextEditor{
         if(!r) return false;
         const succeeded = await super.render();
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
         return succeeded;
     }
 
