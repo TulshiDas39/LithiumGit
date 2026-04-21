@@ -109,7 +109,7 @@ export class TextEditor {
         this._trackingChanges = true;
         const perform = ()=>{
             const itemCount = this._untrackedChanges.length;
-            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges,this._lineFeedType).then((result)=>{
+            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges).then((result)=>{
                 if(result.error){
                     console.error("Error tracking changes:", result.error);
                     this._trackingChanges = false;

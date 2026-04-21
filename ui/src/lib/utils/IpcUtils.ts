@@ -7,8 +7,8 @@ export class IpcUtils{
     static copyStagedContent(path: string, destinationPath: string) {
         return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
     }
-    static trackFileChanges(_tempFilePath: string, _untrackedChanges: IChange[],_lineFeedType:EnumLinefeed) {
-        return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[_tempFilePath, _untrackedChanges,_lineFeedType]);
+    static trackFileChanges(_tempFilePath: string, _untrackedChanges: IChange[]) {
+        return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[_tempFilePath, _untrackedChanges]);
     }
     static copyFile(fromFilePath: string, toFilePath: string,displayError=true) {
         return IpcUtils.execute(RendererEvents.copyFile,[fromFilePath, toFilePath],displayError);

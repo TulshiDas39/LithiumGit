@@ -28,11 +28,11 @@ export class FileManager{
         this.handleFileTracking();
     }
     private handleFileTracking() {
-        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[],lineFeedType:EnumLinefeed)=>{
+        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
             let succeededCount = 0;
             for(let change of untrackedChanges){
                 try{
-                    await this.saveFileChanges(tempFilePath,change,lineFeedType);
+                    await this.saveFileChanges(tempFilePath,change);
                     succeededCount++;
                 }catch(err){
                     console.error("Error saving file changes:", err);
@@ -269,7 +269,7 @@ export class FileManager{
         }
     }
 
-    async saveFileChanges(sourceFilePath: string, change: IChange, lineFeedType: EnumLinefeed) {
+    async saveFileChanges(sourceFilePath: string, change: IChange) {
         const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
@@ -283,7 +283,7 @@ export class FileManager{
         const update=(parts:string[])=>{
             for (let i = 0; i < parts.length; i += 2) {
                 const line = parts[i];
-                const ending = parts[i + 1] ? lineFeedType: '';
+                const ending = parts[i + 1] ?? '';
 
                 currLineIndex++;
                 if (!inserted && currLineIndex >= change.startlineIndex) {                    
