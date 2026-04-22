@@ -26,7 +26,15 @@ export class FileManager{
         this.handleGetFileProps();
         this.handleCopyFile();
         this.handleFileTracking();
+        this.handleSetLineFeedType();
     }
+
+    private handleSetLineFeedType() {
+        ipcMain.handle(RendererEvents.setLineFeedType,async (e,filePath:string,lineFeedType:EnumLinefeed)=>{
+            return await this.setLineFeedType(filePath,lineFeedType);
+        });
+    }
+    
     private handleFileTracking() {
         ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
             let succeededCount = 0;
@@ -267,6 +275,45 @@ export class FileManager{
         if (!fs.existsSync(path)){
             fs.mkdirSync(path, { recursive: true });
         }
+    }
+
+    async setLineFeedType(sourceFilePath: string, lineFeedType: EnumLinefeed) {
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
+        const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
+        const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
+        const tmpPath = path.join(AppData.tempPath, tempFileName);
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
+
+        let buffer = '';
+
+        try{
+            for await (const chunk of readStream) {
+                buffer += chunk;
+                const parts = buffer.split(/(\r\n|\r|\n)/);
+                buffer = parts.pop()!;                
+                for (let i = 0; i < parts.length; i += 2) {
+                    const line = parts[i];
+                    writeStream.write(line + lineFeedType);
+                }                
+            }
+            writeStream.write(buffer);
+            await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
+
+            await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
+                if (err.code === 'EXDEV') {
+                    await fs.promises.copyFile(tmpPath, sourceFilePath);
+                    await fs.promises.unlink(tmpPath);
+                } else {
+                    throw err;
+                }
+            });
+        }catch(err){
+            console.error("Error setting line feed:", err);
+            writeStream.destroy();
+            fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
+            throw err;
+        }
+
     }
 
     async saveFileChanges(sourceFilePath: string, change: IChange) {

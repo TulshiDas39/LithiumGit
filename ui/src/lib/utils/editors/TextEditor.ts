@@ -9,6 +9,7 @@ import {baseKeymap} from "prosemirror-commands"
 import { ReplaceStep } from "prosemirror-transform";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
+import { ModalData } from "../../../components/modals/ModalData";
 
 
 
@@ -211,14 +212,12 @@ export class TextEditor {
     }
 
     protected async switchLfType(){
+        if(this.IsDocChanged()){
+            ModalData.errorModal.message = "Please save your changes before switching line feed type.";
+            return;
+        }
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
-        this._untrackedChanges.push({
-            startlineIndex: 0,
-            startOffset: 0,
-            endlineIndex:0,
-            endOffset:0,
-            text: "",
-        });
+        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType);
         await this.save();
     }
 

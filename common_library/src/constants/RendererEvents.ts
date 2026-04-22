@@ -307,7 +307,8 @@ export class RendererEvents{
     static readonly copyFile = "copyFile";    
     static readonly trackFileChanges = "trackFileChanges";    
     static readonly copyStagedContent = "copyStagedContent";
-    static readonly getFileContentRaw = "getFileContentRaw";    
+    static readonly getFileContentRaw = "getFileContentRaw";
+    static readonly setLineFeedType = "setLineFeedType";    
     
 }
 
