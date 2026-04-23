@@ -10,6 +10,9 @@ import { ReplaceStep } from "prosemirror-transform";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ModalData } from "../../../components/modals/ModalData";
+import { ReduxUtils } from "../ReduxUtils";
+import { ActionModals } from "../../../store";
+import { EnumModals } from "../../enums";
 
 
 
@@ -214,6 +217,7 @@ export class TextEditor {
     protected async switchLfType(){
         if(this.IsDocChanged()){
             ModalData.errorModal.message = "Please save your changes before switching line feed type.";
+            ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;
         }
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
