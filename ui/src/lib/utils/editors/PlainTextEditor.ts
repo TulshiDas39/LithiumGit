@@ -6,7 +6,13 @@ import { ReduxUtils } from "../ReduxUtils";
 import { TextEditor } from "./TextEditor";
 import { DataUtils } from "../DataUtils";
 
-export class PlainTextEditor extends TextEditor{  
+export class PlainTextEditor extends TextEditor{
+    hideCrlf(): void {
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(undefined));
+    }
+    hideEncoding(): void {
+        ReduxUtils.dispatch(ActionUI.setEncoding(undefined));
+    }  
     private _saveBtn:HTMLElement | null = null;  
     constructor(containerSelector:string) {
         super(containerSelector);

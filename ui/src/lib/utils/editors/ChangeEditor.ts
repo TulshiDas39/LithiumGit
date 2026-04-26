@@ -17,6 +17,12 @@ import { DataUtils } from "../DataUtils";
 
 
 export class ChangeEditor extends TextEditor{
+    hideCrlf(): void {
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(undefined));
+    }
+    hideEncoding(): void {
+        ReduxUtils.dispatch(ActionUI.setEncoding(undefined));
+    }
     private _ilines:ILine[] = [];
     private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;

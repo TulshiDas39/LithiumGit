@@ -16,7 +16,7 @@ import { EnumModals } from "../../enums";
 
 
 
-export class TextEditor {
+export abstract class TextEditor {
     protected _containerSelector:string = '';    
     protected _lines:string[] = [];
     protected _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
@@ -324,8 +324,12 @@ export class TextEditor {
     }
 
     destroy(){
-        console.log("Destroying editor");
         this._editView?.destroy();
+        this.hideCrlf();
+        this.hideEncoding();
     }
+
+    abstract hideCrlf(): void;
+    abstract hideEncoding(): void;
 
 }
