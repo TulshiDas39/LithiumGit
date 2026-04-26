@@ -1,4 +1,4 @@
-import { EnumLinefeed, IChange, RendererEvents, StringUtils } from "common_library";
+import { EnumLinefeed, IChange, StringUtils } from "common_library";
 import { Data } from "../../data";
 import {Schema, Node, Slice, Fragment} from "prosemirror-model"
 import {EditorState, Transaction, Command} from "prosemirror-state"
@@ -8,7 +8,6 @@ import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
 import { ReplaceStep } from "prosemirror-transform";
 import { IpcUtils } from "../IpcUtils";
-import { RepoUtils } from "../RepoUtils";
 import { ModalData } from "../../../components/modals/ModalData";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionModals } from "../../../store";
@@ -113,7 +112,7 @@ export class TextEditor {
         this._trackingChanges = true;
         const perform = ()=>{
             const itemCount = this._untrackedChanges.length;
-            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges).then((result)=>{
+            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges,this._encoding).then((result)=>{
                 if(result.error){
                     console.error("Error tracking changes:", result.error);
                     this._trackingChanges = false;
@@ -221,7 +220,7 @@ export class TextEditor {
             return;
         }
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
-        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType);
+        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
     }
 

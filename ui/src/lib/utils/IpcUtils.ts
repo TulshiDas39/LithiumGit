@@ -4,14 +4,14 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{
-    static setLineFeedType(filePath: string, _lineFeedType: EnumLinefeed) {
-        IpcUtils.execute(RendererEvents.setLineFeedType,[filePath, _lineFeedType]);        
+    static setLineFeedType(filePath: string, _lineFeedType: EnumLinefeed,encoding:string) {
+        IpcUtils.execute(RendererEvents.setLineFeedType,[filePath, _lineFeedType,encoding]);        
     }
     static copyStagedContent(path: string, destinationPath: string) {
         return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
     }
-    static trackFileChanges(filePath: string, changes: IChange[]) {
-        return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[filePath, changes]);
+    static trackFileChanges(filePath: string, changes: IChange[],encoding:string) {
+        return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[filePath, changes, encoding]);
     }
     static copyFile(fromFilePath: string, toFilePath: string,displayError=true) {
         return IpcUtils.execute(RendererEvents.copyFile,[fromFilePath, toFilePath],displayError);

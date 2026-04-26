@@ -30,17 +30,17 @@ export class FileManager{
     }
 
     private handleSetLineFeedType() {
-        ipcMain.handle(RendererEvents.setLineFeedType,async (e,filePath:string,lineFeedType:EnumLinefeed)=>{
-            return await this.setLineFeedType(filePath,lineFeedType);
+        ipcMain.handle(RendererEvents.setLineFeedType,async (e,filePath:string,lineFeedType:EnumLinefeed,encoding:string)=>{
+            return await this.setLineFeedType(filePath,lineFeedType,encoding);
         });
     }
     
     private handleFileTracking() {
-        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[])=>{
+        ipcMain.handle(RendererEvents.trackFileChanges,async (e,tempFilePath:string,untrackedChanges:IChange[],encoding:string)=>{
             let succeededCount = 0;
             for(let change of untrackedChanges){
                 try{
-                    await this.saveFileChanges(tempFilePath,change);
+                    await this.saveFileChanges(tempFilePath,change,encoding);
                     succeededCount++;
                 }catch(err){
                     console.error("Error saving file changes:", err);
@@ -277,12 +277,12 @@ export class FileManager{
         }
     }
 
-    async setLineFeedType(sourceFilePath: string, lineFeedType: EnumLinefeed) {
-        const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
+    async setLineFeedType(sourceFilePath: string, lineFeedType: EnumLinefeed,encoding:string) {
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
         const tmpPath = path.join(AppData.tempPath, tempFileName);
-        const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: encoding as any });
 
         let buffer = '';
 
@@ -316,12 +316,12 @@ export class FileManager{
 
     }
 
-    async saveFileChanges(sourceFilePath: string, change: IChange) {
-        const readStream = fs.createReadStream(sourceFilePath, { encoding: 'utf8' });
+    async saveFileChanges(sourceFilePath: string, change: IChange,encoding:string) {
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
         const tmpPath = path.join(AppData.tempPath, tempFileName);
-        const writeStream = fs.createWriteStream(tmpPath, { encoding: 'utf8' });
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: encoding as any });
 
         let currLineIndex = -1;
         let inserted = false;
