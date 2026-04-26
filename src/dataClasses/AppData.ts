@@ -2,6 +2,7 @@ import { Constants, EnumLinefeed } from "common_library/lib";
 import { app, BrowserWindow } from "electron";
 import path = require("path");
 import { EOL } from 'os';
+import { FileManager } from "../businessClasses/FileManager";
 
 export class AppData{
     static appPath = '';
@@ -10,6 +11,7 @@ export class AppData{
     static tempPath = '';
     static mainWindow:BrowserWindow;
     static systemLineFeedType:EnumLinefeed = null!;
+    static encodingList:string[] = [];
 
     static initialize() {
         AppData.appPath = app.getAppPath();
@@ -17,5 +19,6 @@ export class AppData{
         AppData.dataPath = path.join(AppData.homePath, ".lithiumgit");
         AppData.tempPath = path.join(AppData.dataPath, Constants.tempFolder);
         AppData.systemLineFeedType = EOL as EnumLinefeed;
+        AppData.encodingList = new FileManager().getEncodingList();
     }
 }

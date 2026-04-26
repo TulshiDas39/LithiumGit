@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
 import { EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
-import { DataUtils, EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { Data, DataUtils, EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
@@ -122,7 +122,7 @@ function FooterNavComponent(){
                 )}
             </div>            
         </div>      
-        <div className="col-6 text-center">
+        <div className="col-5 text-center">
             <div className="d-flex align-items-center">
                 <div className="text-center">                
                         {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
@@ -133,7 +133,8 @@ function FooterNavComponent(){
             </div>            
         </div>
         
-        <div className="col-1 d-flex align-items-center justify-content-end"> 
+        <div className="col-2 d-flex align-items-center justify-content-end">
+            <EncodingSelection />
             <CrlfSelection />
             <span className="pe-2 d-flex align-items-center">
                 <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
@@ -223,3 +224,92 @@ function CrlfSelectionComponent(){
 }
 
 const CrlfSelection = React.memo(CrlfSelectionComponent);
+
+interface IEncodingSelectionState{
+    showOptions?:boolean;
+}
+
+function EncodingSelection(){
+    const store = useSelectorTyped(state=>({
+        encoding: state.ui.encoding,
+        selectedTab:state.ui.selectedRepoTab,
+    }),shallowEqual);
+
+    const encodingList = useMemo(()=>{
+        return Data.appData?.encodingList || [];
+    },[Data.appData?.encodingList])
+
+    const [state,setState] = useMultiState<IEncodingSelectionState>({});
+
+    const dispatch = useDispatch();
+
+    const optionTarget = useRef(null);
+    const refData = useRef({hoverTarget:false});
+    
+    const handleOptionClick = (encoding:string)=>{
+        if(encoding === store.encoding)
+            return;
+        ModalData.confirmationModal.message  = `Are you sure you want to switch encoding type to '${encoding}'?`;
+        ModalData.confirmationModal.YesHandler = ()=>{
+            dispatch(ActionUI.setEncoding(encoding));
+            if(store.selectedTab === EnumSelectedRepoTab.CHANGES){
+                DataUtils.handleEncodingChangeOfModifiedFile(encoding);
+            }
+        };
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        setState({showOptions:false});
+    }    
+
+    useEffect(()=>{
+        const hideOptions = ()=>{
+            if(refData.current.hoverTarget)
+                return;
+            setState({showOptions:false});
+        }
+        document.addEventListener("click",hideOptions);
+        return ()=>{
+            document.removeEventListener("click",hideOptions);
+        }
+    },[])
+    
+    
+    if(!store.encoding || store.selectedTab !== EnumSelectedRepoTab.CHANGES)
+        return null;
+
+    return <div className="px-1">
+                <div ref={optionTarget} className="cur-default px-1  d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
+                    onMouseEnter={()=>refData.current.hoverTarget=true} onMouseLeave={()=> refData.current.hoverTarget = false}>
+                        <div title={store.encoding} className="overflow-ellipsis text-nowrap" style={{maxWidth:'50px'}}>{store.encoding.toUpperCase()}</div>
+                </div>
+                <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                        {({
+                        placement: _placement,
+                        arrowProps: _arrowProps,
+                        show: _show,
+                        popper: _popper,
+                        hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                        ...props
+                        }) => (
+                        <div
+                            {...props}
+                            className="rounded-0 border"
+                            style={{
+                            position: 'absolute',
+                            backgroundColor: 'inherit',
+                            padding: '2px 0px',
+                            borderRadius: 3,
+                            maxHeight:500,
+                            overflowY:'auto',                        
+                            ...props.style,
+                            }}
+                        >
+                            {encodingList.map((encoding)=>(
+                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className="hover-color cur-point py-1 px-4 hover-bg">{encoding.toUpperCase()}</div>
+                                )
+                            )}                            
+                        </div>
+                        )}
+                    </Overlay>
+                </div>
+
+}

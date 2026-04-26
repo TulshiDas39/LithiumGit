@@ -53,7 +53,9 @@ export class PlainTextEditor extends TextEditor{
         if(!r) return false;
         const succeeded = await super.render();
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
+        DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
         return succeeded;
     }
 

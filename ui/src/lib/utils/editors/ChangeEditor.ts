@@ -131,7 +131,9 @@ export class ChangeEditor extends TextEditor{
         this._changeUitl.showChanges();
         const r = await this.render();
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
+        DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
         return r;
     }
 

@@ -29,6 +29,44 @@ export class FileManager{
         this.handleSetLineFeedType();
     }
 
+    getEncodingList() {
+        const encList = [
+            "utf-8",
+            "utf-16le",
+            "utf-16be",
+            "latin1",
+            "ascii",
+            "windows-1250",
+            "windows-1251",
+            "windows-1252",
+            "windows-1253",
+            "windows-1254",
+            "windows-1255",
+            "windows-1256",
+            "windows-1257",
+            "windows-1258",
+            "iso-8859-1",
+            "iso-8859-2",
+            "iso-8859-5",
+            "iso-8859-6",
+            "iso-8859-7",
+            "iso-8859-8",
+            "iso-8859-9",
+            "iso-8859-15",
+            "koi8-r",
+            "koi8-u",
+            "shift_jis",
+            "euc-jp",
+            "iso-2022-jp",
+            "euc-kr",
+            "gb2312",
+            "gbk",
+            "gb18030",
+            "big5",
+        ];
+        return encList;
+    }
+
     private handleSetLineFeedType() {
         ipcMain.handle(RendererEvents.setLineFeedType,async (e,filePath:string,lineFeedType:EnumLinefeed,encoding:string)=>{
             return await this.setLineFeedType(filePath,lineFeedType,encoding);

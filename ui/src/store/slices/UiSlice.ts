@@ -45,6 +45,7 @@ interface IUIState{
     refreshingGraph:boolean;
     notifications:IUiNotification[];
     lfType?:EnumLinefeed;
+    encoding?:string;
 }
 
 const initialState:IUIState={
@@ -182,6 +183,9 @@ const UISlice = createSlice({
         },
         setLinefeedType(state,action:PayloadAction<EnumLinefeed | undefined>){
             state.lfType = action.payload;
+        },
+        setEncoding(state,action:PayloadAction<string | undefined>){
+            state.encoding = action.payload;
         }
     }
 });

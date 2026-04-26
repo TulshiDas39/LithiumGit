@@ -20,7 +20,7 @@ export class TextEditor {
     protected _containerSelector:string = '';    
     protected _lines:string[] = [];
     protected _lineFeedType:EnumLinefeed = EnumLinefeed.LF;
-    private _encoding:string = 'utf-8';
+    protected _encoding:string = 'utf-8';
     protected _editState:EditorState = null!;
     protected _editView:EditorView = null!;
     private _schema:Schema= null!;
@@ -222,6 +222,10 @@ export class TextEditor {
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
         await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
+    }
+
+    protected async switchEncoding(encoding:string){
+        
     }
 
     getContentLines(): string[] {

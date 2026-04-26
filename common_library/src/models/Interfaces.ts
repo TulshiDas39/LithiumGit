@@ -19,4 +19,5 @@ export interface IChange{
 export interface IAppData{
     dataPath:string;
     tempPath:string;
+    encodingList:string[];
 }

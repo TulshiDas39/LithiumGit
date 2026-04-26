@@ -10,4 +10,5 @@ export class DataUtils{
         timer: undefined! as NodeJS.Timeout,
     }
     static handleLFTypeChangeOfModifiedFile = ()=>{};    
+    static handleEncodingChangeOfModifiedFile = (encoding:string)=>{};    
 }

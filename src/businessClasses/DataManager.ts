@@ -32,7 +32,7 @@ export class DataManager{
 
     private handleGetLineFeedType(){
         ipcMain.on(RendererEvents.getLineFeedType, async(_e) => {
-            _e.returnValue = EOL;
+            _e.returnValue = AppData.systemLineFeedType;
         });
     }
 
@@ -41,6 +41,7 @@ export class DataManager{
             const appData:IAppData = {
                 dataPath:AppData.dataPath,
                 tempPath:AppData.tempPath,
+                encodingList:AppData.encodingList
             }
             _e.returnValue = appData;
         });
