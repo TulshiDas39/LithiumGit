@@ -271,6 +271,12 @@ function EncodingSelection(){
             document.removeEventListener("click",hideOptions);
         }
     },[])
+
+    useEffect(()=>{
+        if(!state.showOptions)
+            return;
+        document.querySelector('.footer-encoding-selection .selected')?.scrollIntoView({block:'center'});
+    }, [state.showOptions])
     
     
     if(!store.encoding || store.selectedTab !== EnumSelectedRepoTab.CHANGES)
@@ -292,7 +298,7 @@ function EncodingSelection(){
                         }) => (
                         <div
                             {...props}
-                            className="rounded-0 border"
+                            className="rounded-0 border footer-encoding-selection"
                             style={{
                             position: 'absolute',
                             backgroundColor: 'inherit',
@@ -304,7 +310,7 @@ function EncodingSelection(){
                             }}
                         >
                             {encodingList.map((encoding)=>(
-                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className="hover-color cur-point py-1 px-4 hover-bg">{encoding.toUpperCase()}</div>
+                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className={`hover-color cur-point py-1 px-4 hover-bg ${store.encoding === encoding?"selected":""}`}>{encoding.toUpperCase()}</div>
                                 )
                             )}                            
                         </div>

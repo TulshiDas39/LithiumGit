@@ -225,7 +225,14 @@ export abstract class TextEditor {
     }
 
     protected async switchEncoding(encoding:string){
-        
+        if(this.IsDocChanged()){
+            ModalData.errorModal.message = "Please save your changes before switching encoding.";
+            ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        this._encoding = encoding;
+        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType,this._encoding);
+        await this.save();
     }
 
     getContentLines(): string[] {
