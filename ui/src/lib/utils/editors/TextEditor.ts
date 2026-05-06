@@ -220,7 +220,7 @@ export abstract class TextEditor {
             return;
         }
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
-        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType,this._encoding);
+        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
     }
 
@@ -231,7 +231,7 @@ export abstract class TextEditor {
             return;
         }
         this._encoding = encoding;
-        await IpcUtils.setLineFeedType(this._tempFilePath, this._lineFeedType,this._encoding);
+        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
     }
 

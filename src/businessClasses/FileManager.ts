@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import path = require("path");
 import { isText, isBinary } from 'istextorbinary'
 import { AppData } from "../dataClasses";
+import * as iconv from 'iconv-lite';
+
 
 
 
@@ -26,7 +28,7 @@ export class FileManager{
         this.handleGetFileProps();
         this.handleCopyFile();
         this.handleFileTracking();
-        this.handleSetLineFeedType();
+        this.handleReWriteFile();
     }
 
     getEncodingList() {
@@ -67,9 +69,9 @@ export class FileManager{
         return encList;
     }
 
-    private handleSetLineFeedType() {
-        ipcMain.handle(RendererEvents.setLineFeedType,async (e,filePath:string,lineFeedType:EnumLinefeed,encoding:string)=>{
-            return await this.setLineFeedType(filePath,lineFeedType,encoding);
+    private handleReWriteFile() {
+        ipcMain.handle(RendererEvents.reWriteFile,async (e,filePath:string,lineFeedType:EnumLinefeed,encoding:string)=>{
+            return await this.reWriteFile(filePath,lineFeedType,encoding);
         });
     }
     
@@ -315,7 +317,56 @@ export class FileManager{
         }
     }
 
-    async setLineFeedType(sourceFilePath: string, lineFeedType: EnumLinefeed,encoding:string) {
+    private async reWriteFileWithPipe(sourceFilePath: string, lineFeedType: EnumLinefeed, encoding: string) {
+        // Reading
+        const readStream = fs.createReadStream(sourceFilePath);       // no encoding option
+        const decoder = iconv.decodeStream(encoding);                 // iconv decode stream
+        readStream.pipe(decoder); 
+
+        const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
+        const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
+        const tmpPath = path.join(AppData.tempPath, tempFileName);
+        // Writing
+        const writeStream = fs.createWriteStream(tmpPath);            // no encoding option
+        const encoder = iconv.encodeStream(encoding);                 // iconv encode stream
+        encoder.pipe(writeStream);                                    // encoder accepts strings, outputs bytes
+
+        let buffer = '';
+
+        try{
+            for await (const chunk of readStream) {
+                buffer += chunk;
+                const parts = buffer.split(/(\r\n|\r|\n)/);
+                buffer = parts.pop()!;                
+                for (let i = 0; i < parts.length; i += 2) {
+                    const line = parts[i];
+                    encoder.write(line + lineFeedType);
+                }                
+            }
+            encoder.write(buffer);
+            await new Promise<void>((res, rej) => encoder.end(() => res()));
+
+            await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
+                if (err.code === 'EXDEV') {
+                    await fs.promises.copyFile(tmpPath, sourceFilePath);
+                    await fs.promises.unlink(tmpPath);
+                } else {
+                    throw err;
+                }
+            });
+        }catch(err){
+            console.error("Error setting line feed:", err);
+            writeStream.destroy();
+            fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
+            throw err;
+        }
+    }
+
+    async reWriteFile(sourceFilePath: string, lineFeedType: EnumLinefeed,encoding:string) {
+        if(!Buffer.isEncoding(encoding)){
+            await this.reWriteFileWithPipe(sourceFilePath,lineFeedType,encoding);
+            return;
+        }
         const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
@@ -355,6 +406,7 @@ export class FileManager{
     }
 
     async saveFileChanges(sourceFilePath: string, change: IChange,encoding:string) {
+        
         const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;

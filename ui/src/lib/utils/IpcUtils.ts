@@ -4,8 +4,8 @@ import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{    
-    static setLineFeedType(filePath: string, _lineFeedType: EnumLinefeed,encoding:string) {
-        IpcUtils.execute(RendererEvents.setLineFeedType,[filePath, _lineFeedType,encoding]);        
+    static reWriteFile(filePath: string, _lineFeedType: EnumLinefeed,encoding:string) {
+        IpcUtils.execute(RendererEvents.reWriteFile,[filePath, _lineFeedType,encoding]);        
     }
     static copyStagedContent(path: string, destinationPath: string) {
         return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
