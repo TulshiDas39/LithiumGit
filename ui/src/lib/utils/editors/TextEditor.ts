@@ -222,6 +222,7 @@ export abstract class TextEditor {
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
         await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
+        await this.reRender();
     }
 
     protected async switchEncoding(encoding:string){
@@ -285,6 +286,11 @@ export abstract class TextEditor {
 
         if(!success) return false;
         return true;   
+    }
+
+    protected async reRender(){
+        this._editView.destroy();
+        return await this.render();
     }
     
     private async createTempFile(){

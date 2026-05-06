@@ -363,17 +363,22 @@ export class FileManager{
     }
 
     async reWriteFile(sourceFilePath: string, lineFeedType: EnumLinefeed,encoding:string) {
-        if(!Buffer.isEncoding(encoding)){
-            await this.reWriteFileWithPipe(sourceFilePath,lineFeedType,encoding);
-            return;
-        }
-        const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
+        const supportEncoding = Buffer.isEncoding(encoding);
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: supportEncoding? encoding:undefined as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
         const tmpPath = path.join(AppData.tempPath, tempFileName);
-        const writeStream = fs.createWriteStream(tmpPath, { encoding: encoding as any });
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: supportEncoding? encoding:undefined as any });
 
+        let pipe:NodeJS.ReadWriteStream|undefined = undefined;
+        if(!supportEncoding){
+            pipe = iconv.encodeStream(encoding);
+            pipe.pipe(writeStream);
+        }
         let buffer = '';
+
+
+        const writer = pipe || writeStream;
 
         try{
             for await (const chunk of readStream) {
@@ -382,11 +387,11 @@ export class FileManager{
                 buffer = parts.pop()!;                
                 for (let i = 0; i < parts.length; i += 2) {
                     const line = parts[i];
-                    writeStream.write(line + lineFeedType);
+                    writer.write(line + lineFeedType);
                 }                
             }
-            writeStream.write(buffer);
-            await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
+            writer.write(buffer);
+            await new Promise<void>((res, rej) => writer.end(((err :any) => err ? rej(err) : res()) as any) );
 
             await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
                 if (err.code === 'EXDEV') {
