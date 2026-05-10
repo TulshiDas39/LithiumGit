@@ -234,6 +234,7 @@ export abstract class TextEditor {
         this._encoding = encoding;
         await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
+        await this.reRender();
     }
 
     getContentLines(): string[] {
@@ -242,9 +243,8 @@ export abstract class TextEditor {
         return lines;
     }
 
-    protected async readFile(filePath:string){
-        this._sourceFilePath = filePath;
-        const r = await IpcUtils.getFileContentRaw(filePath);
+    protected async readFile(){
+        const r = await IpcUtils.getFileContentRaw(this._sourceFilePath);
         if(r.error){
             console.error("Error reading file content:", r.error);
             return false;
@@ -269,7 +269,11 @@ export abstract class TextEditor {
         return true;
     }
 
-    protected async render(){
+    protected async render(filePath:string){
+        this._editView?.destroy();
+        this._sourceFilePath = filePath;
+        const readSuccess = await this.readFile();
+        if(!readSuccess) return false;
         const success = await this.createTempFile();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
@@ -290,7 +294,7 @@ export abstract class TextEditor {
 
     protected async reRender(){
         this._editView.destroy();
-        return await this.render();
+        return await this.render(this._sourceFilePath);
     }
     
     private async createTempFile(){

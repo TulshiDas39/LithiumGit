@@ -54,10 +54,8 @@ export class PlainTextEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    async renderLines(filePath:string){
-        const r = await this.readFile(filePath);
-        if(!r) return false;
-        const succeeded = await super.render();
+    async renderLines(filePath:string){        
+        const succeeded = await super.render(filePath);
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
         ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();

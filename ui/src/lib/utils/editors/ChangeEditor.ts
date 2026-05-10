@@ -115,8 +115,8 @@ export class ChangeEditor extends TextEditor{
         return this._saveBtn;
     }
 
-    protected override async readFile(filePath: string){
-        const succeeded = await super.readFile(filePath);
+    protected override async readFile(){
+        const succeeded = await super.readFile();
         if(!succeeded) return false;
         const options =  ["--diff-algorithm=minimal",this._file.path];
         const diff = await IpcUtils.getDiff(options);
@@ -129,13 +129,14 @@ export class ChangeEditor extends TextEditor{
     async renderILines(file:IFile){
         this._file = file;        
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);;
-        const succeed = await this.readFile(filePath);
-        if(!succeed) return false;
+        //const succeed = await this.readFile();
+        // if(!succeed) return false;
         await this.saveStagedContent();
         this._changeUitl.currentLines = [];
-        this._changeUitl.previousLines = this._prevIlines;
+        this._changeUitl.previousLines = [];// this._prevIlines;
         this._changeUitl.showChanges();
-        const r = await this.render();
+        const r = await this.render(filePath);
+        this._changeUitl.updatePreviousChanges(this._prevIlines);
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
         ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
