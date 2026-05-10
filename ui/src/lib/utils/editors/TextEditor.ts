@@ -15,6 +15,11 @@ import { EnumModals } from "../../enums";
 
 
 
+enum TransMetadata{
+    LineFeedType = "lineFeedType",
+    Encoding = "encoding",
+}
+
 
 export abstract class TextEditor {
     protected _containerSelector:string = '';    
@@ -51,11 +56,13 @@ export abstract class TextEditor {
         return doc;
     }
 
-    protected handleTransaction (transaction: Transaction){
+    protected handleTransaction (transaction: Transaction){        
+        transaction.setMeta(TransMetadata.LineFeedType, this._lineFeedType);
+        transaction.setMeta(TransMetadata.Encoding, this._encoding);
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);
 
-        if(transaction.docChanged){
+        if(transaction.docChanged){            
             if(newState.doc.childCount !== this.lineCount){
                 this.adjustLineNumbers(newState.doc.childCount);
             }
