@@ -240,8 +240,8 @@ export abstract class TextEditor {
         }
         this._encoding = encoding;
         await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
-        await this.save();
-        await this.reRender();
+        // await this.save();
+        await this.refresh();
     }
 
     getContentLines(): string[] {
@@ -250,8 +250,24 @@ export abstract class TextEditor {
         return lines;
     }
 
+    private setContent(textContent: string): void {
+        const lines = textContent.split(/\r?\n/);
+        this.setContentFromLines(lines);
+    }
+
+    private setContentFromLines(lines: string[]): void {
+        const { schema } = this._editView.state;
+        const nodes = lines.map(line =>
+            schema.node('paragraph', null, line ? [schema.text(line)] : [])
+        );
+        const newDoc = schema.node('doc', null, nodes);
+        const { state } = this._editView;
+        const tr = state.tr.replaceWith(0, state.doc.content.size, newDoc.content);
+        this._editView.dispatch(tr);
+    }
+
     protected async readFile(){
-        const r = await IpcUtils.getFileContentRaw(this._sourceFilePath);
+        const r = await IpcUtils.getFileContentRaw(this._tempFilePath);
         if(r.error){
             console.error("Error reading file content:", r.error);
             return false;
@@ -279,9 +295,9 @@ export abstract class TextEditor {
     protected async render(filePath:string){
         this._editView?.destroy();
         this._sourceFilePath = filePath;
+        const success = await this.createTempFile();
         const readSuccess = await this.readFile();
         if(!readSuccess) return false;
-        const success = await this.createTempFile();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
@@ -307,6 +323,15 @@ export abstract class TextEditor {
     async reRender(){
         return await this.render(this._sourceFilePath);
     }
+
+    async refresh(){
+        const readSuccess = await this.readFile();
+        if(!readSuccess) return false;
+        this.setContentFromLines(this._lines);
+        return true;
+    }
+
+    getTextContent(){}
     
     private async createTempFile(){
         const fileExtension = StringUtils.GetFileExtension(this._sourceFilePath);
