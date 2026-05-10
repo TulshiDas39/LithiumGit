@@ -289,11 +289,13 @@ export abstract class TextEditor {
         this.renderLineNumbers();
 
         if(!success) return false;
+
+        this.displayLineFeedType();
+        this.displayEncoding();
         return true;   
     }
 
     protected async reRender(){
-        this._editView.destroy();
         return await this.render(this._sourceFilePath);
     }
     
@@ -342,11 +344,13 @@ export abstract class TextEditor {
 
     destroy(){
         this._editView?.destroy();
-        this.hideCrlf();
-        this.hideEncoding();
+        this._lineFeedType = undefined!;
+        this.displayLineFeedType();
+        this._encoding = undefined!
+        this.displayEncoding();
     }
 
-    abstract hideCrlf(): void;
-    abstract hideEncoding(): void;
+    protected abstract displayLineFeedType(): void;
+    protected abstract displayEncoding(): void;
 
 }

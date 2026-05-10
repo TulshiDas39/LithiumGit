@@ -17,12 +17,6 @@ import { DataUtils } from "../DataUtils";
 
 
 export class ChangeEditor extends TextEditor{
-    hideCrlf(): void {
-        ReduxUtils.dispatch(ActionUI.setLinefeedType(undefined));
-    }
-    hideEncoding(): void {
-        ReduxUtils.dispatch(ActionUI.setEncoding(undefined));
-    }
     private _ilines:ILine[] = [];
     private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
@@ -126,19 +120,19 @@ export class ChangeEditor extends TextEditor{
         return true;
     }
 
+    protected override async reRender(){
+        return await this.render(this._sourceFilePath);
+    }
+
     async renderILines(file:IFile){
         this._file = file;        
-        const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);;
-        //const succeed = await this.readFile();
-        // if(!succeed) return false;
+        const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);
         await this.saveStagedContent();
         this._changeUitl.currentLines = [];
-        this._changeUitl.previousLines = [];// this._prevIlines;
+        this._changeUitl.previousLines = [];
         this._changeUitl.showChanges();
         const r = await this.render(filePath);
-        this._changeUitl.updatePreviousChanges(this._prevIlines);
-        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
-        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
+        this._changeUitl.updatePreviousChanges(this._prevIlines);        
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
         DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
         return r;
@@ -196,5 +190,12 @@ export class ChangeEditor extends TextEditor{
                 decorations(state: EditorState) { return this.getState(state); },
             },
         });
+    }
+
+    protected displayLineFeedType(): void{
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
+    }
+    protected displayEncoding(): void{
+        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
     }
 }

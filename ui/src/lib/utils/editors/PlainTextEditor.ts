@@ -7,12 +7,12 @@ import { TextEditor } from "./TextEditor";
 import { DataUtils } from "../DataUtils";
 
 export class PlainTextEditor extends TextEditor{
-    hideCrlf(): void {
-        ReduxUtils.dispatch(ActionUI.setLinefeedType(undefined));
+    protected displayLineFeedType(): void {
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));        
     }
-    hideEncoding(): void {
-        ReduxUtils.dispatch(ActionUI.setEncoding(undefined));
-    }  
+    protected displayEncoding(): void {
+        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
+    }
     private _saveBtn:HTMLElement | null = null;  
     constructor(containerSelector:string) {
         super(containerSelector);
@@ -56,8 +56,6 @@ export class PlainTextEditor extends TextEditor{
 
     async renderLines(filePath:string){        
         const succeeded = await super.render(filePath);
-        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
-        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
         DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
         DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
         return succeeded;
