@@ -16,7 +16,7 @@ import { ChangeUtils } from "../ChangeUtils";
 import { DataUtils } from "../DataUtils";
 
 
-export class ChangeEditor extends TextEditor{
+export class ChangeEditor extends TextEditor{    
     private _ilines:ILine[] = [];
     private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
@@ -120,8 +120,8 @@ export class ChangeEditor extends TextEditor{
         return true;
     }
 
-    protected override async reRender(){
-        return await this.render(this._sourceFilePath);
+    override async reRender(){
+        return await this.renderILines(this._file);
     }
 
     async renderILines(file:IFile){
@@ -133,8 +133,6 @@ export class ChangeEditor extends TextEditor{
         this._changeUitl.showChanges();
         const r = await this.render(filePath);
         this._changeUitl.updatePreviousChanges(this._prevIlines);        
-        DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
-        DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
         return r;
     }
 
@@ -197,5 +195,12 @@ export class ChangeEditor extends TextEditor{
     }
     protected displayEncoding(): void{
         ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
+    }
+
+    protected addLfTypeChangeHandler(callback: () => void): void {
+        DataUtils.handleLFTypeChangeOfModifiedFile = callback;
+    }
+    protected addEncodingChangeHandler(callback: (encoding: string) => void): void {
+        DataUtils.handleEncodingChangeOfModifiedFile = callback;
     }
 }

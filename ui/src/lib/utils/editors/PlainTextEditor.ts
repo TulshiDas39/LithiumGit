@@ -6,13 +6,7 @@ import { ReduxUtils } from "../ReduxUtils";
 import { TextEditor } from "./TextEditor";
 import { DataUtils } from "../DataUtils";
 
-export class PlainTextEditor extends TextEditor{
-    protected displayLineFeedType(): void {
-        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));        
-    }
-    protected displayEncoding(): void {
-        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
-    }
+export class PlainTextEditor extends TextEditor{    
     private _saveBtn:HTMLElement | null = null;  
     constructor(containerSelector:string) {
         super(containerSelector);
@@ -55,10 +49,21 @@ export class PlainTextEditor extends TextEditor{
     }
 
     async renderLines(filePath:string){        
-        const succeeded = await super.render(filePath);
-        DataUtils.handleLFTypeChangeOfModifiedFile = () => this.switchLfType();
-        DataUtils.handleEncodingChangeOfModifiedFile = (encoding) => this.switchEncoding(encoding);
+        const succeeded = await super.render(filePath);    
         return succeeded;
+    }
+
+    protected addLfTypeChangeHandler(callback: () => void): void {
+        DataUtils.handleLFTypeChangeOfModifiedFile = callback;
+    }
+    protected addEncodingChangeHandler(callback: (encoding: string) => void): void {
+        DataUtils.handleEncodingChangeOfModifiedFile = callback;
+    }
+    protected displayLineFeedType(): void {
+        ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));        
+    }
+    protected displayEncoding(): void {
+        ReduxUtils.dispatch(ActionUI.setEncoding(this._encoding));
     }
 
 }

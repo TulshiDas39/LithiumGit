@@ -292,10 +292,12 @@ export abstract class TextEditor {
 
         this.displayLineFeedType();
         this.displayEncoding();
+        this.addLfTypeChangeHandler(() => this.switchLfType());
+        this.addEncodingChangeHandler((encoding) => this.switchEncoding(encoding));
         return true;   
     }
 
-    protected async reRender(){
+    async reRender(){
         return await this.render(this._sourceFilePath);
     }
     
@@ -352,5 +354,7 @@ export abstract class TextEditor {
 
     protected abstract displayLineFeedType(): void;
     protected abstract displayEncoding(): void;
+    protected abstract addLfTypeChangeHandler(callback:()=>void): void;
+    protected abstract addEncodingChangeHandler(callback:(encoding: string)=>void): void;
 
 }
