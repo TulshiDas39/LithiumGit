@@ -5,6 +5,8 @@ import path = require("path");
 import { isText, isBinary } from 'istextorbinary'
 import { AppData } from "../dataClasses";
 import * as iconv from 'iconv-lite';
+import chardet from 'chardet';
+
 
 
 
@@ -29,6 +31,25 @@ export class FileManager{
         this.handleCopyFile();
         this.handleFileTracking();
         this.handleReWriteFile();
+        this.handleEncodingDetection();
+    }
+    
+    private handleEncodingDetection() {
+        ipcMain.handle(RendererEvents.detectFileEncoding,async (e,path:string)=>{
+            return await this.detectFileEncoding(path);
+        });
+    }
+
+    private async detectFileEncoding(path:string){
+        try{
+            const encoding = await chardet.detectFile(path);
+            if(!encoding)
+                return 'utf-8';
+            return encoding as string;
+        }catch(err){
+            console.error("Error detecting file encoding:", err);
+            return 'utf-8';
+        }
     }
 
     getEncodingList() {
@@ -80,7 +101,12 @@ export class FileManager{
             let succeededCount = 0;
             for(let change of untrackedChanges){
                 try{
-                    await this.saveFileChanges(tempFilePath,change,encoding);
+                    if(change.encoding){
+                        await this.switchEncoding(tempFilePath,change.encoding.from,change.encoding.to);
+                    }
+                    else{
+                        await this.saveFileChanges(tempFilePath,change,encoding);
+                    }
                     succeededCount++;
                 }catch(err){
                     console.error("Error saving file changes:", err);
@@ -115,8 +141,8 @@ export class FileManager{
     }
 
     private hangleGetFileContentRaw() {
-        ipcMain.handle(RendererEvents.getFileContentRaw,async (e,path:string)=>{
-            const content = await this.getFileContentRaw(path);
+        ipcMain.handle(RendererEvents.getFileContentRaw,async (e,path:string,encoding:string)=>{
+            const content = await this.getFileContentRaw(path, encoding);
             return content;
         });
     }
@@ -221,9 +247,9 @@ export class FileManager{
         })
     }
 
-    getFileContentRaw(path: string) {
+    getFileContentRaw(path: string,encoding:string="utf8") {
         return new Promise<string>((resolve,reject)=>{
-            fs.readFile(path,{encoding:"utf8"},(err,data)=>{
+            fs.readFile(path,{encoding:encoding as any},(err,data:string)=>{
                 if(!err){                    
                     resolve(data);
                 }
@@ -317,34 +343,22 @@ export class FileManager{
         }
     }
 
-    private async reWriteFileWithPipe(sourceFilePath: string, lineFeedType: EnumLinefeed, encoding: string) {
-        // Reading
-        const readStream = fs.createReadStream(sourceFilePath);       // no encoding option
-        const decoder = iconv.decodeStream(encoding);                 // iconv decode stream
-        readStream.pipe(decoder); 
-
+    async switchEncoding(sourceFilePath: string,fromEncoding:string,toEncoding:string) {
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
         const tmpPath = path.join(AppData.tempPath, tempFileName);
-        // Writing
-        const writeStream = fs.createWriteStream(tmpPath);            // no encoding option
-        const encoder = iconv.encodeStream(encoding);                 // iconv encode stream
-        encoder.pipe(writeStream);                                    // encoder accepts strings, outputs bytes
 
-        let buffer = '';
+        const readStream = fs.createReadStream(sourceFilePath);
+        const decoder = iconv.decodeStream(fromEncoding);
+        const encoder = iconv.encodeStream(toEncoding);
+        const writeStream = fs.createWriteStream(tmpPath);
+        encoder.pipe(writeStream);
 
         try{
-            for await (const chunk of readStream) {
-                buffer += chunk;
-                const parts = buffer.split(/(\r\n|\r|\n)/);
-                buffer = parts.pop()!;                
-                for (let i = 0; i < parts.length; i += 2) {
-                    const line = parts[i];
-                    encoder.write(line + lineFeedType);
-                }                
+            for await (const chunk of readStream.pipe(decoder)) {
+                encoder.write(chunk);
             }
-            encoder.write(buffer);
-            await new Promise<void>((res, rej) => encoder.end(() => res()));
+            await new Promise<void>((res, rej) => encoder.end(((err: any) => err ? rej(err) : res()) as any));
 
             await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
                 if (err.code === 'EXDEV') {
@@ -355,11 +369,12 @@ export class FileManager{
                 }
             });
         }catch(err){
-            console.error("Error setting line feed:", err);
+            console.error("Error switching encoding:", err);
             writeStream.destroy();
             fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
             throw err;
         }
+
     }
 
     async reWriteFile(sourceFilePath: string, lineFeedType: EnumLinefeed,encoding:string) {

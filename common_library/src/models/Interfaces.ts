@@ -14,6 +14,10 @@ export interface IChange{
     startOffset:number;
     endOffset:number;
     text:string;
+    encoding?:{
+        from:string;
+        to:string;
+    }
 }
 
 export interface IAppData{

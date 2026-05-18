@@ -210,8 +210,8 @@ export class IpcUtils{
         return await window.ipcRenderer.invoke(RendererEvents.getFileContent().channel,path) as string[];
     }
 
-    static async getFileContentRaw(path:string){
-        return await IpcUtils.execute<string>(RendererEvents.getFileContentRaw,[path]);
+    static async getFileContentRaw(path:string,encoding:string="utf8"){
+        return await IpcUtils.execute<string>(RendererEvents.getFileContentRaw,[path,encoding]);
     }
 
     static async getDiff(options:string[]){
@@ -395,6 +395,10 @@ export class IpcUtils{
 
     static getAppData(){
         return IpcUtils.executeSync<IAppData>(RendererEvents.getAppData,[]);
-    }    
+    }
+    
+    static detectEncoding(path:string){
+        return IpcUtils.execute<string>(RendererEvents.detectFileEncoding,[path]);
+    }
         
 }

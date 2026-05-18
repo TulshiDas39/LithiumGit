@@ -1,9 +1,9 @@
 import { EnumLinefeed, IChange, StringUtils } from "common_library";
 import { Data } from "../../data";
 import {Schema, Node, Slice, Fragment} from "prosemirror-model"
-import {EditorState, Transaction, Command} from "prosemirror-state"
+import {EditorState, Transaction, Command, PluginKey, Plugin} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
-import {undo, redo, history} from "prosemirror-history"
+import {undo, redo, history, undoDepth} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
 import {baseKeymap} from "prosemirror-commands"
 import { ReplaceStep } from "prosemirror-transform";
@@ -12,6 +12,11 @@ import { ModalData } from "../../../components/modals/ModalData";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionModals } from "../../../store";
 import { EnumModals } from "../../enums";
+
+type EncodingEntry = { encoding: string; prevEncoding:string; depthAfter: number; };
+
+const encodingStackKey = new PluginKey<EncodingEntry[]>('encodingStack');
+
 
 
 
@@ -39,6 +44,12 @@ export abstract class TextEditor {
     private onSyncWaitingCalls: (() => void)[] = [];
     protected lineCount = 0;
 
+    private _encodingChanged?:{from:string;to:string;};
+    private _encodingRedoStack: Array<{ encoding: string; depthAtRevert: number }> = [];
+    private _isHistoryAction = false;
+    private _isRedoingEncoding = false;
+    private readonly _encodingChangeStack:EncodingEntry[]=[];
+    private readonly _encodingUndoStack:EncodingEntry[]=[];
 
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
@@ -56,13 +67,10 @@ export abstract class TextEditor {
         return doc;
     }
 
-    protected handleTransaction (transaction: Transaction){        
-        transaction.setMeta(TransMetadata.LineFeedType, this._lineFeedType);
-        transaction.setMeta(TransMetadata.Encoding, this._encoding);
+    protected handleTransaction (transaction: Transaction){             
         let newState = this._editView.state.apply(transaction);
-        this._editView.updateState(newState);
-
-        if(transaction.docChanged){            
+        this._editView.updateState(newState);        
+        if(transaction.docChanged){         
             if(newState.doc.childCount !== this.lineCount){
                 this.adjustLineNumbers(newState.doc.childCount);
             }
@@ -87,6 +95,17 @@ export abstract class TextEditor {
     }
 
     private populateChanges(transaction: Transaction){
+        if(this._encodingChanged){
+            this._untrackedChanges.push({
+                encoding:{
+                    from:this._encodingChanged.from,
+                    to:this._encodingChanged.to,
+                }
+            } as IChange);
+            this._encodingChanged = null!;
+            this.trackChanges();
+            return;
+        }
         for (let i = 0; i < transaction.steps.length; i++) {
             const step = transaction.steps[i];
             if (!(step instanceof ReplaceStep)) continue;
@@ -173,12 +192,31 @@ export abstract class TextEditor {
         return true;
     };
 
+    private readonly undoOrRevertEncoding: Command = (state, dispatch) => {        
+        const depth = undoDepth(state) as number;
+        console.log("Undo depth before undo command:", depth);
+        if(this._encodingChangeStack.length){
+            const top = this._encodingChangeStack[this._encodingChangeStack.length - 1];            
+            if(depth <= top.depthAfter){
+                this._encodingChanged = {from:top.encoding,to:top.prevEncoding};
+                this._encodingUndoStack.push(this._encodingChangeStack.pop()!);
+                this._encoding = top.prevEncoding;
+                this.displayEncoding();
+            }
+        }
+        return undo(state, dispatch);
+    };
+
+    private readonly redoOrReapplyEncoding: Command = (state, dispatch) => {
+        return redo(state, dispatch);
+    };
+
 
     protected getPlugins(){
         return [history(),
             keymap({
-                "Mod-z": undo,
-                "Mod-y": redo,              
+                "Mod-z": this.undoOrRevertEncoding,
+                "Mod-y": this.redoOrReapplyEncoding,              
                 "Tab": this.insertTab,
                 "Mod-s": this.triggerSave,
             }),
@@ -220,7 +258,7 @@ export abstract class TextEditor {
         return !this._editView.state.doc.eq(this._initialDoc);
     }
 
-    protected async switchLfType(){
+    protected async switchLfType(){        
         if(this.IsDocChanged()){
             ModalData.errorModal.message = "Please save your changes before switching line feed type.";
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
@@ -230,7 +268,7 @@ export abstract class TextEditor {
         await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
         await this.save();
         await this.reRender();
-    }
+    }    
 
     protected async switchEncoding(encoding:string){
         if(this.IsDocChanged()){
@@ -238,10 +276,12 @@ export abstract class TextEditor {
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;
         }
-        this._encoding = encoding;
-        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
-        // await this.save();
+        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,encoding);
         await this.refresh();
+
+        const depth = undoDepth(this._editView.state) as number;
+        this._encodingChangeStack.push({ encoding: encoding, prevEncoding:this._encoding, depthAfter: depth });
+        this._encoding = encoding;
     }
 
     getContentLines(): string[] {
@@ -267,7 +307,7 @@ export abstract class TextEditor {
     }
 
     protected async readFile(){
-        const r = await IpcUtils.getFileContentRaw(this._tempFilePath);
+        const r = await IpcUtils.getFileContentRaw(this._tempFilePath, this._encoding);
         if(r.error){
             console.error("Error reading file content:", r.error);
             return false;
@@ -292,10 +332,19 @@ export abstract class TextEditor {
         return true;
     }
 
+    private async detectEncoding(){
+        const encodingRes = await IpcUtils.detectEncoding(this._tempFilePath);
+        console.log("Detected encoding:", encodingRes.result);
+        if(!encodingRes.error){
+            this._encoding = encodingRes.result!;
+        }
+    }     
+
     protected async render(filePath:string){
         this._editView?.destroy();
         this._sourceFilePath = filePath;
         const success = await this.createTempFile();
+        await this.detectEncoding();
         const readSuccess = await this.readFile();
         if(!readSuccess) return false;
         const doc = this.createDocument();        
@@ -316,7 +365,9 @@ export abstract class TextEditor {
         this.displayLineFeedType();
         this.displayEncoding();
         this.addLfTypeChangeHandler(() => this.switchLfType());
-        this.addEncodingChangeHandler((encoding) => this.switchEncoding(encoding));
+        this.addEncodingChangeHandler((encoding) => {
+            this.switchEncoding(encoding);
+        });
         return true;   
     }
 
@@ -326,9 +377,8 @@ export abstract class TextEditor {
 
     async refresh(){
         const readSuccess = await this.readFile();
-        if(!readSuccess) return false;
-        this.setContentFromLines(this._lines);
-        return true;
+        if(!readSuccess) return null!;
+        return this.setContentFromLines(this._lines);
     }
 
     getTextContent(){}
@@ -371,6 +421,18 @@ export abstract class TextEditor {
             if(r.error)
                 return false;
             this._initialDoc = this._editView.state.doc;
+            // Clear encoding stack on save
+            const tr = this._editView.state.tr.setMeta(encodingStackKey, { type: 'pop' });
+            tr.setMeta('addToHistory', false);
+            // Pop all stack entries
+            let stack = encodingStackKey.getState(this._editView.state) ?? [];
+            let clearState = this._editView.state;
+            while ((encodingStackKey.getState(clearState) ?? []).length > 0) {
+                const clearTr = clearState.tr.setMeta(encodingStackKey, { type: 'pop' });
+                clearTr.setMeta('addToHistory', false);
+                clearState = clearState.apply(clearTr);
+            }
+            this._editView.updateState(clearState);
             return true;
         }
         return false;
