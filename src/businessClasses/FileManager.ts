@@ -249,12 +249,22 @@ export class FileManager{
 
     getFileContentRaw(path: string,encoding:string="utf8") {
         return new Promise<string>((resolve,reject)=>{
-            fs.readFile(path,{encoding:encoding as any},(err,data:string)=>{
-                if(!err){                    
-                    resolve(data);
-                }
-                else if(err) reject(err);
-            })
+            const supportedEncoding = Buffer.isEncoding(encoding);
+            if(!supportedEncoding){
+                fs.readFile(path,(err,data)=>{
+                    if(!err){
+                        resolve(iconv.decode(data, encoding));
+                    }
+                    else if(err) reject(err);
+                });
+            } else {
+                fs.readFile(path,{encoding:encoding as any},(err,data:string)=>{
+                    if(!err){
+                        resolve(data);
+                    }
+                    else if(err) reject(err);
+                });
+            }
         })
     }
 
