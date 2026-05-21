@@ -45,11 +45,19 @@ export class FileManager{
             const encoding = await chardet.detectFile(path);
             if(!encoding)
                 return 'utf-8';
+            if(this.isSubSetOfUnicode(encoding)){
+                return 'utf-8';
+            }
             return encoding as string;
         }catch(err){
             console.error("Error detecting file encoding:", err);
             return 'utf-8';
         }
+    }
+
+    private isSubSetOfUnicode(encoding:string){
+        const unicodeSubsets = ["ascii"];
+        return unicodeSubsets.includes(encoding.toLowerCase());
     }
 
     getEncodingList() {
