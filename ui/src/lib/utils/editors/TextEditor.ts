@@ -276,7 +276,8 @@ export abstract class TextEditor {
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
             return;
         }
-        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,encoding);
+        // await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,encoding);
+        this._encoding = encoding;
         await this.refresh();
 
         const depth = undoDepth(this._editView.state) as number;
