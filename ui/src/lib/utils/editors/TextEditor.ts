@@ -97,10 +97,8 @@ export abstract class TextEditor {
     private populateChanges(transaction: Transaction){
         if(this._encodingChanged){
             this._untrackedChanges.push({
-                encoding:{
-                    from:this._encodingChanged.from,
-                    to:this._encodingChanged.to,
-                }
+                text: this.getTextContent(),
+                replaceAll: true,
             } as IChange);
             this._encodingChanged = null!;
             this.trackChanges();
@@ -382,7 +380,9 @@ export abstract class TextEditor {
         return this.setContentFromLines(this._lines);
     }
 
-    getTextContent(){}
+    getTextContent(){
+        return this.getContentLines().join(this._lineFeedType);
+    }
     
     private async createTempFile(){
         const fileExtension = StringUtils.GetFileExtension(this._sourceFilePath);

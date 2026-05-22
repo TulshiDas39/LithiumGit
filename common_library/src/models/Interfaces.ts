@@ -14,10 +14,7 @@ export interface IChange{
     startOffset:number;
     endOffset:number;
     text:string;
-    encoding?:{
-        from:string;
-        to:string;
-    }
+    replaceAll?:boolean;
 }
 
 export interface IAppData{

@@ -109,8 +109,8 @@ export class FileManager{
             let succeededCount = 0;
             for(let change of untrackedChanges){
                 try{
-                    if(change.encoding){
-                        await this.switchEncoding(tempFilePath,change.encoding.from,change.encoding.to);
+                    if(change.replaceAll){
+                        await this.replaceFileContent(tempFilePath, change.text,encoding);
                     }
                     else{
                         await this.saveFileChanges(tempFilePath,change,encoding);
@@ -388,6 +388,40 @@ export class FileManager{
             });
         }catch(err){
             console.error("Error switching encoding:", err);
+            writeStream.destroy();
+            fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
+            throw err;
+        }
+
+    }
+
+    async replaceFileContent(sourceFilePath: string, newContent: string,encoding:string) {
+        const tempFileName = `temp_${StringUtils.uuidv4()}${StringUtils.GetFileExtension(sourceFilePath)}`;
+        const tmpPath = path.join(AppData.tempPath, tempFileName);
+        const supportedEncoding = Buffer.isEncoding(encoding);
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: supportedEncoding ? encoding : undefined as any });
+        
+        let pipe:NodeJS.ReadWriteStream|undefined = undefined;
+        if(!supportedEncoding){
+            pipe = iconv.encodeStream(encoding);
+            pipe.pipe(writeStream);
+        }
+
+        const writer = pipe || writeStream;
+
+        try{
+            writer.write(newContent);
+            await new Promise<void>((res, rej) => writer.end(((err: any) => err ? rej(err) : res()) as any));
+            await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
+                if (err.code === 'EXDEV') {
+                    await fs.promises.copyFile(tmpPath, sourceFilePath);
+                    await fs.promises.unlink(tmpPath);
+                } else {
+                    throw err;
+                }
+            });
+        }catch(err){
+            console.error("Error replacing file content:", err);
             writeStream.destroy();
             fs.promises.unlink(tmpPath).catch(() => { /* ignore */ });
             throw err;
