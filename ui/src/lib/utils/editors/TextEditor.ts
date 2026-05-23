@@ -50,11 +50,16 @@ export abstract class TextEditor {
     private _isRedoingEncoding = false;
     private readonly _encodingChangeStack:EncodingEntry[]=[];
     private readonly _encodingUndoStack:EncodingEntry[]=[];
+    private _lastUpdated: string = '';
 
     constructor(containerSelector:string){
         this._containerSelector = containerSelector; 
         this._lineFeedType = Data.systemLineFeedType;    
         this._schema = this.getSchema();   
+    }
+
+    get lasteUpdated(){
+        return this._lastUpdated;
     }
 
     private createDocument(){
@@ -352,6 +357,7 @@ export abstract class TextEditor {
         await this.detectEncoding();
         const readSuccess = await this.readFile();
         if(!readSuccess) return false;
+        this._lastUpdated = new Date().toISOString();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
@@ -406,6 +412,9 @@ export abstract class TextEditor {
             const func = () => {
                     this.executeSave().then((success) =>{
                         this.saveHandler?.(success);
+                        if(success){
+                            this._lastUpdated = new Date().toISOString();
+                        }
                         resolve(success)
                     });
                 };
