@@ -99,16 +99,7 @@ export abstract class TextEditor {
         
     }
 
-    private populateChanges(transaction: Transaction){
-        if(this._encodingChanged){
-            this._untrackedChanges.push({
-                text: this.getTextContent(),
-                replaceAll: true,
-            } as IChange);
-            this._encodingChanged = null!;
-            this.trackChanges();
-            return;
-        }
+    private populateChanges(transaction: Transaction){        
         for (let i = 0; i < transaction.steps.length; i++) {
             const step = transaction.steps[i];
             if (!(step instanceof ReplaceStep)) continue;
@@ -279,6 +270,8 @@ export abstract class TextEditor {
     }    
 
     protected async switchEncoding(encoding:string){
+        if(encoding === this._encoding)
+            return;
         if(this.IsDocChanged()){
             ModalData.errorModal.message = "Please save your changes before switching encoding.";
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
@@ -289,9 +282,13 @@ export abstract class TextEditor {
         this._encoding = encoding;
         await this.refresh();
 
-        const depth = undoDepth(this._editView.state) as number;
-        this._encodingChangeStack.push({ encoding: encoding, prevEncoding, depthAfter: depth });
+        this.trackEncodingChange(encoding, prevEncoding);
         this._encoding = encoding;
+    }
+
+    private trackEncodingChange(encoding: string, prevEncoding: string){
+        const depth = undoDepth(this._editView.state) as number;
+        this._encodingChangeStack.push({ encoding: encoding, prevEncoding, depthAfter: depth });        
     }
 
     getContentLines(): string[] {
@@ -346,15 +343,16 @@ export abstract class TextEditor {
         const encodingRes = await IpcUtils.detectEncoding(this._tempFilePath);
         console.log("Detected encoding:", encodingRes.result);
         if(!encodingRes.error){
-            this._encoding = encodingRes.result!;
+            return encodingRes.result!;
         }
+        return 'utf-8';
     }     
 
     protected async render(filePath:string){
         this._editView?.destroy();
         this._sourceFilePath = filePath;
         const success = await this.createTempFile();
-        await this.detectEncoding();
+        this._encoding = await this.detectEncoding();
         const readSuccess = await this.readFile();
         if(!readSuccess) return false;
         this._lastUpdated = new Date().toISOString();
@@ -382,8 +380,19 @@ export abstract class TextEditor {
         return true;   
     }
 
-    async reRender(){
-        return await this.render(this._sourceFilePath);
+    async reRender(){        
+        const r = await IpcUtils.copyFile(this._sourceFilePath, this._tempFilePath,false);
+        if(r.error){
+           return; 
+        }
+
+        const encoding = await this.detectEncoding();
+        if(encoding !== this._encoding){
+            this.trackEncodingChange(encoding, this._encoding);
+            this._encoding = encoding;
+        }
+
+        await this.refresh();
     }
 
     async refresh(){
@@ -452,6 +461,27 @@ export abstract class TextEditor {
             return true;
         }
         return false;
+    }
+
+    async checkForFileUpdate(){
+        const lastUpdated = await IpcUtils.getLastUpdatedDate(this._sourceFilePath);
+        if(this._lastUpdated > lastUpdated)
+            return;
+
+        if(this.IsDocChanged()){
+            ModalData.confirmationModal.message = "The file has been modified. Do you want to reload it? Unsaved changes will be lost.";
+            ModalData.confirmationModal.YesHandler = async () => {
+                await this.reRender();
+                this._lastUpdated = new Date().toISOString();
+            }
+            ModalData.confirmationModal.NoHandler = () => {
+                this._lastUpdated = new Date().toISOString();
+            }
+            ReduxUtils.dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        }else{
+            this._lastUpdated = new Date().toISOString();
+            await this.reRender();
+        }
     }
 
     destroy(){

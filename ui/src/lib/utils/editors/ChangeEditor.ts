@@ -120,8 +120,9 @@ export class ChangeEditor extends TextEditor{
         return true;
     }
 
-    override async reRender(){
-        return await this.renderILines(this._file);
+    override async refresh(){
+        await this.saveStagedContent();
+        await super.refresh();
     }
 
     async renderILines(file:IFile){
