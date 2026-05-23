@@ -411,7 +411,7 @@ export class FileManager{
 
         try{
             writer.write(newContent);
-            await new Promise<void>((res, rej) => writer.end(((err: any) => err ? rej(err) : res()) as any));
+            await new Promise<void>((res, rej) => writer.end(((err: any) => err ? rej(err) : res()) as any));        
             await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
                 if (err.code === 'EXDEV') {
                     await fs.promises.copyFile(tmpPath, sourceFilePath);

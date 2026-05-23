@@ -193,9 +193,14 @@ export abstract class TextEditor {
     private readonly undoOrRevertEncoding: Command = (state, dispatch) => {        
         const depth = undoDepth(state) as number;
         console.log("Undo depth before undo command:", depth);
+
         if(this._encodingChangeStack.length){
-            const top = this._encodingChangeStack[this._encodingChangeStack.length - 1];            
+            const top = this._encodingChangeStack[this._encodingChangeStack.length - 1];
+            console.log("Undo depth before undo command:", depth);
+            console.log("top depth:", top.depthAfter);
+            
             if(depth <= top.depthAfter){
+                console.log("Reverting encoding change:", top.encoding, "->", top.prevEncoding);
                 this._encodingChanged = {from:top.encoding,to:top.prevEncoding};
                 this._encodingUndoStack.push(this._encodingChangeStack.pop()!);
                 this._encoding = top.prevEncoding;
@@ -275,11 +280,12 @@ export abstract class TextEditor {
             return;
         }
         // await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,encoding);
+        const prevEncoding = this._encoding;
         this._encoding = encoding;
         await this.refresh();
 
         const depth = undoDepth(this._editView.state) as number;
-        this._encodingChangeStack.push({ encoding: encoding, prevEncoding:this._encoding, depthAfter: depth });
+        this._encodingChangeStack.push({ encoding: encoding, prevEncoding, depthAfter: depth });
         this._encoding = encoding;
     }
 
