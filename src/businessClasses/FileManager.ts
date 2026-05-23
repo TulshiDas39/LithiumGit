@@ -478,16 +478,31 @@ export class FileManager{
     }
 
     async saveFileChanges(sourceFilePath: string, change: IChange,encoding:string) {
+        const supportedEncoding = Buffer.isEncoding(encoding);
         
-        const readStream = fs.createReadStream(sourceFilePath, { encoding: encoding as any });
+        const readStream = fs.createReadStream(sourceFilePath, { encoding: supportedEncoding ? encoding : undefined as any });
         const fileExtension = StringUtils.GetFileExtension(sourceFilePath);
         const tempFileName = `temp_${StringUtils.uuidv4()}${fileExtension}`;
         const tmpPath = path.join(AppData.tempPath, tempFileName);
-        const writeStream = fs.createWriteStream(tmpPath, { encoding: encoding as any });
+        const writeStream = fs.createWriteStream(tmpPath, { encoding: supportedEncoding ? encoding : undefined as any });
 
         let currLineIndex = -1;
         let inserted = false;
         let buffer = '';
+
+        let pipe:NodeJS.ReadWriteStream|undefined = undefined;
+        let chunkReader = (chunk:any)=>{
+            return chunk;
+        }
+        if(!supportedEncoding){
+            pipe = iconv.encodeStream(encoding);
+            pipe.pipe(writeStream);
+            chunkReader = (chunk:any)=>{
+                return iconv.decode(chunk, encoding);
+            }
+        }
+
+        const writer = pipe || writeStream;
 
         const update=(parts:string[])=>{
             for (let i = 0; i < parts.length; i += 2) {
@@ -499,23 +514,23 @@ export class FileManager{
                     let segment = '';
                     if(change.startlineIndex === currLineIndex){
                         segment = line.substring(0, change.startOffset);
-                        writeStream.write(segment);
-                        writeStream.write(change.text);
+                        writer.write(segment);
+                        writer.write(change.text);
                     }
                     if(change.endlineIndex === currLineIndex){
                         segment = line.substring(change.endOffset);
-                        writeStream.write(segment + ending);
+                        writer.write(segment + ending);
                         inserted = true;
                     }                        
                     continue;                                        
                 }
-                writeStream.write(line + ending);
+                writer.write(line + ending);
             }
         }
         try{
 
             for await (const chunk of readStream) {
-                buffer += chunk;
+                buffer += chunkReader(chunk);
                 const parts = buffer.split(/(\r\n|\r|\n)/);
                 buffer = parts.pop()!;
                 update(parts);            
@@ -525,7 +540,7 @@ export class FileManager{
             update(lParts);
             
 
-            await new Promise<void>((res, rej) => writeStream.end((err:any) => err ? rej(err) : res()));
+            await new Promise<void>((res, rej) => writer.end((err?: any) => err ? rej(err) : res()));
             await fs.promises.rename(tmpPath, sourceFilePath).catch(async (err) => {
                 if (err.code === 'EXDEV') {
                     await fs.promises.copyFile(tmpPath, sourceFilePath);
