@@ -59,7 +59,8 @@ function ConflictEditorComponent(){
     },[store.selectedFile,state.lastUpdated])
 
     useEffect(()=>{
-        IpcUtils.getLastUpdatedDate(store.selectedFile!.path).then(date=>{            
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+        IpcUtils.getLastUpdatedDate(path).then(date=>{            
             refData.current.lastUpdated = date;
         })
     },[store.selectedFile])
@@ -67,7 +68,8 @@ function ConflictEditorComponent(){
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;
-        IpcUtils.getLastUpdatedDate(store.selectedFile!.path).then(date=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+        IpcUtils.getLastUpdatedDate(path).then(date=>{
             if(!!refData.current.lastUpdated && refData.current.lastUpdated !== date){
                 refData.current.lastUpdated = date;
                 setState({lastUpdated:date});

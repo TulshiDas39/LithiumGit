@@ -99,8 +99,7 @@ export class IpcUtils{
         return err;
     }
     static async getLastUpdatedDate(path: string) {
-        const fullPath = await this.joinPathAsync(RepoUtils.selectedRepo.path,path);
-        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
+        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[path]);
         return r.result || "";
     }
     static resolveConflict(path: string, actions:IActionTaken[]) {

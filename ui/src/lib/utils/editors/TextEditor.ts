@@ -482,6 +482,7 @@ export abstract class TextEditor {
             this._lastUpdated = new Date().toISOString();
             await this.reRender();
         }
+        this._initialDoc = this._editView.state.doc;
     }
 
     destroy(){

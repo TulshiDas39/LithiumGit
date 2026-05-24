@@ -19,20 +19,19 @@ interface IModifiedChangesProps{
 
 interface IState{
     hoveredFile?:IFile;
-    lastUpdated:string;
 }
 
 const editorContainer = "#"+EnumHtmlIds.diffview_container+" .current .content";
 
 function ModifiedChangesComponent(props:IModifiedChangesProps){
-    const [state,setState] = useMultiState<IState>({lastUpdated:""});
+    const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({lastUpdated:"",isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
+    const refData = useRef({isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -198,11 +197,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             }
         })
                 
-        ChangesData.changeUtils.file = store.selectedFile;
-
-        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{
-            refData.current.lastUpdated = date;
-        })
+        ChangesData.changeUtils.file = store.selectedFile;        
 
         return ()=>{
             refData.current.editor?.destroy();
@@ -218,35 +213,15 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
-            return;
-        displayChanges().then(()=>{
-            dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
-            dispatch(ActionChanges.increamentStepRefreshVersion());
-        });                
-    },[state.lastUpdated]);
-
-    useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
             return;     
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
-            return;
-        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{            
-            if(date !== refData.current.lastUpdated){
-                refData.current.lastUpdated = date;
-                setState({lastUpdated:date});
-            }
-            else{
-                refData.current.lastUpdated = date;
-            }
-        });        
+            return;        
+        refData.current.editor?.checkForFileUpdate();
     },[store.focusVersion])
 
     const handleFileSelect = (file:IFile)=>{
-        if(store.selectedFile?.path !== file.path){
-            IpcUtils.getLastUpdatedDate(file.path).then(date=>{
-                
-                dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
-            })
+        if(store.selectedFile?.path !== file.path){            
+            dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));            
         }
     }
 
