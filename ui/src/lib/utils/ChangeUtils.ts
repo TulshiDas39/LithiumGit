@@ -100,7 +100,7 @@ export class ChangeUtils{
     } 
 
     private HandleScrolling(){
-        if(this.previousLines !== null && this.currentLines !== null){
+        if(this.previousLines !== null || this.currentLines !== null){
             const previousChangeScroll = document.querySelector(`#${this.containerId} .difference .previous .content-container`);
             this.previousScrollableContainer = previousChangeScroll as HTMLElement;
             const currentChangeScroll = document.querySelector(`#${this.containerId} .difference .current .content-container`)!;
@@ -135,8 +135,10 @@ export class ChangeUtils{
             }
            
 
-            if(previousChangeScroll && currentChangeScroll){
+            if(previousChangeScroll){
                 previousChangeScroll.addEventListener("scroll",this.scrollHandler1)
+            }
+            if(currentChangeScroll){
                 currentChangeScroll.addEventListener("scroll",this.scrollHandler2);
             }
         }
