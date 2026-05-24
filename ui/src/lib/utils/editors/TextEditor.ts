@@ -302,7 +302,7 @@ export abstract class TextEditor {
         this.setContentFromLines(lines);
     }
 
-    private setContentFromLines(lines: string[]): void {
+    private setContentFromLines(lines: string[], preventHistory=false): void {
         const { schema } = this._editView.state;
         const nodes = lines.map(line =>
             schema.node('paragraph', null, line ? [schema.text(line)] : [])
@@ -310,6 +310,10 @@ export abstract class TextEditor {
         const newDoc = schema.node('doc', null, nodes);
         const { state } = this._editView;
         const tr = state.tr.replaceWith(0, state.doc.content.size, newDoc.content);
+        if(preventHistory){
+            this._initialDoc = newDoc;
+            tr.setMeta('addToHistory', false);
+        }
         this._editView.dispatch(tr);
     }
 
@@ -380,7 +384,7 @@ export abstract class TextEditor {
         return true;   
     }
 
-    async reRender(){        
+    async reRender(preventHistory=false){        
         const r = await IpcUtils.copyFile(this._sourceFilePath, this._tempFilePath,false);
         if(r.error){
            return; 
@@ -392,13 +396,13 @@ export abstract class TextEditor {
             this._encoding = encoding;
         }
 
-        await this.refresh();
+        await this.refresh(preventHistory);
     }
 
-    async refresh(){
+    async refresh(preventHistory=false){
         const readSuccess = await this.readFile();
         if(!readSuccess) return null!;
-        return this.setContentFromLines(this._lines);
+        return this.setContentFromLines(this._lines, preventHistory);
     }
 
     getTextContent(){
@@ -471,7 +475,7 @@ export abstract class TextEditor {
         if(this.IsDocChanged()){
             ModalData.confirmationModal.message = "The file has been modified. Do you want to reload it? Unsaved changes will be lost.";
             ModalData.confirmationModal.YesHandler = async () => {
-                await this.reRender();
+                await this.reRender(true);
                 this._lastUpdated = new Date().toISOString();
             }
             ModalData.confirmationModal.NoHandler = () => {
@@ -480,7 +484,7 @@ export abstract class TextEditor {
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         }else{
             this._lastUpdated = new Date().toISOString();
-            await this.reRender();
+            await this.reRender(true);
         }
         this._initialDoc = this._editView.state.doc;
     }
