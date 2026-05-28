@@ -176,28 +176,41 @@ export class DiffUtils{
 
         const flushBuffers=()=>{
             const maxLen = Math.max(removedBuffer.length, addedBuffer.length);
+            let prevLineNumber = lineNumberOfPreviousChange - removedBuffer.length;
+            let currLineNumber = lineNumberOfCurrentChange - addedBuffer.length;
             for(let i=0;i<maxLen;i++){
                 const hasOld = i < removedBuffer.length;
                 const hasNew = i < addedBuffer.length;
                 if(hasOld && hasNew){
                     const { prevHighlights, currHighlights } = DiffUtils.computeCharDiff(removedBuffer[i], addedBuffer[i]);
                     const highlightBackground = prevHighlights.length > 0 || currHighlights.length > 0;
-                    previousLines.push({
+
+                    const prevLine:ILine = {
                         text: removedBuffer[i],
                         textHightlightIndex: prevHighlights,
                         hightLightBackground: highlightBackground,
-                    });
-                    currentLines.push({
+                    };
+                    const currLine:ILine = {
                         text: addedBuffer[i],
                         textHightlightIndex: currHighlights,
                         hightLightBackground: highlightBackground,
-                    });
+                    };
+                    if(!highlightBackground){
+                        prevLine.text = textLines[prevLineNumber - 1];
+                        currLine.text = textLines[currLineNumber - 1];
+                    }
+                    previousLines.push(prevLine);
+                    currentLines.push(currLine);
+                    prevLineNumber++;
+                    currLineNumber++;
                 } else if(hasOld){
                     previousLines.push({ text:removedBuffer[i], textHightlightIndex:[], hightLightBackground:true });
                     currentLines.push({ textHightlightIndex:[] });
+                    prevLineNumber++;
                 } else {
                     currentLines.push({ text:addedBuffer[i], textHightlightIndex:[], hightLightBackground:true });
                     previousLines.push({ textHightlightIndex:[] });
+                    currLineNumber++;
                 }
             }
             removedBuffer = [];
