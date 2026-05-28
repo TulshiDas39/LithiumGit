@@ -283,6 +283,7 @@ export abstract class TextEditor {
         if(this.IsDocChanged()){
             ModalData.errorModal.message = "Please save your changes before switching encoding.";
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
+            this.displayEncoding();
             return;
         }
         // await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,encoding);
