@@ -205,7 +205,17 @@ export abstract class TextEditor {
     };
 
     private readonly redoOrReapplyEncoding: Command = (state, dispatch) => {
-        return redo(state, dispatch);
+        const result = redo(state, dispatch);
+        if (result && this._encodingUndoStack.length) {
+            const newDepth = undoDepth(this._editView.state);
+            const top = this._encodingUndoStack[this._encodingUndoStack.length - 1];
+            if (newDepth >= top.depthAfter) {
+                this._encodingChangeStack.push(this._encodingUndoStack.pop()!);
+                this._encoding = top.encoding;
+                this.displayEncoding();
+            }
+        }
+        return result;
     };
 
 
