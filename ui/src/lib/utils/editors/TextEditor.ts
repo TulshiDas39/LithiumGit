@@ -44,7 +44,6 @@ export abstract class TextEditor {
     private onSyncWaitingCalls: (() => void)[] = [];
     protected lineCount = 0;
 
-    private _encodingChanged?:{from:string;to:string;};
     private _encodingRedoStack: Array<{ encoding: string; depthAtRevert: number }> = [];
     private _isHistoryAction = false;
     private _isRedoingEncoding = false;
@@ -197,7 +196,6 @@ export abstract class TextEditor {
             
             if(depth <= top.depthAfter){
                 console.log("Reverting encoding change:", top.encoding, "->", top.prevEncoding);
-                this._encodingChanged = {from:top.encoding,to:top.prevEncoding};
                 this._encodingUndoStack.push(this._encodingChangeStack.pop()!);
                 this._encoding = top.prevEncoding;
                 this.displayEncoding();
