@@ -212,29 +212,27 @@ export abstract class TextEditor {
     };
 
     private readonly redoExtended: Command = (state, dispatch) => {
-        const result = redo(state, dispatch);
-        if (result) {
-            const newDepth = undoDepth(this._editView.state);
-            if (this._encodingUndoStack.length) {
-                const top = this._encodingUndoStack[this._encodingUndoStack.length - 1];
-                if (newDepth >= top.depthAfter) {
-                    this._encodingChangeStack.push(this._encodingUndoStack.pop()!);
-                    this._encoding = top.encoding;
-                    this.displayEncoding();
-                    return result;
-                }
-            }
-            if (this._lfUndoStack.length) {
-                const top = this._lfUndoStack[this._lfUndoStack.length - 1];
-                if (newDepth >= top.depthAfter) {
-                    this._lfChangeStack.push(this._lfUndoStack.pop()!);
-                    this._lineFeedType = top.lineFeedType;
-                    this.displayLineFeedType();                    
-                    return result;
-                }
+        const depth = undoDepth(state);
+        if (this._encodingUndoStack.length) {
+            const top = this._encodingUndoStack[this._encodingUndoStack.length - 1];
+            if (depth + 1 >= top.depthAfter) {
+                this._encodingChangeStack.push(this._encodingUndoStack.pop()!);
+                this._encoding = top.encoding;
+                this.displayEncoding();
+                return redo(state, dispatch);
             }
         }
-        return result;
+        if (this._lfUndoStack.length) {
+            const top = this._lfUndoStack[this._lfUndoStack.length - 1];
+            if (depth + 1 >= top.depthAfter) {
+                this._lfChangeStack.push(this._lfUndoStack.pop()!);
+                this._lineFeedType = top.lineFeedType;
+                this.displayLineFeedType();                    
+                return redo(state, dispatch);
+            }
+        }
+
+        return redo(state, dispatch);
     };
 
 
