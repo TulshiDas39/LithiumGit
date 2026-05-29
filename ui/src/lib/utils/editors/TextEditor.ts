@@ -14,6 +14,7 @@ import { ActionModals } from "../../../store";
 import { EnumModals } from "../../enums";
 
 type EncodingEntry = { encoding: string; prevEncoding:string; depthAfter: number; };
+type LinefeedEntry = { lineFeedType: EnumLinefeed; prevLineFeedType: EnumLinefeed; depthAfter: number; };
 
 const encodingStackKey = new PluginKey<EncodingEntry[]>('encodingStack');
 
@@ -49,6 +50,8 @@ export abstract class TextEditor {
     private _isRedoingEncoding = false;
     private readonly _encodingChangeStack:EncodingEntry[]=[];
     private readonly _encodingUndoStack:EncodingEntry[]=[];
+    private readonly _lfChangeStack:LinefeedEntry[]=[];
+    private readonly _lfUndoStack:LinefeedEntry[]=[];
     private _lastUpdated: string = '';
 
     constructor(containerSelector:string){
@@ -185,45 +188,71 @@ export abstract class TextEditor {
         return true;
     };
 
-    private readonly undoOrRevertEncoding: Command = (state, dispatch) => {        
+    private readonly undoExtended: Command = (state, dispatch) => {        
         const depth = undoDepth(state) as number;
-        console.log("Undo depth before undo command:", depth);
 
         if(this._encodingChangeStack.length){
             const top = this._encodingChangeStack[this._encodingChangeStack.length - 1];
-            console.log("Undo depth before undo command:", depth);
-            console.log("top depth:", top.depthAfter);
-            
             if(depth <= top.depthAfter){
-                console.log("Reverting encoding change:", top.encoding, "->", top.prevEncoding);
                 this._encodingUndoStack.push(this._encodingChangeStack.pop()!);
                 this._encoding = top.prevEncoding;
                 this.displayEncoding();
+                return undo(state, dispatch);
             }
         }
+
+        if(this._lfChangeStack.length){
+            const top = this._lfChangeStack[this._lfChangeStack.length - 1];
+            if(depth <= top.depthAfter){
+                this._lfUndoStack.push(this._lfChangeStack.pop()!);
+                this._lineFeedType = top.prevLineFeedType;
+                this.displayLineFeedType();
+                return undo(state, dispatch);
+            }
+        }
+
         return undo(state, dispatch);
     };
 
-    private readonly redoOrReapplyEncoding: Command = (state, dispatch) => {
+    private readonly redoExtended: Command = (state, dispatch) => {
         const result = redo(state, dispatch);
-        if (result && this._encodingUndoStack.length) {
+        if (result) {
             const newDepth = undoDepth(this._editView.state);
-            const top = this._encodingUndoStack[this._encodingUndoStack.length - 1];
-            if (newDepth >= top.depthAfter) {
-                this._encodingChangeStack.push(this._encodingUndoStack.pop()!);
-                this._encoding = top.encoding;
-                this.displayEncoding();
+            if (this._encodingUndoStack.length) {
+                const top = this._encodingUndoStack[this._encodingUndoStack.length - 1];
+                if (newDepth >= top.depthAfter) {
+                    this._encodingChangeStack.push(this._encodingUndoStack.pop()!);
+                    this._encoding = top.encoding;
+                    this.displayEncoding();
+                    return result;
+                }
+            }
+            if (this._lfUndoStack.length) {
+                const top = this._lfUndoStack[this._lfUndoStack.length - 1];
+                if (newDepth >= top.depthAfter) {
+                    this._lfChangeStack.push(this._lfUndoStack.pop()!);
+                    this._lineFeedType = top.lineFeedType;
+                    this.displayLineFeedType();
+                    return result;
+                }
             }
         }
         return result;
     };
 
 
+    private replaceWithSameContent(){
+        const { state } = this._editView;
+        const tr = state.tr.replaceWith(0, state.doc.content.size, state.doc.content);
+        this._editView.dispatch(tr);
+    }
+
+
     protected getPlugins(){
         return [history(),
             keymap({
-                "Mod-z": this.undoOrRevertEncoding,
-                "Mod-y": this.redoOrReapplyEncoding,              
+                "Mod-z": this.undoExtended,
+                "Mod-y": this.redoExtended,              
                 "Tab": this.insertTab,
                 "Mod-s": this.triggerSave,
             }),
@@ -269,12 +298,13 @@ export abstract class TextEditor {
         if(this.IsDocChanged()){
             ModalData.errorModal.message = "Please save your changes before switching line feed type.";
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.ERROR));
+            this.displayLineFeedType();
             return;
         }
+        const prevLfType = this._lineFeedType;
         this._lineFeedType = this._lineFeedType === EnumLinefeed.CRLF ? EnumLinefeed.LF : EnumLinefeed.CRLF;
-        await IpcUtils.reWriteFile(this._tempFilePath, this._lineFeedType,this._encoding);
-        await this.save();
-        await this.reRender();
+        await this.replaceWithSameContent();
+        this.trackLfChange(this._lineFeedType, prevLfType);
     }    
 
     protected async switchEncoding(encoding:string){
@@ -297,7 +327,12 @@ export abstract class TextEditor {
 
     private trackEncodingChange(encoding: string, prevEncoding: string){
         const depth = undoDepth(this._editView.state) as number;
-        this._encodingChangeStack.push({ encoding: encoding, prevEncoding, depthAfter: depth });        
+        this._encodingChangeStack.push({ encoding: encoding, prevEncoding, depthAfter: depth });
+    }
+
+    private trackLfChange(lineFeedType: EnumLinefeed, prevLineFeedType: EnumLinefeed){
+        const depth = undoDepth(this._editView.state) as number;
+        this._lfChangeStack.push({ lineFeedType, prevLineFeedType, depthAfter: depth });        
     }
 
     getContentLines(): string[] {

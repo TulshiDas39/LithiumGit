@@ -5,7 +5,7 @@ import { IUiNotification } from "../interfaces";
 
 export class IpcUtils{    
     static reWriteFile(filePath: string, _lineFeedType: EnumLinefeed,encoding:string) {
-        IpcUtils.execute(RendererEvents.reWriteFile,[filePath, _lineFeedType,encoding]);        
+        return IpcUtils.execute(RendererEvents.reWriteFile,[filePath, _lineFeedType,encoding]);        
     }
     static copyStagedContent(path: string, destinationPath: string) {
         return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
