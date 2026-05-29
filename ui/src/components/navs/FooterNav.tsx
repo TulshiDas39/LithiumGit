@@ -211,7 +211,8 @@ function CrlfSelectionComponent(){
                             position: 'absolute',
                             backgroundColor: 'inherit',
                             padding: '2px 0px',
-                            borderRadius: 3,                        
+                            borderRadius: 3,
+                            zIndex:99,                        
                             ...props.style,
                             }}
                         >
