@@ -44,10 +44,7 @@ export abstract class TextEditor {
     protected onSync: (() => void) | null = null;
     private onSyncWaitingCalls: (() => void)[] = [];
     protected lineCount = 0;
-
-    private _encodingRedoStack: Array<{ encoding: string; depthAtRevert: number }> = [];
-    private _isHistoryAction = false;
-    private _isRedoingEncoding = false;
+    private _savedLfType = EnumLinefeed.LF; 
     private readonly _encodingChangeStack:EncodingEntry[]=[];
     private readonly _encodingUndoStack:EncodingEntry[]=[];
     private readonly _lfChangeStack:LinefeedEntry[]=[];
@@ -206,7 +203,7 @@ export abstract class TextEditor {
             if(depth <= top.depthAfter){
                 this._lfUndoStack.push(this._lfChangeStack.pop()!);
                 this._lineFeedType = top.prevLineFeedType;
-                this.displayLineFeedType();
+                this.displayLineFeedType();                
                 return undo(state, dispatch);
             }
         }
@@ -232,7 +229,7 @@ export abstract class TextEditor {
                 if (newDepth >= top.depthAfter) {
                     this._lfChangeStack.push(this._lfUndoStack.pop()!);
                     this._lineFeedType = top.lineFeedType;
-                    this.displayLineFeedType();
+                    this.displayLineFeedType();                    
                     return result;
                 }
             }
@@ -291,7 +288,7 @@ export abstract class TextEditor {
     }
 
     protected IsDocChanged(){
-        return !this._editView.state.doc.eq(this._initialDoc);
+        return !this._editView.state.doc.eq(this._initialDoc) || this._savedLfType !== this._lineFeedType;
     }
 
     protected async switchLfType(){        
@@ -415,6 +412,7 @@ export abstract class TextEditor {
         });
         this._initialDoc = this._editView.state.doc;
         this.lineCount = this._editState.doc.childCount;
+        this._savedLfType = this._lineFeedType;
         this.renderLineNumbers();
 
         if(!success) return false;
@@ -441,6 +439,9 @@ export abstract class TextEditor {
         }
 
         await this.refresh(preventHistory);
+        if(preventHistory) {
+            this._savedLfType = this._lineFeedType;
+        }
     }
 
     async refresh(preventHistory=false){
@@ -494,18 +495,7 @@ export abstract class TextEditor {
             if(r.error)
                 return false;
             this._initialDoc = this._editView.state.doc;
-            // Clear encoding stack on save
-            const tr = this._editView.state.tr.setMeta(encodingStackKey, { type: 'pop' });
-            tr.setMeta('addToHistory', false);
-            // Pop all stack entries
-            let stack = encodingStackKey.getState(this._editView.state) ?? [];
-            let clearState = this._editView.state;
-            while ((encodingStackKey.getState(clearState) ?? []).length > 0) {
-                const clearTr = clearState.tr.setMeta(encodingStackKey, { type: 'pop' });
-                clearTr.setMeta('addToHistory', false);
-                clearState = clearState.apply(clearTr);
-            }
-            this._editView.updateState(clearState);
+            this._savedLfType = this._lineFeedType;
             return true;
         }
         return false;
@@ -530,7 +520,6 @@ export abstract class TextEditor {
             this._lastUpdated = new Date().toISOString();
             await this.reRender(true);
         }
-        this._initialDoc = this._editView.state.doc;
     }
 
     destroy(){
