@@ -311,7 +311,7 @@ function EncodingSelection(){
                             }}
                         >
                             {encodingList.map((encoding)=>(
-                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className={`hover-color cur-point py-1 px-4 hover-bg ${store.encoding === encoding?"selected":""}`}>{encoding.toUpperCase()}</div>
+                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className={`hover-color cur-point py-1 px-4 hover-bg ${store.encoding?.toLowerCase() === encoding.toLowerCase()?"selected":""}`}>{encoding.toUpperCase()}</div>
                                 )
                             )}                            
                         </div>
