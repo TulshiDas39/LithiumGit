@@ -22,7 +22,8 @@ function GraphFilterComponent(){
     const target = useRef<HTMLElement>(null!);
     const dispatch = useDispatch();
     useEffect(()=>{
-        const onFilterChange = (filter:ICommitFilter)=>{
+        const onFilterChange = ()=>{
+            const filter = GraphUtils.state.filter.value;
             const commitCount = filter.limit ? filter.limit+"":"";
             setState({at:filter.baseDate,commitCount,fromDate:filter.fromDate,toDate:filter.toDate});
         }

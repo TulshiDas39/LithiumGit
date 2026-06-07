@@ -3,7 +3,6 @@ import { DerivedState } from "../../publishers";
 import { GraphUtils } from "../GraphUtils";
 import { RepoUtils } from "../RepoUtils";
 import { EnumIdPrefix } from "../../enums";
-import { ObjectUtils } from "../ObjectUtils";
 
 export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
     protected getDerivedValue(): IHeadCommitInfo | undefined {  
@@ -65,10 +64,10 @@ export class PbHeadCommit extends DerivedState<IHeadCommitInfo|undefined>{
 
     }
 
-    publishOrUpdate(v: IHeadCommitInfo | undefined): void {
+    publishOrUpdate(v: IHeadCommitInfo | undefined,silent:boolean=false): void {
         if(this.value != v)
             this.publish(v);
-        else this.notifyAll();
+        else this.notifyAll(silent);
     }
 
 }

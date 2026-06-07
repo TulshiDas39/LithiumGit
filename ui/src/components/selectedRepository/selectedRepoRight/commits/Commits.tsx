@@ -68,7 +68,6 @@ function CommitsComponent(props:IProps){
     const commitListRef = useRef<HTMLDivElement>(null);
     
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
-    console.log("rendering.");
     const bottomHeight = useMemo(()=>{
         if(!state.selectedCommit)
             return -3;

@@ -59,10 +59,10 @@ export class GraphUtils{
     static postRefreshActions:(()=>void)[] = [];
    
     static state:IState={
-        svgContainerWidth: new PbSvgContainerWidth(null!),
+        svgContainerWidth: new PbSvgContainerWidth(0),
         headCommit:new PbHeadCommit(null!),
         mergingCommit:new PbMergeCommit(null!),
-        panelHeight:new PbPanelHeight(null!),
+        panelHeight:new PbPanelHeight(0),
         selectedCommit: new PbSelectedCommit(null!),
         zoomLabel:new Publisher(1),
         horizontalScrollRatio:new Publisher(0),
@@ -106,7 +106,6 @@ export class GraphUtils{
         GraphUtils.verticalScrollBarElement = document.querySelector(`#${EnumHtmlIds.branchVerticalScrollBar}`) as HTMLDivElement;
         GraphUtils.branchPanelContainerElement = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`) as HTMLDivElement;                
         GraphUtils.addEventListeners();
-        GraphUtils.resetStates();
         GraphUtils.updateUi();
         const branchPanelContainer = document.querySelector(`#${EnumHtmlIds.branchPanelContainer}`)!;
         branchPanelContainer.classList.remove('invisible');
@@ -473,10 +472,10 @@ export class GraphUtils{
     static updateUi(){
         GraphUtils.state.svgContainerWidth.update();
         GraphUtils.state.panelHeight.update();
-        GraphUtils.state.horizontalScrollWidth.update();
-        GraphUtils.state.verticalScrollHeight.update();
-        //GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
         GraphUtils.state.headCommit.update();
+        GraphUtils.state.selectedCommit.publish(RepoUtils.repositoryDetails.headCommit);        
+        GraphUtils.state.verticalScrollHeight.update();
+
     }     
 
     static refreshGraph(){
@@ -521,14 +520,25 @@ export class GraphUtils{
     }
     
     static resetGraphStates=()=>{
-        GraphUtils.state.panelHeight.publish(0);
-        GraphUtils.state.svgContainerWidth.publish(0);
-        GraphUtils.state.headCommit.publish(null!);
-        GraphUtils.state.mergingCommit.publish(null!);
-        GraphUtils.state.highlightedCommit.publish(null!);
+        // GraphUtils.state.panelHeight.publish(0);
+        // GraphUtils.state.svgContainerWidth.publish(0);
+        // GraphUtils.state.headCommit.publish(null!);
+        // GraphUtils.state.mergingCommit.publish(null!);
+        // GraphUtils.state.highlightedCommit.publish(null!);
+
+        GraphUtils.state.panelHeight.reset();
+        GraphUtils.state.svgContainerWidth.reset();
+        GraphUtils.state.headCommit.reset();
+        GraphUtils.state.mergingCommit.reset();
+        GraphUtils.state.highlightedCommit.reset();
+        GraphUtils.state.selectedCommit.reset();
+        GraphUtils.state.horizontalScrollRatio.reset();
+        GraphUtils.state.verticalScrollRatio.reset();
     }
 
-    static scrollToCommit=(commit:ICommitInfo)=>{        
+    static scrollToCommit=(commit:ICommitInfo)=>{
+        console.log("scrolling to commit",commit);
+        console.trace();
         if(!commit)
             return;
         const horizontalRatio = commit.x/RepoUtils.repositoryDetails.branchPanelWidth;
