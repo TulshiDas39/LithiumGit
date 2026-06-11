@@ -520,12 +520,6 @@ export class GraphUtils{
     }
     
     static resetGraphStates=()=>{
-        // GraphUtils.state.panelHeight.publish(0);
-        // GraphUtils.state.svgContainerWidth.publish(0);
-        // GraphUtils.state.headCommit.publish(null!);
-        // GraphUtils.state.mergingCommit.publish(null!);
-        // GraphUtils.state.highlightedCommit.publish(null!);
-
         GraphUtils.state.panelHeight.reset();
         GraphUtils.state.svgContainerWidth.reset();
         GraphUtils.state.headCommit.reset();
@@ -536,9 +530,7 @@ export class GraphUtils{
         GraphUtils.state.verticalScrollRatio.reset();
     }
 
-    static scrollToCommit=(commit:ICommitInfo)=>{
-        console.log("scrolling to commit",commit);
-        console.trace();
+    static scrollToCommit=(commit:ICommitInfo)=>{        
         if(!commit)
             return;
         const horizontalRatio = commit.x/RepoUtils.repositoryDetails.branchPanelWidth;
