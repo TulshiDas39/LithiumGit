@@ -5,6 +5,7 @@ interface IData{
     selectedFile?:IFile;
     currentStep:number;
     totalStep:number;
+    silentStepUpdate:boolean;
     selectedTab:EnumChangeGroup;
     stepRefreshVersion:number;
 }
@@ -12,6 +13,7 @@ interface IData{
 const initialState:IData={
     currentStep:0,
     totalStep:0,
+    silentStepUpdate:false,
     selectedTab:EnumChangeGroup.UN_STAGED,
     stepRefreshVersion:0,
 }
@@ -28,6 +30,7 @@ const slice = createSlice({
         },
         increamentStepRefreshVersion(state){
             state.stepRefreshVersion += 1;
+            state.silentStepUpdate = false;
         }
     }
 })

@@ -8,7 +8,7 @@ import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionUI } from "../../../store/slices/UiSlice";
-import { ActionModals } from "../../../store";
+import { ActionChanges, ActionModals } from "../../../store";
 import { ModalData } from "../../../components/modals/ModalData";
 import { Data } from "../../data";
 import { DiffUtils } from "../DiffUtils";
@@ -75,6 +75,7 @@ export class ChangeEditor extends TextEditor{
             this._ilines = uiLines.currentLines;
             this._changeUitl.previousLines = uiLines.previousLines;
             this._changeUitl.updatePreviousChanges(uiLines.previousLines);
+            ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
             //build decorations again with new ilines
             this.renderLineNumbers();
             const tr = this._editView.state.tr;

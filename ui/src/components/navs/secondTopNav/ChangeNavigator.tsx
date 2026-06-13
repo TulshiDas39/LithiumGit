@@ -16,7 +16,7 @@ function ChangeNavigatorComponent(){
             dispatch(ActionChanges.increamentStepRefreshVersion());
         }
         else{
-            dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1}));
+            dispatch(ActionChanges.updateData({currentStep:store.currentStep + 1,silentStepUpdate:false}));
         }
     }
 
@@ -25,7 +25,7 @@ function ChangeNavigatorComponent(){
             dispatch(ActionChanges.increamentStepRefreshVersion());
         }
         else{
-            dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1}));
+            dispatch(ActionChanges.updateData({currentStep:store.currentStep - 1,silentStepUpdate:false}));
         }
     }
 
@@ -41,7 +41,8 @@ function ChangeNavigatorComponent(){
         {store.selectedFile.changeGroup === EnumChangeGroup.UN_STAGED &&
             <ModifiedChangeNavigator selectedFile={store.selectedFile} 
             currentStep={store.currentStep} totalStep={store.totalStep} onNextClick={onNextClick}
-            onPreviousClick={onPreviousClick} stepResetVersion={store.stepRefreshVersion}/>}
+            onPreviousClick={onPreviousClick} stepResetVersion={store.stepRefreshVersion}
+            isSilent={store.silentStepUpdate} />}
 
             {store.selectedFile.changeGroup === EnumChangeGroup.STAGED &&
             <StagedChangeNavigator selectedFile={store.selectedFile} 

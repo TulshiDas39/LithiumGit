@@ -9,16 +9,17 @@ interface IProps{
     totalStep:number;
     currentStep:number;
     stepResetVersion:number;
+    isSilent:boolean;
     onNextClick:()=>void;
     onPreviousClick:()=>void;
 }
 function ModifiedChangeNavigatorComponent(props:IProps){
     
     useEffect(()=>{
-        if(!props.currentStep)
+        if(!props.currentStep || props.isSilent)
             return;
         ChangesData.changeUtils.FocusHightlightedLine(props.currentStep);
-    },[props.currentStep,props.stepResetVersion])
+    },[props.currentStep,props.stepResetVersion,props.isSilent])
     
     return <div className="w-100 h-100 d-flex align-items-center">
         <div className="flex-grow-1 d-flex align-items-center justify-content-center">
