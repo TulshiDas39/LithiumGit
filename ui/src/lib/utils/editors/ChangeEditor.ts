@@ -50,18 +50,33 @@ export class ChangeEditor extends TextEditor{
     protected override renderLineNumbers(){
         const lineElems:string[] = [];
         let lineNo = 1;
+        let isChange = false;
         for(let line of this._ilines){
             let text = "<br/>";
+
             if(line.text !== undefined){
                 text = lineNo+"";     
                 lineNo++;
-            }            
-            lineElems.push(`<p>${text}</p>`);
+            }
+            let actionUi = '';            
+            if((line.text === undefined || line.hightLightBackground)){
+                if(!isChange){
+                    if(line.text === undefined){
+                        text = '';
+                    }
+                    actionUi = '<span class="flex-grow-1 text-end"><span class="bg-success px-1 hover" title="stage this change">+</span></span>';
+                }
+                isChange = true;
+            }else{
+                isChange = false;
+            }
+
+            lineElems.push(`<p class="d-flex"><span>${text}</span>${actionUi}</p>`);
         }
         const lineNumbers = this.getLineNumberContainer();
         if(!lineNumbers) return;
         //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
-        lineNumbers.style.width = `${String(this.lineCount).length + 2}ch`;
+        lineNumbers.style.width = `${String(this.lineCount).length + 3}ch`;
         //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
         lineNumbers.innerHTML = lineElems.join("");
     }
