@@ -3,7 +3,7 @@ import {DecorationSet, Decoration} from "prosemirror-view"
 import {Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { EnumChangeType, IFile, RendererEvents, StringUtils } from "common_library";
+import { EnumChangeType, IChange, IFile, RendererEvents, StringUtils } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
@@ -14,6 +14,7 @@ import { Data } from "../../data";
 import { DiffUtils } from "../DiffUtils";
 import { ChangeUtils } from "../ChangeUtils";
 import { DataUtils } from "../DataUtils";
+import { GitUtils } from "../GitUtils";
 
 
 export class ChangeEditor extends TextEditor{    
@@ -51,7 +52,8 @@ export class ChangeEditor extends TextEditor{
         const lineElems:string[] = [];
         let lineNo = 1;
         let isChange = false;
-        for(let line of this._ilines){
+        for(let i =0;i < this._ilines.length;i++){
+            const line = this._ilines[i];
             let text = "<br/>";
 
             if(line.text !== undefined){
@@ -64,7 +66,7 @@ export class ChangeEditor extends TextEditor{
                     if(line.text === undefined){
                         text = '';
                     }
-                    actionUi = '<span class="flex-grow-1 text-end"><span class="bg-success px-1 hover" title="stage this change">+</span></span>';
+                    actionUi = `<span class="flex-grow-1 text-end" data-iline="${i}"><span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span></span>`;
                 }
                 isChange = true;
             }else{
@@ -79,6 +81,67 @@ export class ChangeEditor extends TextEditor{
         lineNumbers.style.width = `${String(this.lineCount).length + 3}ch`;
         //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
         lineNumbers.innerHTML = lineElems.join("");
+        document.querySelectorAll<HTMLElement>(".stage-hunk").forEach((elem:HTMLElement)=>{
+            elem.addEventListener("click",(e)=>{
+                const ilineIndex = Number(elem.parentElement?.getAttribute('data-iline'));
+                console.log("clicked ilineIndex",ilineIndex);
+                this.stageHunk(ilineIndex);
+            })
+        })
+    }
+
+    private stageHunk(ilineIndex:number){
+        let hunkEndIndex = ilineIndex + this._ilines.slice(ilineIndex).findIndex((l=> l.text !== undefined && !l.hightLightBackground))-1;
+        if(hunkEndIndex < ilineIndex)
+            hunkEndIndex = this._ilines.length-1;
+        
+        const hunkLength = hunkEndIndex - ilineIndex + 1
+
+        const text = this._ilines.slice(ilineIndex,hunkEndIndex+1).filter(l => l.text !== undefined).map(x=> x.text).join(this._lineFeedType);
+        const change = {
+            text:text,            
+        } as IChange;
+        let prevStartIndex = 0;
+        const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;
+        if(this._prevIlines[ilineIndex].text !== undefined){
+            change.startlineIndex = ilineIndex - preTrLineCount;
+            change.startOffset = 0;
+            change.endlineIndex = change.startlineIndex + hunkLength -1;
+            change.endOffset = this._prevIlines[ilineIndex+hunkLength-1].text!.length;
+        }else{
+            prevStartIndex = this._prevIlines.slice(ilineIndex).findIndex(l => l.text !== undefined);
+            if(ilineIndex >= 0){
+                change.startlineIndex = ilineIndex - 1 - preTrLineCount;
+                change.startOffset = this._prevIlines[ilineIndex - 1].text!.length;
+                change.text = this._lineFeedType + change.text;
+            }else{
+                change.startlineIndex = ilineIndex - preTrLineCount;
+                change.startOffset = 0;
+                change.text += change.text;                
+            }
+            change.endlineIndex = change.startlineIndex;
+            change.endOffset = change.startOffset;
+        }
+        
+        //git hash-object -w /path/to/external/config_backup.json
+        //git update-index --add --cacheinfo 100644 <generated-hash> config.json
+         IpcUtils.trackFileChanges(this._tempStagedFilePath,[change],this._encoding).then(r=>{
+            if(!r.error){
+                IpcUtils.getRaw(["hash-object","-w", this._tempStagedFilePath]).then(r=>{
+                    if(!r.error){
+                        const hash = r.result?.trim()!;
+                        IpcUtils.getRaw(["update-index","--add","--cacheinfo","100644",hash, this._file.path]).then(r=>{
+                            console.log("final result",r);
+                            if(!r.error){
+                                GitUtils.getStatus();
+                            }
+                        })
+                    }
+                });
+            }
+         })
+
+
     }
 
     private updateDiff(){                

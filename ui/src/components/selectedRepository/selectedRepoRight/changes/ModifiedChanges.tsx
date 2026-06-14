@@ -229,6 +229,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         refData.current.isMounted = true;
         return ()=>{
             dispatch(ActionUI.setLinefeedType(undefined));
+            dispatch(ActionChanges.updateData({silentStepUpdate:false}));            
         }
     },[])
 
