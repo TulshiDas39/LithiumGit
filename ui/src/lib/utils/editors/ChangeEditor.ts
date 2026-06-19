@@ -91,37 +91,59 @@ export class ChangeEditor extends TextEditor{
     }
 
     private stageHunk(ilineIndex:number){
-        let hunkEndIndex = ilineIndex + this._ilines.slice(ilineIndex).findIndex((l=> l.text !== undefined && !l.hightLightBackground))-1;
-        if(hunkEndIndex < ilineIndex)
-            hunkEndIndex = this._ilines.length-1;
-        
-        const hunkLength = hunkEndIndex - ilineIndex + 1
+        const preHunk:ILine[] = [];
+        const currentHunk:ILine[] = [];
+        for(let i = ilineIndex;i<this._ilines.length;i++){
+            let line = this._ilines[i];
+            if(line.text !== undefined && !line.hightLightBackground)
+                break;
+            currentHunk.push(line);
+            preHunk.push(this._prevIlines[i]);
+        }
+        let hunkEndIndex = ilineIndex + currentHunk.length;                
 
-        const text = this._ilines.slice(ilineIndex,hunkEndIndex+1).filter(l => l.text !== undefined).map(x=> x.text).join(this._lineFeedType);
+        const text = currentHunk.filter(l => l.text !== undefined).map(x=> x.text).join(this._lineFeedType);
         const change = {
             text:text,            
         } as IChange;
-        let prevStartIndex = 0;
+        
         const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;
-        if(this._prevIlines[ilineIndex].text !== undefined){
-            change.startlineIndex = ilineIndex - preTrLineCount;
+
+        let startLine:ILine = preHunk.find( x => x.text !== undefined)!; 
+        if(startLine){
+            const index = preHunk.indexOf(startLine);
+            change.startlineIndex = ilineIndex - preTrLineCount + index + preHunk.slice(0,index).filter(x => x.text === undefined).length;
             change.startOffset = 0;
-            change.endlineIndex = change.startlineIndex + hunkLength -1;
-            change.endOffset = this._prevIlines[ilineIndex+hunkLength-1].text!.length;
-        }else{
-            prevStartIndex = this._prevIlines.slice(ilineIndex).findIndex(l => l.text !== undefined);
-            if(ilineIndex >= 0){
-                change.startlineIndex = ilineIndex - 1 - preTrLineCount;
-                change.startOffset = this._prevIlines[ilineIndex - 1].text!.length;
-                change.text = this._lineFeedType + change.text;
-            }else{
-                change.startlineIndex = ilineIndex - preTrLineCount;
-                change.startOffset = 0;
-                change.text += change.text;                
-            }
-            change.endlineIndex = change.startlineIndex;
-            change.endOffset = change.startOffset;
+            const endLine = preHunk[preHunk.findLastIndex(x => x.text !== undefined)!]  ;
+            change.endlineIndex = preHunk.indexOf(endLine);
+            change.endOffset = endLine.text!.length;
         }
+        else{
+            let ilineSlice = this._prevIlines.slice(ilineIndex + preHunk.length);
+            startLine = ilineSlice.find(l => l.text !== undefined)!;
+            if(startLine){
+                const index = ilineSlice.indexOf(startLine);
+                change.startlineIndex = ilineIndex - preTrLineCount + preHunk.filter(x => x.text !== undefined).length + index - ilineSlice.slice(0,index).filter(x => x.text === undefined).length;
+                change.startOffset = 0;
+                change.endlineIndex = 0;
+                change.endOffset = 0;
+                change.text += this._lineFeedType;
+            }else{
+                let index = ilineIndex - 1;                
+                for(let i = ilineIndex-1; i >= 0; i--){
+                    startLine = this._prevIlines[i];
+                    if(startLine.text !== undefined)
+                        break;
+                    index--;
+                }
+                change.startlineIndex = index - preTrLineCount;
+                change.startOffset = startLine.text!.length;
+                change.endlineIndex = change.endlineIndex;
+                change.endOffset = change.startOffset;
+                change.text = this._lineFeedType + change.text;
+            }
+        }
+        
         
         //git hash-object -w /path/to/external/config_backup.json
         //git update-index --add --cacheinfo 100644 <generated-hash> config.json
