@@ -15,6 +15,7 @@ import { DiffUtils } from "../DiffUtils";
 import { ChangeUtils } from "../ChangeUtils";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
+import { ArrayUtils } from "../ArrayUtils";
 
 
 export class ChangeEditor extends TextEditor{    
@@ -100,7 +101,6 @@ export class ChangeEditor extends TextEditor{
             currentHunk.push(line);
             preHunk.push(this._prevIlines[i]);
         }
-        let hunkEndIndex = ilineIndex + currentHunk.length;                
 
         const text = currentHunk.filter(l => l.text !== undefined).map(x=> x.text).join(this._lineFeedType);
         const change = {
@@ -114,8 +114,9 @@ export class ChangeEditor extends TextEditor{
             const index = preHunk.indexOf(startLine);
             change.startlineIndex = ilineIndex - preTrLineCount + index + preHunk.slice(0,index).filter(x => x.text === undefined).length;
             change.startOffset = 0;
-            const endLine = preHunk[preHunk.findLastIndex(x => x.text !== undefined)!]  ;
-            change.endlineIndex = preHunk.indexOf(endLine);
+            const endIndex = ArrayUtils.findLastIndex(preHunk, (x:ILine) => x.text !== undefined);
+            const endLine = preHunk[endIndex];
+            change.endlineIndex = change.startlineIndex + endIndex - index;
             change.endOffset = endLine.text!.length;
         }
         else{
