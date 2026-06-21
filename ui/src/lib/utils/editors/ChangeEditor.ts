@@ -108,38 +108,33 @@ export class ChangeEditor extends TextEditor{
         } as IChange;
         
         const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;
-
+        const preHunkTexts = preHunk.filter(x => x.text !== undefined);
         let startLine:ILine = preHunk.find( x => x.text !== undefined)!; 
         if(startLine){
-            const index = preHunk.indexOf(startLine);
-            change.startlineIndex = ilineIndex - preTrLineCount + index + preHunk.slice(0,index).filter(x => x.text === undefined).length;
-            change.startOffset = 0;
-            const endIndex = ArrayUtils.findLastIndex(preHunk, (x:ILine) => x.text !== undefined);
-            const endLine = preHunk[endIndex];
-            change.endlineIndex = change.startlineIndex + endIndex - index;
+            change.startlineIndex = ilineIndex - preTrLineCount;
+            change.startOffset = 0;            
+            const endLine = preHunkTexts[preHunkTexts.length - 1];
+            change.endlineIndex = change.startlineIndex + preHunkTexts.length - 1;
             change.endOffset = endLine.text!.length;
         }
         else{
             let ilineSlice = this._prevIlines.slice(ilineIndex + preHunk.length);
             startLine = ilineSlice.find(l => l.text !== undefined)!;
             if(startLine){
-                const index = ilineSlice.indexOf(startLine);
-                change.startlineIndex = ilineIndex - preTrLineCount + preHunk.filter(x => x.text !== undefined).length + index - ilineSlice.slice(0,index).filter(x => x.text === undefined).length;
+                change.startlineIndex = ilineIndex - preTrLineCount + preHunkTexts.length;
                 change.startOffset = 0;
-                change.endlineIndex = 0;
+                change.endlineIndex = change.startlineIndex;
                 change.endOffset = 0;
                 change.text += this._lineFeedType;
-            }else{
-                let index = ilineIndex - 1;                
+            }else{                                
                 for(let i = ilineIndex-1; i >= 0; i--){
                     startLine = this._prevIlines[i];
                     if(startLine.text !== undefined)
                         break;
-                    index--;
                 }
-                change.startlineIndex = index - preTrLineCount;
+                change.startlineIndex = ilineIndex -1 - preTrLineCount;
                 change.startOffset = startLine.text!.length;
-                change.endlineIndex = change.endlineIndex;
+                change.endlineIndex = change.startlineIndex;
                 change.endOffset = change.startOffset;
                 change.text = this._lineFeedType + change.text;
             }
