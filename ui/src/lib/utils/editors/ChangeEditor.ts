@@ -127,11 +127,7 @@ export class ChangeEditor extends TextEditor{
                 change.endOffset = 0;
                 change.text += this._lineFeedType;
             }else{                                
-                for(let i = ilineIndex-1; i >= 0; i--){
-                    startLine = this._prevIlines[i];
-                    if(startLine.text !== undefined)
-                        break;
-                }
+                startLine = ArrayUtils.findLast(this._prevIlines.slice(0,ilineIndex),(l)=> l.text !== undefined)!;
                 change.startlineIndex = ilineIndex -1 - preTrLineCount;
                 change.startOffset = startLine.text!.length;
                 change.endlineIndex = change.startlineIndex;
