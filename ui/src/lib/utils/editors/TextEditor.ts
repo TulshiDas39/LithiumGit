@@ -440,6 +440,8 @@ export abstract class TextEditor {
         if(preventHistory) {
             this._savedLfType = this._lineFeedType;
         }
+        this._lastUpdated = new Date().toISOString();
+
     }
 
     async refresh(preventHistory=false){
@@ -508,14 +510,12 @@ export abstract class TextEditor {
             ModalData.confirmationModal.message = "The file has been modified. Do you want to reload it? Unsaved changes will be lost.";
             ModalData.confirmationModal.YesHandler = async () => {
                 await this.reRender(true);
-                this._lastUpdated = new Date().toISOString();
             }
             ModalData.confirmationModal.NoHandler = () => {
                 this._lastUpdated = new Date().toISOString();
             }
             ReduxUtils.dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
-        }else{
-            this._lastUpdated = new Date().toISOString();
+        }else{            
             await this.reRender(true);
         }
     }

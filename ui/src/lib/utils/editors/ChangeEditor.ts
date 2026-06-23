@@ -3,7 +3,7 @@ import {DecorationSet, Decoration} from "prosemirror-view"
 import {Node} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
-import { EnumChangeType, IChange, IFile, RendererEvents, StringUtils } from "common_library";
+import { IChange, IFile, StringUtils } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
@@ -26,6 +26,7 @@ export class ChangeEditor extends TextEditor{
     private _tempStagedFilePath = '';
     private _haveDecorationUpdate = false;
     private _changeUitl: ChangeUtils = null!;
+    private _indexLastUpdated = '';
     constructor(containerSelector:string,changeUtil: ChangeUtils){
         super(containerSelector);
         this._changeUitl = changeUtil;
@@ -214,14 +215,14 @@ export class ChangeEditor extends TextEditor{
     }
 
     override async refresh(){
-        await this.saveStagedContent();
+        await this.copyStagedContent();
         await super.refresh();
     }
 
     async renderILines(file:IFile){
         this._file = file;        
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);
-        await this.saveStagedContent();
+        await this.copyStagedContent();
         this._changeUitl.currentLines = [];
         this._changeUitl.previousLines = [];
         this._changeUitl.showChanges();
@@ -230,11 +231,13 @@ export class ChangeEditor extends TextEditor{
         return r;
     }
 
-    private saveStagedContent(){
+    private async copyStagedContent(){
         const fileExtension = StringUtils.GetFileExtension(this._file.path);
         const tempStagedFileName = `temp_staged_${fileExtension}`;
         this._tempStagedFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempStagedFileName);
-        return IpcUtils.copyStagedContent(this._file.path, this._tempStagedFilePath);
+        const r = await IpcUtils.copyStagedContent(this._file.path, this._tempStagedFilePath);
+        this._indexLastUpdated = new Date().toISOString();
+        return r;
     }
 
     private readonly buildDecorations = (doc: Node) => {
@@ -282,6 +285,15 @@ export class ChangeEditor extends TextEditor{
                 decorations(state: EditorState) { return this.getState(state); },
             },
         });
+    }
+
+    override async checkForFileUpdate(){
+        const indexFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,".git/index");
+        const lastUpdated = await IpcUtils.getLastUpdatedDate(indexFilePath);
+        if(lastUpdated > this._indexLastUpdated){
+            await this.copyStagedContent();
+        }
+        await super.checkForFileUpdate();
     }
 
     protected displayLineFeedType(): void{
