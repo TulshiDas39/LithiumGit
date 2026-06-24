@@ -213,11 +213,6 @@ export class ChangeEditor extends TextEditor{
         return true;
     }
 
-    override async refresh(){
-        await this.copyStagedContent();
-        await super.refresh();
-    }
-
     async renderILines(file:IFile){
         this._file = file;        
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);
