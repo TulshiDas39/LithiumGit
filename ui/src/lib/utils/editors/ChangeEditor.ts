@@ -159,22 +159,21 @@ export class ChangeEditor extends TextEditor{
 
     }
 
-    private updateDiff(){                
+    private async updateDiff(){                
         const options = ["-c", "core.autocrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
-        IpcUtils.getRaw(options).then((r) => {
-            const diffResult = r.result!;
-            const contentLines = this.getContentLines();
-            const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
-            this._ilines = uiLines.currentLines;
-            this._changeUitl.previousLines = uiLines.previousLines;
-            this._changeUitl.updatePreviousChanges(uiLines.previousLines);
-            ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
-            //build decorations again with new ilines
-            this.renderLineNumbers();
-            const tr = this._editView.state.tr;
-            this._haveDecorationUpdate = true;
-            this._editView.dispatch(tr);            
-        });        
+        const r = await IpcUtils.getRaw(options);        
+        const diffResult = r.result!;
+        const contentLines = this.getContentLines();
+        const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
+        this._ilines = uiLines.currentLines;
+        this._changeUitl.previousLines = uiLines.previousLines;
+        this._changeUitl.updatePreviousChanges(uiLines.previousLines);
+        ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
+        //build decorations again with new ilines
+        this.renderLineNumbers();
+        const tr = this._editView.state.tr;
+        this._haveDecorationUpdate = true;
+        this._editView.dispatch(tr);
 
     }
     
@@ -292,6 +291,7 @@ export class ChangeEditor extends TextEditor{
         const lastUpdated = await IpcUtils.getLastUpdatedDate(indexFilePath);
         if(lastUpdated > this._indexLastUpdated){
             await this.copyStagedContent();
+            await this.updateDiff();
         }
         await super.checkForFileUpdate();
     }

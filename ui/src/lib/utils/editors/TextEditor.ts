@@ -124,40 +124,39 @@ export abstract class TextEditor {
         this.trackChanges();
     }
 
-    private trackChanges(){
+    private async trackChanges(){
         if(this._trackingChanges || this._untrackedChanges.length === 0)
             return;
 
         this._trackingChanges = true;
-        const perform = ()=>{
+        const perform = async ()=>{
             const itemCount = this._untrackedChanges.length;
-            IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges,this._encoding).then((result)=>{
-                if(result.error){
-                    console.error("Error tracking changes:", result.error);
-                    this._trackingChanges = false;
-                }
-                else if(result.result !== itemCount){
-                    console.warn(`Mismatch in tracked changes count. Expected: ${itemCount}, Tracked: ${result.result}`);
-                    this._untrackedChanges.splice(0,result.result);
-                    this._trackingChanges = false;
-                }
-                else{
-                    this._untrackedChanges.splice(0,itemCount);
-                    if(this._untrackedChanges.length) {
-                        perform();
-                    }
-                    else {
-                        this._trackingChanges = false;
-                        this.onSyncWaitingCalls.forEach(call => call());
-                        this.onSyncWaitingCalls = [];
-                        this.onSync?.();
-                    }
-                }
-            });
-        }
-        
+            const result = await IpcUtils.trackFileChanges(this._tempFilePath, this._untrackedChanges,this._encoding);
 
-        perform();
+            if(result.error){
+                console.error("Error tracking changes:", result.error);
+                this._trackingChanges = false;
+            }
+            else if(result.result !== itemCount){
+                console.warn(`Mismatch in tracked changes count. Expected: ${itemCount}, Tracked: ${result.result}`);
+                this._untrackedChanges.splice(0,result.result);
+                this._trackingChanges = false;
+            }
+            else{
+                this._untrackedChanges.splice(0,itemCount);
+                if(this._untrackedChanges.length) {
+                    await perform();
+                }
+                else {
+                    this._trackingChanges = false;
+                    this.onSyncWaitingCalls.forEach(call => call());
+                    this.onSyncWaitingCalls = [];
+                    this.onSync?.();
+                }
+            }
+        }
+
+        await perform();
 
     }
 
@@ -481,7 +480,7 @@ export abstract class TextEditor {
             }
             else if(this._untrackedChanges.length){
                 this.onSyncWaitingCalls.push(func);
-                this.trackChanges();
+                await this.trackChanges();
             }else{
                 func();
             }
