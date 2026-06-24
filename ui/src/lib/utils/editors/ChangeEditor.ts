@@ -17,14 +17,16 @@ import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ArrayUtils } from "../ArrayUtils";
 
+enum TransMetaData{
+    DecorationChanged="DecorationChanged",
+}
 
 export class ChangeEditor extends TextEditor{    
     private _ilines:ILine[] = [];
     private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
     private _file:IFile = null!;    
-    private _tempStagedFilePath = '';
-    private _haveDecorationUpdate = false;
+    private _tempStagedFilePath = '';    
     private _changeUitl: ChangeUtils = null!;
     private _indexLastUpdated = '';
     constructor(containerSelector:string,changeUtil: ChangeUtils){
@@ -172,7 +174,7 @@ export class ChangeEditor extends TextEditor{
         //build decorations again with new ilines
         this.renderLineNumbers();
         const tr = this._editView.state.tr;
-        this._haveDecorationUpdate = true;
+        tr.setMeta(TransMetaData.DecorationChanged,true);        
         this._editView.dispatch(tr);
 
     }
@@ -263,8 +265,7 @@ export class ChangeEditor extends TextEditor{
                 }
                 ilineIndex++;                
                 
-            });
-            this._haveDecorationUpdate = false;
+            });            
             return DecorationSet.create(doc, decorations);
         };
 
@@ -273,7 +274,7 @@ export class ChangeEditor extends TextEditor{
         return new Plugin({
             state: {
                 init: (_: any, { doc }: {doc:Node}) => this.buildDecorations(doc),
-                apply: (tr: Transaction, set: DecorationSet) => (tr.docChanged || this._haveDecorationUpdate) ? this.buildDecorations(tr.doc) : set,
+                apply: (tr: Transaction, set: DecorationSet) => (tr.docChanged || !!tr.getMeta(TransMetaData.DecorationChanged)) ? this.buildDecorations(tr.doc) : set,
             },
             props: {
                 decorations(state: EditorState) { return this.getState(state); },
