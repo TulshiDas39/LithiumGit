@@ -94,7 +94,7 @@ export class ChangeEditor extends TextEditor{
         })
     }
 
-    private stageHunk(ilineIndex:number){
+    private async stageHunk(ilineIndex:number){
         const preHunk:ILine[] = [];
         const currentHunk:ILine[] = [];
         for(let i = ilineIndex;i<this._ilines.length;i++){
@@ -138,27 +138,23 @@ export class ChangeEditor extends TextEditor{
                 change.text = this._lineFeedType + change.text;
             }
         }
-        
-        
-        //git hash-object -w /path/to/external/config_backup.json
-        //git update-index --add --cacheinfo 100644 <generated-hash> config.json
-         IpcUtils.trackFileChanges(this._tempStagedFilePath,[change],this._encoding).then(r=>{
-            if(!r.error){
-                IpcUtils.getRaw(["hash-object","-w", this._tempStagedFilePath]).then(r=>{
-                    if(!r.error){
-                        const hash = r.result?.trim()!;
-                        IpcUtils.getRaw(["update-index","--add","--cacheinfo","100644",hash, this._file.path]).then(r=>{
-                            console.log("final result",r);
-                            if(!r.error){
-                                GitUtils.getStatus();
-                            }
-                        })
-                    }
-                });
-            }
-         })
+                        
+        const r = await IpcUtils.trackFileChanges(this._tempStagedFilePath,[change],this._encoding);
+        if(r.error)
+            return;
+        const r2 = await IpcUtils.getRaw(["hash-object","-w", this._tempStagedFilePath]);
+        if(r2.error)
+            return;
 
+        const hash = r2.result?.trim()!;
 
+        const r3 = await IpcUtils.getRaw(["update-index","--add","--cacheinfo","100644",hash, this._file.path]);
+        if(r3.error)
+            return;
+        
+        await this.updateDiff();
+        
+        GitUtils.getStatus();
     }
 
     private async updateDiff(){                
