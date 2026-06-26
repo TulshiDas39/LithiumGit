@@ -45,12 +45,6 @@ function ChangesComponent() {
         setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
 
-    const checkForDiifClear=()=>{
-        const file = changeUtils.file!;
-        if(!!file && !store.selectedFile)
-            changeUtils.ClearView();        
-    }
-
     useEffect(()=>{
         if(!store.selectedFile || !store.status) return;
         const changedFiles = [...store.status.conflicted,...store.status.staged,...store.status.unstaged];
@@ -60,10 +54,6 @@ function ChangesComponent() {
         if(!existInStatus)
             dispatch(ActionChanges.updateData({selectedFile:undefined}));        
     },[store.status,store.selectedFile])
-
-    useEffect(()=>{
-        checkForDiifClear();
-    },[store.selectedFile])
 
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
@@ -91,6 +81,7 @@ function ChangesComponent() {
     useEffect(()=>{        
         return ()=>{
             dispatch(ActionChanges.updateData({currentStep:0}));
+            ChangesData.changeEditor?.destroy();
         }
     },[])
 

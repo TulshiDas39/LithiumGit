@@ -31,7 +31,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({isMounted:false, editor: new ChangeEditor("#"+EnumHtmlIds.diffview_container+" .current .content",ChangesData.changeUtils) as TextEditor});
+    const refData = useRef({isMounted:false});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -138,12 +138,18 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     }
 
+    const clearExistingChangeView=()=>{
+        ChangesData.changeEditor?.destroy();
+        ChangesData.changeEditor = null!;        
+    }
+
     const displayChanges = async()=>{
-        return new Promise<boolean>((res)=>{            
+        return new Promise<boolean>((res)=>{
+            clearExistingChangeView();
             if(store.selectedFile?.changeType !== EnumChangeType.DELETED){                
-                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){      
                     const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
-                    refData.current.editor = editor;
+                    ChangesData.changeEditor = editor;
                     editor.renderILines(store.selectedFile!).then(success=>{
                         if(!success) {
                             ModalData.appToast.message = "There was an error reading the content.";
@@ -157,9 +163,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                     ChangesData.changeUtils.currentLines = [];
                     ChangesData.changeUtils.previousLines = null!;
                     ChangesData.changeUtils.showChanges();
-                    const editor = new PlainTextEditor(editorContainer);
-                    refData.current.editor = editor;
+                    const editor = new PlainTextEditor(editorContainer);                    
                     const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+                    ChangesData.changeEditor = editor;
                     editor.renderLines(sourceFilePath).then(success=>{
                         if(!success) {
                             ModalData.appToast.message = "There was an error reading the content.";
@@ -184,8 +190,13 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
+        if(!refData.current.isMounted)
             return ;
+
+        if(!store.selectedFile){
+            clearExistingChangeView();
+            return;
+        }
 
         IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
             if(r.result){                
@@ -197,26 +208,16 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             }
         })
                 
-        ChangesData.changeUtils.file = store.selectedFile;        
-
-        return ()=>{
-            refData.current.editor?.destroy();
-        }
+        ChangesData.changeUtils.file = store.selectedFile;
                 
     },[store.selectedFile]);
-
-    useEffect(()=>{
-        if(!store.selectedFile){
-            dispatch(ActionUI.setLinefeedType(undefined));
-        }
-    },[!!store.selectedFile])
 
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;     
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;        
-        refData.current.editor?.checkForFileUpdate();
+        ChangesData.changeEditor?.checkForFileUpdate();
     },[store.focusVersion])
 
     const handleFileSelect = (file:IFile)=>{
@@ -228,7 +229,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     useEffect(()=>{
         refData.current.isMounted = true;
         return ()=>{
-            dispatch(ActionUI.setLinefeedType(undefined));
+            refData.current.isMounted = false;
             dispatch(ActionChanges.updateData({silentStepUpdate:false}));            
         }
     },[])

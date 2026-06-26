@@ -86,8 +86,14 @@ function StagedChangesComponent(props:IStagedChangesProps){
         });        
     }
 
+    const clearExistingChangeView=()=>{
+        ChangesData.changeEditor?.destroy();
+        ChangesData.changeEditor = null!;        
+    }
+
     const showChanges=()=>{                    
-        return new Promise<boolean>((resolve)=>{            
+        return new Promise<boolean>((resolve)=>{  
+            clearExistingChangeView();
             if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
                 IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
                     const lines = StringUtils.getLines(res.result!);
@@ -175,8 +181,14 @@ function StagedChangesComponent(props:IStagedChangesProps){
     }
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
+        if(!refData.current.isMounted)
             return ;
+
+        if(!store.selectedFile){
+            ChangesData.changeUtils.ClearView();
+            return;
+        }
+        
         IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
             if(r.result){                
                 showPreview(store.selectedFile!);
@@ -205,6 +217,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     useEffect(()=>{
         refData.current.isMounted = true;
+        return ()=>{
+            refData.current.isMounted = false;
+        }
     },[])
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>

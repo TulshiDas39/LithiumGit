@@ -295,4 +295,9 @@ export class ChangeEditor extends TextEditor{
     protected addEncodingChangeHandler(callback: (encoding: string) => void): void {
         DataUtils.handleEncodingChangeOfModifiedFile = callback;
     }
+
+    override destroy(){
+        super.destroy();
+        this._changeUitl.ClearView();
+    }
 }

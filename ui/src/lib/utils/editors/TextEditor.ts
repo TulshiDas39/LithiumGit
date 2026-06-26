@@ -521,6 +521,7 @@ export abstract class TextEditor {
 
     destroy(){
         this._editView?.destroy();
+        this._editView = null!;
         this._lineFeedType = undefined!;
         this.displayLineFeedType();
         this._encoding = undefined!
