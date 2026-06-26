@@ -105,37 +105,31 @@ export class ChangeEditor extends TextEditor{
             preHunk.push(this._prevIlines[i]);
         }
 
-        const text = currentHunk.filter(l => l.text !== undefined).map(x=> x.text).join(this._lineFeedType);
+        const currentHunkTexts = currentHunk.filter(l => l.text !== undefined);
+        const preHunkTexts = preHunk.filter(l => l.text !== undefined);
+        const text = currentHunkTexts.map(x=> x.text).join(this._lineFeedType);
         const change = {
             text:text,            
         } as IChange;
         
-        const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;
-        const preHunkTexts = preHunk.filter(x => x.text !== undefined);
-        let startLine:ILine = preHunk.find( x => x.text !== undefined)!; 
-        if(startLine){
+        const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;        
+
+        if(ilineIndex - preTrLineCount > 1){
+            change.startlineIndex = ilineIndex - preTrLineCount - 1;
+            change.startOffset = Number.MAX_SAFE_INTEGER;
+        }else{
             change.startlineIndex = ilineIndex - preTrLineCount;
             change.startOffset = 0;            
-            const endLine = preHunkTexts[preHunkTexts.length - 1];
-            change.endlineIndex = change.startlineIndex + preHunkTexts.length - 1;
-            change.endOffset = endLine.text!.length;
         }
-        else{
-            let ilineSlice = this._prevIlines.slice(ilineIndex + preHunk.length);
-            startLine = ilineSlice.find(l => l.text !== undefined)!;
-            if(startLine){
-                change.startlineIndex = ilineIndex - preTrLineCount + preHunkTexts.length;
-                change.startOffset = 0;
-                change.endlineIndex = change.startlineIndex;
-                change.endOffset = 0;
-                change.text += this._lineFeedType;
-            }else{                                
-                startLine = ArrayUtils.findLast(this._prevIlines.slice(0,ilineIndex),(l)=> l.text !== undefined)!;
-                change.startlineIndex = ilineIndex -1 - preTrLineCount;
-                change.startOffset = startLine.text!.length;
-                change.endlineIndex = change.startlineIndex;
-                change.endOffset = change.startOffset;
+
+        change.endlineIndex = change.startlineIndex + preHunkTexts.length;
+        change.endOffset = change.startOffset;
+
+        if(currentHunkTexts.length){
+            if(change.startOffset > 0){
                 change.text = this._lineFeedType + change.text;
+            }else{
+                change.text += this._lineFeedType;
             }
         }
                         
