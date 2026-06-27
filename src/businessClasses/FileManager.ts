@@ -343,6 +343,20 @@ export class FileManager{
         
     }
 
+    async writeBufferToFile(path:string,data:Buffer){
+        return new Promise<boolean>((res)=>{
+            fs.writeFile(path,data,(err)=>{
+                if(!err){
+                    res(true);
+                }
+                else{
+                    res(false);
+                }
+            });
+        })
+        
+    }
+
     exists(path:string){
         return fs.existsSync(path);
     }

@@ -70,8 +70,9 @@ export class GitManager{
 
     private async copyStagedContent(path: string, destinationPath: string, repoPath: string) {
         const git = this.getGitRunner(repoPath);
-        const stagedContent = await git.show([`:${path}`]);
-        return await new FileManager().writeToFile(destinationPath, stagedContent);
+        //git cat-file blob :path/to/my_file.txt
+        const stagedContent: Buffer = await git.binaryCatFile(['blob',`:${path}`]);
+        return await new FileManager().writeBufferToFile(destinationPath, stagedContent);
     }
 
 
