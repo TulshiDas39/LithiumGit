@@ -68,7 +68,7 @@ export function DiffView(props:IProps){
     }
     const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
     return <div className="d-flex w-100 h-100 position-relative diff-view">
-        <div className="noselect line_numbers overflow-hidden h-100" style={{width:lineDivWidth+"ch"}}>
+        <div className="noselect line_numbers overflow-y-hidden h-100" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
         <div className="h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>

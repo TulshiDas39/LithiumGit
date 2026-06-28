@@ -1,6 +1,6 @@
 import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import {DecorationSet, Decoration} from "prosemirror-view"
-import {Node} from "prosemirror-model"
+import {Fragment, Node, Slice} from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
 import { ILine } from "../../interfaces";
 import { IChange, IFile, StringUtils } from "common_library";
@@ -16,6 +16,8 @@ import { ChangeUtils } from "../ChangeUtils";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ArrayUtils } from "../ArrayUtils";
+import { UiUtils } from "../UiUtils";
+import { FaUndo } from "react-icons/fa";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -56,6 +58,7 @@ export class ChangeEditor extends TextEditor{
         const lineElems:string[] = [];
         let lineNo = 1;
         let isChange = false;
+        const undoIcon = UiUtils.JsxToHtml(FaUndo({}));
         for(let i =0;i < this._ilines.length;i++){
             const line = this._ilines[i];
             let text = "<br/>";
@@ -70,7 +73,15 @@ export class ChangeEditor extends TextEditor{
                     if(line.text === undefined){
                         text = '';
                     }
-                    actionUi = `<span class="flex-grow-1 text-end" data-iline="${i}"><span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span></span>`;
+                    actionUi = `<span class="flex-grow-1 hunk-actions d-flex justify-content-end" data-iline="${i}">
+                        <span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span>
+                        <span class="discard-hunk-container d-none position-relative">
+                            <span class="position-absolute top-0 start-0 d-flex" title="discard this change">
+                                <span class="ps-1"></span> 
+                                <span class="discard-hunk bg-danger px-1" title="discard this change" data-iline="${i}">${undoIcon}</span>
+                            </span>
+                        </span>
+                    </span>`;
                 }
                 isChange = true;
             }else{
@@ -90,6 +101,13 @@ export class ChangeEditor extends TextEditor{
                 const ilineIndex = Number(elem.parentElement?.getAttribute('data-iline'));
                 console.log("clicked ilineIndex",ilineIndex);
                 this.stageHunk(ilineIndex);
+            })
+        })
+        //discard-hunk
+        document.querySelectorAll<HTMLElement>(".discard-hunk").forEach((elem:HTMLElement)=>{
+            elem.addEventListener("click",(_e)=>{
+                const ilineIndex = Number(elem.getAttribute('data-iline'));
+                this.discardHunk(ilineIndex);
             })
         })
     }
@@ -114,7 +132,7 @@ export class ChangeEditor extends TextEditor{
         
         const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;        
 
-        if(ilineIndex - preTrLineCount > 1){
+        if(ilineIndex - preTrLineCount > 0){
             change.startlineIndex = ilineIndex - preTrLineCount - 1;
             change.startOffset = Number.MAX_SAFE_INTEGER;
         }else{
@@ -151,6 +169,49 @@ export class ChangeEditor extends TextEditor{
         GitUtils.getStatus();
     }
 
+    private async discardHunk(ilineIndex:number){
+        const preHunk:ILine[] = [];
+        const currentHunk:ILine[] = [];
+        for(let i = ilineIndex;i<this._ilines.length;i++){
+            let line = this._ilines[i];
+            if(line.text !== undefined && !line.hightLightBackground)
+                break;
+            currentHunk.push(line);
+            preHunk.push(this._prevIlines[i]);
+        }
+        const currentHunkTexts = currentHunk.filter(l => l.text !== undefined);
+        const preHunkTexts = preHunk.filter(l => l.text !== undefined);
+        const text = preHunkTexts.map(x=> x.text).join(this._lineFeedType);
+
+        const change = {
+            text:text,            
+        } as IChange;
+
+        const curTrLineCount = this._ilines.slice(0,ilineIndex).filter(l => l.text === undefined).length;        
+
+        if(ilineIndex - curTrLineCount > 0){
+            change.startlineIndex = ilineIndex - curTrLineCount - 1;
+            change.startOffset = Number.MAX_SAFE_INTEGER;
+        }else{
+            change.startlineIndex = ilineIndex - curTrLineCount;
+            change.startOffset = 0;            
+        }
+
+        change.endlineIndex = change.startlineIndex + currentHunkTexts.length;
+        change.endOffset = change.startOffset;
+
+        if(preHunkTexts.length){
+            if(change.startOffset > 0){
+                change.text = this._lineFeedType + change.text;
+            }else{
+                change.text += this._lineFeedType;
+            }
+        }
+
+        this.applyChange(change);
+    }    
+
+    
     private async updateDiff(){                
         const options = ["-c", "core.autocrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
         const r = await IpcUtils.getRaw(options);        
@@ -244,7 +305,7 @@ export class ChangeEditor extends TextEditor{
                     ilineIndex++;
                     iline = this._ilines[ilineIndex];                    
                 }
-                if(iline.hightLightBackground){
+                if(iline?.hightLightBackground){
                     decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: 'bg-current-change' }));
                     for(let i=0; i<iline.textHightlightIndex.length; i++){
                         const range = iline.textHightlightIndex[i];

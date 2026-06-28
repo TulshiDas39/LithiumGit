@@ -217,6 +217,8 @@ export class DiffUtils{
             addedBuffer = [];
         };
 
+        let noEOL_atPrev = false;
+        let noEOL_atCurr = false;
         for(let i=startIndexesOfSections;i<diffLines.length;i++){
             const diffLine = diffLines[i];
 
@@ -250,6 +252,15 @@ export class DiffUtils{
                 addedBuffer.push(diffLine.substring(1));
                 lineNumberOfCurrentChange++;
             }
+
+            else if(diffLine.startsWith("\\ No newline at end of file")){
+                const prevDiff = diffLines[i-1];
+                if(prevDiff?.startsWith("-")){
+                    noEOL_atPrev = true;
+                } else if(prevDiff?.startsWith("+")){
+                    noEOL_atCurr = true;
+                }
+            }
             // Other lines (diff --git, index, etc.) are ignored
         }
 
@@ -268,6 +279,10 @@ export class DiffUtils{
             currentLines.push({textHightlightIndex:[]})
         while(currentLines.length > previousLines.length)
             previousLines.push({textHightlightIndex:[]})
+        
+        if(noEOL_atPrev && !noEOL_atCurr){
+            previousLines[previousLines.length-1] = {  ...previousLines[previousLines.length-1], text: undefined, textHightlightIndex:[], };
+        }
 
         return {
             currentLines,

@@ -71,7 +71,7 @@ export abstract class TextEditor {
         return doc;
     }
 
-    protected handleTransaction (transaction: Transaction){             
+    protected handleTransaction (transaction: Transaction){
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);        
         if(transaction.docChanged){         
@@ -282,6 +282,29 @@ export abstract class TextEditor {
         const slice = new Slice(Fragment.from(nodes), 1, 1);
         view.dispatch(state.tr.replaceSelection(slice));
         return true;
+    }
+
+    protected createNodesFromText(text: string) {
+        const { schema } = this._editView.state;
+        const lines = text.split(/\r?\n/);
+        const nodes = lines.map(line =>
+            schema.node('paragraph', null, line ? [schema.text(line)] : [])
+        );
+        return nodes;
+
+    }
+
+    protected createSliceFromText(text: string) {
+        const nodes = this.createNodesFromText(text);
+        const slice = new Slice(Fragment.from(nodes), 1, 1);
+        return slice;
+    }
+
+    applyChange(change: IChange){
+        const pos = this.getSelection(change);
+        console.log("discardHunk pos",pos,change);
+        const slice = this.createSliceFromText(change.text);
+        this._editView.dispatch(this._editView.state.tr.replace(pos.from, pos.to, slice));
     }
 
     protected IsDocChanged(){
@@ -517,6 +540,39 @@ export abstract class TextEditor {
         }else{            
             await this.reRender(true);
         }
+    }
+
+    protected getSelection(change:IChange){
+        console.log("getSelection change",change);
+        const { state } = this._editView;
+        const doc = state.doc;
+        let from = 0;
+        let to = 0;
+
+        if(change.endOffset > 0){
+            change.endOffset--;
+        }else if(change.endlineIndex > 0){
+            change.endlineIndex--;
+            change.endOffset = Number.MAX_SAFE_INTEGER;
+        }
+
+        let i = 0;
+        for (i = 0; i < change.startlineIndex; i++) {
+            from += doc.child(i).nodeSize;
+            console.log("from", from, doc.child(i).textContent);
+        }
+
+        to = from;
+        from = from + 1 + Math.min(change.startOffset, state.doc.child(change.startlineIndex).content.size);
+        let j = 0;
+        for (j = i; j < change.endlineIndex; j++) {
+            to += doc.child(j).nodeSize;
+            console.log("to", to, doc.child(j).textContent);
+        }
+
+        to = to + 1 + Math.min(change.endOffset, doc.child(change.endlineIndex).content.size);
+        
+        return { from, to };
     }
 
     destroy(){

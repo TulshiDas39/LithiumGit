@@ -704,7 +704,15 @@ input[type=checkbox]{
     right: 25px;
     z-index: 1;
   }
-  .line_numbers, .content{
+  .line_numbers{
+    padding-bottom: 65px;
+  }
+  .content{
     padding-bottom: 50px;
   }
+
 }
+
+  .hunk-actions:hover .discard-hunk-container{
+    display: inline-block !important;
+  }
