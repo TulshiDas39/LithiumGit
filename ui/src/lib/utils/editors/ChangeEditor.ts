@@ -57,8 +57,6 @@ export class ChangeEditor extends TextEditor{
     protected override renderLineNumbers(){
         const lineElems:string[] = [];
         let lineNo = 1;
-        let isChange = false;
-        const undoIcon = UiUtils.JsxToHtml(FaUndo({}));
         for(let i =0;i < this._ilines.length;i++){
             const line = this._ilines[i];
             let text = "<br/>";
@@ -67,13 +65,30 @@ export class ChangeEditor extends TextEditor{
                 text = lineNo+"";     
                 lineNo++;
             }
-            let actionUi = '';            
+
+            lineElems.push(`<p class="d-flex"><span>${text}</span></p>`);
+        }
+        const lineNumbers = this.getLineNumberContainer();
+        if(!lineNumbers) return;
+        //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
+        lineNumbers.style.width = `${String(this.lineCount).length + 2}ch`;
+        //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
+        lineNumbers.innerHTML = lineElems.join(""); 
+        
+        this.renderHunkActions();
+    }
+
+    private renderHunkActions(){
+        const actionElems:string[] = [];
+        let isChange = false;
+        const undoIcon = UiUtils.JsxToHtml(FaUndo({}));
+        for(let i =0;i < this._ilines.length;i++){
+            const line = this._ilines[i];
+            let actionUi = '<br/>';
+
             if((line.text === undefined || line.hightLightBackground)){
                 if(!isChange){
-                    if(line.text === undefined){
-                        text = '';
-                    }
-                    actionUi = `<span class="flex-grow-1 hunk-actions d-flex justify-content-end" data-iline="${i}">
+                    actionUi = `<span class="hunk-actions d-flex" data-iline="${i}">
                         <span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span>
                         <span class="discard-hunk-container d-none position-relative">
                             <span class="position-absolute top-0 start-0 d-flex" title="discard this change">
@@ -87,15 +102,12 @@ export class ChangeEditor extends TextEditor{
             }else{
                 isChange = false;
             }
-
-            lineElems.push(`<p class="d-flex"><span>${text}</span>${actionUi}</p>`);
+            actionElems.push(`<p class="d-flex">${actionUi}</p>`);
         }
-        const lineNumbers = this.getLineNumberContainer();
-        if(!lineNumbers) return;
-        //TODO: use fit-content for width and set the width of lineNumbers container to fit the line numbers, this way we can avoid setting a fixed width and also avoid the issue of line numbers getting cut off when there are more lines
-        lineNumbers.style.width = `${String(this.lineCount).length + 3}ch`;
-        //TODO: optimize this by only adding/removing the required line numbers instead of re-rendering all of them
-        lineNumbers.innerHTML = lineElems.join("");
+
+        const container = this.getHunkActionContainer();
+        container!.innerHTML = actionElems.join("");
+
         document.querySelectorAll<HTMLElement>(".stage-hunk").forEach((elem:HTMLElement)=>{
             elem.addEventListener("click",(e)=>{
                 const ilineIndex = Number(elem.parentElement?.getAttribute('data-iline'));

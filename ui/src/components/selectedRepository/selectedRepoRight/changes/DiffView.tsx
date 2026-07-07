@@ -71,7 +71,8 @@ export function DiffView(props:IProps){
         <div className="noselect line_numbers overflow-y-hidden h-100" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>
+        {props.changeType === "current" && <div className="diff-action-container overflow-y-hidden h-100" style={{width: '2ch'}}></div>}
+        <div className="h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth+2}ch)`}}>
             <div className="ps-1 content fit-content min-w-100">
                 {props.lines.map((l, i)=>(
                     <SingleDiff key={i} line={l} backGroupColorCss={`bg-${props.changeType}-change`} forGroupColorCss={`bg-${props.changeType}-change-deep`} maxLineWidth={editorWidth}  />
