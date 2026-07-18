@@ -1,4 +1,4 @@
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaUndo } from "react-icons/fa";
 import { DiffUtils, ILine } from "../../../../lib";
 import { AppButton } from "../../../common";
 
@@ -68,6 +68,7 @@ export function DiffView(props:IProps){
     }
     const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
     return <div className="d-flex w-100 h-100 position-relative diff-view">
+        {props.changeType === "current" && <div className="discard-hunk position-absolute d-none bg-danger px-1" title="Discard this change"><FaUndo className="" /></div>}
         <div className="noselect line_numbers overflow-y-hidden h-100" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>

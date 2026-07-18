@@ -96,6 +96,29 @@ export class ChangeEditor extends TextEditor{
                 console.log("clicked ilineIndex",ilineIndex);
                 this.stageHunk(ilineIndex);
             })
+            elem.addEventListener("mouseenter",(e)=>{
+                const discardIcon = this.discardHunkBtn();
+                const ilineIndex = Number(elem.parentElement?.getAttribute('data-iline'));
+                const diffView = this.diffViewElem();
+                const elemRect = elem.getBoundingClientRect();
+                const diffViewRect = diffView.getBoundingClientRect();
+
+                discardIcon.style.top = (elemRect.y - diffViewRect.y)+"px";
+                discardIcon.style.left = (elemRect.x - diffViewRect.x + elemRect.width+2)+"px";
+
+                discardIcon.setAttribute('data-iline',ilineIndex+"");
+                discardIcon.classList.add('by-stage');
+                discardIcon.classList.remove('d-none');                
+            })
+            elem.addEventListener("mouseleave",(e)=>{
+                const btn = this.discardHunkBtn();
+                btn.classList.remove('by-stage');
+                setTimeout(() => {
+                    if(!btn.classList.contains('by-stage') && !btn.classList.contains('by-discard')){
+                        this.discardHunkBtn().classList.add('d-none');
+                    }
+                }, 1000);
+            })
         })
         //discard-hunk
         document.querySelectorAll<HTMLElement>(".discard-hunk").forEach((elem:HTMLElement)=>{
@@ -238,6 +261,15 @@ export class ChangeEditor extends TextEditor{
         }
     }
 
+    private diffViewElem(){
+        return document.querySelector(`${this._containerSelector}`)?.closest(".diff-view") as HTMLElement;
+    }
+
+    private discardHunkBtn(){
+        return this.diffViewElem()?.querySelector(".discard-hunk") as HTMLElement;
+    }
+
+
     private saveBtn(){
         if(!this._saveBtn || !this._saveBtn.isConnected){
             this._saveBtn = document.querySelector(`${this._containerSelector}`)?.closest(".diff-view")?.querySelector(".save-btn-container")!;
@@ -268,8 +300,24 @@ export class ChangeEditor extends TextEditor{
         this._changeUitl.previousLines = [];
         this._changeUitl.showChanges();
         const r = await this.render(filePath);
-        this._changeUitl.updatePreviousChanges(this._prevIlines);        
+        this._changeUitl.updatePreviousChanges(this._prevIlines);
+        this.handleDiscardHunk();
         return r;
+    }
+
+    private handleDiscardHunk(){
+        const discardHunkBtn = this.discardHunkBtn();
+        discardHunkBtn.addEventListener("mouseenter",(e)=>{
+            discardHunkBtn.classList.add('by-discard');
+        })
+        discardHunkBtn.addEventListener("mouseleave",(e)=>{
+            discardHunkBtn.classList.remove('by-discard');
+            setTimeout(() => {
+                if(!discardHunkBtn.classList.contains('by-discard') && !discardHunkBtn.classList.contains('by-stage')){
+                    discardHunkBtn.classList.add('d-none');
+                }
+            }, 1000);
+        })
     }
 
     private async copyStagedContent(){
