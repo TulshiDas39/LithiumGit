@@ -74,13 +74,7 @@ export class ChangeEditor extends TextEditor{
                         text = '';
                     }
                     actionUi = `<span class="flex-grow-1 hunk-actions d-flex justify-content-end" data-iline="${i}">
-                        <span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span>
-                        <span class="discard-hunk-container d-none position-relative">
-                            <span class="position-absolute top-0 start-0 d-flex" title="discard this change">
-                                <span class="ps-1"></span> 
-                                <span class="discard-hunk bg-danger px-1" title="discard this change" data-iline="${i}">${undoIcon}</span>
-                            </span>
-                        </span>
+                        <span class="bg-success px-1 hover stage-hunk" title="stage this change">+</span>                    
                     </span>`;
                 }
                 isChange = true;
