@@ -165,11 +165,6 @@ export abstract class TextEditor {
         return currentPanel?.querySelector(".line_numbers") as HTMLElement | null;
     }
 
-    protected getHunkActionContainer(){
-        const currentPanel = document.querySelector(this._containerSelector)?.closest(".current");
-        return currentPanel?.querySelector(".diff-action-container") as HTMLElement | null;
-    }
-
     protected renderLineNumbers(){
         const lineNumbers = this.getLineNumberContainer();
         if(!lineNumbers) return;

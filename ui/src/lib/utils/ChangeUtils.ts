@@ -101,19 +101,13 @@ export class ChangeUtils{
 
     private HandleScrolling(){
         if(this.previousLines !== null || this.currentLines !== null){
-            
             const previousChangeScroll = document.querySelector(`#${this.containerId} .difference .previous .content-container`);
             this.previousScrollableContainer = previousChangeScroll as HTMLElement;
-            
             const currentChangeScroll = document.querySelector(`#${this.containerId} .difference .current .content-container`)!;
             this.currentScrollableContainer = currentChangeScroll as HTMLElement;
-            
             const currentLineNumberScroll = document.querySelector(`#${this.containerId} .difference .current .line_numbers`);        
             const previousLineNumberScroll = document.querySelector(`#${this.containerId} .difference .previous .line_numbers`);
-
-            const actionContainer = document.querySelector(`#${this.containerId} .difference .current .diff-action-container`);
-
-            const group1 = [currentChangeScroll,currentLineNumberScroll,actionContainer,previousLineNumberScroll];
+            const group1 = [currentChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
             const group2 = [previousChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
             if(this.scrollHandler1){
                 previousChangeScroll?.removeEventListener("scroll",this.scrollHandler1);
