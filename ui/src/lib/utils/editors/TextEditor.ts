@@ -72,6 +72,7 @@ export abstract class TextEditor {
     }
 
     protected handleTransaction (transaction: Transaction){
+        console.log("from:", transaction.selection.from, "to:", transaction.selection.to);
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);        
         if(transaction.docChanged){         
@@ -543,35 +544,24 @@ export abstract class TextEditor {
     }
 
     protected getSelection(change:IChange){
-        console.log("getSelection change",change);
         const { state } = this._editView;
         const doc = state.doc;
         let from = 0;
         let to = 0;
 
-        if(change.endOffset > 0){
-            change.endOffset--;
-        }else if(change.endlineIndex > 0){
-            change.endlineIndex--;
-            change.endOffset = Number.MAX_SAFE_INTEGER;
-        }
-
         let i = 0;
         for (i = 0; i < change.startlineIndex; i++) {
             from += doc.child(i).nodeSize;
-            console.log("from", from, doc.child(i).textContent);
         }
 
         to = from;
-        from = from + 1 + Math.min(change.startOffset, state.doc.child(change.startlineIndex).content.size);
+        from = from + Math.min(change.startOffset, state.doc.child(change.startlineIndex).content.size)+1;
         let j = 0;
         for (j = i; j < change.endlineIndex; j++) {
             to += doc.child(j).nodeSize;
-            console.log("to", to, doc.child(j).textContent);
         }
 
-        to = to + 1 + Math.min(change.endOffset, doc.child(change.endlineIndex).content.size);
-        
+        to = to + Math.min(change.endOffset, doc.child(change.endlineIndex).content.size) + 1;
         return { from, to };
     }
 

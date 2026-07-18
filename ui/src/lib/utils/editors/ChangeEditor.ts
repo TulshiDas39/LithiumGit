@@ -92,8 +92,10 @@ export class ChangeEditor extends TextEditor{
         lineNumbers.innerHTML = lineElems.join("");
         document.querySelectorAll<HTMLElement>(".stage-hunk").forEach((elem:HTMLElement)=>{
             elem.addEventListener("click",(e)=>{
+                const discardBtn = this.discardHunkBtn();
+                discardBtn.classList.remove('by-stage');
+                discardBtn.classList.add('d-none');
                 const ilineIndex = Number(elem.parentElement?.getAttribute('data-iline'));
-                console.log("clicked ilineIndex",ilineIndex);
                 this.stageHunk(ilineIndex);
             })
             elem.addEventListener("mouseenter",(e)=>{
@@ -118,13 +120,6 @@ export class ChangeEditor extends TextEditor{
                         this.discardHunkBtn().classList.add('d-none');
                     }
                 }, 1000);
-            })
-        })
-        //discard-hunk
-        document.querySelectorAll<HTMLElement>(".discard-hunk").forEach((elem:HTMLElement)=>{
-            elem.addEventListener("click",(_e)=>{
-                const ilineIndex = Number(elem.getAttribute('data-iline'));
-                this.discardHunk(ilineIndex);
             })
         })
     }
@@ -307,6 +302,14 @@ export class ChangeEditor extends TextEditor{
 
     private handleDiscardHunk(){
         const discardHunkBtn = this.discardHunkBtn();
+        discardHunkBtn.addEventListener("click",(_e)=>{
+            discardHunkBtn.classList.remove('by-discard');
+            discardHunkBtn.classList.add('d-none');
+            if(discardHunkBtn.hasAttribute('data-iline')){
+                const ilineIndex = Number(discardHunkBtn.getAttribute('data-iline'));
+                this.discardHunk(ilineIndex);
+            }
+        })
         discardHunkBtn.addEventListener("mouseenter",(e)=>{
             discardHunkBtn.classList.add('by-discard');
         })
