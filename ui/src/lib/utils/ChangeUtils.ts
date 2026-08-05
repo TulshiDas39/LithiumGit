@@ -40,8 +40,7 @@ export class ChangeUtils{
         // ReduxUtils.resetChangeNavigation();
     }
 
-    updatePreviousChanges(lines:ILine[]){
-        this.previousLines = lines;
+    updatePreviousChanges(){
         const container = document.querySelector(`#${this.containerId} .difference .previous`);
         const innerHtml = ReactDOMServer.renderToStaticMarkup(DiffView({changeType:"previous",lines:this.previousLines}));
         container!.innerHTML = innerHtml;

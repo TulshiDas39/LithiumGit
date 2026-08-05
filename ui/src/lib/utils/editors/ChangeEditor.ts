@@ -25,7 +25,6 @@ enum TransMetaData{
 
 export class ChangeEditor extends TextEditor{    
     private _ilines:ILine[] = [];
-    private _prevIlines:ILine[] = [];
     private _saveBtn:HTMLElement | null = null;
     private _file:IFile = null!;    
     private _tempStagedFilePath = '';    
@@ -127,12 +126,13 @@ export class ChangeEditor extends TextEditor{
     private async stageHunk(ilineIndex:number){
         const preHunk:ILine[] = [];
         const currentHunk:ILine[] = [];
+        const preLines = this._changeUitl.previousLines;
         for(let i = ilineIndex;i<this._ilines.length;i++){
             let line = this._ilines[i];
             if(line.text !== undefined && !line.hightLightBackground)
                 break;
             currentHunk.push(line);
-            preHunk.push(this._prevIlines[i]);
+            preHunk.push(preLines[i]);
         }
 
         const currentHunkTexts = currentHunk.filter(l => l.text !== undefined);
@@ -142,7 +142,7 @@ export class ChangeEditor extends TextEditor{
             text:text,            
         } as IChange;
         
-        const preTrLineCount = this._prevIlines.slice(0,ilineIndex).filter(l => l.text === undefined).length;        
+        const preTrLineCount = preLines.slice(0,ilineIndex).filter(l => l.text === undefined).length;        
 
         if(ilineIndex - preTrLineCount > 0){
             change.startlineIndex = ilineIndex - preTrLineCount - 1;
@@ -184,12 +184,13 @@ export class ChangeEditor extends TextEditor{
     private async discardHunk(ilineIndex:number){
         const preHunk:ILine[] = [];
         const currentHunk:ILine[] = [];
+        const preLines = this._changeUitl.previousLines;
         for(let i = ilineIndex;i<this._ilines.length;i++){
             let line = this._ilines[i];
             if(line.text !== undefined && !line.hightLightBackground)
                 break;
             currentHunk.push(line);
-            preHunk.push(this._prevIlines[i]);
+            preHunk.push(preLines[i]);
         }
         const currentHunkTexts = currentHunk.filter(l => l.text !== undefined);
         const preHunkTexts = preHunk.filter(l => l.text !== undefined);
@@ -232,7 +233,7 @@ export class ChangeEditor extends TextEditor{
         const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
         this._ilines = uiLines.currentLines;
         this._changeUitl.previousLines = uiLines.previousLines;
-        this._changeUitl.updatePreviousChanges(uiLines.previousLines);
+        this._changeUitl.updatePreviousChanges();
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
         //build decorations again with new ilines
         this.renderLineNumbers();
@@ -283,7 +284,7 @@ export class ChangeEditor extends TextEditor{
         const diff = await IpcUtils.getDiff(options);
         let lineConfigs = DiffUtils.GetUiLines(diff,this._lines);
         this._ilines = lineConfigs.currentLines;
-        this._prevIlines = lineConfigs.previousLines;
+        this._changeUitl.previousLines = lineConfigs.previousLines;
         return true;
     }
 
@@ -295,7 +296,7 @@ export class ChangeEditor extends TextEditor{
         this._changeUitl.previousLines = [];
         this._changeUitl.showChanges();
         const r = await this.render(filePath);
-        this._changeUitl.updatePreviousChanges(this._prevIlines);
+        this._changeUitl.updatePreviousChanges();
         this.handleDiscardHunk();
         return r;
     }
