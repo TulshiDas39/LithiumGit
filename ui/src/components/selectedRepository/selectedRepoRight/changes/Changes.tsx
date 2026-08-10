@@ -51,8 +51,12 @@ function ChangesComponent() {
         const existInStatus = changedFiles.some(x=> x.path === store.selectedFile?.path 
             && x.changeType === store.selectedFile.changeType 
             && x.changeGroup === store.selectedFile.changeGroup);
-        if(!existInStatus)
-            dispatch(ActionChanges.updateData({selectedFile:undefined}));        
+        if(!existInStatus){
+            ChangesData.changeEditor?.destroy();
+            ChangesData.changeUtils?.ClearView();
+            ChangesData.changeEditor = undefined!;
+            dispatch(ActionChanges.updateData({selectedFile:undefined}));            
+        }
     },[store.status,store.selectedFile])
 
     const getAdjustedSize = (adjustedX: number) => {
