@@ -146,7 +146,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     const displayChanges = async()=>{
         return new Promise<boolean>((res)=>{
             clearExistingChangeView();
-            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){                
+            ChangesData.changeUtils.file = store.selectedFile;
+            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){            
                 if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){      
                     const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
                     ChangesData.changeEditor = editor;
@@ -202,14 +203,11 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
             if(r.result){                
                 showPreview(store.selectedFile!);
             }else{
-                displayChanges().then(()=>{
+                displayChanges().then(()=>{                    
                     dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
                 })
             }
         })
-                
-        ChangesData.changeUtils.file = store.selectedFile;
-                
     },[store.selectedFile]);
 
     useEffect(()=>{
