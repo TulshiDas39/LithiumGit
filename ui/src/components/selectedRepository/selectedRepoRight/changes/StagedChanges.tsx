@@ -94,6 +94,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const showChanges=()=>{                    
         return new Promise<boolean>((resolve)=>{  
             clearExistingChangeView();
+            ChangesData.changeUtils.file = store.selectedFile;
             if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
                 IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
                     const lines = StringUtils.getLines(res.result!);
@@ -145,8 +146,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     ChangesData.changeUtils.showChanges();
                     resolve(true);
                 })
-            }
-            ChangesData.changeUtils.file = store.selectedFile;
+            }            
         })
     }
 
