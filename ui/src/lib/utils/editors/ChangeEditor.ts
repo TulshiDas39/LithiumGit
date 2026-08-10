@@ -234,7 +234,6 @@ export class ChangeEditor extends TextEditor{
         this._prevIlines = uiLines.previousLines;
         this._changeUitl.updatePreviousChanges(this._prevIlines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
-        //build decorations again with new ilines
         this.renderLineNumbers();
         const tr = this._editView.state.tr;
         tr.setMeta(TransMetaData.DecorationChanged,true);        
@@ -250,6 +249,7 @@ export class ChangeEditor extends TextEditor{
             this._saveBtn?.classList.add("d-none");
             ModalData.appToast.message = "Saved successfully.";
             ReduxUtils.dispatch(ActionModals.showToast());
+            GitUtils.getStatus();
         }else{
             ModalData.appToast.message = "Failed to save changes.";
             ReduxUtils.dispatch(ActionModals.showToast());
