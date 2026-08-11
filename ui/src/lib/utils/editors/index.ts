@@ -1,4 +1,5 @@
 export * from './ChangeEditor'
 export * from './StagedEditor'
+export * from './ConflictResolutionEditor'
 export * from './TextEditor'
 export * from './PlainTextEditor'

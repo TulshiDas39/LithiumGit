@@ -4,8 +4,9 @@ import { shallowEqual, useDispatch } from "react-redux"
 import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
-import { ActionChanges, ActionConflict } from "../../../../store"
+import { ActionChanges, ActionConflict, ActionModals } from "../../../../store"
 import { ModalData } from "../../../modals/ModalData"
+import { ConflictResolutionEditor } from "../../../../lib/utils/editors"
 
 interface IState{
     lastUpdated:string;
@@ -26,6 +27,7 @@ function ConflictEditorComponent(){
         dispatch(ActionConflict.updateData({resolvedConflict:count}));
     }
     const refData = useRef({isMounted:false,lastUpdated:""});
+    const resolutionEditor = useRef<ConflictResolutionEditor|undefined>(undefined);
     const hightDisplacementRef = useRef(0);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
@@ -50,11 +52,22 @@ function ConflictEditorComponent(){
             const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
             ConflictUtils.incomingLines = lineConfig.previousLines;
             ConflictUtils.currentLines = lineConfig.currentLines;
-            ConflictUtils.ShowEditor();                                    
+            //the bottom panel is rendered by ConflictResolutionEditor instead of the static markup
+            ConflictUtils.ShowEditor(false);
             ConflictUtils.FocusHightlightedLine(1);
             dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
             const totalConflict = ConflictUtils.TotalConflict
             dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict}));
+
+            resolutionEditor.current?.destroy();
+            const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
+            resolutionEditor.current = editor;
+            editor.renderFile(store.selectedFile!).then(success=>{
+                if(!success){
+                    ModalData.appToast.message = "There was an error reading the content.";
+                    dispatch(ActionModals.showToast());
+                }
+            });
         })
     },[store.selectedFile,state.lastUpdated])
 
@@ -89,6 +102,11 @@ function ConflictEditorComponent(){
 
     useEffect(()=>{
         refData.current.isMounted = true;
+        return ()=>{
+            refData.current.isMounted = false;
+            resolutionEditor.current?.destroy();
+            resolutionEditor.current = undefined;
+        }
     },[])
 
     if(!store.selectedFile)

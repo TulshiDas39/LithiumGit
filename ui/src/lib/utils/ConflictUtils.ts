@@ -141,7 +141,8 @@ export class ConflictUtils{
         return value;
     }
 
-    static ShowEditor(){
+    //pass renderBottomPanel=false when ConflictResolutionEditor owns the bottom panel
+    static ShowEditor(renderBottomPanel=true){
         if(!ConflictUtils.currentLines || !ConflictUtils.incomingLines)
             return;
 
@@ -161,13 +162,13 @@ export class ConflictUtils{
             previousLineDivWidth:ConflictUtils.previousLineDivWidth,
         }));
 
-        const editorBottomHtml = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
-            currentLines:ConflictUtils.currentLines,
-            previousLines:ConflictUtils.incomingLines,
-        }));
-
         topPanel.innerHTML = editorTopHtml;
-        bottomPanel.innerHTML = editorBottomHtml;
+        if(renderBottomPanel){
+            bottomPanel.innerHTML = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
+                currentLines:ConflictUtils.currentLines,
+                previousLines:ConflictUtils.incomingLines,
+            }));
+        }
 
         ConflictUtils.addEventHanlders();
         ConflictUtils.HandleScrolling();
@@ -223,7 +224,7 @@ export class ConflictUtils{
             ConflictUtils.hoverTopPanel = true;
             ConflictUtils.hoverBottomPanel = false;
         })
-        conflictBottom.addEventListener("mouseenter",()=>{
+        conflictBottom?.addEventListener("mouseenter",()=>{
             ConflictUtils.hoverTopPanel = false;
             ConflictUtils.hoverBottomPanel = true;
         })
@@ -393,8 +394,19 @@ export class ConflictUtils{
             newAction = true;
         }
         
-        const bottomPanel = ConflictUtils.bottomPanelElement;        
-            
+        const bottomPanel = ConflictUtils.bottomPanelElement;
+
+        if(!bottomPanel){
+            //ConflictResolutionEditor owns the bottom panel, so only the action bookkeeping applies here
+            const selected = ConflictUtils.getCheckboxesByConflict(conflictNo);
+            action.taken = [];
+            if(selected.incomingCheckBox.checked)
+                action.taken.push(EnumConflictSide.Incoming);
+            if(selected.currentCheckBoxe.checked)
+                action.taken.push(EnumConflictSide.Current);
+            return;
+        }
+
         const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
@@ -552,8 +564,8 @@ export class ConflictUtils{
     private static HandleScrolling(){
         const topPanel = ConflictUtils.topPanelElement;
 
-        const bottomPanel = ConflictUtils.bottomPanelElement.querySelector(".content") as HTMLElement;
-        const bottomPanelLine = ConflictUtils.bottomPanelElement.querySelector(".line-container") as HTMLElement;
+        const bottomPanel = ConflictUtils.bottomPanelElement?.querySelector(".content") as HTMLElement;
+        const bottomPanelLine = ConflictUtils.bottomPanelElement?.querySelector(".line-container") as HTMLElement;
                 
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
@@ -561,10 +573,13 @@ export class ConflictUtils{
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
         
-        if(!bottomPanel || !bottomPanelLine || !topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
+        if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
-        
-        const group = [topLeftPanel, topRightPanel,bottomPanel,topRightNumberPanel,topRightNumberPanel,topLeftNumberPanel,bottomPanelLine];        
+
+        //the bottom panel is absent when ConflictResolutionEditor owns it, the top panel still syncs on its own
+        const group = [topLeftPanel, topRightPanel,topRightNumberPanel,topLeftNumberPanel];
+        if(bottomPanel) group.push(bottomPanel);
+        if(bottomPanelLine) group.push(bottomPanelLine);
 
         let handler = (e:Event)=>{
             console.log("handling scroll.");            
@@ -580,7 +595,7 @@ export class ConflictUtils{
     
         topLeftPanel.addEventListener("scroll",handler);
         topRightPanel.addEventListener("scroll",handler);
-        bottomPanel.addEventListener("scroll",handler);
+        bottomPanel?.addEventListener("scroll",handler);
     }
 
     private static SetHeighlightedLines(){
