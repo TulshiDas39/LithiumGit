@@ -1,7 +1,7 @@
 import ReactDOMServer from "react-dom/server";
 import { ILine } from "../interfaces";
 import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
-import { EnumChangeGroup, IFile, IFileProps } from "common_library";
+import { IFile, IFileProps } from "common_library";
 import { DifferencePreview } from "../../components/selectedRepository/selectedRepoRight/changes/DifferencePreview";
 import { DiffView } from "../../components/selectedRepository/selectedRepoRight/changes/DiffView";
 
@@ -77,9 +77,7 @@ export class ChangeUtils{
     private SetHeighlightedLines(){
         this.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;
-        let ilines = this.currentLines;
-        if(this.file?.changeGroup === EnumChangeGroup.UN_STAGED)
-            ilines = this.previousLines;
+        let ilines = this.currentLines?.length ? this.currentLines : this.previousLines;
         if(!ilines?.length)
             return;
         const lenght = ilines?.length;
