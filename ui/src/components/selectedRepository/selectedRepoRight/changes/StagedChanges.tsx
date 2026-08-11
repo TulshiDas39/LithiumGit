@@ -5,10 +5,12 @@ import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState 
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionChanges } from "../../../../store";
+import { ActionChanges, ActionModals } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { ActionUI } from "../../../../store/slices/UiSlice";
+import { StagedEditor } from "../../../../lib/utils/editors";
+import { ModalData } from "../../../modals/ModalData";
 
 interface ISingleFileProps{
     item:IFile
@@ -55,8 +57,10 @@ interface IStagedChangesProps{
 }
 
 interface IState{
-    // isStagedChangesExpanded:boolean;    
+    // isStagedChangesExpanded:boolean;
 }
+
+const editorContainer = "#"+EnumHtmlIds.diffview_container+" .current .content";
 
 function StagedChangesComponent(props:IStagedChangesProps){
     const [state,setState] = useMultiState<IState>({});
@@ -87,15 +91,27 @@ function StagedChangesComponent(props:IStagedChangesProps){
     }
 
     const clearExistingChangeView=()=>{
-        ChangesData.changeEditor?.destroy();
-        ChangesData.changeEditor = null!;        
+        ChangesData.stagedEditor?.destroy();
+        ChangesData.stagedEditor = null!;
     }
 
-    const showChanges=()=>{                    
-        return new Promise<boolean>((resolve)=>{  
+    const showChanges=()=>{
+        return new Promise<boolean>((resolve)=>{
             clearExistingChangeView();
             ChangesData.changeUtils.file = store.selectedFile;
             if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    const editor = new StagedEditor(editorContainer,ChangesData.changeUtils);
+                    ChangesData.stagedEditor = editor;
+                    editor.renderILines(store.selectedFile!).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }
+                        resolve(true);
+                    });
+                    return;
+                }
                 IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
                     const lines = StringUtils.getLines(res.result!);
                     const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
@@ -104,17 +120,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         return;
                     }
                     refData.current.fileContentAfterChange = lines;
-                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                        const options =  ["--staged", "--diff-algorithm=minimal",store.selectedFile!.path];            
-                        IpcUtils.getDiff(options).then(res=>{
-                            let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
-                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
-                            ChangesData.changeUtils.showChanges();                            
-                            resolve(true);
-                        })
-                    }
-                    else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
+                    if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
                         const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
                         IpcUtils.getDiff(options).then(res=>{
                             let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
@@ -205,6 +211,10 @@ function StagedChangesComponent(props:IStagedChangesProps){
             return;
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;
+        if(store.selectedFile.changeType === EnumChangeType.MODIFIED && ChangesData.stagedEditor){
+            ChangesData.stagedEditor.checkForFileUpdate();
+            return;
+        }
         showChanges().then(()=>{
             dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
             dispatch(ActionChanges.increamentStepRefreshVersion());

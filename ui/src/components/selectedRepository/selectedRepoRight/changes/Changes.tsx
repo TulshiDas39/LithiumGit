@@ -53,9 +53,11 @@ function ChangesComponent() {
             && x.changeGroup === store.selectedFile.changeGroup);
         if(!existInStatus){
             ChangesData.changeEditor?.destroy();
+            ChangesData.stagedEditor?.destroy();
             ChangesData.changeUtils?.ClearView();
             ChangesData.changeEditor = undefined!;
-            dispatch(ActionChanges.updateData({selectedFile:undefined}));            
+            ChangesData.stagedEditor = undefined!;
+            dispatch(ActionChanges.updateData({selectedFile:undefined}));
         }
     },[store.status,store.selectedFile])
 
@@ -86,6 +88,7 @@ function ChangesComponent() {
         return ()=>{
             dispatch(ActionChanges.updateData({currentStep:0}));
             ChangesData.changeEditor?.destroy();
+            ChangesData.stagedEditor?.destroy();
         }
     },[])
 

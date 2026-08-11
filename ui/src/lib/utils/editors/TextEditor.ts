@@ -256,6 +256,10 @@ export abstract class TextEditor {
     }
 
 
+    protected isEditable(){
+        return true;
+    }
+
     protected getSchema(){
         return new Schema({
             nodes: {
@@ -427,6 +431,7 @@ export abstract class TextEditor {
         this._editView = new EditorView(document.querySelector(this._containerSelector)!, {
             state:this._editState,
             dispatchTransaction:(tr) => this.handleTransaction(tr),
+            editable: () => this.isEditable(),
             attributes: { spellcheck: "false", style: `width: fit-content; min-width: 100%;` },
             clipboardTextSerializer: (slice) => slice.content.textBetween(0, slice.content.size, this._lineFeedType),
             handlePaste: (view, event) => this.handlePaste(view, event),
