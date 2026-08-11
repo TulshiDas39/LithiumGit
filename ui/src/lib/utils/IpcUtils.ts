@@ -10,6 +10,9 @@ export class IpcUtils{
     static copyStagedContent(path: string, destinationPath: string) {
         return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
     }
+    static copyHeadContent(path: string, destinationPath: string) {
+        return IpcUtils.runGitCommand(RendererEvents.copyHeadContent,[path, destinationPath]);
+    }
     static trackFileChanges(filePath: string, changes: IChange[],encoding:string) {
         return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[filePath, changes, encoding]);
     }

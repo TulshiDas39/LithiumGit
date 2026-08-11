@@ -59,6 +59,7 @@ export class GitManager{
         this.addRemoveFromGitHandler();
         this.addCommitDetailsHandler();
         this.addCopyStagedContentHandler();
+        this.addCopyHeadContentHandler();
     }
 
     private addCopyStagedContentHandler() {
@@ -73,6 +74,20 @@ export class GitManager{
         //git cat-file blob :path/to/my_file.txt
         const stagedContent: Buffer = await git.binaryCatFile(['blob',`:${path}`]);
         return await new FileManager().writeBufferToFile(destinationPath, stagedContent);
+    }
+
+    private addCopyHeadContentHandler() {
+        ipcMain.handle(RendererEvents.copyHeadContent, async (e,repoPath: string, path: string, destinationPath: string) => {
+            const result = await this.copyHeadContent(path, destinationPath, repoPath);
+            return result;
+        });
+    }
+
+    private async copyHeadContent(path: string, destinationPath: string, repoPath: string) {
+        const git = this.getGitRunner(repoPath);
+        //git cat-file blob HEAD:path/to/my_file.txt
+        const headContent: Buffer = await git.binaryCatFile(['blob',`HEAD:${path}`]);
+        return await new FileManager().writeBufferToFile(destinationPath, headContent);
     }
 
 

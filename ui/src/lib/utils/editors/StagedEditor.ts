@@ -205,8 +205,8 @@ export class StagedEditor extends TextEditor{
         const fileExtension = StringUtils.GetFileExtension(this._file.path);
         const tempHeadFileName = `temp_head_${fileExtension}`;
         this._tempHeadFilePath = IpcUtils.joinPath(Data.appData.tempPath, tempHeadFileName);
-        const content = await IpcUtils.getGitShowResult([`HEAD:${this._file.path}`]);
-        return await IpcUtils.writeToFile(this._tempHeadFilePath, content);
+        const r = await IpcUtils.copyHeadContent(this._file.path, this._tempHeadFilePath);
+        return r;
     }
 
     private readonly buildDecorations = (doc: Node) => {
