@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.8",
+  "version": "1.0.9-alpha",
   "description": "A git gui application",
   "scripts": {
     "genereate_build_info": "node scripts/generateBuildInfo.js",
