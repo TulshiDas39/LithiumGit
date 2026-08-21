@@ -62,10 +62,10 @@ interface IState{
 
 const editorContainer = "#"+EnumHtmlIds.diffview_container+" .current .content";
 
-function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({});
+function StagedChangesComponent(props:IStagedChangesProps){    
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
+        modifiedSelectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
@@ -77,6 +77,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
         GitUtils.cancelGetStatus();
         dispatch(ActionUI.unstageItem(item.path));
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
+            if(store.modifiedSelectedFile?.path === item.path){
+                ChangesData.changeEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });
     }
@@ -86,6 +89,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
         GitUtils.cancelGetStatus();
         dispatch(ActionUI.unstageAll());
         IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
+            if(store.modifiedSelectedFile){
+                ChangesData.changeEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });        
     }

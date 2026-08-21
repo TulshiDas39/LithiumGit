@@ -57,6 +57,9 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         GitUtils.cancelGetStatus();
         dispatch(ActionUI.stageAll());
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
+            if(store.stagedSelectedFile){
+                ChangesData.stagedEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });        
     }
