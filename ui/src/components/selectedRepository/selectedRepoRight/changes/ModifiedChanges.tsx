@@ -27,6 +27,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
+        stagedSelectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
@@ -42,8 +43,11 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     const handleStage=(file:IFile)=>{
         GitUtils.cancelGetStatus();
-        dispatch(ActionUI.stageItem(file.path));
+        dispatch(ActionUI.stageItem(file.path));        
         IpcUtils.stageItems([file.path]).then(_=>{
+            if(store.stagedSelectedFile?.path === file.path){
+                ChangesData.stagedEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });
     }
