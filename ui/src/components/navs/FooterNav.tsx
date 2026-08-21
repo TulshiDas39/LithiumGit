@@ -4,7 +4,7 @@ import { useSelectorTyped } from "../../store/rootReducer";
 import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
-import { EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
+import { EnumChangeGroup, EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
 import { Data, DataUtils, EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
@@ -233,6 +233,7 @@ interface IEncodingSelectionState{
 function EncodingSelection(){
     const store = useSelectorTyped(state=>({
         encoding: state.ui.encoding,
+        encodingChangeDisabled: state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED,
         selectedTab:state.ui.selectedRepoTab,
     }),shallowEqual);
 
@@ -248,6 +249,8 @@ function EncodingSelection(){
     const refData = useRef({hoverTarget:false});
     
     const handleOptionClick = (encoding:string)=>{
+        if(store.encodingChangeDisabled)
+            return;
         if(encoding === store.encoding)
             return;
         ModalData.confirmationModal.message  = `Are you sure you want to switch encoding type to '${encoding}'?`;
@@ -282,6 +285,13 @@ function EncodingSelection(){
     
     if(!store.encoding || store.selectedTab !== EnumSelectedRepoTab.CHANGES)
         return null;
+
+    if(store.encodingChangeDisabled)
+        return <div className="px-1">
+                    <div className="cur-default px-1 d-flex align-items-center opacity-50" title={`${store.encoding} (encoding can not be changed for staged content)`}>
+                        <div className="overflow-ellipsis text-nowrap" style={{maxWidth:'50px'}}>{store.encoding.toUpperCase()}</div>
+                    </div>
+                </div>;
 
     return <div className="px-1">
                 <div ref={optionTarget} className="cur-default px-1  d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
