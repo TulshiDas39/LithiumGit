@@ -152,7 +152,7 @@ export class StagedEditor extends TextEditor{
     }
 
     private async updateDiff(){
-        const options = ["-c", "core.autocrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempHeadFilePath, this._tempFilePath];
+        const options = ["-c", "core.autocrlf=false", "-c", "core.safecrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempHeadFilePath, this._tempFilePath];
         const r = await IpcUtils.getRaw(options);
         const diffResult = r.result!;
         const contentLines = this.getContentLines();
