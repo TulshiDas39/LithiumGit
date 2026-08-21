@@ -72,7 +72,6 @@ export abstract class TextEditor {
     }
 
     protected handleTransaction (transaction: Transaction){
-        console.log("from:", transaction.selection.from, "to:", transaction.selection.to);
         let newState = this._editView.state.apply(transaction);
         this._editView.updateState(newState);        
         if(transaction.docChanged){         
