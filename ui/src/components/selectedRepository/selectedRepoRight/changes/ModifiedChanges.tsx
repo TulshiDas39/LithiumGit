@@ -211,7 +211,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 showPreview(store.selectedFile!);
             }else{
                 displayChanges().then(()=>{                    
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount,silentStepUpdate:false}));            
                 })
             }
         })

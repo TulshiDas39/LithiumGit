@@ -33,12 +33,11 @@ function ChangesComponent() {
     }),shallowEqual);
 
     const dispatch = useDispatch();
-    const changeUtils = ChangesData.changeUtils;
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
 
     useEffect(()=>{
-         dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
+         dispatch(ActionChanges.clearFileSelection());
     },[store.repoInfo?.path]);
 
     useEffect(()=>{
@@ -57,7 +56,7 @@ function ChangesComponent() {
             ChangesData.changeUtils?.ClearView();
             ChangesData.changeEditor = undefined!;
             ChangesData.stagedEditor = undefined!;
-            dispatch(ActionChanges.updateData({selectedFile:undefined}));
+            dispatch(ActionChanges.clearFileSelection());
         }
     },[store.status,store.selectedFile])
 

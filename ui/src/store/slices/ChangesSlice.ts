@@ -31,6 +31,12 @@ const slice = createSlice({
         increamentStepRefreshVersion(state){
             state.stepRefreshVersion += 1;
             state.silentStepUpdate = false;
+        },
+        clearFileSelection(state){
+            state.selectedFile = undefined;
+            state.currentStep = 0;
+            state.totalStep = 0;
+            state.silentStepUpdate = false;
         }
     }
 })

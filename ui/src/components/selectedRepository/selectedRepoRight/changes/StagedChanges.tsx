@@ -206,7 +206,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                 showPreview(store.selectedFile!);
             }else{
                 showChanges().then(()=>{
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount,silentStepUpdate:false}));            
                 })
             }
         })
