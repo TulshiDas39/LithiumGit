@@ -152,6 +152,7 @@ export const FooterNav = React.memo(FooterNavComponent);
 function CrlfSelectionComponent(){
     const store = useSelectorTyped(state=>({
         lfType: state.ui.lfType,
+        lfTypeChangeDisabled: state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED,
         selectedTab:state.ui.selectedRepoTab,
     }),shallowEqual);
 
@@ -160,6 +161,8 @@ function CrlfSelectionComponent(){
     const [state,setState] = useMultiState<{showOptions?:boolean}>({});
 
     const handleOptionClick = (type:EnumLinefeed)=>{
+        if(store.lfTypeChangeDisabled)
+            return;
         if(type === store.lfType)
             return;
         ModalData.confirmationModal.message  = `Are you sure you want to switch line feed type to '${type === EnumLinefeed.CRLF? "CRLF":"LF"}'?`;
@@ -189,6 +192,13 @@ function CrlfSelectionComponent(){
 
     if(!store.lfType|| store.selectedTab !== EnumSelectedRepoTab.CHANGES)
         return null;
+
+    if(store.lfTypeChangeDisabled)
+        return <div className="px-1">
+                    <div className="cur-default px-1 h-100 d-flex align-items-center" title={`${store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"} (line feed type can not be changed for staged content)`}>
+                        {store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"}
+                    </div>
+                </div>;
 
     return <div className="px-1">
                 <div ref={optionTarget} className="cur-default px-1 h-100 d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
@@ -288,7 +298,7 @@ function EncodingSelection(){
 
     if(store.encodingChangeDisabled)
         return <div className="px-1">
-                    <div className="cur-default px-1 d-flex align-items-center opacity-50" title={`${store.encoding} (encoding can not be changed for staged content)`}>
+                    <div className="cur-default px-1 d-flex align-items-center" title={`${store.encoding} (encoding can not be changed for staged content)`}>
                         <div className="overflow-ellipsis text-nowrap" style={{maxWidth:'50px'}}>{store.encoding.toUpperCase()}</div>
                     </div>
                 </div>;
