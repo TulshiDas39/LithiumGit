@@ -7,10 +7,12 @@ import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionUI } from "../../../store/slices/UiSlice";
-import { ActionModals } from "../../../store";
+import { ActionChanges, ActionConflict, ActionModals } from "../../../store";
 import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
+import { ConflictUtils } from "../ConflictUtils";
+import { ChangesData } from "../../data/ChangesData";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -26,19 +28,53 @@ export class ConflictResolutionEditor extends TextEditor{
     private _panelSelector = '';
     private _file:IFile = null!;
     private _scrollHandler?:(e:Event)=>void;
+    private _conflictUtils: ConflictUtils;
 
     constructor(panelSelector:string){
         super(`${panelSelector} .content`);
         this._panelSelector = panelSelector;
+        this._conflictUtils = new ConflictUtils();
+        this._conflictUtils.dispatchResolvedCount = count => {
+            ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
+        };
+        //the conflict navigator and the file list act on the same conflict session
+        ChangesData.conflictUtils = this._conflictUtils;
         this.saveHandler = success => this.onSave(success);
+    }
+
+    get conflictUtils(){
+        return this._conflictUtils;
     }
 
     //the conflicted file is edited in place, so the working tree copy is the source
     async renderFile(file:IFile){
         this._file = file;
+        this._conflictUtils.file = file;
         this.mountHost();
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, file.path);
-        return await this.render(filePath);
+        const success = await this.render(filePath);
+        if(!success)
+            return false;
+        this.showConflicts();
+        return true;
+    }
+
+    //the conflict lines feed the top panel, they are derived from the same content the editor displays
+    protected override async readFile(){
+        const succeeded = await super.readFile();
+        if(!succeeded) return false;
+        const lineConfig = this._conflictUtils.GetUiLinesOfConflict(this._lines);
+        this._conflictUtils.currentLines = lineConfig.currentLines;
+        this._conflictUtils.incomingLines = lineConfig.previousLines;
+        return true;
+    }
+
+    private showConflicts(){
+        //pass false, this editor owns the bottom panel
+        this._conflictUtils.ShowEditor(false);
+        this._conflictUtils.FocusHightlightedLine(1);
+        ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
+        ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict:this._conflictUtils.TotalConflict}));
     }
 
     private get panelElement(){
@@ -184,5 +220,6 @@ export class ConflictResolutionEditor extends TextEditor{
         super.destroy();
         const panel = this.panelElement;
         if(panel) panel.innerHTML = "";
+        this._conflictUtils.ClearView();
     }
 }

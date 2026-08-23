@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { ConflictUtils, ILine } from "../../../../lib";
+import { ILine } from "../../../../lib";
 
 interface ISingleConflictLineProps{
     className:string;
@@ -14,14 +14,15 @@ export function SingleConflictLine(props:ISingleConflictLineProps) {
 interface IProps{
     previousLines:ILine[];
     currentLines:ILine[];
+    editorWidth:number;
+    separator:string;
+    getEndingMarkerText:(conflictNo:number)=>string|undefined;
 }
 
 export function ConflictBottomPanel(props:IProps){
 
     const getElements=()=>{
-        const maxWithOfCurLines = ConflictUtils.CurrentEditorWidth;
-        const maxWithOfPreLines = ConflictUtils.IncomingEditorWidth;
-        const editorWidth = Math.max(maxWithOfCurLines,maxWithOfPreLines);
+        const editorWidth = props.editorWidth;
 
         const elems:JSX.Element[] = [];
         const lineNumbers:JSX.Element[] = [];
@@ -68,11 +69,11 @@ export function ConflictBottomPanel(props:IProps){
                 i--;
                 curLine = props.currentLines[i];
                 curElems.forEach(e => elems.push(e));
-                elems.push(<p key={Date.now()} style={{...paragraphStyles}} className={`marker conflict conflictNo_${curLine.conflictNo}`}>{ConflictUtils.Separator}</p>)
+                elems.push(<p key={Date.now()} style={{...paragraphStyles}} className={`marker conflict conflictNo_${curLine.conflictNo}`}>{props.separator}</p>)
                 lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`} >{line}</p>);
                 line++;
                 preElems.forEach(e => elems.push(e));
-                elems.push(<p key={Date.now()+1} className={`bg-previous-change-deep marker conflict conflictNo_${curLine.conflictNo}`} style={{...paragraphStyles}}>{ConflictUtils.GetEndingMarkerText(curLine.conflictNo!)?.text}
+                elems.push(<p key={Date.now()+1} className={`bg-previous-change-deep marker conflict conflictNo_${curLine.conflictNo}`} style={{...paragraphStyles}}>{props.getEndingMarkerText(curLine.conflictNo!)}
                     <span className="color-secondary noselect"> (Incoming Change)</span></p>)
                 lineNumbers.push(<p key={line} className={`lineNo conflict conflictNo_${curLine.conflictNo} noselect`}>{line}</p>);
                 line++;                    

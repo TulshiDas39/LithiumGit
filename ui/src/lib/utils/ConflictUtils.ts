@@ -9,58 +9,61 @@ import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
 
 export class ConflictUtils{
-    static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
-    static readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
-    static file?:IFile;
-    static currentLines:ILine[];
-    static incomingLines:ILine[];
-    private static heighlightedLineIndexes:number[]=[];
-    private static startingMarkers:{conflictNo:number;text:string}[] = [];
-    private static endingMarkers:{conflictNo:number;text:string}[] = [];
-    private static currentLineDivWidth = 0;
-    private static previousLineDivWidth = 0;
-    private static hoverTopPanel = false;
-    private static hoverBottomPanel = false;
-    private static actionsTaken:IActionTaken[] = [];
-    private static currentEditorWidth = 0;
-    private static incomingEditorWidth = 0;
-    private static topPanel?:HTMLDivElement;
-    private static bottomPanel?:HTMLDivElement;
+    readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
+    readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
+    file?:IFile;
+    currentLines:ILine[] = null!;
+    incomingLines:ILine[] = null!;
+    private heighlightedLineIndexes:number[]=[];
+    private startingMarkers:{conflictNo:number;text:string}[] = [];
+    private endingMarkers:{conflictNo:number;text:string}[] = [];
+    private currentLineDivWidth = 0;
+    private previousLineDivWidth = 0;
+    private hoverTopPanel = false;
+    private hoverBottomPanel = false;
+    private actionsTaken:IActionTaken[] = [];
+    private currentEditorWidth = 0;
+    private incomingEditorWidth = 0;
+    private topPanel?:HTMLDivElement;
+    private bottomPanel?:HTMLDivElement;
 
-    static get Actions(){
-        return ConflictUtils.actionsTaken;
+    get Actions(){
+        return this.actionsTaken;
     }
 
-    static get TotalConflict(){
-        const conflictNos = ConflictUtils.currentLines.filter(_=> !!_.conflictNo).map(_=>_.conflictNo!);
+    get TotalConflict(){
+        const conflictNos = this.currentLines.filter(_=> !!_.conflictNo).map(_=>_.conflictNo!);
         return NumUtils.max(conflictNos);
     }
-    static get Separator(){
+    get Separator(){
         return "=======";
     }
 
-    static get CurrentEditorWidth(){
-        return ConflictUtils.currentEditorWidth;
+    get CurrentEditorWidth(){
+        return this.currentEditorWidth;
     }
 
-    static get IncomingEditorWidth(){
-        return ConflictUtils.incomingEditorWidth;
+    get IncomingEditorWidth(){
+        return this.incomingEditorWidth;
     }
 
-    static GetEndingMarkerText(conflictNo:number){
-        return ConflictUtils.endingMarkers.find(_ => _.conflictNo === conflictNo);
+    GetEndingMarkerText(conflictNo:number){
+        return this.endingMarkers.find(_ => _.conflictNo === conflictNo);
     }
 
-    private static setEditorWidths(){
-        ConflictUtils.currentEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.currentLines.map(x=>x.text?x.text:""));
-        ConflictUtils.incomingEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.incomingLines.map(x=>x.text?x.text:""));
+    private setEditorWidths(){
+        this.currentEditorWidth = DiffUtils.getEditorWidth(this.currentLines.map(x=>x.text?x.text:""));
+        this.incomingEditorWidth = DiffUtils.getEditorWidth(this.incomingLines.map(x=>x.text?x.text:""));
     }
-    
-    static GetUiLinesOfConflict(contentLines: string[]) {
+
+    GetUiLinesOfConflict(contentLines: string[]) {
         const currentMarker = "<<<<<<<";
         const endingMarker = ">>>>>>>";
-        
-    
+
+        //the markers are re-collected on every read, so drop the ones of the previous read
+        this.startingMarkers = [];
+        this.endingMarkers = [];
+
         const currentLines:ILine[] = [];
         const previousLines:ILine[] = [];
         let conflictNo = 0;
@@ -71,10 +74,10 @@ export class ConflictUtils{
                 conflictNo++;
                 currentChangeDetected = true;
                 incomingChangeDetected = false;
-                ConflictUtils.startingMarkers.push({conflictNo,text:contentLine});
+                this.startingMarkers.push({conflictNo,text:contentLine});
                 continue;
             }
-            if(contentLine === ConflictUtils.Separator){
+            if(contentLine === this.Separator){
                 currentChangeDetected = false;
                 incomingChangeDetected = true;
                 continue;
@@ -82,13 +85,13 @@ export class ConflictUtils{
             if(contentLine.startsWith(endingMarker)){
                 currentChangeDetected = false;
                 incomingChangeDetected = false;
-                ConflictUtils.endingMarkers.push({conflictNo,text:contentLine});
+                this.endingMarkers.push({conflictNo,text:contentLine});
                 while(currentLines.length > previousLines.length){
                     previousLines.push({textHightlightIndex:[],conflictNo});
                 }
                 while(currentLines.length < previousLines.length){
                     currentLines.push({textHightlightIndex:[],conflictNo});
-                }                
+                }
                 continue;
             }
             if(currentChangeDetected){
@@ -116,223 +119,226 @@ export class ConflictUtils{
             currentLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
-            })            
+            })
         }
         return {currentLines,previousLines};
     }
 
-    static resetData(){
-        ConflictUtils.hoverBottomPanel = false;
-        ConflictUtils.hoverTopPanel = false;
-        ConflictUtils.actionsTaken = [];        
+    resetData(){
+        this.hoverBottomPanel = false;
+        this.hoverTopPanel = false;
+        this.actionsTaken = [];
     }
 
-    private static initialiseData(){
-        ConflictUtils.resetData();
-        ConflictUtils.setEditorWidths();
-        ConflictUtils.topPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.topPanelId}`)!;
-        ConflictUtils.bottomPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.bottomPanelId}`)!;
-        ConflictUtils.acceptAllCurrentCheckBox.checked = false;
-        ConflictUtils.acceptAllIncomingCheckBox.checked = false;
+    private initialiseData(){
+        this.resetData();
+        this.setEditorWidths();
+        this.topPanel = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
+        this.bottomPanel = document.querySelector<HTMLDivElement>(`#${this.bottomPanelId}`)!;
+        this.acceptAllCurrentCheckBox.checked = false;
+        this.acceptAllIncomingCheckBox.checked = false;
     }
 
-    private static getConflictNo(id:string){
+    private getConflictNo(id:string){
         const value = UiUtils.resolveValueFromId(id);
         return value;
     }
 
     //pass renderBottomPanel=false when ConflictResolutionEditor owns the bottom panel
-    static ShowEditor(renderBottomPanel=true){
-        if(!ConflictUtils.currentLines || !ConflictUtils.incomingLines)
+    ShowEditor(renderBottomPanel=true){
+        if(!this.currentLines || !this.incomingLines)
             return;
 
-        const topPanel = document.getElementById(`${ConflictUtils.topPanelId}`)!;
-        const bottomPanel = document.getElementById(`${ConflictUtils.bottomPanelId}`)!;              
+        const topPanel = document.getElementById(`${this.topPanelId}`)!;
+        const bottomPanel = document.getElementById(`${this.bottomPanelId}`)!;
 
         if(!topPanel || !bottomPanel)
             return;
-        ConflictUtils.initialiseData();
-        ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-        ConflictUtils.previousLineDivWidth = ((ConflictUtils.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+        this.initialiseData();
+        this.currentLineDivWidth = ((this.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+        this.previousLineDivWidth = ((this.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
 
         const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
-            currentLines:ConflictUtils.currentLines,
-            currentLineDivWidth: ConflictUtils.currentLineDivWidth,
-            previousLines:ConflictUtils.incomingLines,
-            previousLineDivWidth:ConflictUtils.previousLineDivWidth,
+            currentLines:this.currentLines,
+            currentLineDivWidth: this.currentLineDivWidth,
+            previousLines:this.incomingLines,
+            previousLineDivWidth:this.previousLineDivWidth,
         }));
 
         topPanel.innerHTML = editorTopHtml;
         if(renderBottomPanel){
             bottomPanel.innerHTML = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
-                currentLines:ConflictUtils.currentLines,
-                previousLines:ConflictUtils.incomingLines,
+                currentLines:this.currentLines,
+                previousLines:this.incomingLines,
+                editorWidth:Math.max(this.CurrentEditorWidth,this.IncomingEditorWidth),
+                separator:this.Separator,
+                getEndingMarkerText:conflictNo => this.GetEndingMarkerText(conflictNo)?.text,
             }));
         }
 
-        ConflictUtils.addEventHanlders();
-        ConflictUtils.HandleScrolling();
-        ConflictUtils.purgeEditorUi();
+        this.addEventHanlders();
+        this.HandleScrolling();
+        this.purgeEditorUi();
 
-        ConflictUtils.SetHeighlightedLines();
+        this.SetHeighlightedLines();
     }
 
-    private static get topPanelElement(){
+    private get topPanelElement(){
         const conflictTop = document.querySelector(".conflict-diff") as HTMLDivElement;
         return conflictTop;
     }
 
-    private static get bottomPanelElement(){
+    private get bottomPanelElement(){
         const conflictBottom = document.querySelector(".conflict-bottom") as HTMLDivElement;
         return conflictBottom;
     }
 
-    private static get incomingCheckBoxes(){
+    private get incomingCheckBoxes(){
         const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .previous input");
         return checkboxes;
     }
 
-    private static get currentCheckBoxes(){
+    private get currentCheckBoxes(){
         const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .current input");
         return checkboxes;
     }
 
-    private static get acceptAllIncomingCheckBox(){
+    private get acceptAllIncomingCheckBox(){
         return document.querySelector(`#${EnumHtmlIds.accept_all_incoming}`) as HTMLInputElement;
     }
 
-    private static get acceptAllCurrentCheckBox(){
+    private get acceptAllCurrentCheckBox(){
         return document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
     }
 
-    private static get acceptIncomingElems(){
+    private get acceptIncomingElems(){
         return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
     }
 
-    private static get acceptCurrentElems(){
+    private get acceptCurrentElems(){
         return document.querySelectorAll<HTMLSpanElement>(`.accept_current`);
     }
 
-    private static get acceptBothElems(){
+    private get acceptBothElems(){
         return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
     }
 
-    private static addEventHanlders(){
-        const conflictTop = ConflictUtils.topPanelElement;
-        const conflictBottom = ConflictUtils.bottomPanelElement;
+    private addEventHanlders(){
+        const conflictTop = this.topPanelElement;
+        const conflictBottom = this.bottomPanelElement;
         conflictTop.addEventListener("mouseenter",()=>{
-            ConflictUtils.hoverTopPanel = true;
-            ConflictUtils.hoverBottomPanel = false;
+            this.hoverTopPanel = true;
+            this.hoverBottomPanel = false;
         })
         conflictBottom?.addEventListener("mouseenter",()=>{
-            ConflictUtils.hoverTopPanel = false;
-            ConflictUtils.hoverBottomPanel = true;
+            this.hoverTopPanel = false;
+            this.hoverBottomPanel = true;
         })
-        const acceptAllIncomingCheck = ConflictUtils.acceptAllIncomingCheckBox;
+        const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
         acceptAllIncomingCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllIncomingCheck.checked;
-            const checkboxes = ConflictUtils.incomingCheckBoxes;
+            const checkboxes = this.incomingCheckBoxes;
             checkboxes.forEach(elem => {
                 if(elem.checked !== checked){
                     elem.checked = checked;
                     const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    ConflictUtils.updateConflictState(conflictNo);
+                    this.updateConflictState(conflictNo);
                 }
             });
         })
 
-        const acceptAllCurrentCheck = ConflictUtils.acceptAllCurrentCheckBox;
+        const acceptAllCurrentCheck = this.acceptAllCurrentCheckBox;
         acceptAllCurrentCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllCurrentCheck.checked;
-            const checkboxes = ConflictUtils.currentCheckBoxes;
+            const checkboxes = this.currentCheckBoxes;
             checkboxes.forEach(elem => {
                 if(elem.checked !== checked){
                     elem.checked = checked;
                     const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    ConflictUtils.updateConflictState(conflictNo);
+                    this.updateConflictState(conflictNo);
                 }
             });
         })
 
-        const incomingCheckBoxes = ConflictUtils.incomingCheckBoxes;
+        const incomingCheckBoxes = this.incomingCheckBoxes;
         incomingCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
-                ConflictUtils.updateTopLabelIncomingCheckboxState();
+                this.updateTopLabelIncomingCheckboxState();
                 const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.updateConflictState(conflictNo);
+                this.updateConflictState(conflictNo);
             })
         })
 
-        const currentCheckBoxes = ConflictUtils.currentCheckBoxes;
+        const currentCheckBoxes = this.currentCheckBoxes;
         currentCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
-                ConflictUtils.updateTopLeveCurrentCheckboxState();
+                this.updateTopLeveCurrentCheckboxState();
                 const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.updateConflictState(conflictNo);
+                this.updateConflictState(conflictNo);
             })
         })
 
-        ConflictUtils.acceptIncomingElems.forEach(elem=>{
+        this.acceptIncomingElems.forEach(elem=>{
             elem.addEventListener("click",()=>{
                 const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptIncoming(conflictNo);
+                this.handleAcceptIncoming(conflictNo);
             })
         })
 
-        ConflictUtils.acceptCurrentElems.forEach(elem=>{
+        this.acceptCurrentElems.forEach(elem=>{
             elem.addEventListener("click",()=>{
                 const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptCurrent(conflictNo);
+                this.handleAcceptCurrent(conflictNo);
             })
         })
 
-        ConflictUtils.acceptBothElems.forEach(elem=>{
+        this.acceptBothElems.forEach(elem=>{
             elem.addEventListener("click",()=>{
                 const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptCurrent(conflictNo);
-                ConflictUtils.handleAcceptIncoming(conflictNo);
+                this.handleAcceptCurrent(conflictNo);
+                this.handleAcceptIncoming(conflictNo);
             })
         })
 
     }
 
-    private static handleAcceptIncoming(conflictNo:number){
-        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        checkBoxes.incomingCheckBox.checked = true;        
-        ConflictUtils.updateTopLabelIncomingCheckboxState();        
-        ConflictUtils.updateConflictState(conflictNo);
+    private handleAcceptIncoming(conflictNo:number){
+        const checkBoxes = this.getCheckboxesByConflict(conflictNo);
+        checkBoxes.incomingCheckBox.checked = true;
+        this.updateTopLabelIncomingCheckboxState();
+        this.updateConflictState(conflictNo);
     }
 
-    private static handleAcceptCurrent(conflictNo:number){
-        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        checkBoxes.currentCheckBoxe.checked = true;        
-        ConflictUtils.updateTopLeveCurrentCheckboxState();        
-        ConflictUtils.updateConflictState(conflictNo);
+    private handleAcceptCurrent(conflictNo:number){
+        const checkBoxes = this.getCheckboxesByConflict(conflictNo);
+        checkBoxes.currentCheckBoxe.checked = true;
+        this.updateTopLeveCurrentCheckboxState();
+        this.updateConflictState(conflictNo);
     }
 
-    private static getIncomingCheckboxByConflict(conflictNo:number){
+    private getIncomingCheckboxByConflict(conflictNo:number){
         return document.querySelector(`#${EnumConflictSide.Incoming}_${conflictNo}`) as HTMLInputElement;
     }
 
-    private static getCurrentCheckboxByConflict(conflictNo:number){
+    private getCurrentCheckboxByConflict(conflictNo:number){
         return document.querySelector(`#${EnumConflictSide.Current}_${conflictNo}`) as HTMLInputElement;
     }
 
-    private static getCurrentLineElementsByConflict(conflictNo:number){
+    private getCurrentLineElementsByConflict(conflictNo:number){
         return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Current}_${conflictNo}`);
     }
 
-    private static getIncomingLineElementsByConflict(conflictNo:number){
+    private getIncomingLineElementsByConflict(conflictNo:number){
         return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Incoming}_${conflictNo}`);
     }
 
-    private static getCheckboxesByConflict(conflictNo:number){
-        const incomingCheckBox = ConflictUtils.getIncomingCheckboxByConflict(conflictNo);
-        const currentCheckBoxe = ConflictUtils.getCurrentCheckboxByConflict(conflictNo);
+    private getCheckboxesByConflict(conflictNo:number){
+        const incomingCheckBox = this.getIncomingCheckboxByConflict(conflictNo);
+        const currentCheckBoxe = this.getCurrentCheckboxByConflict(conflictNo);
         return {incomingCheckBox,currentCheckBoxe};
     }
 
-    private static getContentLinesByConflict(conflictNo:number){
+    private getContentLinesByConflict(conflictNo:number){
         const incomingLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`);
         const currentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`);
         return {
@@ -341,10 +347,10 @@ export class ConflictUtils{
         }
     }
 
-    private static updateTopPanelState(conflictNo:number){
-        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
-        const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
+    private updateTopPanelState(conflictNo:number){
+        const checkboxes = this.getCheckboxesByConflict(conflictNo);
+        const currentLineElements = this.getCurrentLineElementsByConflict(conflictNo);
+        const incomingLineElements = this.getIncomingLineElementsByConflict(conflictNo);
         if(checkboxes.currentCheckBoxe.checked){
             currentLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-current-change","text-decoration-line-through"));
             currentLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));
@@ -356,7 +362,7 @@ export class ConflictUtils{
 
         if(checkboxes.incomingCheckBox.checked){
             incomingLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-previous-change","text-decoration-line-through"));
-            incomingLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));            
+            incomingLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));
         }
         else if(!checkboxes.incomingCheckBox.checked){
             incomingLineElements.forEach(elem=> elem.classList.add("bg-fade","text-decoration-line-through"));
@@ -364,8 +370,8 @@ export class ConflictUtils{
         }
     }
 
-    private static moveDownIncomingChange(conflictNo:number){
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+    private moveDownIncomingChange(conflictNo:number){
+        const contentLines = this.getContentLinesByConflict(conflictNo);
         if(!contentLines.incomingLines.length)
             return;
         const firstItem = contentLines.incomingLines.item(0);
@@ -373,8 +379,8 @@ export class ConflictUtils{
         firstItem.classList.add("border-top");
     }
 
-    private static moveDownCurrentChange(conflictNo:number){
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+    private moveDownCurrentChange(conflictNo:number){
+        const contentLines = this.getContentLinesByConflict(conflictNo);
         if(!contentLines.currentLines.length)
             return;
         const firstItem = contentLines.currentLines.item(0);
@@ -382,23 +388,23 @@ export class ConflictUtils{
         firstItem.classList.add("border-top");
     }
 
-    private static updateBottomPanelState(conflictNo:number){
-        let action = ConflictUtils.actionsTaken.find(_=> _.conflictNo === conflictNo);
+    private updateBottomPanelState(conflictNo:number){
+        let action = this.actionsTaken.find(_=> _.conflictNo === conflictNo);
         let newAction = false;
         if(!action){
             action = {
                 conflictNo,
                 taken:[]
             };
-            ConflictUtils.actionsTaken.push(action);
+            this.actionsTaken.push(action);
             newAction = true;
         }
-        
-        const bottomPanel = ConflictUtils.bottomPanelElement;
+
+        const bottomPanel = this.bottomPanelElement;
 
         if(!bottomPanel){
             //ConflictResolutionEditor owns the bottom panel, so only the action bookkeeping applies here
-            const selected = ConflictUtils.getCheckboxesByConflict(conflictNo);
+            const selected = this.getCheckboxesByConflict(conflictNo);
             action.taken = [];
             if(selected.incomingCheckBox.checked)
                 action.taken.push(EnumConflictSide.Incoming);
@@ -407,24 +413,24 @@ export class ConflictUtils{
             return;
         }
 
-        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
+        const checkboxes = this.getCheckboxesByConflict(conflictNo);
         const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
         markers.forEach(elm=> elm.parentNode!.removeChild(elm));
-        
+
         const lineContainer = bottomPanel.querySelector('.line-container')!;
         if(newAction){
             const nonLineNumberElems = lineContainer.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
             nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
             const lastLineElem = lineContainer.querySelector(`.lineNo:last-child`);
             lastLineElem?.parentNode?.removeChild(lastLineElem);
-        }        
-        
-        if(newAction){            
+        }
+
+        if(newAction){
             lineContainer.removeChild(lineContainer.lastChild!);
             lineContainer.removeChild(lineContainer.lastChild!);
         }
 
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
+        const contentLines = this.getContentLinesByConflict(conflictNo);
         const incomingContentLines = contentLines.incomingLines;
         //const lineNumberParent = bottomPanel.querySelector('.lineNo')?.parentElement!;
         if(checkboxes.incomingCheckBox.checked){
@@ -438,7 +444,7 @@ export class ConflictUtils{
             }
             incomingContentLines.forEach(elem => {
                 elem.classList.remove("d-none","bg-previous-change");
-                elem.classList.add("bg-change-accepted");                
+                elem.classList.add("bg-change-accepted");
             });
         }
         else{
@@ -449,8 +455,8 @@ export class ConflictUtils{
                 incomingContentLines.forEach((_)=>{
                     lineElems.item(lineElemLen-i).classList.add('d-none');
                     i++;
-                })                
-            }            
+                })
+            }
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
             incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
@@ -479,31 +485,31 @@ export class ConflictUtils{
                     lineElems.item(lineElemLen-i).classList.add('d-none');
                     i++;
                 })
-            }  
+            }
             action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
             currentContentLines.forEach(elem=> elem.classList.add("d-none"));
         }
 
         if(action.taken.length === 2){
             if(action.taken[1] === EnumConflictSide.Current)
-                ConflictUtils.moveDownCurrentChange(conflictNo);
+                this.moveDownCurrentChange(conflictNo);
             else
-                ConflictUtils.moveDownIncomingChange(conflictNo);
+                this.moveDownIncomingChange(conflictNo);
         }
     }
 
-    static dispatchResolvedCount = (resolvedConflict:number)=>{}
+    dispatchResolvedCount = (resolvedConflict:number)=>{}
 
-    private static updateConflictState(conflictNo:number){
-        ConflictUtils.updateTopPanelState(conflictNo);
-        ConflictUtils.updateBottomPanelState(conflictNo);
-        ConflictUtils.dispatchResolvedCount(ConflictUtils.Actions.length);
+    private updateConflictState(conflictNo:number){
+        this.updateTopPanelState(conflictNo);
+        this.updateBottomPanelState(conflictNo);
+        this.dispatchResolvedCount(this.Actions.length);
         //ReduxUtils.dispatch(ActionConflict.updateData({}))
     }
 
-    private static updateTopLabelIncomingCheckboxState(){
-        const topLevelCheckBox = ConflictUtils.acceptAllIncomingCheckBox;
-        const checkboxes = ConflictUtils.incomingCheckBoxes;
+    private updateTopLabelIncomingCheckboxState(){
+        const topLevelCheckBox = this.acceptAllIncomingCheckBox;
+        const checkboxes = this.incomingCheckBoxes;
         let selectionCount = 0;
         checkboxes.forEach(_=>{
             if(_.checked)
@@ -512,7 +518,7 @@ export class ConflictUtils{
 
         if(selectionCount === checkboxes.length){
             topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;            
+            topLevelCheckBox.indeterminate = false;
         }
         else if(selectionCount > 0){
             topLevelCheckBox.checked = false;
@@ -524,9 +530,9 @@ export class ConflictUtils{
         }
     }
 
-    private static updateTopLeveCurrentCheckboxState(){
-        const topLevelCheckBox = ConflictUtils.acceptAllCurrentCheckBox;
-        const checkboxes = ConflictUtils.currentCheckBoxes;
+    private updateTopLeveCurrentCheckboxState(){
+        const topLevelCheckBox = this.acceptAllCurrentCheckBox;
+        const checkboxes = this.currentCheckBoxes;
         let selectionCount = 0;
         checkboxes.forEach(_=>{
             if(_.checked)
@@ -535,7 +541,7 @@ export class ConflictUtils{
 
         if(selectionCount === checkboxes.length){
             topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;            
+            topLevelCheckBox.indeterminate = false;
         }
         else if(selectionCount > 0){
             topLevelCheckBox.checked = false;
@@ -547,32 +553,32 @@ export class ConflictUtils{
         }
     }
 
-    private static purgeEditorUi(){
+    private purgeEditorUi(){
         const elem = document.querySelector('.check_all_incoming') as HTMLElement;
         if(elem)
-            elem.style.width = `${ConflictUtils.previousLineDivWidth}ch`;
+            elem.style.width = `${this.previousLineDivWidth}ch`;
         const elem2 = document.querySelector('.check_all_current') as HTMLElement;
         if(elem2)
-            elem2.style.width = `${ConflictUtils.currentLineDivWidth}ch`;
+            elem2.style.width = `${this.currentLineDivWidth}ch`;
 
     }
 
-    static get totalChangeCount(){
-        return ConflictUtils.heighlightedLineIndexes.length;
+    get totalChangeCount(){
+        return this.heighlightedLineIndexes.length;
     }
 
-    private static HandleScrolling(){
-        const topPanel = ConflictUtils.topPanelElement;
+    private HandleScrolling(){
+        const topPanel = this.topPanelElement;
 
-        const bottomPanel = ConflictUtils.bottomPanelElement?.querySelector(".content") as HTMLElement;
-        const bottomPanelLine = ConflictUtils.bottomPanelElement?.querySelector(".line-container") as HTMLElement;
-                
+        const bottomPanel = this.bottomPanelElement?.querySelector(".content") as HTMLElement;
+        const bottomPanelLine = this.bottomPanelElement?.querySelector(".line-container") as HTMLElement;
+
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
-        
+
         if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
 
@@ -582,30 +588,29 @@ export class ConflictUtils{
         if(bottomPanelLine) group.push(bottomPanelLine);
 
         let handler = (e:Event)=>{
-            console.log("handling scroll.");            
             const target = e.target as HTMLElement;
-            const scrollElems = group.filter(elem => elem != target);            
+            const scrollElems = group.filter(elem => elem != target);
             for(let elem of scrollElems){
                 elem.scrollTo({
                     top:target.scrollTop,
                     left:target.scrollLeft,
                 })
-            }            
+            }
         }
-    
+
         topLeftPanel.addEventListener("scroll",handler);
         topRightPanel.addEventListener("scroll",handler);
         bottomPanel?.addEventListener("scroll",handler);
     }
 
-    private static SetHeighlightedLines(){
-        ConflictUtils.heighlightedLineIndexes = [];
-        let lastItemHightlighted = false;        
-        const lenght = ConflictUtils.currentLines?.length || ConflictUtils.incomingLines?.length || 0;
+    private SetHeighlightedLines(){
+        this.heighlightedLineIndexes = [];
+        let lastItemHightlighted = false;
+        const lenght = this.currentLines?.length || this.incomingLines?.length || 0;
         for(let i = 0;i < lenght; i++){
-            if(ConflictUtils.currentLines?.[i].hightLightBackground || ConflictUtils.incomingLines?.[i].hightLightBackground){
+            if(this.currentLines?.[i].hightLightBackground || this.incomingLines?.[i].hightLightBackground){
                 if(!lastItemHightlighted) {
-                    ConflictUtils.heighlightedLineIndexes.push(i);
+                    this.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
                 }
             }
@@ -614,14 +619,23 @@ export class ConflictUtils{
         }
     }
 
-    static FocusHightlightedLine(step:number){
+    FocusHightlightedLine(step:number){
         if(!step)
             return;
-        const container = document.querySelector("#"+ConflictUtils.topPanelId);
-        if(!ConflictUtils.heighlightedLineIndexes.length)
+        const container = document.querySelector("#"+this.topPanelId);
+        if(!this.heighlightedLineIndexes.length)
             return;
-        const focusElem = container?.querySelector('.content')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
+        const focusElem = container?.querySelector('.content')?.children[this.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
 
+    }
+
+    ClearView(){
+        const topPanel = document.getElementById(`${this.topPanelId}`);
+        if(topPanel)
+            topPanel.innerHTML = "";
+        this.file = undefined;
+        this.heighlightedLineIndexes = [];
+        this.resetData();
     }
 }

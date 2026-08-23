@@ -2,7 +2,7 @@ import { IFile } from "common_library";
 import React, { useEffect } from "react";
 import { FaArrowsAltH } from "react-icons/fa";
 import { AppButton, StepNavigation } from "../../common";
-import { ConflictUtils } from "../../../lib";
+import { ChangesData } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
@@ -26,14 +26,14 @@ function ConflictChangeNavigatorComponent(props:IProps){
     useEffect(()=>{
         if(!props.currentStep)
             return;
-        ConflictUtils.FocusHightlightedLine(props.currentStep);
+        ChangesData.conflictUtils?.FocusHightlightedLine(props.currentStep);
     },[props.currentStep,props.stepResetVersion])
 
     const handleApply=()=>{
-        const actions = ConflictUtils.Actions;
+        const actions = ChangesData.conflictUtils?.Actions ?? [];
         IpcUtils.resolveConflict(props.selectedFile.path,actions).then((r)=>{
             if(!r.error){
-                ConflictUtils.resetData();
+                ChangesData.conflictUtils?.resetData();
                 IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
                     GitUtils.getStatus();
                 });

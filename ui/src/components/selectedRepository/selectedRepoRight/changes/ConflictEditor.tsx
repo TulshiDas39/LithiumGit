@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer"
 import { shallowEqual, useDispatch } from "react-redux"
-import { ConflictUtils, EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
+import { EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
-import { ActionChanges, ActionConflict, ActionModals } from "../../../../store"
+import { ActionModals } from "../../../../store"
 import { ModalData } from "../../../modals/ModalData"
 import { ConflictResolutionEditor } from "../../../../lib/utils/editors"
 
@@ -22,10 +22,7 @@ function ConflictEditorComponent(){
 
     const [state,setState] = useMultiState<IState>({lastUpdated:""});
     const dispatch = useDispatch();
-    
-    ConflictUtils.dispatchResolvedCount = (count:number)=>{
-        dispatch(ActionConflict.updateData({resolvedConflict:count}));
-    }
+
     const refData = useRef({isMounted:false,lastUpdated:""});
     const resolutionEditor = useRef<ConflictResolutionEditor|undefined>(undefined);
     const hightDisplacementRef = useRef(0);
@@ -45,30 +42,16 @@ function ConflictEditorComponent(){
     useEffect(()=>{
         if(!store.selectedFile)
             return ;
-        // ChangeUtils.containerId = EnumHtmlIds.diffview_container;
-        const joinedPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile.path);
-        IpcUtils.getFileContent(joinedPath).then(res=>{
-            //const lines = StringUtils.getLines(res.result!);
-            const lineConfig = ConflictUtils.GetUiLinesOfConflict(res);
-            ConflictUtils.incomingLines = lineConfig.previousLines;
-            ConflictUtils.currentLines = lineConfig.currentLines;
-            //the bottom panel is rendered by ConflictResolutionEditor instead of the static markup
-            ConflictUtils.ShowEditor(false);
-            ConflictUtils.FocusHightlightedLine(1);
-            dispatch(ActionChanges.updateData({totalStep:ConflictUtils.totalChangeCount,currentStep:1}));
-            const totalConflict = ConflictUtils.TotalConflict
-            dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict}));
-
-            resolutionEditor.current?.destroy();
-            const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
-            resolutionEditor.current = editor;
-            editor.renderFile(store.selectedFile!).then(success=>{
-                if(!success){
-                    ModalData.appToast.message = "There was an error reading the content.";
-                    dispatch(ActionModals.showToast());
-                }
-            });
-        })
+        resolutionEditor.current?.destroy();
+        //the editor drives ConflictUtils, it owns the bottom panel and renders the top panel through it
+        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
+        resolutionEditor.current = editor;
+        editor.renderFile(store.selectedFile).then(success=>{
+            if(!success){
+                ModalData.appToast.message = "There was an error reading the content.";
+                dispatch(ActionModals.showToast());
+            }
+        });
     },[store.selectedFile,state.lastUpdated])
 
     useEffect(()=>{

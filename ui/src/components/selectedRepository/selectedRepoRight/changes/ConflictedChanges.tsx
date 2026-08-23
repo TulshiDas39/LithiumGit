@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { ConflictUtils, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
+import { ChangesData, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
@@ -52,13 +52,13 @@ function ConflictedChangesComponent(props:IProps){
     const refData = useRef({fileContentAfterChange:[] as string[]});
 
     useEffect(()=>{
-        ConflictUtils.resetData();
+        ChangesData.conflictUtils?.resetData();
     },[])
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
             return ;
-        if(ConflictUtils.Actions.length){
+        if(ChangesData.conflictUtils?.Actions.length){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));                
