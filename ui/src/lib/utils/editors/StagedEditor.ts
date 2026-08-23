@@ -61,7 +61,7 @@ export class StagedEditor extends TextEditor{
                         text = '';
                     }
                     actionUi = `<span class="flex-grow-1 hunk-actions d-flex justify-content-end" data-iline="${i}">
-                        <span class="bg-danger px-1 hover unstage-hunk" title="unstage this change">-</span>
+                        <span class="bg-previous-change-deep px-1 hover unstage-hunk" title="unstage this change">-</span>
                     </span>`;
                 }
                 isChange = true;

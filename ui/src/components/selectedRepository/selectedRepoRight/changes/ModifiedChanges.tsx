@@ -305,7 +305,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
             {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
-                <span className="d-flex align-items-center hover-shadow hover-brighter bg-danger px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+                <span className="d-flex align-items-center hover-shadow hover-brighter bg-previous-change-deep px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>
                 <span className="px-2" />
