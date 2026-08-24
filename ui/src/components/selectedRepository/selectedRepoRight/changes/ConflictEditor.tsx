@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react"
 import { useSelectorTyped } from "../../../../store/rootReducer"
 import { shallowEqual, useDispatch } from "react-redux"
-import { EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
+import { ChangesData, EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
 import { RendererEvents } from "common_library"
 import { IpcUtils } from "../../../../lib/utils/IpcUtils"
 import { ActionModals } from "../../../../store"
@@ -46,6 +46,7 @@ function ConflictEditorComponent(){
         //the editor drives ConflictUtils, it owns the bottom panel and renders the top panel through it
         const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
         resolutionEditor.current = editor;
+        ChangesData.conflictEditor = editor;
         editor.renderFile(store.selectedFile).then(success=>{
             if(!success){
                 ModalData.appToast.message = "There was an error reading the content.";
@@ -89,6 +90,7 @@ function ConflictEditorComponent(){
             refData.current.isMounted = false;
             resolutionEditor.current?.destroy();
             resolutionEditor.current = undefined;
+            ChangesData.conflictEditor = undefined;
         }
     },[])
 

@@ -52,13 +52,13 @@ function ConflictedChangesComponent(props:IProps){
     const refData = useRef({fileContentAfterChange:[] as string[]});
 
     useEffect(()=>{
-        ChangesData.conflictUtils?.resetData();
+        ChangesData.conflictEditor?.resetData();
     },[])
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
             return ;
-        if(ChangesData.conflictUtils?.Actions.length){
+        if(ChangesData.conflictEditor?.actions.length){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));                

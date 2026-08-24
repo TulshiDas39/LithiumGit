@@ -12,7 +12,6 @@ import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
-import { ChangesData } from "../../data/ChangesData";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -37,13 +36,20 @@ export class ConflictResolutionEditor extends TextEditor{
         this._conflictUtils.dispatchResolvedCount = count => {
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };
-        //the conflict navigator and the file list act on the same conflict session
-        ChangesData.conflictUtils = this._conflictUtils;
         this.saveHandler = success => this.onSave(success);
     }
 
-    get conflictUtils(){
-        return this._conflictUtils;
+    //ConflictUtils is driven only from here, the navigator and the file list go through these
+    focusHightlightedLine(step:number){
+        this._conflictUtils.FocusHightlightedLine(step);
+    }
+
+    get actions(){
+        return this._conflictUtils.Actions;
+    }
+
+    resetData(){
+        this._conflictUtils.resetData();
     }
 
     //the conflicted file is edited in place, so the working tree copy is the source

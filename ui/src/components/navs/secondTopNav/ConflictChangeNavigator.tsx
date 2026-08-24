@@ -26,14 +26,14 @@ function ConflictChangeNavigatorComponent(props:IProps){
     useEffect(()=>{
         if(!props.currentStep)
             return;
-        ChangesData.conflictUtils?.FocusHightlightedLine(props.currentStep);
+        ChangesData.conflictEditor?.focusHightlightedLine(props.currentStep);
     },[props.currentStep,props.stepResetVersion])
 
     const handleApply=()=>{
-        const actions = ChangesData.conflictUtils?.Actions ?? [];
+        const actions = ChangesData.conflictEditor?.actions ?? [];
         IpcUtils.resolveConflict(props.selectedFile.path,actions).then((r)=>{
             if(!r.error){
-                ChangesData.conflictUtils?.resetData();
+                ChangesData.conflictEditor?.resetData();
                 IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
                     GitUtils.getStatus();
                 });
