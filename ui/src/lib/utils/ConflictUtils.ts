@@ -19,8 +19,6 @@ export class ConflictUtils{
     private endingMarkers:{conflictNo:number;text:string}[] = [];
     private currentLineDivWidth = 0;
     private previousLineDivWidth = 0;
-    private hoverTopPanel = false;
-    private hoverBottomPanel = false;
     private actionsTaken:IActionTaken[] = [];
     private currentEditorWidth = 0;
     private incomingEditorWidth = 0;
@@ -125,13 +123,10 @@ export class ConflictUtils{
     }
 
     resetData(){
-        this.hoverBottomPanel = false;
-        this.hoverTopPanel = false;
         this.actionsTaken = [];
     }
 
     private initialiseData(){
-        this.resetData();
         this.setEditorWidths();
         this.topPanel = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
         this.bottomPanel = document.querySelector<HTMLDivElement>(`#${this.bottomPanelId}`)!;
@@ -224,16 +219,6 @@ export class ConflictUtils{
     }
 
     private addEventHanlders(){
-        const conflictTop = this.topPanelElement;
-        const conflictBottom = this.bottomPanelElement;
-        conflictTop.addEventListener("mouseenter",()=>{
-            this.hoverTopPanel = true;
-            this.hoverBottomPanel = false;
-        })
-        conflictBottom?.addEventListener("mouseenter",()=>{
-            this.hoverTopPanel = false;
-            this.hoverBottomPanel = true;
-        })
         const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
         acceptAllIncomingCheck.addEventListener("change",(e)=>{
             const checked = !!acceptAllIncomingCheck.checked;
@@ -636,6 +621,5 @@ export class ConflictUtils{
             topPanel.innerHTML = "";
         this.file = undefined;
         this.heighlightedLineIndexes = [];
-        this.resetData();
     }
 }

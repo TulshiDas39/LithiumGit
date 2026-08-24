@@ -1,5 +1,5 @@
 import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
-import React, { useEffect, useRef } from "react"
+import React, { useRef } from "react"
 import { ChangesData, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
@@ -50,10 +50,6 @@ function ConflictedChangesComponent(props:IProps){
 
     const headerRef = useRef<HTMLDivElement>(null);
     const refData = useRef({fileContentAfterChange:[] as string[]});
-
-    useEffect(()=>{
-        ChangesData.conflictEditor?.resetData();
-    },[])
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
