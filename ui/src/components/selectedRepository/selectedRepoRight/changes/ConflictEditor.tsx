@@ -24,7 +24,6 @@ function ConflictEditorComponent(){
     const dispatch = useDispatch();
 
     const refData = useRef({isMounted:false,lastUpdated:""});
-    const resolutionEditor = useRef<ConflictResolutionEditor|undefined>(undefined);
     const hightDisplacementRef = useRef(0);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
@@ -39,21 +38,36 @@ function ConflictEditorComponent(){
         return hightDisplacementRef.current - positionRef.current;
     },[position?.y])
 
+    const clearEditor = ()=>{
+        if(ChangesData.conflictEditor){
+            ChangesData.conflictEditor.destroy();
+            ChangesData.conflictEditor = undefined!;
+        }
+    }
+
     useEffect(()=>{
-        if(!store.selectedFile)
+        if(!store.selectedFile){
+            clearEditor();
             return ;
-        resolutionEditor.current?.destroy();
-        //the editor drives ConflictUtils, it owns the bottom panel and renders the top panel through it
+        }                    
         const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
-        resolutionEditor.current = editor;
         ChangesData.conflictEditor = editor;
-        editor.renderFile(store.selectedFile).then(success=>{
+        editor.renderFile(store.selectedFile).then(success=>{            
             if(!success){
                 ModalData.appToast.message = "There was an error reading the content.";
                 dispatch(ActionModals.showToast());
             }
         });
-    },[store.selectedFile,state.lastUpdated])
+        return ()=>{
+            clearEditor();
+        }
+    },[store.selectedFile])
+
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return;
+        ChangesData.conflictEditor?.checkForFileUpdate();
+    },[state.lastUpdated])
 
     useEffect(()=>{
         const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
@@ -87,10 +101,8 @@ function ConflictEditorComponent(){
     useEffect(()=>{
         refData.current.isMounted = true;
         return ()=>{
+            clearEditor();
             refData.current.isMounted = false;
-            resolutionEditor.current?.destroy();
-            resolutionEditor.current = undefined;
-            ChangesData.conflictEditor = undefined;
         }
     },[])
 

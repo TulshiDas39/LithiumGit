@@ -70,8 +70,7 @@ export class ConflictResolutionEditor extends TextEditor{
         return true;
     }
 
-    private showConflicts(){
-        //pass false, this editor owns the bottom panel
+    private showConflicts(){        
         this._conflictUtils.ShowEditor(false);
         this._conflictUtils.FocusHightlightedLine(1);
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
