@@ -50,7 +50,7 @@ export class ConflictResolutionEditor extends TextEditor{
     
     async renderFile(file:IFile){
         this._file = file;
-        this._conflictUtils.file = file;        
+        this._conflictUtils.file = file;                
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, file.path);
         const success = await this.render(filePath);
         if(!success)
@@ -78,7 +78,7 @@ export class ConflictResolutionEditor extends TextEditor{
 
     private get panelElement(){
         return document.querySelector(this._panelSelector) as HTMLElement | null;
-    }    
+    }
 
     private handleScrolling(){
         const contentContainer = this.panelElement?.querySelector(".content-container") as HTMLElement | null;
@@ -93,7 +93,7 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     protected override getLineNumberContainer(){
-        return this.panelElement?.querySelector(".line_numbers") as HTMLElement | null;
+        return document.querySelector(this._containerSelector)?.closest(".line_numbers") as HTMLElement;
     }
 
     protected override getPlugins(){
@@ -200,13 +200,9 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     override destroy(){
-        const contentContainer = this.panelElement?.querySelector(".content-container") as HTMLElement | null;
-        if(contentContainer && this._scrollHandler)
-            contentContainer.removeEventListener("scroll", this._scrollHandler);
-        this._scrollHandler = undefined;
-        super.destroy();
-        const panel = this.panelElement;
-        if(panel) panel.innerHTML = "";
+        super.destroy();        
         this._conflictUtils.ClearView();
+        const content = document.querySelector(this._panelSelector)?.querySelector(".content")!;
+        content.innerHTML = '';
     }
 }
