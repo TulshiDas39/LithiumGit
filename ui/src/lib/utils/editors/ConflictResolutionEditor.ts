@@ -81,7 +81,7 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     private handleScrolling(){
-        const contentContainer = this.panelElement?.querySelector(".content-container") as HTMLElement | null;
+        const contentContainer = document.querySelector(this._containerSelector)?.closest(".content-container") as HTMLElement | null;
         const lineNumbers = this.getLineNumberContainer();
         if(!contentContainer || !lineNumbers) return;
         if(this._scrollHandler)
@@ -93,7 +93,8 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     protected override getLineNumberContainer(){
-        return document.querySelector(this._containerSelector)?.closest(".line_numbers") as HTMLElement;
+        const row = document.querySelector(this._containerSelector)?.closest(".conflict-bottom");
+        return row?.querySelector(".line_numbers") as HTMLElement | null;
     }
 
     protected override getPlugins(){
