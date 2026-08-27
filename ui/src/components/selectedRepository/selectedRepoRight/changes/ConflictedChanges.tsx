@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
-import React, { useRef } from "react"
-import { ChangesData, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
+import React, { useEffect, useRef } from "react"
+import { ChangesData, EnumHtmlIds, EnumModals, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
@@ -9,6 +9,7 @@ import { FaEllipsisH } from "react-icons/fa";
 import { Dropdown } from "react-bootstrap";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { ConflictResolutionEditor } from "../../../../lib/utils/editors";
 
 interface ISingleFileProps{
     item:IFile
@@ -37,19 +38,20 @@ interface IProps{
 }
 
 interface IState{
-
+    lastUpdated:string;
 }
 
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile,
+        appFocusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
     
-    const [state,setState] = useMultiState<IState>({});
+    const [state,setState] = useMultiState<IState>({lastUpdated:""});
     const dispatch = useDispatch();
 
     const headerRef = useRef<HTMLDivElement>(null);
-    const refData = useRef({fileContentAfterChange:[] as string[]});
+    const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false,lastUpdated:""});
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
@@ -115,6 +117,68 @@ function ConflictedChangesComponent(props:IProps){
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         
     }
+
+    const clearEditor = ()=>{
+        if(ChangesData.conflictEditor){
+            ChangesData.conflictEditor.destroy();
+            ChangesData.conflictEditor = undefined!;
+        }
+    }
+
+    useEffect(()=>{
+        if(!store.selectedFile){
+            clearEditor();
+            return ;
+        }                    
+        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel} .content-container`);
+        ChangesData.conflictEditor = editor;
+        editor.renderFile(store.selectedFile).then(success=>{            
+            if(!success){
+                ModalData.appToast.message = "There was an error reading the content.";
+                dispatch(ActionModals.showToast());
+            }
+        });
+        return ()=>{
+            clearEditor();
+        }
+    },[store.selectedFile])
+    
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return;
+        ChangesData.conflictEditor?.checkForFileUpdate();
+    },[state.lastUpdated])
+    
+    useEffect(()=>{
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+        IpcUtils.getLastUpdatedDate(path).then(date=>{            
+            refData.current.lastUpdated = date;
+        })
+    },[store.selectedFile])
+    
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;
+        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+        IpcUtils.getLastUpdatedDate(path).then(date=>{
+            if(!!refData.current.lastUpdated && refData.current.lastUpdated !== date){
+                refData.current.lastUpdated = date;
+                setState({lastUpdated:date});
+            }
+            else{
+                refData.current.lastUpdated = date;
+            }
+
+        })
+    },[store.appFocusVersion])
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+        return ()=>{
+            clearEditor();
+            refData.current.isMounted = false;
+        }
+    },[])
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
     <div ref={headerRef as any} className="d-flex justify-content-end py-1" style={{height:40}}

@@ -13,6 +13,7 @@ export enum EnumHtmlIds{
     diffview_container = "diffview_container",
     CommitDiff = "CommitDiff",
     CommitDiffFromList = "CommitDiffFromList",
+    ConflictEditor = "conflict-editor",
     ConflictEditorTopPanel = "ConflictEditorTopPanel",
     ConflictEditorBottomPanel = "ConflictEditorBottomPanel",
     accept_all_incoming = "accept_all_incoming",

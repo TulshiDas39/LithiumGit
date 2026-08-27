@@ -24,14 +24,12 @@ export class ConflictResolutionEditor extends TextEditor{
     static readonly separator = "=======";
     static readonly endingMarker = ">>>>>>>";
 
-    private _panelSelector = '';
     private _file:IFile = null!;
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
 
     constructor(panelSelector:string){
         super(`${panelSelector} .content`);
-        this._panelSelector = panelSelector;
         this._conflictUtils = new ConflictUtils();
         this._conflictUtils.dispatchResolvedCount = count => {
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
@@ -50,16 +48,31 @@ export class ConflictResolutionEditor extends TextEditor{
     
     async renderFile(file:IFile){
         this._file = file;
-        this._conflictUtils.file = file;                
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, file.path);
+        this._conflictUtils.currentLines = [];
+        this._conflictUtils.incomingLines = [];
+        this._conflictUtils.ShowEditor(file);
         const success = await this.render(filePath);
         if(!success)
             return false;
-        this.buildTopPanel();
+        // this.handleScrolling();
+        // this.buildTopPanel();
         return true;
     }
 
-    //the conflict lines feed the top panel, they are derived from the same content the editor displays
+    // async renderILines(file:IFile){
+    //     this._file = file;        
+    //     const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);
+    //     await this.copyStagedContent();
+    //     this._changeUitl.currentLines = [];
+    //     this._changeUitl.previousLines = [];
+    //     this._changeUitl.showChanges();
+    //     const r = await this.render(filePath);
+    //     this._changeUitl.updatePreviousChanges(this._prevIlines);
+    //     this.handleDiscardHunk();
+    //     return r;
+    // }
+
     protected override async readFile(){
         const succeeded = await super.readFile();
         if(!succeeded) return false;
@@ -74,10 +87,6 @@ export class ConflictResolutionEditor extends TextEditor{
         this._conflictUtils.FocusHightlightedLine(1);
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
         ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict:this._conflictUtils.TotalConflict}));
-    }
-
-    private get panelElement(){
-        return document.querySelector(this._panelSelector) as HTMLElement | null;
     }
 
     private handleScrolling(){
@@ -201,9 +210,12 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     override destroy(){
-        super.destroy();        
+        const contentContainer = document.querySelector(this._containerSelector)?.closest(".content-container") as HTMLElement | null;
+        if(contentContainer && this._scrollHandler)
+            contentContainer.removeEventListener("scroll", this._scrollHandler);
+        this._scrollHandler = undefined;
+        super.destroy();
+        //ClearView drops the host markup of both panels, the mounted view goes with it
         this._conflictUtils.ClearView();
-        const content = document.querySelector(this._panelSelector)?.querySelector(".content")!;
-        content.innerHTML = '';
     }
 }

@@ -1,34 +1,21 @@
-import React, { useEffect, useMemo, useRef } from "react"
-import { useSelectorTyped } from "../../../../store/rootReducer"
-import { shallowEqual, useDispatch } from "react-redux"
-import { ChangesData, EnumHtmlIds, RepoUtils, useDrag, useMultiState } from "../../../../lib"
-import { RendererEvents } from "common_library"
-import { IpcUtils } from "../../../../lib/utils/IpcUtils"
-import { ActionModals } from "../../../../store"
-import { ModalData } from "../../../modals/ModalData"
-import { ConflictResolutionEditor } from "../../../../lib/utils/editors"
+import { useMemo, useRef } from "react"
+import { EnumHtmlIds, ILine, useDrag } from "../../../../lib"
+import { ConflictTopPanel } from "./ConflictTopPanel";
 
-interface IState{
-    lastUpdated:string;
+interface IProps{
+    incomingLines:ILine[];
+    currentLines:ILine[];
 }
 
-function ConflictEditorComponent(){
-    const store = useSelectorTyped(state=>({
-        selectedFile:state.changes.selectedFile,
-        currentStep:state.changes.currentStep,
-        totalStep:state.changes.totalStep,
-        appFocusVersion:state.ui.versions.appFocused,
-    }),shallowEqual);
-
-    const [state,setState] = useMultiState<IState>({lastUpdated:""});
-    const dispatch = useDispatch();
-
-    const refData = useRef({isMounted:false,lastUpdated:""});
+export function ConflictEditor(props:IProps){
+    const currentLineDivWidth = ((props.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+    const previousLineDivWidth = ((props.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
     const hightDisplacementRef = useRef(0);
     const positionRef = useRef(0);
     const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
     const hightDisplacement = useMemo(()=>{
+        return 0;
         if(!position){
             hightDisplacementRef.current -= positionRef.current;
             positionRef.current = 0;
@@ -38,59 +25,6 @@ function ConflictEditorComponent(){
         return hightDisplacementRef.current - positionRef.current;
     },[position?.y])
 
-    const clearEditor = ()=>{
-        if(ChangesData.conflictEditor){
-            ChangesData.conflictEditor.destroy();
-            ChangesData.conflictEditor = undefined!;
-        }
-    }
-
-    useEffect(()=>{
-        if(!store.selectedFile){
-            clearEditor();
-            return ;
-        }                    
-        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel} .content-container`);
-        ChangesData.conflictEditor = editor;
-        editor.renderFile(store.selectedFile).then(success=>{            
-            if(!success){
-                ModalData.appToast.message = "There was an error reading the content.";
-                dispatch(ActionModals.showToast());
-            }
-        });
-        return ()=>{
-            clearEditor();
-        }
-    },[store.selectedFile])
-
-    useEffect(()=>{
-        if(!refData.current.isMounted)
-            return;
-        ChangesData.conflictEditor?.checkForFileUpdate();
-    },[state.lastUpdated])
-
-    useEffect(()=>{
-        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
-        IpcUtils.getLastUpdatedDate(path).then(date=>{            
-            refData.current.lastUpdated = date;
-        })
-    },[store.selectedFile])
-    
-    useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
-            return;
-        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
-        IpcUtils.getLastUpdatedDate(path).then(date=>{
-            if(!!refData.current.lastUpdated && refData.current.lastUpdated !== date){
-                refData.current.lastUpdated = date;
-                setState({lastUpdated:date});
-            }
-            else{
-                refData.current.lastUpdated = date;
-            }
-
-        })
-    },[store.appFocusVersion])
 
     const getSign=(value:number)=>{
         if(value < 0)
@@ -98,16 +32,6 @@ function ConflictEditorComponent(){
         return "+";
     }
 
-    useEffect(()=>{
-        refData.current.isMounted = true;
-        return ()=>{
-            clearEditor();
-            refData.current.isMounted = false;
-        }
-    },[])
-
-    if(!store.selectedFile)
-        return null;
     return <div id="conflict-editor"  className="h-100 w-100">
         <div style={{height:30}} className="d-flex align-items-center w-100 border-bottom">
             <div className={"w-50 d-flex align-items-center"}>
@@ -124,9 +48,11 @@ function ConflictEditorComponent(){
             </div>
         </div>
         <div style={{height:'calc(100% - 33px)'}}>
-            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(hightDisplacement+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>            
+            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(hightDisplacement+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
+                <ConflictTopPanel currentLineDivWidth={currentLineDivWidth} currentLines={props.currentLines}
+                    previousLineDivWidth={previousLineDivWidth} previousLines={props.incomingLines} />
             </div>
-            <div ref={resizer as any} className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
+            <div className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
             <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(hightDisplacement)} ${Math.abs(hightDisplacement)}px)`}}>
                 <div className="h-100 w-100 d-flex conflict-bottom">
                     <div className="noselect line_numbers overflow-y-hidden h-100"></div>
@@ -138,5 +64,3 @@ function ConflictEditorComponent(){
         </div>
     </div>
 }
-
-export const ConflictEditor = React.memo(ConflictEditorComponent)

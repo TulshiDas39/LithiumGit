@@ -7,6 +7,7 @@ import { ConflictBottomPanel } from "../../components/selectedRepository/selecte
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
+import { ConflictEditor } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictEditor";
 
 export class ConflictUtils{
     readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
@@ -24,6 +25,11 @@ export class ConflictUtils{
     private incomingEditorWidth = 0;
     private topPanel?:HTMLDivElement;
     private bottomPanel?:HTMLDivElement;
+    private containerId = "";
+    
+    constructor(containerId:string){
+        this.containerId = containerId;
+    }
 
     get Actions(){
         return this.actionsTaken;
@@ -135,6 +141,31 @@ export class ConflictUtils{
         const value = UiUtils.resolveValueFromId(id);
         return value;
     }
+
+    ShowEditor(file?:IFile){
+        this.file = file;
+        const container = document.getElementById(`${this.containerId}`)!;
+        if(!container)
+            return;
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictEditor({
+            incomingLines:this.incomingLines,
+            currentLines:this.currentLines
+        }));
+        container.innerHTML = innerHtml;
+    }
+
+    // showChanges(){
+    //     const container = document.getElementById(`${this.containerId}`)!;
+    //     if(!container)
+    //         return;
+    //     const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
+    //         linesAfterChange:this.currentLines,
+    //         linesBeforeChange:this.previousLines
+    //     }));
+    //     container.innerHTML = innerHtml;
+    //     this.HandleScrolling();
+    //     this.SetHeighlightedLines();        
+    // }
     
     ShowTopPanel(){
         if(!this.currentLines || !this.incomingLines)
