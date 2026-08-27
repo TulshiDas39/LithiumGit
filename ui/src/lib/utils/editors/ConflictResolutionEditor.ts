@@ -47,12 +47,7 @@ export class ConflictResolutionEditor extends TextEditor{
     get actions(){
         return this._conflictUtils.Actions;
     }
-
-    resetData(){
-        this._conflictUtils.resetData();
-    }
-
-    //the conflicted file is edited in place, so the working tree copy is the source
+    
     async renderFile(file:IFile){
         this._file = file;
         this._conflictUtils.file = file;

@@ -35,9 +35,7 @@ export class ChangeUtils{
         }));
         container.innerHTML = innerHtml;
         this.HandleScrolling();
-        this.SetHeighlightedLines();
-
-        // ReduxUtils.resetChangeNavigation();
+        this.SetHeighlightedLines();        
     }
 
     updatePreviousChanges(lines:ILine[]){

@@ -33,7 +33,6 @@ function ConflictChangeNavigatorComponent(props:IProps){
         const actions = ChangesData.conflictEditor?.actions ?? [];
         IpcUtils.resolveConflict(props.selectedFile.path,actions).then((r)=>{
             if(!r.error){
-                ChangesData.conflictEditor?.resetData();
                 IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
                     GitUtils.getStatus();
                 });

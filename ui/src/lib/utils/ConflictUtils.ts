@@ -122,10 +122,6 @@ export class ConflictUtils{
         return {currentLines,previousLines};
     }
 
-    resetData(){
-        this.actionsTaken = [];
-    }
-
     private initialiseData(){
         this.setEditorWidths();
         this.topPanel = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
@@ -133,13 +129,13 @@ export class ConflictUtils{
         this.acceptAllCurrentCheckBox.checked = false;
         this.acceptAllIncomingCheckBox.checked = false;
     }
+    
 
     private getConflictNo(id:string){
         const value = UiUtils.resolveValueFromId(id);
         return value;
     }
-
-    //pass renderBottomPanel=false when ConflictResolutionEditor owns the bottom panel
+    
     ShowEditor(renderBottomPanel=true){
         if(!this.currentLines || !this.incomingLines)
             return;
