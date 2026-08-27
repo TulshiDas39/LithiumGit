@@ -50,7 +50,7 @@ function ConflictEditorComponent(){
             clearEditor();
             return ;
         }                    
-        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel}`);
+        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
         ChangesData.conflictEditor = editor;
         editor.renderFile(store.selectedFile).then(success=>{            
             if(!success){
@@ -129,7 +129,7 @@ function ConflictEditorComponent(){
             <div ref={resizer as any} className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
             <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(hightDisplacement)} ${Math.abs(hightDisplacement)}px)`}}>
                 <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(hightDisplacement)} ${Math.abs(hightDisplacement)}px)`}}>
-                    <div className="h-100 w-100 d-flex conflict-resolution">
+                    <div className="h-100 w-100 d-flex conflict-bottom">
                         <div className="noselect line_numbers overflow-y-hidden h-100"></div>
                         <div className="h-100 content-container overflow-auto flex-grow-1">
                             <div className="ps-1 content fit-content min-w-100"></div>

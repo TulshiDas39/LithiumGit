@@ -50,13 +50,12 @@ export class ConflictResolutionEditor extends TextEditor{
     
     async renderFile(file:IFile){
         this._file = file;
-        this._conflictUtils.file = file;
-        //this.mountHost();
+        this._conflictUtils.file = file;        
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, file.path);
         const success = await this.render(filePath);
         if(!success)
             return false;
-        this.showConflicts();
+        this.buildTopPanel();
         return true;
     }
 
@@ -70,7 +69,7 @@ export class ConflictResolutionEditor extends TextEditor{
         return true;
     }
 
-    private showConflicts(){        
+    private buildTopPanel(){        
         this._conflictUtils.ShowTopPanel();
         this._conflictUtils.FocusHightlightedLine(1);
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
@@ -79,19 +78,7 @@ export class ConflictResolutionEditor extends TextEditor{
 
     private get panelElement(){
         return document.querySelector(this._panelSelector) as HTMLElement | null;
-    }
-
-    private mountHost(){
-        const panel = this.panelElement;
-        if(!panel) return;
-        panel.innerHTML = `<div class="h-100 w-100 d-flex conflict-resolution">
-            <div class="noselect line_numbers overflow-y-hidden h-100"></div>
-            <div class="h-100 content-container overflow-auto flex-grow-1">
-                <div class="ps-1 content fit-content min-w-100"></div>
-            </div>
-        </div>`;
-        this.handleScrolling();
-    }
+    }    
 
     private handleScrolling(){
         const contentContainer = this.panelElement?.querySelector(".content-container") as HTMLElement | null;
