@@ -228,10 +228,6 @@ html {
     color: var(--hover);
   }
 
-  .hover-brighter:hover{
-    //filter: brightness(105%);
-  }
-
   .hover-shadow:hover{
     box-shadow: 0 0 2px rgb(104, 104, 237);
   }

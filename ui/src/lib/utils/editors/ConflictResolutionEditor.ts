@@ -51,7 +51,7 @@ export class ConflictResolutionEditor extends TextEditor{
     async renderFile(file:IFile){
         this._file = file;
         this._conflictUtils.file = file;
-        this.mountHost();
+        //this.mountHost();
         const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, file.path);
         const success = await this.render(filePath);
         if(!success)
@@ -71,7 +71,7 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     private showConflicts(){        
-        this._conflictUtils.ShowEditor(false);
+        this._conflictUtils.ShowTopPanel();
         this._conflictUtils.FocusHightlightedLine(1);
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
         ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict:this._conflictUtils.TotalConflict}));

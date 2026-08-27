@@ -136,7 +136,7 @@ export class ConflictUtils{
         return value;
     }
     
-    ShowEditor(renderBottomPanel=true){
+    ShowTopPanel(){
         if(!this.currentLines || !this.incomingLines)
             return;
 
@@ -156,16 +156,7 @@ export class ConflictUtils{
             previousLineDivWidth:this.previousLineDivWidth,
         }));
 
-        topPanel.innerHTML = editorTopHtml;
-        if(renderBottomPanel){
-            bottomPanel.innerHTML = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
-                currentLines:this.currentLines,
-                previousLines:this.incomingLines,
-                editorWidth:Math.max(this.CurrentEditorWidth,this.IncomingEditorWidth),
-                separator:this.Separator,
-                getEndingMarkerText:conflictNo => this.GetEndingMarkerText(conflictNo)?.text,
-            }));
-        }
+        topPanel.innerHTML = editorTopHtml;        
 
         this.addEventHanlders();
         this.HandleScrolling();
