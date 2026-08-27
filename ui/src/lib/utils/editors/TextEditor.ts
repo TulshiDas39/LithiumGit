@@ -44,6 +44,7 @@ export abstract class TextEditor {
     protected onSync: (() => void) | null = null;
     private onSyncWaitingCalls: (() => void)[] = [];
     protected lineCount = 0;
+    private _destroyed = false;
     private _savedLfType = EnumLinefeed.LF; 
     private readonly _encodingChangeStack:EncodingEntry[]=[];
     private readonly _encodingUndoStack:EncodingEntry[]=[];
@@ -423,7 +424,12 @@ export abstract class TextEditor {
         const success = await this.createTempFile();
         this._encoding = await this.detectEncoding();
         const readSuccess = await this.readFile();
-        if(!readSuccess) return false;
+        if(!readSuccess)
+            return false;
+
+        if(this._destroyed)
+            return true;
+        
         this._lastUpdated = new Date().toISOString();
         const doc = this.createDocument();        
         this._editState = EditorState.create({schema:this._schema, doc, plugins:this.getPlugins()});
@@ -440,7 +446,8 @@ export abstract class TextEditor {
         this._savedLfType = this._lineFeedType;
         this.renderLineNumbers();
 
-        if(!success) return false;
+        if(!success)            
+            return false;        
 
         this.displayLineFeedType();
         this.displayEncoding();
@@ -570,6 +577,7 @@ export abstract class TextEditor {
     }
 
     destroy(){
+        this._destroyed = true;
         this._editView?.destroy();
         this._editView = null!;
         this._lineFeedType = undefined!;
