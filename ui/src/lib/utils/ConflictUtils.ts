@@ -177,6 +177,8 @@ export class ConflictUtils{
         }));
 
         container!.innerHTML = innerHtml;
+
+        this.HandleScrolling();
     }
 
     // updatePreviousChanges(lines:ILine[]){
