@@ -194,34 +194,6 @@ export class ConflictUtils{
     //         this.SetHeighlightedLines();
     //     }
     
-    ShowTopPanel(){
-        if(!this.currentLines || !this.incomingLines)
-            return;
-
-        const topPanel = document.getElementById(`${this.topPanelId}`)!;
-        const bottomPanel = document.getElementById(`${this.bottomPanelId}`)!;
-
-        if(!topPanel || !bottomPanel)
-            return;
-        this.initialiseData();
-        this.currentLineDivWidth = ((this.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-        this.previousLineDivWidth = ((this.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-
-        const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
-            currentLines:this.currentLines,
-            currentLineDivWidth: this.currentLineDivWidth,
-            previousLines:this.incomingLines,
-            previousLineDivWidth:this.previousLineDivWidth,
-        }));
-
-        topPanel.innerHTML = editorTopHtml;        
-
-        this.addEventHanlders();
-        this.HandleScrolling();
-        this.purgeEditorUi();
-
-        this.SetHeighlightedLines();
-    }
 
     private get topPanelElement(){
         const conflictTop = document.querySelector(".conflict-diff") as HTMLDivElement;
