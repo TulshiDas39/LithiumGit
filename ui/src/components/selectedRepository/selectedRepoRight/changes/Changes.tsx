@@ -114,7 +114,7 @@ function ChangesComponent() {
 
             </div>}
             {store.selectedFile?.changeType === EnumChangeType.CONFLICTED &&
-                <ConflictEditor />
+                <div id={EnumHtmlIds.conflictview_container} className="h-100"></div>
             }
         </div>
     </div>

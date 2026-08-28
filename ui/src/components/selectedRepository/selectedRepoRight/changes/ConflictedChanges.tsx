@@ -40,6 +40,8 @@ interface IProps{
 interface IState{
 }
 
+const editorContainer = "#"+EnumHtmlIds.conflictview_container+" #conflict-editor .content";
+
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile,
@@ -130,7 +132,7 @@ function ConflictedChangesComponent(props:IProps){
             clearEditor();
             return ;
         }                    
-        const editor = new ConflictResolutionEditor(`#${EnumHtmlIds.ConflictEditorBottomPanel} .content-container`);
+        const editor = new ConflictResolutionEditor(editorContainer);
         ChangesData.conflictEditor = editor;
         editor.renderFile(store.selectedFile).then(success=>{            
             if(!success){

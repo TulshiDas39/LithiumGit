@@ -11,6 +11,7 @@ export enum EnumHtmlIds{
     unstage_unstage_allPanel="unstage_unstage_allPanel",
     acceptIncomingCurrentAllPanel="acceptIncomingCurrentAllPanel",
     diffview_container = "diffview_container",
+    conflictview_container = "conflictview_container",
     CommitDiff = "CommitDiff",
     CommitDiffFromList = "CommitDiffFromList",
     ConflictEditor = "conflict-editor",
