@@ -47,6 +47,10 @@ export class ConflictEditor extends TextEditor{
     get actions(){
         return this._conflictUtils.Actions;
     }
+
+    get totalChangeCount(){
+        return this._conflictUtils.totalChangeCount;
+    }    
     
     async renderFile(file:IFile){
         this._file = file;

@@ -128,8 +128,10 @@ function ConflictedChangesComponent(props:IProps){
     useEffect(()=>{
         if(!refData.current.isMounted)
             return ;
+
+        clearEditor();
+        
         if(!store.selectedFile){
-            clearEditor();
             return ;
         }                    
         const editor = new ConflictEditor(editorContainer);
@@ -138,11 +140,10 @@ function ConflictedChangesComponent(props:IProps){
             if(!success){
                 ModalData.appToast.message = "There was an error reading the content.";
                 dispatch(ActionModals.showToast());
+            }else{
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.conflictEditor!.totalChangeCount,silentStepUpdate:false}));
             }
-        });
-        return ()=>{
-            clearEditor();
-        }
+        });        
     },[store.selectedFile])
 
     useEffect(()=>{
@@ -155,7 +156,6 @@ function ConflictedChangesComponent(props:IProps){
     useEffect(()=>{
         refData.current.isMounted = true;
         return ()=>{
-            clearEditor();
             refData.current.isMounted = false;
         }
     },[])
