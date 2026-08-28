@@ -3,7 +3,6 @@ import { ILine } from "../interfaces";
 import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
-import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
@@ -180,6 +179,7 @@ export class ConflictUtils{
         container!.innerHTML = innerHtml;
 
         this.HandleScrolling();
+        this.SetHeighlightedLines();
     }
 
     // updatePreviousChanges(lines:ILine[]){
