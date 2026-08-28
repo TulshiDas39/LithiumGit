@@ -40,7 +40,7 @@ interface IProps{
 interface IState{
 }
 
-const editorContainer = "#"+EnumHtmlIds.conflictview_container+" #conflict-editor .content";
+const editorContainer = "#"+EnumHtmlIds.conflictview_container;
 
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({

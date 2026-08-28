@@ -24,21 +24,22 @@ export class ConflictEditor extends TextEditor{
     static readonly currentMarker = "<<<<<<<";
     static readonly separator = "=======";
     static readonly endingMarker = ">>>>>>>";
-
+    
+    private readonly panelSelection:string = "";
     private _file:IFile = null!;
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
 
     constructor(panelSelector:string){
-        super(`${panelSelector} .content`);
-        this._conflictUtils = new ConflictUtils(EnumHtmlIds.conflictview_container);
+        super(`${panelSelector} #conflict-editor .content`);
+        this.panelSelection = panelSelector;
+        this._conflictUtils = new ConflictUtils(panelSelector);
         this._conflictUtils.dispatchResolvedCount = count => {
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };
         this.saveHandler = success => this.onSave(success);
     }
-
-    //ConflictUtils is driven only from here, the navigator and the file list go through these
+    
     focusHightlightedLine(step:number){
         this._conflictUtils.FocusHightlightedLine(step);
     }
