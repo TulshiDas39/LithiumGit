@@ -600,8 +600,8 @@ export class ConflictUtils{
     private HandleScrolling(){
         const topPanel = this.topPanelElement;
 
-        const bottomPanel = this.bottomPanelElement?.querySelector(".content") as HTMLElement;
-        const bottomPanelLine = this.bottomPanelElement?.querySelector(".line-container") as HTMLElement;
+        const bottomPanel = this.bottomPanelElement?.querySelector(".content-container") as HTMLElement;
+        const bottomPanelLine = this.bottomPanelElement?.parentElement?.querySelector(".line_numbers") as HTMLElement;
 
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
