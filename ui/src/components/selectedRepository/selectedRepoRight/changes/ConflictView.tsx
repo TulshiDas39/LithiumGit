@@ -10,20 +10,21 @@ interface IProps{
 export function ConflictView(props:IProps){
     const currentLineDivWidth = ((props.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
     const previousLineDivWidth = ((props.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-    const hightDisplacementRef = useRef(0);
-    const positionRef = useRef(0);
-    const {currentMousePosition:position,elementRef:resizer} = useDrag();
+    const hightDisplacementRef = 0;//useRef(0);
+    const hightDisplacement = 0;
+    // const positionRef = useRef(0);
+    // const {currentMousePosition:position,elementRef:resizer} = useDrag();
 
-    const hightDisplacement = useMemo(()=>{
-        return 0;
-        if(!position){
-            hightDisplacementRef.current -= positionRef.current;
-            positionRef.current = 0;
-            return hightDisplacementRef.current;
-        }
-        positionRef.current = position.y;
-        return hightDisplacementRef.current - positionRef.current;
-    },[position?.y])
+    // const hightDisplacement = useMemo(()=>{
+    //     return 0;
+    //     if(!position){
+    //         hightDisplacementRef.current -= positionRef.current;
+    //         positionRef.current = 0;
+    //         return hightDisplacementRef.current;
+    //     }
+    //     positionRef.current = position.y;
+    //     return hightDisplacementRef.current - positionRef.current;
+    // },[position?.y])
 
 
     const getSign=(value:number)=>{
@@ -48,12 +49,12 @@ export function ConflictView(props:IProps){
             </div>
         </div>
         <div style={{height:'calc(100% - 33px)'}}>
-            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(hightDisplacement+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
+            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(0+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
                 <ConflictTopPanel currentLineDivWidth={currentLineDivWidth} currentLines={props.currentLines}
                     previousLineDivWidth={previousLineDivWidth} previousLines={props.incomingLines} />
             </div>
             <div className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
-            <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(hightDisplacement)} ${Math.abs(hightDisplacement)}px)`}}>
+            <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(0)} ${Math.abs(0)}px)`}}>
                 <div className="h-100 w-100 d-flex conflict-bottom">
                     <div className="noselect line_numbers overflow-y-hidden h-100"></div>
                     <div className="h-100 content-container overflow-auto flex-grow-1">

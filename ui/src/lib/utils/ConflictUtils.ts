@@ -25,10 +25,10 @@ export class ConflictUtils{
     private incomingEditorWidth = 0;
     private topPanel?:HTMLDivElement;
     private bottomPanel?:HTMLDivElement;
-    private containerId = "";
+    private containerSelector = "";
     
     constructor(containerId:string){
-        this.containerId = containerId;
+        this.containerSelector = containerId;
     }
 
     get Actions(){
@@ -144,7 +144,7 @@ export class ConflictUtils{
 
     ShowEditor(file?:IFile){
         this.file = file;
-        const container = document.getElementById(`${this.containerId}`)!;
+        const container = document.querySelector(`${this.containerSelector}`)!;
         if(!container)
             return;
         const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictView({
