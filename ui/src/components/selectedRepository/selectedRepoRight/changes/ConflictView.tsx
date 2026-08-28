@@ -8,8 +8,6 @@ interface IProps{
 }
 
 export function ConflictView(props:IProps){
-    const currentLineDivWidth = ((props.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-    const previousLineDivWidth = ((props.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
     const hightDisplacementRef = 0;//useRef(0);
     const hightDisplacement = 0;
     // const positionRef = useRef(0);
@@ -50,8 +48,8 @@ export function ConflictView(props:IProps){
         </div>
         <div style={{height:'calc(100% - 33px)'}}>
             <div className="w-100 top-diff" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(0+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
-                <ConflictTopPanel currentLineDivWidth={currentLineDivWidth} currentLines={props.currentLines}
-                    previousLineDivWidth={previousLineDivWidth} previousLines={props.incomingLines} />
+                <ConflictTopPanel currentLines={props.currentLines}
+                    previousLines={props.incomingLines} />
             </div>
             <div className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
             <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(0)} ${Math.abs(0)}px)`}}>

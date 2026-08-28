@@ -33,12 +33,12 @@ function SingleDiff(props:ISingleDiffProps){
 interface IProps{
     lines:ILine[];
     colorClass:string;
-    lineDivWidth:number;
     side:EnumConflictSide;
 }
 
 export function ConflictDiffView(props:IProps){
     const editorWidth = DiffUtils.getEditorWidth(props.lines.map(x=>x.text?x.text:""));
+    const lineDivWidth = String(props.lines.filter(l => l.text !== undefined).length).length + 3;
     const getLineElems = ()=>{
         const elems:JSX.Element[]=[];
         let lineNo = 1;
@@ -57,12 +57,11 @@ export function ConflictDiffView(props:IProps){
         }
         return elems;
     }
-    // const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 3;
     return <div className="d-flex h-100 w-100">
-        <div className="noselect line_numbers h-100 overflow-hidden" style={{width:props.lineDivWidth+"ch"}}>
+        <div className="noselect line_numbers h-100 overflow-hidden" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="ps-1 content h-100 overflow-auto" style={{width:`calc(100% - ${props.lineDivWidth}ch)`}}>
+        <div className="ps-1 content h-100 overflow-auto" style={{width:`calc(100% - ${lineDivWidth})`}}>
             {props.lines.map((l, i)=>(
                 <SingleDiff key={i} line={l} colorClass={props.colorClass} maxLineWidth={editorWidth} 
                     conflictNo={l.conflictNo!} side={props.side} />

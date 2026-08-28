@@ -171,11 +171,8 @@ export class ConflictUtils{
         this.incomingLines = incomingLines;
         this.currentLines = currentLines;
         const container = document.querySelector(`${this.containerSelector} .top-diff`);
-        //top-diff
-        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
-            currentLineDivWidth:this.currentLineDivWidth,
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({            
             currentLines:this.currentLines,
-            previousLineDivWidth:this.previousLineDivWidth,
             previousLines:this.incomingLines
         }));
 
