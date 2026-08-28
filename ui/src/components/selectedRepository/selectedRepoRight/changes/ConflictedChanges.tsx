@@ -9,7 +9,7 @@ import { FaEllipsisH } from "react-icons/fa";
 import { Dropdown } from "react-bootstrap";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
-import { ConflictResolutionEditor } from "../../../../lib/utils/editors";
+import { ConflictEditor } from "../../../../lib/utils/editors";
 
 interface ISingleFileProps{
     item:IFile
@@ -132,7 +132,7 @@ function ConflictedChangesComponent(props:IProps){
             clearEditor();
             return ;
         }                    
-        const editor = new ConflictResolutionEditor(editorContainer);
+        const editor = new ConflictEditor(editorContainer);
         ChangesData.conflictEditor = editor;
         editor.renderFile(store.selectedFile).then(success=>{            
             if(!success){

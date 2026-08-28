@@ -20,7 +20,7 @@ enum TransMetaData{
 
 type TConflictSide = "current" | "incoming";
 
-export class ConflictResolutionEditor extends TextEditor{
+export class ConflictEditor extends TextEditor{
     static readonly currentMarker = "<<<<<<<";
     static readonly separator = "=======";
     static readonly endingMarker = ">>>>>>>";
@@ -112,9 +112,9 @@ export class ConflictResolutionEditor extends TextEditor{
     }
 
     private static sideOfLine(text:string){
-        if(text.startsWith(ConflictResolutionEditor.currentMarker)) return "startMarker" as const;
-        if(text.startsWith(ConflictResolutionEditor.separator)) return "separator" as const;
-        if(text.startsWith(ConflictResolutionEditor.endingMarker)) return "endMarker" as const;
+        if(text.startsWith(ConflictEditor.currentMarker)) return "startMarker" as const;
+        if(text.startsWith(ConflictEditor.separator)) return "separator" as const;
+        if(text.startsWith(ConflictEditor.endingMarker)) return "endMarker" as const;
         return undefined;
     }
 
@@ -122,7 +122,7 @@ export class ConflictResolutionEditor extends TextEditor{
         const decorations: Decoration[] = [];
         let side:TConflictSide | undefined;
         doc.forEach((node: Node, offset: number) => {
-            const marker = ConflictResolutionEditor.sideOfLine(node.textContent ?? '');
+            const marker = ConflictEditor.sideOfLine(node.textContent ?? '');
             const decorate = (className:string)=>{
                 decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: className }));
             };
@@ -166,7 +166,7 @@ export class ConflictResolutionEditor extends TextEditor{
         if(!this._editView) return 0;
         let count = 0;
         this._editView.state.doc.forEach(node => {
-            if(ConflictResolutionEditor.sideOfLine(node.textContent ?? '') === "startMarker")
+            if(ConflictEditor.sideOfLine(node.textContent ?? '') === "startMarker")
                 count++;
         });
         return count;
