@@ -26,6 +26,7 @@ export class ConflictUtils{
     private topPanel?:HTMLDivElement;
     private bottomPanel?:HTMLDivElement;
     private containerSelector = "";
+    private scrollHandler?: (e: Event) => void;
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -583,13 +584,19 @@ export class ConflictUtils{
 
         if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
-
-        //the bottom panel is absent when ConflictResolutionEditor owns it, the top panel still syncs on its own
+        
         const group = [topLeftPanel, topRightPanel,topRightNumberPanel,topLeftNumberPanel];
         if(bottomPanel) group.push(bottomPanel);
         if(bottomPanelLine) group.push(bottomPanelLine);
 
-        let handler = (e:Event)=>{
+        if(this.scrollHandler){
+            topLeftPanel.removeEventListener("scroll", this.scrollHandler);
+            topRightPanel.removeEventListener("scroll",this.scrollHandler);
+            bottomPanel?.removeEventListener("scroll",this.scrollHandler);
+        }
+        
+
+        this.scrollHandler = (e:Event)=>{
             const target = e.target as HTMLElement;
             const scrollElems = group.filter(elem => elem != target);
             for(let elem of scrollElems){
@@ -600,9 +607,9 @@ export class ConflictUtils{
             }
         }
 
-        topLeftPanel.addEventListener("scroll",handler);
-        topRightPanel.addEventListener("scroll",handler);
-        bottomPanel?.addEventListener("scroll",handler);
+        topLeftPanel.addEventListener("scroll",this.scrollHandler);
+        topRightPanel.addEventListener("scroll",this.scrollHandler);
+        bottomPanel?.addEventListener("scroll",this.scrollHandler);
     }
 
     private SetHeighlightedLines(){
