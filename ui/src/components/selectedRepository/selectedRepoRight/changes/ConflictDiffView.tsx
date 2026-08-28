@@ -61,7 +61,7 @@ export function ConflictDiffView(props:IProps){
         <div className="noselect line_numbers h-100 overflow-hidden" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="ps-1 content h-100 overflow-auto" style={{width:`calc(100% - ${lineDivWidth})`}}>
+        <div className="ps-1 content h-100 overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>
             {props.lines.map((l, i)=>(
                 <SingleDiff key={i} line={l} colorClass={props.colorClass} maxLineWidth={editorWidth} 
                     conflictNo={l.conflictNo!} side={props.side} />
