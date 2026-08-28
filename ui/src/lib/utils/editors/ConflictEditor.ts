@@ -85,13 +85,6 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    private buildTopPanel(){        
-        this._conflictUtils.ShowTopPanel();
-        this._conflictUtils.FocusHightlightedLine(1);
-        ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._conflictUtils.totalChangeCount,currentStep:1}));
-        ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:0,totalConflict:this._conflictUtils.TotalConflict}));
-    }
-
     private handleScrolling(){
         const contentContainer = document.querySelector(this._containerSelector)?.closest(".content-container") as HTMLElement | null;
         const lineNumbers = this.getLineNumberContainer();
