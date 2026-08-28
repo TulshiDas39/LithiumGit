@@ -12,6 +12,7 @@ import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
+import { EnumHtmlIds } from "../../enums";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -30,7 +31,7 @@ export class ConflictResolutionEditor extends TextEditor{
 
     constructor(panelSelector:string){
         super(`${panelSelector} .content`);
-        this._conflictUtils = new ConflictUtils();
+        this._conflictUtils = new ConflictUtils(EnumHtmlIds.conflictview_container);
         this._conflictUtils.dispatchResolvedCount = count => {
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };

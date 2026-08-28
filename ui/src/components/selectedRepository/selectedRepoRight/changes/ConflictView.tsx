@@ -7,7 +7,7 @@ interface IProps{
     currentLines:ILine[];
 }
 
-export function ConflictEditor(props:IProps){
+export function ConflictView(props:IProps){
     const currentLineDivWidth = ((props.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
     const previousLineDivWidth = ((props.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
     const hightDisplacementRef = useRef(0);

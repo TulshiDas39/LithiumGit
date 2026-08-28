@@ -6,7 +6,7 @@ import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { ConflictEditor } from "./ConflictEditor";
+import { ConflictView } from "./ConflictView";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { RebaseActionBox } from "./RebaseActionBox";

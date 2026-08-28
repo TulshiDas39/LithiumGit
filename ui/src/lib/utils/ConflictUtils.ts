@@ -7,7 +7,7 @@ import { ConflictBottomPanel } from "../../components/selectedRepository/selecte
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
-import { ConflictEditor } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictEditor";
+import { ConflictView } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictView";
 
 export class ConflictUtils{
     readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
@@ -147,7 +147,7 @@ export class ConflictUtils{
         const container = document.getElementById(`${this.containerId}`)!;
         if(!container)
             return;
-        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictEditor({
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictView({
             incomingLines:this.incomingLines,
             currentLines:this.currentLines
         }));
