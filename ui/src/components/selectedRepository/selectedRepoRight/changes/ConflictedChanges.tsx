@@ -38,7 +38,6 @@ interface IProps{
 }
 
 interface IState{
-    lastUpdated:string;
 }
 
 function ConflictedChangesComponent(props:IProps){
@@ -47,11 +46,10 @@ function ConflictedChangesComponent(props:IProps){
         appFocusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
     
-    const [state,setState] = useMultiState<IState>({lastUpdated:""});
     const dispatch = useDispatch();
 
     const headerRef = useRef<HTMLDivElement>(null);
-    const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false,lastUpdated:""});
+    const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
@@ -126,6 +124,8 @@ function ConflictedChangesComponent(props:IProps){
     }
 
     useEffect(()=>{
+        if(!refData.current.isMounted)
+            return ;
         if(!store.selectedFile){
             clearEditor();
             return ;
@@ -142,35 +142,13 @@ function ConflictedChangesComponent(props:IProps){
             clearEditor();
         }
     },[store.selectedFile])
-    
-    useEffect(()=>{
-        if(!refData.current.isMounted)
-            return;
-        ChangesData.conflictEditor?.checkForFileUpdate();
-    },[state.lastUpdated])
-    
-    useEffect(()=>{
-        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
-        IpcUtils.getLastUpdatedDate(path).then(date=>{            
-            refData.current.lastUpdated = date;
-        })
-    },[store.selectedFile])
-    
+
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;
-        const path = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
-        IpcUtils.getLastUpdatedDate(path).then(date=>{
-            if(!!refData.current.lastUpdated && refData.current.lastUpdated !== date){
-                refData.current.lastUpdated = date;
-                setState({lastUpdated:date});
-            }
-            else{
-                refData.current.lastUpdated = date;
-            }
-
-        })
+        ChangesData.conflictEditor?.checkForFileUpdate();
     },[store.appFocusVersion])
+    
 
     useEffect(()=>{
         refData.current.isMounted = true;
