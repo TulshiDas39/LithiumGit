@@ -57,7 +57,7 @@ export class ConflictEditor extends TextEditor{
         const success = await this.render(filePath);
         if(!success)
             return false;
-        this._conflictUtils.updateTopView(this._conflictUtils.incomingLines, this._conflictUtils.currentLines);
+        this._conflictUtils.updateTopDiffView(this._conflictUtils.incomingLines, this._conflictUtils.currentLines);
         // this.handleScrolling();
         // this.buildTopPanel();
         return true;

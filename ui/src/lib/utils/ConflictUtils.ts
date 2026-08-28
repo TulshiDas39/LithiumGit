@@ -167,7 +167,7 @@ export class ConflictUtils{
     //     this.SetHeighlightedLines();        
     // }
 
-    updateTopView(incomingLines:ILine[], currentLines:ILine[]){
+    updateTopDiffView(incomingLines:ILine[], currentLines:ILine[]){
         this.incomingLines = incomingLines;
         this.currentLines = currentLines;
         const container = document.querySelector(`${this.containerSelector} .top-diff`);
