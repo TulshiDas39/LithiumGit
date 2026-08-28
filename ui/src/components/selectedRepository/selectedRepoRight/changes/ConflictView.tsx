@@ -49,7 +49,7 @@ export function ConflictView(props:IProps){
             </div>
         </div>
         <div style={{height:'calc(100% - 33px)'}}>
-            <div className="w-100" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(0+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
+            <div className="w-100 top-diff" id={EnumHtmlIds.ConflictEditorTopPanel} style={{height:`calc(50% ${getSign(-(0+3))}  ${Math.abs(hightDisplacement+3)}px)`}}>
                 <ConflictTopPanel currentLineDivWidth={currentLineDivWidth} currentLines={props.currentLines}
                     previousLineDivWidth={previousLineDivWidth} previousLines={props.incomingLines} />
             </div>

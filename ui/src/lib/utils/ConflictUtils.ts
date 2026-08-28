@@ -166,6 +166,34 @@ export class ConflictUtils{
     //     this.HandleScrolling();
     //     this.SetHeighlightedLines();        
     // }
+
+    updateTopView(incomingLines:ILine[], currentLines:ILine[]){
+        this.incomingLines = incomingLines;
+        this.currentLines = currentLines;
+        const container = document.querySelector(`${this.containerSelector} .top-diff`);
+        //top-diff
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
+            currentLineDivWidth:this.currentLineDivWidth,
+            currentLines:this.currentLines,
+            previousLineDivWidth:this.previousLineDivWidth,
+            previousLines:this.incomingLines
+        }));
+
+        container!.innerHTML = innerHtml;
+    }
+
+    // updatePreviousChanges(lines:ILine[]){
+    //         this.previousLines = lines;
+    //         const container = document.querySelector(`#${this.containerId} .difference .previous`);
+    //         const innerHtml = ReactDOMServer.renderToStaticMarkup(DiffView({changeType:"previous",lines:this.previousLines}));
+    //         container!.innerHTML = innerHtml;
+    //         this.HandleScrolling();
+    //         this.previousScrollableContainer?.scrollTo({
+    //             top:this.currentScrollableContainer?.scrollTop,
+    //             left:this.currentScrollableContainer?.scrollLeft,
+    //         });
+    //         this.SetHeighlightedLines();
+    //     }
     
     ShowTopPanel(){
         if(!this.currentLines || !this.incomingLines)
