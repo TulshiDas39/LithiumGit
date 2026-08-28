@@ -31,7 +31,7 @@ export class ConflictEditor extends TextEditor{
     private _conflictUtils: ConflictUtils;
 
     constructor(panelSelector:string){
-        super(`${panelSelector} #conflict-editor .content`);
+        super(`${panelSelector} #${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
         this.panelSelection = panelSelector;
         this._conflictUtils = new ConflictUtils(panelSelector);
         this._conflictUtils.dispatchResolvedCount = count => {
