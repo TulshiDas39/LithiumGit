@@ -26,6 +26,9 @@ export class ConflictUtils{
     private bottomPanel?:HTMLDivElement;
     private containerSelector = "";
     private scrollHandler?: (e: Event) => void;
+    private topLeftScrollContainer?: HTMLElement;
+    private topRightScrollContainer?: HTMLElement;
+    private bottomScrollContainer?: HTMLElement;
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -179,6 +182,12 @@ export class ConflictUtils{
         container!.innerHTML = innerHtml;
 
         this.HandleScrolling();
+
+        this.topLeftScrollContainer?.scrollTo({
+            top:this.bottomScrollContainer?.scrollTop,
+            left:this.bottomScrollContainer?.scrollLeft,
+        });
+
         this.SetHeighlightedLines();
     }
 
@@ -574,11 +583,14 @@ export class ConflictUtils{
         const topPanel = this.topPanelElement;
 
         const bottomPanel = this.bottomPanelElement?.querySelector(".content-container") as HTMLElement;
+        this.bottomScrollContainer = bottomPanel;
         const bottomPanelLine = this.bottomPanelElement?.parentElement?.querySelector(".line_numbers") as HTMLElement;
 
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
+        this.topLeftScrollContainer = topLeftPanel;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
+        this.topRightScrollContainer = topRightPanel;
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
 
