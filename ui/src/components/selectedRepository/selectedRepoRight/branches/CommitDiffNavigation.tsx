@@ -1,5 +1,5 @@
 import React, { Fragment, useMemo } from "react"
-import { StepNavigation } from "../../../common";
+import { StepNavigation, DiffViewModeToggle } from "../../../common";
 import { EnumChangeType, IFile, StringUtils } from "common_library";
 import { GraphUtils } from "../../../../lib";
 import { FaArrowsAltH } from "react-icons/fa";
@@ -10,6 +10,7 @@ interface IProps{
     handleNext:()=>void;
     handlePrevious:()=>void;
     file:IFile;
+    onViewModeToggle?:()=>void;
 }
 
 function CommitDiffNavigationComponent(props:IProps){
@@ -43,11 +44,14 @@ function CommitDiffNavigationComponent(props:IProps){
                 <span>)</span>
             </Fragment>}
         </div>
-        <div className="pe-4">
-            {props.totalStep > -1 && <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep} 
+        <div className="pe-4 d-flex align-items-center">
+            {props.totalStep > -1 && <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep}
                 onNextClick={props.handleNext} onPreviousClick={props.handlePrevious} />}
+            <span className="ps-3">
+                <DiffViewModeToggle onToggle={props.onViewModeToggle} />
+            </span>
         </div>
-        
+
     </div>
 }
 

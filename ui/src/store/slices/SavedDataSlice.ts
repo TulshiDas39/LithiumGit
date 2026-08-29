@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { EnumTheme, IAppInfo, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
+import { EnumChangeListViewMode, EnumDiffViewMode, EnumTheme, IAppInfo, IConfigInfo, RendererEvents, RepositoryInfo } from "common_library";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
-import { CacheUtils, RepoUtils } from "../../lib";
+import { CacheUtils, ConfigUtils, RepoUtils } from "../../lib";
 
 interface ISavedData{
     recentRepositories:RepositoryInfo[];
@@ -19,6 +19,8 @@ const initialState:ISavedData={
         theme:EnumTheme.Dark,
         updateAt:new Date().toISOString(),
         checkedForUpdateAt: new Date().toISOString(),
+        diffViewMode:EnumDiffViewMode.Split,
+        changeListViewMode:EnumChangeListViewMode.CombinedList,
     },
     appInfo:null!,
 }
@@ -75,7 +77,17 @@ const SavedDataSlice = createSlice({
 
         updateConfig(state,action:PayloadAction<IConfigInfo>){
             state.configInfo = action.payload;
+            ConfigUtils.diffViewMode = action.payload.diffViewMode;
             IpcUtils.updateConfig(action.payload);
+        },
+        setDiffViewMode(state,action:PayloadAction<EnumDiffViewMode>){
+            state.configInfo.diffViewMode = action.payload;
+            ConfigUtils.diffViewMode = action.payload;
+            IpcUtils.updateConfig({...state.configInfo});
+        },
+        setChangeListViewMode(state,action:PayloadAction<EnumChangeListViewMode>){
+            state.configInfo.changeListViewMode = action.payload;
+            IpcUtils.updateConfig({...state.configInfo});
         },
         setCheckForUpdateTime(state,action:PayloadAction<string>){
             state.configInfo.checkedForUpdateAt = action.payload;

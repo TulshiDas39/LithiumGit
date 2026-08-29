@@ -1,6 +1,7 @@
-import { EnumChangeType, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
+import { EnumChangeListViewMode, EnumChangeType, EnumDiffViewMode, IFile, RendererEvents, RepositoryInfo, StringUtils } from "common_library";
 import React, { Fragment, useEffect, useRef } from "react"
 import { FaPlus, FaUndo } from "react-icons/fa";
+import { MdInsertDriveFile } from "react-icons/md";
 import { RepoUtils, DiffUtils, EnumChangeGroup, EnumHtmlIds, EnumModals, ILine, UiUtils, useMultiState, IContextItem } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { ModalData } from "../../../modals/ModalData";
@@ -11,6 +12,7 @@ import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { ActionUI } from "../../../../store/slices/UiSlice";
 import { ChangeEditor, TextEditor, PlainTextEditor } from "../../../../lib/utils/editors";
+import { ChangeListViewModeMenu, FileTreeRows } from "../../../common";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -29,6 +31,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
         stagedSelectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
+        diffViewMode:state.savedData.configInfo.diffViewMode,
+        viewMode:state.savedData.configInfo.changeListViewMode,
     }),shallowEqual);
 
     const dispatch = useDispatch();    
@@ -150,12 +154,28 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         ChangesData.changeEditor = null!;        
     }
 
+    const displayModifiedReadOnly = (file:IFile)=>{
+        const fullPath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,file.path);
+        return IpcUtils.getFileContent(fullPath).then(lines=>{
+            return DiffUtils.getDiff(file.path).then(diff=>{
+                const lineConfigs = DiffUtils.GetUiLines(diff,lines);
+                ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
+                ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
+                ChangesData.changeUtils.showChanges();
+            });
+        });
+    }
+
     const displayChanges = async()=>{
         return new Promise<boolean>((res)=>{
             clearExistingChangeView();
             ChangesData.changeUtils.file = store.selectedFile;
-            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){            
-                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){      
+            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    if(store.diffViewMode === EnumDiffViewMode.Unified){
+                        displayModifiedReadOnly(store.selectedFile).then(()=>res(true));
+                        return;
+                    }
                     const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
                     ChangesData.changeEditor = editor;
                     editor.renderILines(store.selectedFile!).then(success=>{
@@ -215,13 +235,13 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
                 })
             }
         })
-    },[store.selectedFile]);
+    },[store.selectedFile, store.diffViewMode]);
 
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
-            return;     
+            return;
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
-            return;        
+            return;
         ChangesData.changeEditor?.checkForFileUpdate();
     },[store.focusVersion])
 
@@ -303,43 +323,56 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         UiUtils.openContextModal();
     }
 
+    const renderFileRow = (f:IFile, depth:number)=>{
+        const showPath = store.viewMode === EnumChangeListViewMode.CombinedList;
+        return (
+            <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
+                className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
+                style={{paddingLeft:depth*16}}
+                onContextMenu={(e) => handleContext(e,f)}
+                >
+                <div className={`col-auto d-flex align-items-center flex-nowrap overflow-hidden flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
+                style={{textOverflow:'ellipsis'}}>
+                    <MdInsertDriveFile className="text-secondary pe-1" style={{flexShrink:0, fontSize:'1.2em'}} />
+                    <span className={`pe-1 flex-shrink-0 text-nowrap ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
+                    {showPath && <span className="small text-nowrap">
+                        <span className="text-secondary">{f.path}</span>
+                    </span>}
+                </div>
+
+                <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">
+                    {state.hoveredFile?.path === f.path && <Fragment>
+                        <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
+                        <span className="px-1" />
+                        <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>
+                    </Fragment>}
+                    <span>
+                        <span className={`ps-1 fw-bold ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{getStatusText(f.changeType)}</span>
+                    </span>
+                </div>
+            </div>
+        )
+    }
+
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
-            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
-                <span className="d-flex align-items-center hover-shadow hover-brighter bg-previous-change-deep px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
-                    <FaUndo />
-                </span>
-                <span className="px-2" />
-                <span className="d-flex align-items-center hover-shadow hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
-                    <FaPlus />
-                </span>
-            </div>}        
-            
+            {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex justify-content-between align-items-center py-2 ps-2" style={{height:40}}>
+                <div className="d-flex align-items-center">
+                    <span className="d-flex align-items-center hover-shadow hover-brighter bg-previous-change-deep py-1 px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+                        <FaUndo />
+                    </span>
+                    <span className="px-2" />
+                    <span className="d-flex align-items-center hover-shadow hover-brighter bg-success py-1 px-2 cur-default" title="Stage all" onClick={_=> stageAll()}>
+                        <FaPlus />
+                    </span>
+                </div>
+                <ChangeListViewModeMenu />
+            </div>}
+
             <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}} onMouseLeave={_=> setState({hoveredFile:undefined})}>
-                    {props.changes?.map(f=>(
-                        <div key={f.path} title={f.path} onMouseEnter= {_ => setState({hoveredFile:f})}
-                            className={`row g-0 align-items-center flex-nowrap hover w-100 ${store.selectedFile?.path === f.path ?"selected":""}`}
-                            onContextMenu={(e) => handleContext(e,f)}
-                            >
-                            <div className={`col-auto overflow-hidden align-items-center flex-shrink-1`} onClick={(_)=> handleFileSelect(f)}
-                            style={{textOverflow:'ellipsis'}}>
-                                <span className={`pe-1 flex-shrink-0 text-nowrap ${f.changeType === EnumChangeType.DELETED?"text-decoration-line-through":""}`}>{f.fileName}</span>
-                                <span className="small text-nowrap">
-                                    <span className="text-secondary">{f.path}</span>
-                                </span>
-                            </div>                            
-                            
-                            <div className="col-auto align-items-center flex-nowrap overflow-hidden flex-grow-1 text-end">                        
-                                {state.hoveredFile?.path === f.path && <Fragment>
-                                    <span className="hover" title="discard" onClick={_=> discardUnstagedChangesOfItem(f)}><FaUndo /></span>
-                                    <span className="px-1" />
-                                    <span className="hover" title="stage" onClick={_=>handleStage(f)}><FaPlus /></span>                                                
-                                </Fragment>}
-                                <span>
-                                    <span className={`ps-1 fw-bold ${UiUtils.getChangeTypeHintColor(f.changeType)}`} title={StringUtils.getStatusText(f.changeType)}>{getStatusText(f.changeType)}</span>
-                                </span>
-                            </div>
-                        </div>
-                    ))}                                                                
+                    {store.viewMode === EnumChangeListViewMode.Tree &&
+                        <FileTreeRows items={props.changes || []} renderLeaf={renderFileRow} />
+                    }
+                    {store.viewMode !== EnumChangeListViewMode.Tree && props.changes?.map(f=> renderFileRow(f,0))}
             </div>
     </div>
 }

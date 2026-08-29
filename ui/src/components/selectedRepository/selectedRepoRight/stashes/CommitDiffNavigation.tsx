@@ -1,7 +1,7 @@
 import { IFile, StringUtils } from "common_library";
 import React, { Fragment } from "react";
 import { FaArrowsAltH } from "react-icons/fa";
-import { StepNavigation } from "../../../common";
+import { StepNavigation, DiffViewModeToggle } from "../../../common";
 
 interface IProps{
     currentStep:number;
@@ -10,6 +10,7 @@ interface IProps{
     handlePrevious:()=>void;
     file:IFile;
     stashHash:string;
+    onViewModeToggle?:()=>void;
 }
 
 function CommitDiffNavigationComponent(props:IProps){   
@@ -20,11 +21,14 @@ function CommitDiffNavigationComponent(props:IProps){
                     <span>({props.stashHash})</span>                    
                 </Fragment>
             </div>
-            <div className="pe-4">
-                <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep} 
+            <div className="pe-4 d-flex align-items-center">
+                <StepNavigation currentStep={props.currentStep} totalStep={props.totalStep}
                     onNextClick={props.handleNext} onPreviousClick={props.handlePrevious} />
+                <span className="ps-3">
+                    <DiffViewModeToggle onToggle={props.onViewModeToggle} />
+                </span>
             </div>
-            
+
         </div>
 }
 

@@ -138,8 +138,9 @@ function CommitDiffViewComponent(props:IProps){
     }
     
     return <div className="h-100 w-100">
-        <CommitDiffNavigation currentStep={state.currentStep} totalStep={state.totalStep} 
-            handleNext={handleNext} handlePrevious={handlePrevious} file={props.file!} />
+        <CommitDiffNavigation currentStep={state.currentStep} totalStep={state.totalStep}
+            handleNext={handleNext} handlePrevious={handlePrevious} file={props.file!}
+            onViewModeToggle={()=>changeUtils.refreshViewMode()} />
 
         <div id={props.containerId} className="w-100" style={{height:`calc(100% - 30px)`}}>
 

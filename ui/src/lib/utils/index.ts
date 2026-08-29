@@ -9,3 +9,5 @@ export * from './NumUtils';
 export * from './ArrayUtils';
 export * from './DataUtils';
 export * from './ConflictUtils';
+export * from './ConfigUtils';
+export * from './FileTreeUtils';

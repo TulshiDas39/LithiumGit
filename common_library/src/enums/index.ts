@@ -5,3 +5,5 @@ export * from './EnumAnnotationType';
 export * from './EnumTheme';
 export * from './EnumNotificationType'
 export * from './Enums';
+export * from './EnumChangeListViewMode';
+export * from './EnumDiffViewMode';
