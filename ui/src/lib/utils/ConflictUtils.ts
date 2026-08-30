@@ -196,7 +196,7 @@ export class ConflictUtils{
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            this.hightDisplacement += this.onResizeDisplacement;
+            this.hightDisplacement -= this.onResizeDisplacement;
             this.onResizeDisplacement = 0;
         }
         
@@ -209,6 +209,9 @@ export class ConflictUtils{
                 return "-";
             return "+";
         }
+        const displacement = this.hightDisplacement - this.onResizeDisplacement;
+        this.topPanelContainer!.style.height = `calc(50% ${getSign(-(displacement+3))}  ${Math.abs(displacement+3)}px)`;
+        this.bottomPanelContainer!.style.height = `calc(50% ${getSign(displacement)} ${Math.abs(displacement)}px)`;
     }
 
 
