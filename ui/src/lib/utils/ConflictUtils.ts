@@ -1,5 +1,5 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { ILine, IPositition } from "../interfaces";
+import { ILine } from "../interfaces";
 import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
@@ -248,20 +248,6 @@ export class ConflictUtils{
 
         this.SetHeighlightedLines();
     }
-
-    // updatePreviousChanges(lines:ILine[]){
-    //         this.previousLines = lines;
-    //         const container = document.querySelector(`#${this.containerId} .difference .previous`);
-    //         const innerHtml = ReactDOMServer.renderToStaticMarkup(DiffView({changeType:"previous",lines:this.previousLines}));
-    //         container!.innerHTML = innerHtml;
-    //         this.HandleScrolling();
-    //         this.previousScrollableContainer?.scrollTo({
-    //             top:this.currentScrollableContainer?.scrollTop,
-    //             left:this.currentScrollableContainer?.scrollLeft,
-    //         });
-    //         this.SetHeighlightedLines();
-    //     }
-    
 
     private get topPanelElement(){
         const conflictTop = document.querySelector(".conflict-diff") as HTMLDivElement;
