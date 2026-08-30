@@ -31,6 +31,7 @@ export class ConflictUtils{
     private bottomScrollContainer?: HTMLElement;
     private resizer?: HTMLElement;
     private hightDisplacement = 0;
+    private onResizeDisplacement = 0;
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -169,14 +170,10 @@ export class ConflictUtils{
     private handleDragging(){
         if(!this.resizer)
             return;
-        let initialMousePosition:IPositition = null!;
-        let currentMousePosition:IPositition = null!;
+        let initialMousePositionY:number = null!;
 
         const moveListener =(e:MouseEvent)=>{            
-            currentMousePosition = {
-                x:e.clientX-initialMousePosition.x,
-                y:e.clientY-initialMousePosition.y
-            };
+            this.onResizeDisplacement = e.clientY-initialMousePositionY;                
         }
 
         const selectListener = (e:Event) => {
@@ -185,21 +182,26 @@ export class ConflictUtils{
         };
 
         const downListener = (e:MouseEvent)=>{
-             initialMousePosition = {x:e.clientX,y:e.clientY};
-             document.addEventListener("mousemove",moveListener);
-             document.addEventListener("mouseup",upListener);
-             document.addEventListener("selectstart",selectListener);
+            this.onResizeDisplacement = 0;
+            initialMousePositionY = e.clientY;
+            document.addEventListener("mousemove",moveListener);
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
          }
 
         const upListener = ()=>{
             document.removeEventListener("mousemove",moveListener);
             document.removeEventListener("mouseup",upListener);
             document.removeEventListener("selectstart",selectListener);
-            currentMousePosition = undefined!;
+            this.hightDisplacement += this.onResizeDisplacement;
+            this.onResizeDisplacement = 0;
         }
         
         this.resizer.addEventListener("mousedown",downListener);
-
+    }
+    
+    private updateResizerPosition(){
+        
     }
 
 
