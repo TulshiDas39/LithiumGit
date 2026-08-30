@@ -22,8 +22,8 @@ export class ConflictUtils{
     private actionsTaken:IActionTaken[] = [];
     private currentEditorWidth = 0;
     private incomingEditorWidth = 0;
-    private topPanel?:HTMLDivElement;
-    private bottomPanel?:HTMLDivElement;
+    private topPanelContainer?:HTMLDivElement;
+    private bottomPanelContainer?:HTMLDivElement;
     private containerSelector = "";
     private scrollHandler?: (e: Event) => void;
     private topLeftScrollContainer?: HTMLElement;
@@ -136,8 +136,8 @@ export class ConflictUtils{
 
     private initialiseData(){
         this.setEditorWidths();
-        this.topPanel = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
-        this.bottomPanel = document.querySelector<HTMLDivElement>(`#${this.bottomPanelId}`)!;
+        this.topPanelContainer = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
+        this.bottomPanelContainer = document.querySelector<HTMLDivElement>(`#${this.bottomPanelId}`)!;
         this.acceptAllCurrentCheckBox.checked = false;
         this.acceptAllIncomingCheckBox.checked = false;
     }
@@ -165,6 +165,8 @@ export class ConflictUtils{
 
     private resolveElements(){
         this.resizer = document.querySelector(`${this.containerSelector} .resizer`) as HTMLElement;
+        this.bottomPanelContainer = document.querySelector<HTMLDivElement>(`${this.containerSelector} #${EnumHtmlIds.ConflictEditorBottomPanel}`)!;        
+        this.topPanelContainer = document.querySelector<HTMLDivElement>(`${this.containerSelector} .top-diff`)!;
     }
 
     private handleDragging(){
@@ -173,7 +175,8 @@ export class ConflictUtils{
         let initialMousePositionY:number = null!;
 
         const moveListener =(e:MouseEvent)=>{            
-            this.onResizeDisplacement = e.clientY-initialMousePositionY;                
+            this.onResizeDisplacement = e.clientY-initialMousePositionY;
+            this.updateResizerPosition();
         }
 
         const selectListener = (e:Event) => {
@@ -201,7 +204,11 @@ export class ConflictUtils{
     }
     
     private updateResizerPosition(){
-        
+        const getSign=(value:number)=>{
+            if(value < 0)
+                return "-";
+            return "+";
+        }
     }
 
 
