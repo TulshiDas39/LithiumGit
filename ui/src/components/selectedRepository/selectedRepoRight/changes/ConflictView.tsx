@@ -51,7 +51,7 @@ export function ConflictView(props:IProps){
                 <ConflictTopPanel currentLines={props.currentLines}
                     previousLines={props.incomingLines} />
             </div>
-            <div className="w-100 bg-second-color cur-resize-v" style={{height:3}}/>
+            <div className="w-100 bg-second-color resizer cur-resize-v" style={{height:3}}/>
             <div className="w-100" id={EnumHtmlIds.ConflictEditorBottomPanel} style={{height:`calc(50% ${getSign(0)} ${Math.abs(0)}px)`}}>
                 <div className="h-100 w-100 d-flex conflict-bottom">
                     <div className="noselect line_numbers overflow-y-hidden h-100"></div>

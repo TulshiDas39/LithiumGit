@@ -1,5 +1,5 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { ILine } from "../interfaces";
+import { ILine, IPositition } from "../interfaces";
 import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
@@ -29,6 +29,8 @@ export class ConflictUtils{
     private topLeftScrollContainer?: HTMLElement;
     private topRightScrollContainer?: HTMLElement;
     private bottomScrollContainer?: HTMLElement;
+    private resizer?: HTMLElement;
+    private hightDisplacement = 0;
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -155,7 +157,51 @@ export class ConflictUtils{
             currentLines:this.currentLines
         }));
         container.innerHTML = innerHtml;
+        this.resolveElements();
+        this.HandleScrolling();
+        this.handleDragging();
     }
+
+    private resolveElements(){
+        this.resizer = document.querySelector(`${this.containerSelector} .resizer`) as HTMLElement;
+    }
+
+    private handleDragging(){
+        if(!this.resizer)
+            return;
+        let initialMousePosition:IPositition = null!;
+        let currentMousePosition:IPositition = null!;
+
+        const moveListener =(e:MouseEvent)=>{            
+            currentMousePosition = {
+                x:e.clientX-initialMousePosition.x,
+                y:e.clientY-initialMousePosition.y
+            };
+        }
+
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
+
+        const downListener = (e:MouseEvent)=>{
+             initialMousePosition = {x:e.clientX,y:e.clientY};
+             document.addEventListener("mousemove",moveListener);
+             document.addEventListener("mouseup",upListener);
+             document.addEventListener("selectstart",selectListener);
+         }
+
+        const upListener = ()=>{
+            document.removeEventListener("mousemove",moveListener);
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
+            currentMousePosition = undefined!;
+        }
+        
+        this.resizer.addEventListener("mousedown",downListener);
+
+    }
+
 
     // showChanges(){
     //     const container = document.getElementById(`${this.containerId}`)!;
