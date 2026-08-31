@@ -161,6 +161,7 @@ export class ConflictUtils{
         }));
         container.innerHTML = innerHtml;
         this.resolveElements();
+        this.addEventHanlders();
         this.HandleScrolling();
         this.handleDragging();
     }
@@ -242,6 +243,7 @@ export class ConflictUtils{
         container!.innerHTML = innerHtml;
 
         this.HandleScrolling();
+        this.addEventHandlersToInnerCheckboxes();
 
         this.topLeftScrollContainer?.scrollTo({
             top:this.bottomScrollContainer?.scrollTop,
@@ -291,6 +293,26 @@ export class ConflictUtils{
         return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
     }
 
+    private addEventHandlersToInnerCheckboxes(){
+        const incomingCheckBoxes = this.incomingCheckBoxes;
+        incomingCheckBoxes.forEach(elem=>{
+            elem.addEventListener("change",(e)=>{
+                this.updateTopLabelIncomingCheckboxState();
+                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                this.updateConflictState(conflictNo);
+            })
+        })
+
+        const currentCheckBoxes = this.currentCheckBoxes;
+        currentCheckBoxes.forEach(elem=>{
+            elem.addEventListener("change",(e)=>{
+                this.updateTopLeveCurrentCheckboxState();
+                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                this.updateConflictState(conflictNo);
+            })
+        })
+    }
+
     private addEventHanlders(){
         const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
         acceptAllIncomingCheck.addEventListener("change",(e)=>{
@@ -317,46 +339,30 @@ export class ConflictUtils{
                 }
             });
         })
+        
+        this.addEventHandlersToInnerCheckboxes();
 
-        const incomingCheckBoxes = this.incomingCheckBoxes;
-        incomingCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                this.updateTopLabelIncomingCheckboxState();
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                this.updateConflictState(conflictNo);
-            })
-        })
+        // this.acceptIncomingElems.forEach(elem=>{
+        //     elem.addEventListener("click",()=>{
+        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+        //         this.handleAcceptIncoming(conflictNo);
+        //     })
+        // })
 
-        const currentCheckBoxes = this.currentCheckBoxes;
-        currentCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                this.updateTopLeveCurrentCheckboxState();
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                this.updateConflictState(conflictNo);
-            })
-        })
+        // this.acceptCurrentElems.forEach(elem=>{
+        //     elem.addEventListener("click",()=>{
+        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+        //         this.handleAcceptCurrent(conflictNo);
+        //     })
+        // })
 
-        this.acceptIncomingElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                this.handleAcceptIncoming(conflictNo);
-            })
-        })
-
-        this.acceptCurrentElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                this.handleAcceptCurrent(conflictNo);
-            })
-        })
-
-        this.acceptBothElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                this.handleAcceptCurrent(conflictNo);
-                this.handleAcceptIncoming(conflictNo);
-            })
-        })
+        // this.acceptBothElems.forEach(elem=>{
+        //     elem.addEventListener("click",()=>{
+        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+        //         this.handleAcceptCurrent(conflictNo);
+        //         this.handleAcceptIncoming(conflictNo);
+        //     })
+        // })
 
     }
 
