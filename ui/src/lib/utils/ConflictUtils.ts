@@ -12,8 +12,8 @@ export class ConflictUtils{
     readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
     readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
     file?:IFile;
-    currentLines:ILine[] = null!;
-    incomingLines:ILine[] = null!;
+    currentLines:IConflictLine[] = null!;
+    incomingLines:IConflictLine[] = null!;
     private heighlightedLineIndexes:number[]=[];
     private startingMarkers:{conflictNo:number;text:string}[] = [];
     private endingMarkers:{conflictNo:number;text:string}[] = [];
@@ -236,7 +236,7 @@ export class ConflictUtils{
     //     this.SetHeighlightedLines();        
     // }
 
-    updateTopDiffView(incomingLines:ILine[], currentLines:ILine[]){
+    updateTopDiffView(incomingLines:IConflictLine[], currentLines:IConflictLine[]){
         this.incomingLines = incomingLines;
         this.currentLines = currentLines;
         const container = document.querySelector(`${this.containerSelector} .top-diff`);
