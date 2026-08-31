@@ -109,7 +109,17 @@ export class ConflictEditor extends TextEditor{
                 lines = lines.concat(curLines);
             }
         }
+
         change.text = lines.join(this._lineFeedType);
+
+        if(lines.length){
+            if(change.startOffset > 0){
+                change.text = this._lineFeedType + change.text;
+            }else{
+                change.text += this._lineFeedType;
+            }
+        }
+
         this.applyChange(change);
     }
 
