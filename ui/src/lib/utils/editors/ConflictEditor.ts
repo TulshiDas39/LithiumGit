@@ -216,8 +216,12 @@ export class ConflictEditor extends TextEditor{
         }
     }
 
-    private async updateDiff(){    
+    private async updateDiff(){ 
+        const options = ["-c", "core.autocrlf=false", "-c", "core.safecrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._sourceFilePath, this._tempFilePath];
+        const r = await IpcUtils.getRaw(options);        
+        const diffResult = r.result!;
         const contentLines = this.getContentLines();
+        const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);   
         const lineConfig = this._conflictUtils.GetUiLinesOfConflict(contentLines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;        

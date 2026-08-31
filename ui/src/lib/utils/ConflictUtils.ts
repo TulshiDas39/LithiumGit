@@ -141,6 +141,79 @@ export class ConflictUtils{
         return {currentLines, incomingLines};
     }
 
+    GetUiLinesOfConflictFromDiff(prevLines: ILine[], currLines: ILine[]) {
+        // const currentMarker = "<<<<<<<";
+        // const endingMarker = ">>>>>>>";
+
+        // //the markers are re-collected on every read, so drop the ones of the previous read
+        // this.startingMarkers = [];
+        // this.endingMarkers = [];
+
+        // const currentLines:IConflictLine[] = [];
+        // const incomingLines:IConflictLine[] = [];
+        // let conflictNo = 0;
+        // let currentChangeDetected = false;
+        // let incomingChangeDetected = false;
+        // for(let i=0; i<currLines.length; i++){
+        //     const contentLine = currLines[i];
+        //     if(contentLine.startsWith(currentMarker)){
+        //         conflictNo++;
+        //         currentChangeDetected = true;
+        //         incomingChangeDetected = false;
+        //         this.startingMarkers.push({conflictNo,text:contentLine});
+        //         continue;
+        //     }
+        //     if(contentLine === this.Separator){
+        //         currentChangeDetected = false;
+        //         incomingChangeDetected = true;
+        //         continue;
+        //     }
+        //     if(contentLine.startsWith(endingMarker)){
+        //         currentChangeDetected = false;
+        //         incomingChangeDetected = false;
+        //         this.endingMarkers.push({conflictNo,text:contentLine});
+        //         while(currentLines.length > incomingLines.length){
+        //             incomingLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
+        //         }
+        //         while(currentLines.length < incomingLines.length){
+        //             currentLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
+        //         }
+        //         continue;
+        //     }
+        //     if(currentChangeDetected){
+        //         currentLines.push({
+        //             text:contentLine,
+        //             hightLightBackground:true,
+        //             textHightlightIndex:[],
+        //             conflictNo,
+        //             lineIndex:i,
+        //         });
+        //         continue;
+        //     }
+        //     if(incomingChangeDetected){
+        //         incomingLines.push({
+        //             text:contentLine,
+        //             hightLightBackground:true,
+        //             textHightlightIndex:[],
+        //             conflictNo,
+        //             lineIndex:i,
+        //         });
+        //         continue;
+        //     }
+        //     incomingLines.push({
+        //         text:contentLine,
+        //         textHightlightIndex:[],
+        //         lineIndex:i,
+        //     })
+        //     currentLines.push({
+        //         text:contentLine,
+        //         textHightlightIndex:[],
+        //         lineIndex:i,
+        //     })
+        // }
+        // return {currentLines, incomingLines};
+    }
+
     private initialiseData(){
         this.setEditorWidths();
         this.topPanelContainer = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
