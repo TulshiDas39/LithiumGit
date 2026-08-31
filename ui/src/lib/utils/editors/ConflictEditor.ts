@@ -7,13 +7,14 @@ import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionUI } from "../../../store/slices/UiSlice";
-import { ActionConflict, ActionModals } from "../../../store";
+import { ActionChanges, ActionConflict, ActionModals } from "../../../store";
 import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
 import { EnumHtmlIds } from "../../enums";
-import { IConflictPosition, ILine } from "../../interfaces";
+import { IConflictLine, IConflictPosition, ILine } from "../../interfaces";
+import { DiffUtils } from "../DiffUtils";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -31,8 +32,8 @@ export class ConflictEditor extends TextEditor{
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
     private _conflictPositions: IConflictPosition[] = [];
-    private _incomingLines:ILine[] = [];
-    private _currentLines:ILine[] = [];
+    private _incomingLines:IConflictLine[] = [];
+    private _currentLines:IConflictLine[] = [];
 
 
     constructor(panelSelector:string){
@@ -45,6 +46,7 @@ export class ConflictEditor extends TextEditor{
         this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo) => this.acceptChange(conflictNo);
         this.onChange.push((changes)=> this.handleChange(changes));
+        this.onSync = () => this.updateDiff();
     }
     
     focusHightlightedLine(step:number){
@@ -68,7 +70,7 @@ export class ConflictEditor extends TextEditor{
         const success = await this.render(filePath);
         if(!success)
             return false;
-        this._conflictUtils.updateTopDiffView(this._conflictUtils.incomingLines, this._conflictUtils.currentLines);
+        this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
         // this.handleScrolling();
         // this.buildTopPanel();
         return true;
@@ -95,7 +97,7 @@ export class ConflictEditor extends TextEditor{
                 conflict.beforeLineIndex += Math.max(conflict.beforeLineIndex + lineChangeCount, conflict.afterLineIndex + 1);
                 lineIndexThreshold = conflict.beforeLineIndex;
             }
-
+            
             
         }
     }
@@ -192,8 +194,6 @@ export class ConflictEditor extends TextEditor{
         const lineConfig = this._conflictUtils.GetUiLinesOfConflict(this._lines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
-        this._conflictUtils.currentLines = lineConfig.currentLines.slice();
-        this._conflictUtils.incomingLines = lineConfig.incomingLines.slice();
         this.resolveConflictPositions();
         return true;
     }
@@ -214,6 +214,19 @@ export class ConflictEditor extends TextEditor{
                 conflictPosition = {} as IConflictPosition;
             }
         }
+    }
+
+    private async updateDiff(){    
+        const contentLines = this.getContentLines();
+        const lineConfig = this._conflictUtils.GetUiLinesOfConflict(contentLines);
+        this._incomingLines = lineConfig.incomingLines;
+        this._currentLines = lineConfig.currentLines;        
+        this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
+        ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this.totalChangeCount,silentStepUpdate:true}));
+        this.renderLineNumbers();
+        const tr = this._editView.state.tr;
+        tr.setMeta(TransMetaData.DecorationChanged,true);        
+        this._editView.dispatch(tr);
     }
 
     private handleScrolling(){
