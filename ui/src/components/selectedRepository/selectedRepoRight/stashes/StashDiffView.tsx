@@ -93,8 +93,9 @@ function StashDiffViewComponent(props:IProps){
     }
     
     return <div className="h-100 w-100">
-        {!!props.file && <CommitDiffNavigation stashHash={props.stash?.avrebHash!} file={props.file!} currentStep={state.currentStep} totalStep={state.totalStep} 
-            handleNext={handleNext} handlePrevious={handlePrevious} />}
+        {!!props.file && <CommitDiffNavigation stashHash={props.stash?.avrebHash!} file={props.file!} currentStep={state.currentStep} totalStep={state.totalStep}
+            handleNext={handleNext} handlePrevious={handlePrevious}
+            onViewModeToggle={()=>changeUtils.refreshViewMode()} />}
         <div id={EnumHtmlIds.StashDiff} className="w-100" style={{height:`calc(100% - 30px)`}}>
 
         </div>

@@ -1,7 +1,7 @@
 import { EnumChangeType, IFile } from "common_library";
 import React, {  useEffect } from "react"
 import { FaArrowsAltH } from "react-icons/fa";
-import { StepNavigation } from "../../common";
+import { StepNavigation, DiffViewModeToggle } from "../../common";
 import { ChangesData } from "../../../lib";
 
 interface IProps{
@@ -37,9 +37,12 @@ function ModifiedChangeNavigatorComponent(props:IProps){
              )</div>
         </div>
         
-        <div className="ps-2 pe-4">
+        <div className="ps-2 pe-4 d-flex align-items-center">
             <StepNavigation  currentStep={props.currentStep} totalStep={props.totalStep}
                 onNextClick={props.onNextClick} onPreviousClick={props.onPreviousClick} />
+            <span className="ps-3">
+                <DiffViewModeToggle />
+            </span>
         </div>
     </div>
 }

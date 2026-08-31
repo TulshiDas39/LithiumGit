@@ -1,4 +1,4 @@
-import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
+import { EnumChangeListViewMode, EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
 import { ChangesData, EnumHtmlIds, EnumModals, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
@@ -6,27 +6,32 @@ import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
 import { ModalData } from "../../../modals/ModalData";
 import { FaEllipsisH } from "react-icons/fa";
+import { MdInsertDriveFile } from "react-icons/md";
 import { Dropdown } from "react-bootstrap";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ConflictEditor } from "../../../../lib/utils/editors";
+import { ChangeListViewModeMenu, FileTreeRows } from "../../../common";
 
 interface ISingleFileProps{
     item:IFile
     handleSelect:(file:IFile)=>void;
     isSelected:boolean;
+    depth:number;
+    showPath:boolean;
 }
 
 function SingleFile(props:ISingleFileProps){
     const [state,setState]=useMultiState({isHovered:false});
 
     return (
-        <div key={props.item.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`} 
-        title={props.item.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
+        <div key={props.item.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`}
+        title={props.item.fileName} style={{paddingLeft:props.depth*16}} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})}
             onClick={_=> props.handleSelect(props.item)}>
-            <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
+            <div className="col-auto d-flex align-items-center flex-nowrap overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
+                <MdInsertDriveFile className="text-secondary pe-1" style={{flexShrink:0, fontSize:'1.2em'}} />
                 <span className={`pe-1 flex-shrink-0 text-nowrap`}>{props.item.fileName}</span>
-                <span className="small text-secondary text-nowrap">{props.item.path}</span>
+                {props.showPath && <span className="small text-secondary text-nowrap">{props.item.path}</span>}
             </div>
         </div>
     )
@@ -46,6 +51,7 @@ function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile,
         appFocusVersion:state.ui.versions.appFocused,
+        viewMode:state.savedData.configInfo.changeListViewMode,
     }),shallowEqual);
     
     const dispatch = useDispatch();
@@ -160,10 +166,17 @@ function ConflictedChangesComponent(props:IProps){
         }
     },[])
     
+    const renderFileRow = (f:IFile, depth:number)=>(
+        <SingleFile key={f.path} item={f} handleSelect={handleSelect}
+            isSelected ={f.path === store.selectedFile?.path}
+            depth={depth} showPath={store.viewMode === EnumChangeListViewMode.CombinedList} />
+    )
+
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
-    <div ref={headerRef as any} className="d-flex justify-content-end py-1" style={{height:40}}
+    <div ref={headerRef as any} className="d-flex justify-content-between py-1" style={{height:40}}
      >
-        <div id={EnumHtmlIds.acceptIncomingCurrentAllPanel} className="d-flex justify-content-end align-items-center">            
+        <ChangeListViewModeMenu />
+        <div id={EnumHtmlIds.acceptIncomingCurrentAllPanel} className="d-flex justify-content-end align-items-center">
             <Dropdown>
                 <Dropdown.Toggle variant="link" id="dropdown-reposelection" className="rounded-0 no-caret">
                     <FaEllipsisH />
@@ -173,14 +186,14 @@ function ConflictedChangesComponent(props:IProps){
                     <Dropdown.Item onClick={acceptAllCurrentChanges}>Accept All Current Changes</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
-            
-        </div>        
-    </div>    
+
+        </div>
+    </div>
     <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}}>
-        {props.changes.map(f=>(
-            <SingleFile key={f.path} item={f} handleSelect={handleSelect}
-                isSelected ={f.path === store.selectedFile?.path} />
-        ))}        
+        {store.viewMode === EnumChangeListViewMode.Tree &&
+            <FileTreeRows items={props.changes} renderLeaf={renderFileRow} />
+        }
+        {store.viewMode !== EnumChangeListViewMode.Tree && props.changes.map(f=> renderFileRow(f,0))}
     </div>
 </div>
 }

@@ -1,4 +1,4 @@
-import { Constants, EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
+import { Constants, EnumChangeListViewMode, EnumDiffViewMode, EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
@@ -97,6 +97,14 @@ export class Startup{
       if(!SavedData.data.configInfo.checkedForUpdateAt){
         let lastChecked = new Date(2023,0,1).toISOString();
         SavedData.data.configInfo.checkedForUpdateAt = lastChecked;
+        isUpdated = true;
+      }
+      if(!SavedData.data.configInfo.diffViewMode){
+        SavedData.data.configInfo.diffViewMode = EnumDiffViewMode.Split;
+        isUpdated = true;
+      }
+      if(!SavedData.data.configInfo.changeListViewMode){
+        SavedData.data.configInfo.changeListViewMode = EnumChangeListViewMode.CombinedList;
         isUpdated = true;
       }
 

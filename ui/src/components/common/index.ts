@@ -6,3 +6,6 @@ export * from './StepNavigation';
 export * from './inputField';
 export * from './DatePicker';
 export * from './Icon';
+export * from './DiffViewModeToggle';
+export * from './FileTreeRows';
+export * from './ChangeListViewModeMenu';

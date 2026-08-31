@@ -10,6 +10,7 @@ export class ChangeUtils{
     file?:IFile;
     currentLines:ILine[]=[];
     previousLines:ILine[]=[];
+    allowUnifiedView = false;
     private heighlightedLineIndexes:number[]=[];
     private scrollHandler1?: (e: Event) => void;
     private scrollHandler2?: (e: Event) => void;
@@ -31,11 +32,18 @@ export class ChangeUtils{
             return;
         const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
             linesAfterChange:this.currentLines,
-            linesBeforeChange:this.previousLines
+            linesBeforeChange:this.previousLines,
+            allowUnifiedView:this.allowUnifiedView,
         }));
         container.innerHTML = innerHtml;
         this.HandleScrolling();
-        this.SetHeighlightedLines();        
+        this.SetHeighlightedLines();
+    }
+
+    refreshViewMode(){
+        if(!this.allowUnifiedView)
+            return;
+        this.showChanges();
     }
 
     updatePreviousChanges(lines:ILine[]){

@@ -1,4 +1,4 @@
-import { ILine } from "../interfaces";
+import { ILine, IUnifiedLine } from "../interfaces";
 import { EnumCustomBlots } from "../enums";
 import { IpcUtils } from "./IpcUtils";
 export type TDiffLineType = "unchanged"|"added"|"removed";
@@ -375,6 +375,33 @@ export class DiffUtils{
                 
         });
         return lineNumbers;
+    }
+
+    static ToUnifiedLines(previousLines:ILine[], currentLines:ILine[]):IUnifiedLine[]{
+        const unifiedLines:IUnifiedLine[] = [];
+        let oldLineNo = 1;
+        let newLineNo = 1;
+        const length = Math.max(previousLines?.length ?? 0, currentLines?.length ?? 0);
+        for(let i=0;i<length;i++){
+            const prev = previousLines?.[i];
+            const curr = currentLines?.[i];
+
+            if(prev?.text === undefined && curr?.text === undefined)
+                continue;
+
+            if(prev?.text !== undefined && curr?.text !== undefined && !prev.hightLightBackground && !curr.hightLightBackground){
+                unifiedLines.push({ side:"context", text:curr.text, textHightlightIndex:[], oldLineNo:oldLineNo++, newLineNo:newLineNo++ });
+                continue;
+            }
+
+            if(prev?.text !== undefined){
+                unifiedLines.push({ side:"removed", text:prev.text, textHightlightIndex:prev.textHightlightIndex, hightLightBackground:prev.hightLightBackground, oldLineNo:oldLineNo++ });
+            }
+            if(curr?.text !== undefined){
+                unifiedLines.push({ side:"added", text:curr.text, textHightlightIndex:curr.textHightlightIndex, hightLightBackground:curr.hightLightBackground, newLineNo:newLineNo++ });
+            }
+        }
+        return unifiedLines;
     }
 
     static async getDiff(filePath:string, isSgated?:boolean){
