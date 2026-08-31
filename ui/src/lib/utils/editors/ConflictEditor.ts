@@ -74,26 +74,43 @@ export class ConflictEditor extends TextEditor{
 
     private handleChange(changes:IChange[]){
         for(let change of changes){
-            const conflictNo = this.findOverlappingConflictNo(change);
+            const conflict = this.findOverlappingConflictNo(change);
+            const insertedLineCount = change.text.split(/\n\r?/).length;
+            const selectedLineCount = change.endlineIndex - change.startlineIndex + 1;
+            const lineChangeCount = insertedLineCount - selectedLineCount;
+            let lineIndexThreshold = 0;
+            if(conflict){
+                if(change.startlineIndex < conflict.afterLineIndex + 1){
+                    conflict.afterLineIndex = change.startlineIndex - 1;
+                }
+                conflict.beforeLineIndex = Math.max(conflict.afterLineIndex+1, conflict.beforeLineIndex + lineChangeCount);
+                lineIndexThreshold = conflict.beforeLineIndex;
+            }
+
+            const remainingConflicts = this._conflictPositions.filter(x=> x.conflictNo > conflict.conflictNo);
+            for(let conflict of remainingConflicts){
+                conflict.afterLineIndex = Math.max(conflict.afterLineIndex + lineChangeCount, lineIndexThreshold);
+                conflict.beforeLineIndex += Math.max(conflict.beforeLineIndex + lineChangeCount, conflict.afterLineIndex + 1);
+            }
         }
     }
 
     private findOverlappingConflictNo(change:IChange){
         for(let conflict of this._conflictPositions){
-            if(change.startlineIndex <= conflict.afterLineIndex +1 && conflict.afterLineIndex + 1 <= change.endlineIndex)
-                return conflict.conflictNo;
+            if(change.startlineIndex <= conflict.afterLineIndex + 1 && conflict.afterLineIndex + 1 <= change.endlineIndex)
+                return conflict;
 
             if(change.startlineIndex <= conflict.beforeLineIndex - 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
-                return conflict.conflictNo;
+                return conflict;
 
             if(change.startlineIndex >= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 >= change.endlineIndex)
-                return conflict.conflictNo;
+                return conflict;
 
             if(change.startlineIndex <= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
-                return conflict.conflictNo;
+                return conflict;
         }
 
-        return -1;
+        return null!;
     }
 
     // async renderILines(file:IFile){
