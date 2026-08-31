@@ -7,12 +7,13 @@ import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
 import { ActionUI } from "../../../store/slices/UiSlice";
-import { ActionChanges, ActionConflict, ActionModals } from "../../../store";
+import { ActionConflict, ActionModals } from "../../../store";
 import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
 import { EnumHtmlIds } from "../../enums";
+import { IConflictPosition } from "../../interfaces";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -29,6 +30,8 @@ export class ConflictEditor extends TextEditor{
     private _file:IFile = null!;
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
+    private _conflictPositions: IConflictPosition[] = [];
+
 
     constructor(panelSelector:string){
         super(`${panelSelector} #${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
@@ -38,6 +41,8 @@ export class ConflictEditor extends TextEditor{
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };
         this.saveHandler = success => this.onSave(success);
+        this._conflictUtils.acceptIncomingChange = (conflictNo,accept) => this.acceptIncomingChange(conflictNo,accept);
+        this._conflictUtils.acceptCurrentChange = (conflictNo,accept) => this.acceptCurrentChange(conflictNo,accept);
     }
     
     focusHightlightedLine(step:number){
@@ -80,13 +85,54 @@ export class ConflictEditor extends TextEditor{
     //     return r;
     // }
 
+    private acceptIncomingChange(conflictNo:number,accept:boolean){
+        const conflictPosition = this._conflictPositions.find(c => c.conflictNo === conflictNo);
+        
+        const lineIndex = this.getStartingLineIndexOfConflict(conflictNo);
+
+    }
+
+    private acceptCurrentChange(conflictNo:number,accept:boolean){
+        
+    }
+
+    private getStartingLineIndexOfConflict(conflictNo:number){
+        let conflictNoi = 0;
+        for(let i=0;i<this._lines.length;i++){
+            if(this._lines[i].startsWith(ConflictEditor.currentMarker)){
+                if(conflictNo === conflictNoi + 1)
+                    return i;
+                conflictNoi++;
+            }
+        }
+        return -1;        
+    }
+
     protected override async readFile(){
         const succeeded = await super.readFile();
         if(!succeeded) return false;
         const lineConfig = this._conflictUtils.GetUiLinesOfConflict(this._lines);
         this._conflictUtils.currentLines = lineConfig.currentLines;
         this._conflictUtils.incomingLines = lineConfig.previousLines;
+        this.resolveConflictPositions();
         return true;
+    }
+
+    private resolveConflictPositions(){
+        let conflictNo = 0;
+        let conflictPosition = {} as IConflictPosition;
+        for(let i=0;i<this._lines.length;i++){
+            if(this._lines[i].startsWith(ConflictEditor.currentMarker)){
+                conflictNo++;
+                conflictPosition.conflictNo = conflictNo;
+                conflictPosition.afterLineIndex = i-1;
+                while(i < this._lines.length && !this._lines[i].startsWith(ConflictEditor.endingMarker)){
+                    i++;
+                }
+                conflictPosition.beforeLineIndex = i+1;
+                this._conflictPositions.push(conflictPosition);
+            }
+        }
     }
 
     private handleScrolling(){
