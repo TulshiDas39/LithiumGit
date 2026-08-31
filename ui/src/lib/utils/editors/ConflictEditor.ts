@@ -2,7 +2,7 @@ import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import { DecorationSet, Decoration } from "prosemirror-view"
 import { Node } from "prosemirror-model"
 import { TextEditor } from "./TextEditor";
-import { IFile } from "common_library";
+import { EnumConflictSide, IChange, IFile } from "common_library";
 import { IpcUtils } from "../IpcUtils";
 import { RepoUtils } from "../RepoUtils";
 import { ReduxUtils } from "../ReduxUtils";
@@ -13,7 +13,7 @@ import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
 import { EnumHtmlIds } from "../../enums";
-import { IConflictPosition } from "../../interfaces";
+import { IConflictPosition, ILine } from "../../interfaces";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
@@ -41,8 +41,7 @@ export class ConflictEditor extends TextEditor{
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };
         this.saveHandler = success => this.onSave(success);
-        this._conflictUtils.acceptIncomingChange = (conflictNo,accept) => this.acceptIncomingChange(conflictNo,accept);
-        this._conflictUtils.acceptCurrentChange = (conflictNo,accept) => this.acceptCurrentChange(conflictNo,accept);
+        this._conflictUtils.acceptChange = (conflictNo) => this.acceptChange(conflictNo);
     }
     
     focusHightlightedLine(step:number){
@@ -85,11 +84,33 @@ export class ConflictEditor extends TextEditor{
     //     return r;
     // }
 
-    private acceptIncomingChange(conflictNo:number,accept:boolean){
+    private acceptChange(conflictNo:number){
         const conflictPosition = this._conflictPositions.find(c => c.conflictNo === conflictNo);
-        
-        const lineIndex = this.getStartingLineIndexOfConflict(conflictNo);
-
+        if(!conflictPosition)
+            return;
+        const change = {} as IChange;
+        if(conflictPosition.afterLineIndex >= 0){
+            change.startlineIndex = conflictPosition.afterLineIndex;
+            change.startOffset = Number.MAX_SAFE_INTEGER;
+        }else{
+            change.startlineIndex = conflictPosition.afterLineIndex+1;
+            change.startOffset = 0;
+        }
+        change.endlineIndex = change.startlineIndex + (conflictPosition.beforeLineIndex - conflictPosition.afterLineIndex - 1);
+        change.endOffset = change.startOffset;
+        const action = this._conflictUtils.Actions.find(a => a.conflictNo === conflictNo)!;
+        let lines:string[] = [];
+        for(const side of action.taken){
+            if(side === EnumConflictSide.Incoming){
+                const incLines = this._conflictUtils.incomingLines.filter(c => c.conflictNo === conflictNo && c.text !== undefined).map(x=>x.text!);
+                lines = lines.concat(incLines);
+            }else if(side === EnumConflictSide.Current){
+                const curLines = this._conflictUtils.currentLines.filter(c => c.conflictNo === conflictNo && c.text !== undefined).map(x=>x.text!);
+                lines = lines.concat(curLines);
+            }
+        }
+        change.text = lines.join(this._lineFeedType);
+        this.applyChange(change);
     }
 
     private acceptCurrentChange(conflictNo:number,accept:boolean){

@@ -33,8 +33,7 @@ export class ConflictUtils{
     private hightDisplacement = 0;
     private onResizeDisplacement = 0;
 
-    acceptIncomingChange:(conflictNo:number,accept:boolean) => void = (_:number,_p:boolean)=>{};
-    acceptCurrentChange:(conflictNo:number,accept:boolean) => void = (_:number,_p:boolean)=>{};
+    acceptChange:(conflictNo:number) => void = (_:number)=>{};
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -457,19 +456,7 @@ export class ConflictUtils{
             };
             this.actionsTaken.push(action);
             newAction = true;
-        }
-
-        const bottomPanel = this.bottomPanelElement;
-
-        if(!bottomPanel){
-            const selected = this.getCheckboxesByConflict(conflictNo);
-            action.taken = [];
-            if(selected.incomingCheckBox.checked)
-                action.taken.push(EnumConflictSide.Incoming);
-            if(selected.currentCheckBoxe.checked)
-                action.taken.push(EnumConflictSide.Current);
-            return;
-        }
+        }        
 
         const checkboxes = this.getCheckboxesByConflict(conflictNo);
         
@@ -479,16 +466,16 @@ export class ConflictUtils{
             else
                 action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
             
-            this.acceptIncomingChange(conflictNo,checkboxes.incomingCheckBox.checked);
         }        
-        else if(checkboxes.currentCheckBoxe.checked !== action.taken.includes(EnumConflictSide.Current)){
+        if(checkboxes.currentCheckBoxe.checked !== action.taken.includes(EnumConflictSide.Current)){
             if(checkboxes.currentCheckBoxe.checked)
                 action.taken.push(EnumConflictSide.Current);
             else
                 action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
-
-            this.acceptCurrentChange(conflictNo,checkboxes.currentCheckBoxe.checked);
-        }                
+        }
+        
+        this.acceptChange(conflictNo);
+        
     }
 
 
