@@ -152,6 +152,7 @@ export class ConflictEditor extends TextEditor{
                 }
                 conflictPosition.beforeLineIndex = i+1;
                 this._conflictPositions.push(conflictPosition);
+                conflictPosition = {} as IConflictPosition;
             }
         }
     }
