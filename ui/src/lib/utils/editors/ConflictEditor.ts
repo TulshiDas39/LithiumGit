@@ -91,6 +91,7 @@ export class ConflictEditor extends TextEditor{
             for(let conflict of remainingConflicts){
                 conflict.afterLineIndex = Math.max(conflict.afterLineIndex + lineChangeCount, lineIndexThreshold);
                 conflict.beforeLineIndex += Math.max(conflict.beforeLineIndex + lineChangeCount, conflict.afterLineIndex + 1);
+                lineIndexThreshold = conflict.beforeLineIndex;
             }
         }
     }
