@@ -42,6 +42,7 @@ export class ConflictEditor extends TextEditor{
         };
         this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo) => this.acceptChange(conflictNo);
+        this.onChange.push((changes)=> this.handleChange(changes));
     }
     
     focusHightlightedLine(step:number){
@@ -69,6 +70,10 @@ export class ConflictEditor extends TextEditor{
         // this.handleScrolling();
         // this.buildTopPanel();
         return true;
+    }
+
+    private handleChange(change:IChange[]){
+        
     }
 
     // async renderILines(file:IFile){
