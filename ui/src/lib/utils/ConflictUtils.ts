@@ -77,7 +77,7 @@ export class ConflictUtils{
         this.endingMarkers = [];
 
         const currentLines:ILine[] = [];
-        const previousLines:ILine[] = [];
+        const incomingLines:ILine[] = [];
         let conflictNo = 0;
         let currentChangeDetected = false;
         let incomingChangeDetected = false;
@@ -98,10 +98,10 @@ export class ConflictUtils{
                 currentChangeDetected = false;
                 incomingChangeDetected = false;
                 this.endingMarkers.push({conflictNo,text:contentLine});
-                while(currentLines.length > previousLines.length){
-                    previousLines.push({textHightlightIndex:[],conflictNo});
+                while(currentLines.length > incomingLines.length){
+                    incomingLines.push({textHightlightIndex:[],conflictNo});
                 }
-                while(currentLines.length < previousLines.length){
+                while(currentLines.length < incomingLines.length){
                     currentLines.push({textHightlightIndex:[],conflictNo});
                 }
                 continue;
@@ -116,7 +116,7 @@ export class ConflictUtils{
                 continue;
             }
             if(incomingChangeDetected){
-                previousLines.push({
+                incomingLines.push({
                     text:contentLine,
                     hightLightBackground:true,
                     textHightlightIndex:[],
@@ -124,7 +124,7 @@ export class ConflictUtils{
                 });
                 continue;
             }
-            previousLines.push({
+            incomingLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
             })
@@ -133,7 +133,7 @@ export class ConflictUtils{
                 textHightlightIndex:[],
             })
         }
-        return {currentLines,previousLines};
+        return {currentLines, incomingLines};
     }
 
     private initialiseData(){

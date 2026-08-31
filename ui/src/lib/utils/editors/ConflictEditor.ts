@@ -31,6 +31,8 @@ export class ConflictEditor extends TextEditor{
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
     private _conflictPositions: IConflictPosition[] = [];
+    private _incomingLines:ILine[] = [];
+    private _currentLines:ILine[] = [];
 
 
     constructor(panelSelector:string){
@@ -186,8 +188,10 @@ export class ConflictEditor extends TextEditor{
         const succeeded = await super.readFile();
         if(!succeeded) return false;
         const lineConfig = this._conflictUtils.GetUiLinesOfConflict(this._lines);
-        this._conflictUtils.currentLines = lineConfig.currentLines;
-        this._conflictUtils.incomingLines = lineConfig.previousLines;
+        this._incomingLines = lineConfig.incomingLines;
+        this._currentLines = lineConfig.currentLines;
+        this._conflictUtils.currentLines = lineConfig.currentLines.slice();
+        this._conflictUtils.incomingLines = lineConfig.incomingLines.slice();
         this.resolveConflictPositions();
         return true;
     }
