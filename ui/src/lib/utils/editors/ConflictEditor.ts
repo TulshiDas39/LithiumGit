@@ -72,8 +72,28 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    private handleChange(change:IChange[]){
-        
+    private handleChange(changes:IChange[]){
+        for(let change of changes){
+            const conflictNo = this.findOverlappingConflictNo(change);
+        }
+    }
+
+    private findOverlappingConflictNo(change:IChange){
+        for(let conflict of this._conflictPositions){
+            if(change.startlineIndex <= conflict.afterLineIndex +1 && conflict.afterLineIndex + 1 <= change.endlineIndex)
+                return conflict.conflictNo;
+
+            if(change.startlineIndex <= conflict.beforeLineIndex - 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
+                return conflict.conflictNo;
+
+            if(change.startlineIndex >= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 >= change.endlineIndex)
+                return conflict.conflictNo;
+
+            if(change.startlineIndex <= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
+                return conflict.conflictNo;
+        }
+
+        return -1;
     }
 
     // async renderILines(file:IFile){
