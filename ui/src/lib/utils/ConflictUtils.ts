@@ -32,6 +32,9 @@ export class ConflictUtils{
     private resizer?: HTMLElement;
     private hightDisplacement = 0;
     private onResizeDisplacement = 0;
+
+    acceptIncomingChange:(conflictNo:number,accept:boolean) => void = (_:number,_p:boolean)=>{};
+    acceptCurrentChange:(conflictNo:number,accept:boolean) => void = (_:number,_p:boolean)=>{};
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -444,6 +447,51 @@ export class ConflictUtils{
         firstItem.classList.add("border-top");
     }
 
+    private updateBottomPanelState2(conflictNo:number){
+        let action = this.actionsTaken.find(_=> _.conflictNo === conflictNo);
+        let newAction = false;
+        if(!action){
+            action = {
+                conflictNo,
+                taken:[]
+            };
+            this.actionsTaken.push(action);
+            newAction = true;
+        }
+
+        const bottomPanel = this.bottomPanelElement;
+
+        if(!bottomPanel){
+            const selected = this.getCheckboxesByConflict(conflictNo);
+            action.taken = [];
+            if(selected.incomingCheckBox.checked)
+                action.taken.push(EnumConflictSide.Incoming);
+            if(selected.currentCheckBoxe.checked)
+                action.taken.push(EnumConflictSide.Current);
+            return;
+        }
+
+        const checkboxes = this.getCheckboxesByConflict(conflictNo);
+        
+        if(checkboxes.incomingCheckBox.checked !== action.taken.includes(EnumConflictSide.Incoming)){
+            if(checkboxes.incomingCheckBox.checked)
+                action.taken.push(EnumConflictSide.Incoming);
+            else
+                action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
+            
+            this.acceptIncomingChange(conflictNo,checkboxes.incomingCheckBox.checked);
+        }        
+        else if(checkboxes.currentCheckBoxe.checked !== action.taken.includes(EnumConflictSide.Current)){
+            if(checkboxes.currentCheckBoxe.checked)
+                action.taken.push(EnumConflictSide.Current);
+            else
+                action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
+
+            this.acceptCurrentChange(conflictNo,checkboxes.currentCheckBoxe.checked);
+        }                
+    }
+
+
     private updateBottomPanelState(conflictNo:number){
         let action = this.actionsTaken.find(_=> _.conflictNo === conflictNo);
         let newAction = false;
@@ -558,7 +606,7 @@ export class ConflictUtils{
 
     private updateConflictState(conflictNo:number){
         this.updateTopPanelState(conflictNo);
-        this.updateBottomPanelState(conflictNo);
+        this.updateBottomPanelState2(conflictNo);
         this.dispatchResolvedCount(this.Actions.length);
         //ReduxUtils.dispatch(ActionConflict.updateData({}))
     }
