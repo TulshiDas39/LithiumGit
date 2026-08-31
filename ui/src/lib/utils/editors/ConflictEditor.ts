@@ -95,6 +95,8 @@ export class ConflictEditor extends TextEditor{
                 conflict.beforeLineIndex += Math.max(conflict.beforeLineIndex + lineChangeCount, conflict.afterLineIndex + 1);
                 lineIndexThreshold = conflict.beforeLineIndex;
             }
+
+            
         }
     }
 

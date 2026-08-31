@@ -1,5 +1,5 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { ILine } from "../interfaces";
+import { IConflictLine, ILine } from "../interfaces";
 import { EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
@@ -76,12 +76,13 @@ export class ConflictUtils{
         this.startingMarkers = [];
         this.endingMarkers = [];
 
-        const currentLines:ILine[] = [];
-        const incomingLines:ILine[] = [];
+        const currentLines:IConflictLine[] = [];
+        const incomingLines:IConflictLine[] = [];
         let conflictNo = 0;
         let currentChangeDetected = false;
         let incomingChangeDetected = false;
-        for(const contentLine of contentLines){
+        for(let i=0; i<contentLines.length; i++){
+            const contentLine = contentLines[i];
             if(contentLine.startsWith(currentMarker)){
                 conflictNo++;
                 currentChangeDetected = true;
@@ -99,10 +100,10 @@ export class ConflictUtils{
                 incomingChangeDetected = false;
                 this.endingMarkers.push({conflictNo,text:contentLine});
                 while(currentLines.length > incomingLines.length){
-                    incomingLines.push({textHightlightIndex:[],conflictNo});
+                    incomingLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
                 }
                 while(currentLines.length < incomingLines.length){
-                    currentLines.push({textHightlightIndex:[],conflictNo});
+                    currentLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
                 }
                 continue;
             }
@@ -111,7 +112,8 @@ export class ConflictUtils{
                     text:contentLine,
                     hightLightBackground:true,
                     textHightlightIndex:[],
-                    conflictNo
+                    conflictNo,
+                    lineIndex:i,
                 });
                 continue;
             }
@@ -120,17 +122,20 @@ export class ConflictUtils{
                     text:contentLine,
                     hightLightBackground:true,
                     textHightlightIndex:[],
-                    conflictNo
+                    conflictNo,
+                    lineIndex:i,
                 });
                 continue;
             }
             incomingLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
+                lineIndex:i,
             })
             currentLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
+                lineIndex:i,
             })
         }
         return {currentLines, incomingLines};
