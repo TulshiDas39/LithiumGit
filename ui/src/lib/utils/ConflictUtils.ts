@@ -324,7 +324,25 @@ export class ConflictUtils{
                     insertCurrentLines(actionTaken.includes(EnumConflictSide.Current));                    
                     insertIncomingLines(actionTaken.includes(EnumConflictSide.Incoming));
 
-                }
+                    if(piLine.length < pcLine.length){
+                        for(let j=0; j < pcLine.length-piLine.length; j++){
+                            incomingLines.push({
+                                textHightlightIndex:[],
+                                conflictNo,
+                                taken:false,
+                            });
+                        }
+                    }
+
+                    if(pcLine.length < piLine.length){
+                        for(let j=0; j < piLine.length-pcLine.length; j++){
+                            currentLines.push({
+                                textHightlightIndex:[],
+                                conflictNo,
+                                taken:false,
+                            });
+                        }
+                    }
 
                 
 
