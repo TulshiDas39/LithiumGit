@@ -155,7 +155,7 @@ export class ConflictUtils{
         let deletedLineCount = 0;
         let addedLineCount = 0;
         let acceptanceState:EnumConflictSide[] = [];
-        for(let i=0; i<currLines.length; i++){
+        for(let i=0; i < currLines.length; i++){
             let curLine = currLines[i];
             let preLine = prevLines[i];
 
@@ -178,10 +178,8 @@ export class ConflictUtils{
                 incomingChangeDetected = false;
                 this.startingMarkers.push({conflictNo,text:curLine.text});
 
-                const inLines:IConflictLine[] = [];
-                const cuLines:IConflictLine[] = [];
-                let inLineCount = 0;
-                let cuLineCount = 0;
+                let inLines:ILine[] = [];
+                let cuLines:ILine[] = [];
 
                 if(curLine.text?.startsWith(currentMarker)){
                     editorLines.push({
@@ -192,14 +190,27 @@ export class ConflictUtils{
                         marker:EnumConflictMarker.Starting,
                     });
                     curLine = currLines[++i];
-                    while(i < currLines.length && curLine.text === dividerMarker){                        
-                        cuLines.push({
-                            text:currLines[i].text,
+                    while(i < currLines.length && curLine.text !== dividerMarker){                        
+                        cuLines.push(curLine);
+                        curLine = currLines[++i];                    
+                    }
+
+                    cuLines = cuLines.filter(_=> _.text !== undefined);
+
+                    for(let line of cuLines){
+                        currentLines.push({
+                            text:line.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                         });
-                        curLine = currLines[++i];                    
+                        editorLines.push({
+                            text:line.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                            state:EnumConflictState.FromCurrent,
+                        });
                     }
 
                     editorLines.push({
@@ -211,25 +222,40 @@ export class ConflictUtils{
                     curLine = currLines[++i];
 
                     while(i < currLines.length && !curLine.text?.startsWith(endingMarker)){
-                        inLines.push({
-                            text:currLines[i].text,
+                        inLines.push(curLine);
+                        curLine = currLines[++i];              
+                    }
+
+                    inLines = inLines.filter(_=> _.text !== undefined);
+                    for(let line of inLines){
+                        incomingLines.push({
+                            text:line.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                         });
-                        curLine = currLines[++i];              
+                        editorLines.push({
+                            text:line.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                            state:EnumConflictState.FromIncoming,
+                        });
                     }
-                    inLineCount = inLines.length;
-                    cuLineCount = cuLines.length;
+
+                    editorLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Ending,
+                        text:curLine.text,
+                    });
                 }
                 else{
                     let rLines:ILine[] = [];
-                    let piLine:ILine[] = [];
-                    let pcLine:ILine[] = [];
 
                     while(i < prevLines.length && preLine.text !== dividerMarker){
                         rLines.push(currLines[i]);
-                        pcLine.push(preLine);
+                        cuLines.push(preLine);
                         preLine = prevLines[++i];
                     }
 
@@ -238,7 +264,7 @@ export class ConflictUtils{
 
                     while(i < prevLines.length && !preLine.text?.startsWith(endingMarker)){
                         rLines.push(currLines[i]);
-                        piLine.push(preLine);
+                        inLines.push(preLine);
                         preLine = prevLines[++i];
                     }
                     
@@ -249,8 +275,8 @@ export class ConflictUtils{
                     }
 
                     rLines = rLines.filter(_=> _.text !== undefined);
-                    piLine = piLine.filter(_=> _.text !== undefined);
-                    pcLine = pcLine.filter(_=> _.text !== undefined);
+                    inLines = inLines.filter(_=> _.text !== undefined);
+                    cuLines = cuLines.filter(_=> _.text !== undefined);
 
                     const actionTaken:EnumConflictSide[] = [];
                     const insertLines = (count:number, state:EnumConflictState)=>{
@@ -266,9 +292,9 @@ export class ConflictUtils{
                     }
 
                     const insertIncomingLines = (taken:boolean)=>{
-                        for(let j=0; j < piLine.length; j++){
+                        for(let j=0; j < inLines.length; j++){
                             incomingLines.push({
-                                text:piLine[j].text,
+                                text:inLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
                                 conflictNo,
@@ -278,9 +304,9 @@ export class ConflictUtils{
                     }
 
                     const insertCurrentLines = (taken:boolean)=>{
-                        for(let j=0; j < pcLine.length; j++){
+                        for(let j=0; j < cuLines.length; j++){
                             incomingLines.push({
-                                text:pcLine[j].text,
+                                text:cuLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
                                 conflictNo,
@@ -289,13 +315,13 @@ export class ConflictUtils{
                         }
                     }
 
-                    if(pcLine.every((_,li)=> _.text === rLines[li].text)){
-                        let remrLines = rLines.slice(pcLine.length);
+                    if(cuLines.every((_,li)=> _.text === rLines[li].text)){
+                        let remrLines = rLines.slice(cuLines.length);
                         if(remrLines.length){
-                            if(remrLines.length === piLine.length && piLine.every((_,li)=> _.text === remrLines[li].text)){
-                                insertLines(pcLine.length, EnumConflictState.FromCurrent);
+                            if(remrLines.length === inLines.length && inLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertLines(cuLines.length, EnumConflictState.FromCurrent);
                                 rLines = remrLines;
-                                insertLines(piLine.length, EnumConflictState.FromIncoming);
+                                insertLines(inLines.length, EnumConflictState.FromIncoming);
                                 actionTaken.push(EnumConflictSide.Current,EnumConflictSide.Incoming);                                
                             }
                             else{
@@ -307,13 +333,13 @@ export class ConflictUtils{
                             actionTaken.push(EnumConflictSide.Current); 
                         }
                     }
-                    else if(piLine.every((_,li)=> _.text === rLines[li].text)){
-                        let remrLines = rLines.slice(piLine.length);
+                    else if(inLines.every((_,li)=> _.text === rLines[li].text)){
+                        let remrLines = rLines.slice(inLines.length);
                         if(remrLines.length){
-                            if(remrLines.length === pcLine.length && pcLine.every((_,li)=> _.text === remrLines[li].text)){
-                                insertLines(pcLine.length, EnumConflictState.FromIncoming);
+                            if(remrLines.length === cuLines.length && cuLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertLines(cuLines.length, EnumConflictState.FromIncoming);
                                 rLines = remrLines;
-                                insertLines(pcLine.length, EnumConflictState.FromCurrent);
+                                insertLines(cuLines.length, EnumConflictState.FromCurrent);
                                 actionTaken.push(EnumConflictSide.Incoming, EnumConflictSide.Current);
                             }
                             else{
@@ -330,65 +356,26 @@ export class ConflictUtils{
                     
                     insertCurrentLines(actionTaken.includes(EnumConflictSide.Current));                    
                     insertIncomingLines(actionTaken.includes(EnumConflictSide.Incoming));
-
-                    inLineCount = piLine.length;
-                    cuLineCount = pcLine.length;
                 }
                 
-                
-                if(inLineCount < cuLineCount){
-                    for(let j=0; j < cuLineCount-inLineCount; j++){
+                if(inLines.length < cuLines.length){
+                    for(let j=0; j < cuLines.length-inLines.length; j++){
                         incomingLines.push({
                             textHightlightIndex:[],
                             conflictNo,
                         });
                     }
                 }
-
-                if(cuLineCount < inLineCount){
-                    for(let j=0; j < inLineCount-cuLineCount; j++){
+                else if(cuLines.length < inLines.length){
+                    for(let j=0; j < inLines.length-cuLines.length; j++){
                         currentLines.push({
                             textHightlightIndex:[],
                             conflictNo,
                         });
                     }
                 }
-
-                editorLines.push({
-                    textHightlightIndex:[],
-                    conflictNo,
-                    marker:EnumConflictMarker.Divider,
-                    text:dividerMarker,
-                })
-
-
                 continue;
-            }
-            if(preLine.text === this.Separator){
-                currentChangeDetected = false;
-                incomingChangeDetected = true;
-                editorLines.push({
-                    text:curLine.text,            
-                    textHightlightIndex:[],
-                    conflictNo,
-                    marker:EnumConflictMarker.Divider,
-                });
-                continue;
-            }
-
-            if(preLine.text?.startsWith(endingMarker)){
-                currentChangeDetected = false;
-                incomingChangeDetected = false;
-                this.endingMarkers.push({conflictNo,text:curLine.text});
-                editorLines.push({
-                    text:curLine.text,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo,
-                    marker:EnumConflictMarker.Ending,
-                });
-                continue;
-            }
+            }            
 
             if(currentChangeDetected){
                 currentLines.push({
