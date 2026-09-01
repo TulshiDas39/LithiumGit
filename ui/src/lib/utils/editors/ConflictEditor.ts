@@ -222,7 +222,7 @@ export class ConflictEditor extends TextEditor{
         const diffResult = r.result!;
         const contentLines = this.getContentLines();
         const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);   
-        const lineConfig = this._conflictUtils.GetUiLinesOfConflict(contentLines);
+        const lineConfig = this._conflictUtils.GetUiLinesOfConflictFromDiff(uiLines.previousLines, uiLines.currentLines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;        
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());

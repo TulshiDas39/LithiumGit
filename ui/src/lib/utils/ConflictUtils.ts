@@ -156,7 +156,6 @@ export class ConflictUtils{
 
             if(preLine.text?.startsWith(currentMarker)){
                 conflictNo++;
-                this.startingMarkers.push({conflictNo,text:curLine.text});
 
                 let inLines:ILine[] = [];
                 let cuLines:ILine[] = [];
@@ -231,6 +230,7 @@ export class ConflictUtils{
                     });
                 }
                 else{
+                    i++;
                     let rLines:ILine[] = [];
 
                     while(i < prevLines.length && preLine.text !== dividerMarker){
@@ -286,7 +286,7 @@ export class ConflictUtils{
 
                     const insertCurrentLines = (taken:boolean)=>{
                         for(let j=0; j < cuLines.length; j++){
-                            incomingLines.push({
+                            currentLines.push({
                                 text:cuLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
@@ -296,7 +296,7 @@ export class ConflictUtils{
                         }
                     }
 
-                    if(cuLines.every((_,li)=> _.text === rLines[li].text)){
+                    if(cuLines.length >= rLines.length && cuLines.every((_,li)=> _.text === rLines[li].text)){
                         let remrLines = rLines.slice(cuLines.length);
                         if(remrLines.length){
                             if(remrLines.length === inLines.length && inLines.every((_,li)=> _.text === remrLines[li].text)){
@@ -314,7 +314,7 @@ export class ConflictUtils{
                             actionTaken.push(EnumConflictSide.Current); 
                         }
                     }
-                    else if(inLines.every((_,li)=> _.text === rLines[li].text)){
+                    else if(inLines.length >= rLines.length && inLines.every((_,li)=> _.text === rLines[li].text)){
                         let remrLines = rLines.slice(inLines.length);
                         if(remrLines.length){
                             if(remrLines.length === cuLines.length && cuLines.every((_,li)=> _.text === remrLines[li].text)){
@@ -373,6 +373,8 @@ export class ConflictUtils{
             });
 
         }
+
+        return {currentLines, incomingLines, editorLines};
     }
 
     private initialiseData(){
