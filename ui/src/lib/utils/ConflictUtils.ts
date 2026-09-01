@@ -142,40 +142,20 @@ export class ConflictUtils{
         const endingMarker = ">>>>>>>";
         const dividerMarker = this.Separator;
 
-        // //the markers are re-collected on every read, so drop the ones of the previous read
-        this.startingMarkers = [];
-        this.endingMarkers = [];
-
         const currentLines:IConflictLine[] = [];
         const incomingLines:IConflictLine[] = [];
         const editorLines:IConflictEditorLine[] = [];
         let conflictNo = 0;
-        let currentChangeDetected = false;
-        let incomingChangeDetected = false;
-        let deletedLineCount = 0;
-        let addedLineCount = 0;
-        let acceptanceState:EnumConflictSide[] = [];
         for(let i=0; i < currLines.length; i++){
             let curLine = currLines[i];
             let preLine = prevLines[i];
 
             if(curLine.text === undefined){
-                deletedLineCount++;
                 continue;
             }
-            // if(preLine.text === undefined){
-            //     addedLineCount++;
-            //     currentLines.push({
-            //         text:curLine.text,
-            //         hightLightBackground:true,
-            //         textHightlightIndex:[],
 
-            //     });
-            // }
             if(preLine.text?.startsWith(currentMarker)){
                 conflictNo++;
-                currentChangeDetected = true;
-                incomingChangeDetected = false;
                 this.startingMarkers.push({conflictNo,text:curLine.text});
 
                 let inLines:ILine[] = [];
@@ -268,10 +248,11 @@ export class ConflictUtils{
                         preLine = prevLines[++i];
                     }
                     
-                    rLines.push(currLines[i++]);                    
+                    rLines.push(currLines[i]);
 
-                    while(prevLines[i].text === undefined && i < prevLines.length){
-                        rLines.push(currLines[i++]);
+                    while(i + 1 < prevLines.length && prevLines[i+1].text === undefined ){
+                        rLines.push(currLines[i+1]);
+                        i++;
                     }
 
                     rLines = rLines.filter(_=> _.text !== undefined);
@@ -375,76 +356,23 @@ export class ConflictUtils{
                     }
                 }
                 continue;
-            }            
-
-            if(currentChangeDetected){
-                currentLines.push({
-                    text:curLine.text,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo,
-                });
             }
+            
+            currentLines.push({
+                text:curLine.text,
+                textHightlightIndex:[],
+            });
+            incomingLines.push({
+                text:curLine.text,
+                textHightlightIndex:[],
+            });
+
+            editorLines.push({
+                text:curLine.text,
+                textHightlightIndex:[],
+            });
 
         }
-        // for(let i=0; i<currLines.length; i++){
-        //     const contentLine = currLines[i];
-        //     if(contentLine.startsWith(currentMarker)){
-        //         conflictNo++;
-        //         currentChangeDetected = true;
-        //         incomingChangeDetected = false;
-        //         this.startingMarkers.push({conflictNo,text:contentLine});
-        //         continue;
-        //     }
-        //     if(contentLine === this.Separator){
-        //         currentChangeDetected = false;
-        //         incomingChangeDetected = true;
-        //         continue;
-        //     }
-        //     if(contentLine.startsWith(endingMarker)){
-        //         currentChangeDetected = false;
-        //         incomingChangeDetected = false;
-        //         this.endingMarkers.push({conflictNo,text:contentLine});
-        //         while(currentLines.length > incomingLines.length){
-        //             incomingLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
-        //         }
-        //         while(currentLines.length < incomingLines.length){
-        //             currentLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
-        //         }
-        //         continue;
-        //     }
-        //     if(currentChangeDetected){
-        //         currentLines.push({
-        //             text:contentLine,
-        //             hightLightBackground:true,
-        //             textHightlightIndex:[],
-        //             conflictNo,
-        //             lineIndex:i,
-        //         });
-        //         continue;
-        //     }
-        //     if(incomingChangeDetected){
-        //         incomingLines.push({
-        //             text:contentLine,
-        //             hightLightBackground:true,
-        //             textHightlightIndex:[],
-        //             conflictNo,
-        //             lineIndex:i,
-        //         });
-        //         continue;
-        //     }
-        //     incomingLines.push({
-        //         text:contentLine,
-        //         textHightlightIndex:[],
-        //         lineIndex:i,
-        //     })
-        //     currentLines.push({
-        //         text:contentLine,
-        //         textHightlightIndex:[],
-        //         lineIndex:i,
-        //     })
-        // }
-        // return {currentLines, incomingLines};
     }
 
     private initialiseData(){
