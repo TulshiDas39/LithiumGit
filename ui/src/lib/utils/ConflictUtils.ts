@@ -296,7 +296,7 @@ export class ConflictUtils{
                         }
                     }
 
-                    if(cuLines.length >= rLines.length && cuLines.every((_,li)=> _.text === rLines[li].text)){
+                    if(cuLines.length <= rLines.length && cuLines.every((_,li)=> _.text === rLines[li].text)){
                         let remrLines = rLines.slice(cuLines.length);
                         if(remrLines.length){
                             if(remrLines.length === inLines.length && inLines.every((_,li)=> _.text === remrLines[li].text)){
@@ -314,7 +314,7 @@ export class ConflictUtils{
                             actionTaken.push(EnumConflictSide.Current); 
                         }
                     }
-                    else if(inLines.length >= rLines.length && inLines.every((_,li)=> _.text === rLines[li].text)){
+                    else if(inLines.length <= rLines.length && inLines.every((_,li)=> _.text === rLines[li].text)){
                         let remrLines = rLines.slice(inLines.length);
                         if(remrLines.length){
                             if(remrLines.length === cuLines.length && cuLines.every((_,li)=> _.text === remrLines[li].text)){
