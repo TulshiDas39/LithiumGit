@@ -178,9 +178,10 @@ export class ConflictUtils{
                 incomingChangeDetected = false;
                 this.startingMarkers.push({conflictNo,text:curLine.text});
 
-                let isResolved = false;
                 const inLines:IConflictLine[] = [];
                 const cuLines:IConflictLine[] = [];
+                let inLineCount = 0;
+                let cuLineCount = 0;
 
                 if(curLine.text?.startsWith(currentMarker)){
                     editorLines.push({
@@ -218,8 +219,10 @@ export class ConflictUtils{
                         });
                         curLine = currLines[++i];              
                     }
-                }else{
-                    isResolved = true;
+                    inLineCount = inLines.length;
+                    cuLineCount = cuLines.length;
+                }
+                else{
                     let rLines:ILine[] = [];
                     let piLine:ILine[] = [];
                     let pcLine:ILine[] = [];
@@ -324,25 +327,28 @@ export class ConflictUtils{
                     insertCurrentLines(actionTaken.includes(EnumConflictSide.Current));                    
                     insertIncomingLines(actionTaken.includes(EnumConflictSide.Incoming));
 
-                    if(piLine.length < pcLine.length){
-                        for(let j=0; j < pcLine.length-piLine.length; j++){
-                            incomingLines.push({
-                                textHightlightIndex:[],
-                                conflictNo,
-                            });
-                        }
-                    }
-
-                    if(pcLine.length < piLine.length){
-                        for(let j=0; j < piLine.length-pcLine.length; j++){
-                            currentLines.push({
-                                textHightlightIndex:[],
-                                conflictNo,
-                            });
-                        }
-                    }
-
+                    inLineCount = piLine.length;
+                    cuLineCount = pcLine.length;
+                }
                 
+                
+                if(inLineCount < cuLineCount){
+                    for(let j=0; j < cuLineCount-inLineCount; j++){
+                        incomingLines.push({
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                    }
+                }
+
+                if(cuLineCount < inLineCount){
+                    for(let j=0; j < inLineCount-cuLineCount; j++){
+                        currentLines.push({
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                    }
+                }
 
                 editorLines.push({
                     textHightlightIndex:[],
