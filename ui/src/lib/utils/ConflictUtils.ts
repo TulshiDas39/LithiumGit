@@ -329,7 +329,6 @@ export class ConflictUtils{
                             incomingLines.push({
                                 textHightlightIndex:[],
                                 conflictNo,
-                                taken:false,
                             });
                         }
                     }
@@ -339,7 +338,6 @@ export class ConflictUtils{
                             currentLines.push({
                                 textHightlightIndex:[],
                                 conflictNo,
-                                taken:false,
                             });
                         }
                     }
