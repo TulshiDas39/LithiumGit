@@ -245,7 +245,7 @@ export class ConflictUtils{
                     piLine = piLine.filter(_=> _.text !== undefined);
                     pcLine = pcLine.filter(_=> _.text !== undefined);
 
-
+                    const actionTaken:EnumConflictSide[] = [];
                     const insertLines = (count:number, state:EnumConflictState)=>{
                         for(let j=0; j < count; j++){
                             editorLines.push({
@@ -255,32 +255,82 @@ export class ConflictUtils{
                                 conflictNo,
                                 state,
                             });
+                        }
+                    }
 
-                            currentLines.push({
-                                text:rLines[j].text,
+                    const insertIncomingLines = (taken:boolean)=>{
+                        for(let j=0; j < piLine.length; j++){
+                            incomingLines.push({
+                                text:piLine[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
                                 conflictNo,
-                                taken:true,
+                                taken,
+                            });
+                        }
+                    }
+
+                    const insertCurrentLines = (taken:boolean)=>{
+                        for(let j=0; j < pcLine.length; j++){
+                            incomingLines.push({
+                                text:pcLine[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                taken,
                             });
                         }
                     }
 
                     if(pcLine.every((_,li)=> _.text === rLines[li].text)){
-                        insertLines(pcLine.length, EnumConflictState.FromCurrent);
-
-                        rLines = rLines.slice(pcLine.length);
-
-                        if(piLine.every((_,li)=> _.text === rLines[li].text)){
-                            insertLines(piLine.length, EnumConflictState.FromIncoming);
+                        let remrLines = rLines.slice(pcLine.length);
+                        if(remrLines.length){
+                            if(remrLines.length === piLine.length && piLine.every((_,li)=> _.text === remrLines[li].text)){
+                                insertLines(pcLine.length, EnumConflictState.FromCurrent);
+                                rLines = remrLines;
+                                insertLines(piLine.length, EnumConflictState.FromIncoming);
+                                actionTaken.push(EnumConflictSide.Current,EnumConflictSide.Incoming);                                
+                            }
+                            else{
+                                insertLines(rLines.length, EnumConflictState.Custom);                                
+                            }
                         }
-                    }else if(piLine.every((_,li)=> _.text === rLines[li].text)){
-                        insertLines(piLine.length, EnumConflictState.FromIncoming);
+                        else{
+                            insertLines(rLines.length, EnumConflictState.FromCurrent);
+                            actionTaken.push(EnumConflictSide.Current); 
+                        }
+                    }
+                    else if(piLine.every((_,li)=> _.text === rLines[li].text)){
+                        let remrLines = rLines.slice(piLine.length);
+                        if(remrLines.length){
+                            if(remrLines.length === pcLine.length && pcLine.every((_,li)=> _.text === remrLines[li].text)){
+                                insertLines(pcLine.length, EnumConflictState.FromIncoming);
+                                rLines = remrLines;
+                                insertLines(pcLine.length, EnumConflictState.FromCurrent);
+                                actionTaken.push(EnumConflictSide.Incoming, EnumConflictSide.Current);
+                            }
+                            else{
+                                insertLines(rLines.length, EnumConflictState.Custom);
+                            }
+                        }else{
+                            insertLines(rLines.length, EnumConflictState.FromIncoming);
+                            actionTaken.push(EnumConflictSide.Incoming); 
+                        }
+                    }
+                    else{
+                        insertLines(rLines.length, EnumConflictState.Custom);
+                    }
 
-                        rLines = rLines.slice(piLine.length);
-
-                        if(pcLine.every((_,li)=> _.text === rLines[li].text)){
-                            insertLines(pcLine.length, EnumConflictState.FromCurrent);
+                    for(let action of actionTaken){
+                        if(action === EnumConflictSide.Current){
+                            insertCurrentLines(true);
+                        }
+                        else if(action === EnumConflictSide.Incoming){
+                            insertIncomingLines(true);
+                        }
+                        else{
+                            insertCurrentLines(false);
+                            insertIncomingLines(false);
                         }
                     }
 
