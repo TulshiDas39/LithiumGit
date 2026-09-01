@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
 import { IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
-import { EnumConflictMarker, EnumHtmlIds } from "../enums";
+import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
 import { UiUtils } from "./UiUtils";
@@ -220,18 +220,88 @@ export class ConflictUtils{
                     }
                 }else{
                     isResolved = true;
-                    const rLines:IConflictLine[] = [];
+                    let rLines:ILine[] = [];
+                    let piLine:ILine[] = [];
+                    let pcLine:ILine[] = [];
 
-                    while(i < prevLines.length && !preLine.text?.startsWith(endingMarker)){
-                        rLines.push({
-                            text:currLines[i].text,
-                            hightLightBackground:true,
-                            textHightlightIndex:[],
-                            conflictNo,
-                        });
+                    while(i < prevLines.length && !preLine.text?.startsWith(dividerMarker)){
+                        rLines.push(currLines[i]);
+                        pcLine.push(preLine);
                         preLine = prevLines[++i];
                     }
 
+                    rLines.push(currLines[i]);
+                    preLine = prevLines[++i];
+
+                    while(i < prevLines.length && !preLine.text?.startsWith(endingMarker)){
+                        rLines.push(currLines[i]);
+                        piLine.push(preLine);
+                        preLine = prevLines[++i];
+                    }
+                    
+                    rLines.push(currLines[i]);
+
+                    rLines = rLines.filter(_=> _.text !== undefined);
+                    piLine = piLine.filter(_=> _.text !== undefined);
+                    pcLine = pcLine.filter(_=> _.text !== undefined);
+
+                    const insertCurrentLines = ()=>{
+                        for(let j=0; j < pcLine.length; j++){
+                            editorLines.push({
+                                text:rLines[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                state:EnumConflictState.FromCurrent,                                
+                            });
+
+                            currentLines.push({
+                                text:rLines[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                taken:true,
+                            });
+                        }
+                    }
+
+                    const insertIncomingLines = ()=>{
+                        for(let j=0; j < piLine.length; j++){
+                            editorLines.push({
+                                text:rLines[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                state:EnumConflictState.FromIncoming,                                
+                            });
+
+                            incomingLines.push({
+                                text:rLines[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                taken:true,
+                            });
+                        }
+                    }
+
+                    if(pcLine.every((_,li)=> _.text === rLines[li].text)){
+                        insertCurrentLines();
+
+                        rLines = rLines.slice(pcLine.length);
+
+                        if(piLine.every((_,li)=> _.text === rLines[li].text)){
+                            insertIncomingLines();
+                        }
+                    }else if(piLine.every((_,li)=> _.text === rLines[li].text)){
+                        insertIncomingLines();
+
+                        rLines = rLines.slice(piLine.length);
+
+                        if(pcLine.every((_,li)=> _.text === rLines[li].text)){
+                            insertCurrentLines();
+                        }
+                    }
 
                 }
 
