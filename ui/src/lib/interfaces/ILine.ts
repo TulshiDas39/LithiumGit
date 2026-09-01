@@ -1,4 +1,4 @@
-import { EnumConflictState } from "../enums";
+import { EnumConflictMarker, EnumConflictState } from "../enums";
 
 export interface ILine{
     text?:string;
@@ -12,5 +12,11 @@ export interface ILine{
 
 export interface IConflictLine extends ILine{
     conflictNo?:number;    
-    taken?:EnumConflictState;
+    taken?:boolean;
+}
+
+export interface IConflictEditorLine extends ILine{
+    conflictNo?:number;
+    state?:EnumConflictState;
+    marker?:EnumConflictMarker;
 }

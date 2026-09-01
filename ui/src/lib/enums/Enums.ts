@@ -3,3 +3,9 @@ export enum EnumConflictState{
     FromIncoming = 2,
     Custom = 3,
 }
+
+export enum EnumConflictMarker{
+    Starting = 1,
+    Ending = 2,
+    Divider = 3,
+}

@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { IConflictLine, ILine } from "../interfaces";
-import { EnumHtmlIds } from "../enums";
+import { IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
+import { EnumConflictMarker, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
 import { UiUtils } from "./UiUtils";
@@ -100,10 +100,10 @@ export class ConflictUtils{
                 incomingChangeDetected = false;
                 this.endingMarkers.push({conflictNo,text:contentLine});
                 while(currentLines.length > incomingLines.length){
-                    incomingLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
+                    incomingLines.push({textHightlightIndex:[],conflictNo});
                 }
                 while(currentLines.length < incomingLines.length){
-                    currentLines.push({textHightlightIndex:[],conflictNo,lineIndex:i});
+                    currentLines.push({textHightlightIndex:[],conflictNo});
                 }
                 continue;
             }
@@ -113,7 +113,6 @@ export class ConflictUtils{
                     hightLightBackground:true,
                     textHightlightIndex:[],
                     conflictNo,
-                    lineIndex:i,
                 });
                 continue;
             }
@@ -123,19 +122,16 @@ export class ConflictUtils{
                     hightLightBackground:true,
                     textHightlightIndex:[],
                     conflictNo,
-                    lineIndex:i,
                 });
                 continue;
             }
             incomingLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
-                lineIndex:i,
             })
             currentLines.push({
                 text:contentLine,
                 textHightlightIndex:[],
-                lineIndex:i,
             })
         }
         return {currentLines, incomingLines};
@@ -144,6 +140,7 @@ export class ConflictUtils{
     GetUiLinesOfConflictFromDiff(prevLines: ILine[], currLines: ILine[]) {
         const currentMarker = "<<<<<<<";
         const endingMarker = ">>>>>>>";
+        const dividerMarker = this.Separator;
 
         // //the markers are re-collected on every read, so drop the ones of the previous read
         this.startingMarkers = [];
@@ -151,10 +148,141 @@ export class ConflictUtils{
 
         const currentLines:IConflictLine[] = [];
         const incomingLines:IConflictLine[] = [];
-        const editorLines:IConflictLine[] = [];
+        const editorLines:IConflictEditorLine[] = [];
         let conflictNo = 0;
-        // let currentChangeDetected = false;
-        // let incomingChangeDetected = false;
+        let currentChangeDetected = false;
+        let incomingChangeDetected = false;
+        let deletedLineCount = 0;
+        let addedLineCount = 0;
+        let acceptanceState:EnumConflictSide[] = [];
+        for(let i=0; i<currLines.length; i++){
+            let curLine = currLines[i];
+            let preLine = prevLines[i];
+
+            if(curLine.text === undefined){
+                deletedLineCount++;
+                continue;
+            }
+            // if(preLine.text === undefined){
+            //     addedLineCount++;
+            //     currentLines.push({
+            //         text:curLine.text,
+            //         hightLightBackground:true,
+            //         textHightlightIndex:[],
+
+            //     });
+            // }
+            if(preLine.text?.startsWith(currentMarker)){
+                conflictNo++;
+                currentChangeDetected = true;
+                incomingChangeDetected = false;
+                this.startingMarkers.push({conflictNo,text:curLine.text});
+
+                let isResolved = false;
+                const inLines:IConflictLine[] = [];
+                const cuLines:IConflictLine[] = [];
+
+                if(curLine.text?.startsWith(currentMarker)){
+                    editorLines.push({
+                        text:curLine.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Starting,
+                    });
+                    curLine = currLines[++i];
+                    while(i < currLines.length && !curLine.text?.startsWith(dividerMarker)){                        
+                        cuLines.push({
+                            text:currLines[i].text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                        curLine = currLines[++i];                    
+                    }
+
+                    editorLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Divider,
+                        text:curLine.text,
+                    });
+                    curLine = currLines[++i];
+
+                    while(i < currLines.length && !curLine.text?.startsWith(endingMarker)){
+                        inLines.push({
+                            text:currLines[i].text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                        curLine = currLines[++i];              
+                    }
+                }else{
+                    isResolved = true;
+                    const rLines:IConflictLine[] = [];
+
+                    while(i < prevLines.length && !preLine.text?.startsWith(endingMarker)){
+                        rLines.push({
+                            text:currLines[i].text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                        preLine = prevLines[++i];
+                    }
+
+
+                }
+
+                
+
+                editorLines.push({
+                    textHightlightIndex:[],
+                    conflictNo,
+                    marker:EnumConflictMarker.Divider,
+                    text:dividerMarker,
+                })
+
+
+                continue;
+            }
+            if(preLine.text === this.Separator){
+                currentChangeDetected = false;
+                incomingChangeDetected = true;
+                editorLines.push({
+                    text:curLine.text,            
+                    textHightlightIndex:[],
+                    conflictNo,
+                    marker:EnumConflictMarker.Divider,
+                });
+                continue;
+            }
+
+            if(preLine.text?.startsWith(endingMarker)){
+                currentChangeDetected = false;
+                incomingChangeDetected = false;
+                this.endingMarkers.push({conflictNo,text:curLine.text});
+                editorLines.push({
+                    text:curLine.text,
+                    hightLightBackground:true,
+                    textHightlightIndex:[],
+                    conflictNo,
+                    marker:EnumConflictMarker.Ending,
+                });
+                continue;
+            }
+
+            if(currentChangeDetected){
+                currentLines.push({
+                    text:curLine.text,
+                    hightLightBackground:true,
+                    textHightlightIndex:[],
+                    conflictNo,
+                });
+            }
+
+        }
         // for(let i=0; i<currLines.length; i++){
         //     const contentLine = currLines[i];
         //     if(contentLine.startsWith(currentMarker)){
