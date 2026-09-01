@@ -142,16 +142,17 @@ export class ConflictUtils{
     }
 
     GetUiLinesOfConflictFromDiff(prevLines: ILine[], currLines: ILine[]) {
-        // const currentMarker = "<<<<<<<";
-        // const endingMarker = ">>>>>>>";
+        const currentMarker = "<<<<<<<";
+        const endingMarker = ">>>>>>>";
 
         // //the markers are re-collected on every read, so drop the ones of the previous read
-        // this.startingMarkers = [];
-        // this.endingMarkers = [];
+        this.startingMarkers = [];
+        this.endingMarkers = [];
 
-        // const currentLines:IConflictLine[] = [];
-        // const incomingLines:IConflictLine[] = [];
-        // let conflictNo = 0;
+        const currentLines:IConflictLine[] = [];
+        const incomingLines:IConflictLine[] = [];
+        const editorLines:IConflictLine[] = [];
+        let conflictNo = 0;
         // let currentChangeDetected = false;
         // let incomingChangeDetected = false;
         // for(let i=0; i<currLines.length; i++){

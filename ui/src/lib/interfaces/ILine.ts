@@ -1,3 +1,5 @@
+import { EnumConflictState } from "../enums";
+
 export interface ILine{
     text?:string;
     textHightlightIndex:{
@@ -9,6 +11,6 @@ export interface ILine{
 
 
 export interface IConflictLine extends ILine{
-    conflictNo?:number;
-    lineIndex:number;
+    conflictNo?:number;    
+    taken?:EnumConflictState;
 }
