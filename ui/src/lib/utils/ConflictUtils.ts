@@ -230,7 +230,7 @@ export class ConflictUtils{
                     });
                 }
                 else{
-                    i++;
+                    preLine = prevLines[++i];
                     let rLines:ILine[] = [];
 
                     while(i < prevLines.length && preLine.text !== dividerMarker){
