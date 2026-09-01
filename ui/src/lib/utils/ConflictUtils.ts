@@ -245,14 +245,15 @@ export class ConflictUtils{
                     piLine = piLine.filter(_=> _.text !== undefined);
                     pcLine = pcLine.filter(_=> _.text !== undefined);
 
-                    const insertCurrentLines = ()=>{
-                        for(let j=0; j < pcLine.length; j++){
+
+                    const insertLines = (count:number, state:EnumConflictState)=>{
+                        for(let j=0; j < count; j++){
                             editorLines.push({
                                 text:rLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
                                 conflictNo,
-                                state:EnumConflictState.FromCurrent,                                
+                                state,
                             });
 
                             currentLines.push({
@@ -265,41 +266,21 @@ export class ConflictUtils{
                         }
                     }
 
-                    const insertIncomingLines = ()=>{
-                        for(let j=0; j < piLine.length; j++){
-                            editorLines.push({
-                                text:rLines[j].text,
-                                hightLightBackground:true,
-                                textHightlightIndex:[],
-                                conflictNo,
-                                state:EnumConflictState.FromIncoming,                                
-                            });
-
-                            incomingLines.push({
-                                text:rLines[j].text,
-                                hightLightBackground:true,
-                                textHightlightIndex:[],
-                                conflictNo,
-                                taken:true,
-                            });
-                        }
-                    }
-
                     if(pcLine.every((_,li)=> _.text === rLines[li].text)){
-                        insertCurrentLines();
+                        insertLines(pcLine.length, EnumConflictState.FromCurrent);
 
                         rLines = rLines.slice(pcLine.length);
 
                         if(piLine.every((_,li)=> _.text === rLines[li].text)){
-                            insertIncomingLines();
+                            insertLines(piLine.length, EnumConflictState.FromIncoming);
                         }
                     }else if(piLine.every((_,li)=> _.text === rLines[li].text)){
-                        insertIncomingLines();
+                        insertLines(piLine.length, EnumConflictState.FromIncoming);
 
                         rLines = rLines.slice(piLine.length);
 
                         if(pcLine.every((_,li)=> _.text === rLines[li].text)){
-                            insertCurrentLines();
+                            insertLines(pcLine.length, EnumConflictState.FromCurrent);
                         }
                     }
 
