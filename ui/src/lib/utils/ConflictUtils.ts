@@ -192,7 +192,7 @@ export class ConflictUtils{
                         marker:EnumConflictMarker.Starting,
                     });
                     curLine = currLines[++i];
-                    while(i < currLines.length && !curLine.text?.startsWith(dividerMarker)){                        
+                    while(i < currLines.length && curLine.text === dividerMarker){                        
                         cuLines.push({
                             text:currLines[i].text,
                             hightLightBackground:true,
@@ -227,7 +227,7 @@ export class ConflictUtils{
                     let piLine:ILine[] = [];
                     let pcLine:ILine[] = [];
 
-                    while(i < prevLines.length && !preLine.text?.startsWith(dividerMarker)){
+                    while(i < prevLines.length && preLine.text !== dividerMarker){
                         rLines.push(currLines[i]);
                         pcLine.push(preLine);
                         preLine = prevLines[++i];
@@ -242,7 +242,11 @@ export class ConflictUtils{
                         preLine = prevLines[++i];
                     }
                     
-                    rLines.push(currLines[i]);
+                    rLines.push(currLines[i++]);                    
+
+                    while(prevLines[i].text === undefined && i < prevLines.length){
+                        rLines.push(currLines[i++]);
+                    }
 
                     rLines = rLines.filter(_=> _.text !== undefined);
                     piLine = piLine.filter(_=> _.text !== undefined);
