@@ -320,19 +320,9 @@ export class ConflictUtils{
                     else{
                         insertLines(rLines.length, EnumConflictState.Custom);
                     }
-
-                    for(let action of actionTaken){
-                        if(action === EnumConflictSide.Current){
-                            insertCurrentLines(true);
-                        }
-                        else if(action === EnumConflictSide.Incoming){
-                            insertIncomingLines(true);
-                        }
-                        else{
-                            insertCurrentLines(false);
-                            insertIncomingLines(false);
-                        }
-                    }
+                    
+                    insertCurrentLines(actionTaken.includes(EnumConflictSide.Current));                    
+                    insertIncomingLines(actionTaken.includes(EnumConflictSide.Incoming));
 
                 }
 
