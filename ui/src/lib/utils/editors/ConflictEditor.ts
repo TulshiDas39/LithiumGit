@@ -13,7 +13,7 @@ import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
 import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../../enums";
-import { IConflictEditorLine, IConflictLine, IConflictPosition, ILine } from "../../interfaces";
+import { ICEditorHiddenLine, IConflictEditorLine, IConflictLine, IConflictPosition, ILine } from "../../interfaces";
 import { DiffUtils } from "../DiffUtils";
 
 enum TransMetaData{
@@ -32,7 +32,8 @@ export class ConflictEditor extends TextEditor{
     private _conflictPositions: IConflictPosition[] = [];
     private _incomingLines:IConflictLine[] = [];
     private _currentLines:IConflictLine[] = [];
-    private _iLines:IConflictEditorLine[] = [];
+    private _eLines:IConflictEditorLine[] = [];
+    private _eHiddenLines:ICEditorHiddenLine[] = [];
 
 
     constructor(panelSelector:string){
@@ -75,9 +76,19 @@ export class ConflictEditor extends TextEditor{
     }
 
     private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
-        const startIndex = this._iLines.findIndex(x => x.conflictNo === conflictNo);
-        if(startIndex < 0) return;
-        const eLines = this._iLines.filter(x => x.conflictNo === conflictNo);
+        let startIndex = this._eLines.findIndex(x => x.conflictNo === conflictNo);
+        let afterIndex:number | undefined;
+
+        let eLines:IConflictEditorLine[] = [];
+        if(startIndex < 0) {
+            afterIndex = this._eHiddenLines.find(x => x.conflictNo === conflictNo)?.afterLineIndex;
+            if(!afterIndex) {
+                return;
+            }
+        }else{
+            eLines = this._eLines.filter(x => x.conflictNo === conflictNo);
+        }
+        
         const sLines = (side === EnumConflictSide.Incoming ? this._incomingLines : this._currentLines).filter(x => x.conflictNo === conflictNo && x.text !== undefined);
         const state = side === EnumConflictSide.Incoming ? EnumConflictState.FromIncoming : EnumConflictState.FromCurrent;
         let newELines:IConflictEditorLine[]  = [];
@@ -87,14 +98,25 @@ export class ConflictEditor extends TextEditor{
         if(accept){
             newELines = newELines.concat(sLines.map(x => ({...x, state})));
         }
-        const change = {} as IChange;        
-        change.startlineIndex = startIndex;
-        change.startOffset = 0;
+        const change = {} as IChange;
+        
+        if(eLines.length){
+            change.startlineIndex = startIndex;
+            change.startOffset = 0;
+        }else{
+            change.startlineIndex = afterIndex!;
+            change.startOffset = Number.MAX_SAFE_INTEGER;
+        }
+        
         change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;
         change.text = newELines.map(x => x.text).join(this._lineFeedType);
         if(newELines.length){
-            change.text += this._lineFeedType;
+            if(change.startOffset > 0){
+                change.text = this._lineFeedType + change.text;
+            }else{
+                change.text += this._lineFeedType;
+            }
         }
 
         this.applyChange(change);
@@ -107,7 +129,8 @@ export class ConflictEditor extends TextEditor{
         const lineConfig = this._conflictUtils.GetUiLinesOfConflictFromDiff(lines, lines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
-        this._iLines = lineConfig.editorLines;
+        this._eLines = lineConfig.editorLines;
+        this._eHiddenLines = lineConfig.editorHiddenLines;
         return true;
     }
 
@@ -120,7 +143,8 @@ export class ConflictEditor extends TextEditor{
         const lineConfig = this._conflictUtils.GetUiLinesOfConflictFromDiff(uiLines.previousLines, uiLines.currentLines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
-        this._iLines = lineConfig.editorLines;        
+        this._eLines = lineConfig.editorLines;
+        this._eHiddenLines = lineConfig.editorHiddenLines;
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this.totalChangeCount,silentStepUpdate:true}));
         this.renderLineNumbers();
@@ -163,7 +187,7 @@ export class ConflictEditor extends TextEditor{
         const decorations: Decoration[] = [];
         let iLineIndex = 0;
         doc.forEach((node: Node, offset: number) => {
-            const iLine = this._iLines[iLineIndex++];
+            const iLine = this._eLines[iLineIndex++];
             if(!iLine) return;
             const className = ConflictEditor.decorationClassOf(iLine);
             if(!className) return;

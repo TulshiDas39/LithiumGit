@@ -20,3 +20,8 @@ export interface IConflictEditorLine extends ILine{
     state?:EnumConflictState;
     marker?:EnumConflictMarker;
 }
+
+export interface ICEditorHiddenLine{
+    conflictNo:number;
+    afterLineIndex:number;
+}

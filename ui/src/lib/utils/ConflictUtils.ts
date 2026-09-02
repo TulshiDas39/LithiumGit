@@ -1,5 +1,5 @@
 import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
+import { ICEditorHiddenLine, IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
 import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
@@ -145,6 +145,7 @@ export class ConflictUtils{
         const currentLines:IConflictLine[] = [];
         const incomingLines:IConflictLine[] = [];
         const editorLines:IConflictEditorLine[] = [];
+        const editorHiddenLines:ICEditorHiddenLine[] = [];
         let conflictNo = 0;
 
 
@@ -178,7 +179,6 @@ export class ConflictUtils{
 
                 let inLines:ILine[] = [];
                 let inCLines:IConflictLine[] = [];
-
 
                 let cuLines:ILine[] = [];
                 let cuCLines:IConflictLine[] = [];
@@ -397,6 +397,13 @@ export class ConflictUtils{
                 cuCLines.forEach(_=> currentLines.push(_));
                 rCLines.forEach(_=> editorLines.push(_));
 
+                if(!rLines.length){
+                    editorHiddenLines.push({                        
+                        conflictNo,
+                        afterLineIndex:currentLines.length-1,
+                    });
+                }
+
                 i = k - 1;
                 
                 continue;
@@ -422,7 +429,7 @@ export class ConflictUtils{
 
         }
 
-        return {currentLines, incomingLines, editorLines};
+        return {currentLines, incomingLines, editorLines, editorHiddenLines};
     }
 
     private initialiseData(){
