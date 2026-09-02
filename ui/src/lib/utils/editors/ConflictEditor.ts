@@ -12,15 +12,13 @@ import { ModalData } from "../../../components/modals/ModalData";
 import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
-import { EnumHtmlIds } from "../../enums";
-import { IConflictEditorLine, IConflictLine, IConflictPosition } from "../../interfaces";
+import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../../enums";
+import { IConflictEditorLine, IConflictLine, IConflictPosition, ILine } from "../../interfaces";
 import { DiffUtils } from "../DiffUtils";
 
 enum TransMetaData{
     DecorationChanged="DecorationChanged",
 }
-
-type TConflictSide = "current" | "incoming";
 
 export class ConflictEditor extends TextEditor{
     static readonly currentMarker = "<<<<<<<";
@@ -192,9 +190,11 @@ export class ConflictEditor extends TextEditor{
     protected override async readFile(){
         const succeeded = await super.readFile();
         if(!succeeded) return false;
-        const lineConfig = this._conflictUtils.GetUiLinesOfConflict(this._lines);
+        const lines:ILine[] = this._lines.map(text=> ({text, textHightlightIndex:[]}));
+        const lineConfig = this._conflictUtils.GetUiLinesOfConflictFromDiff(lines, lines);
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
+        this._iLines = lineConfig.editorLines;
         this.resolveConflictPositions();
         return true;
     }
@@ -263,33 +263,28 @@ export class ConflictEditor extends TextEditor{
         return undefined;
     }
 
+    private static decorationClassOf(iLine:IConflictEditorLine){
+        switch(iLine.marker){
+            case EnumConflictMarker.Starting: return 'bg-current-change-deep';
+            case EnumConflictMarker.Divider: return 'bg-fade';
+            case EnumConflictMarker.Ending: return 'bg-previous-change-deep';
+        }
+        switch(iLine.state){
+            case EnumConflictState.FromCurrent: return 'bg-current-change';
+            case EnumConflictState.FromIncoming: return 'bg-previous-change';
+        }
+        return undefined;
+    }
+
     private readonly buildDecorations = (doc: Node) => {
         const decorations: Decoration[] = [];
-        let side:TConflictSide | undefined;
+        let iLineIndex = 0;
         doc.forEach((node: Node, offset: number) => {
-            const marker = ConflictEditor.sideOfLine(node.textContent ?? '');
-            const decorate = (className:string)=>{
-                decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: className }));
-            };
-            if(marker === "startMarker"){
-                side = "current";
-                decorate('bg-current-change-deep');
-                return;
-            }
-            if(marker === "separator"){
-                side = "incoming";
-                decorate('bg-fade');
-                return;
-            }
-            if(marker === "endMarker"){
-                side = undefined;
-                decorate('bg-previous-change-deep');
-                return;
-            }
-            if(side === "current")
-                decorate('bg-current-change');
-            else if(side === "incoming")
-                decorate('bg-previous-change');
+            const iLine = this._iLines[iLineIndex++];
+            if(!iLine) return;
+            const className = ConflictEditor.decorationClassOf(iLine);
+            if(!className) return;
+            decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: className }));
         });
         return DecorationSet.create(doc, decorations);
     };
