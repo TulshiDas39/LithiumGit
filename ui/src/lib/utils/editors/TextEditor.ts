@@ -42,7 +42,6 @@ export abstract class TextEditor {
     protected _sourceFilePath = '';
     protected saveHandler: ((success:boolean) => void) | null = null;
     protected onSync: (() => void) | null = null;
-    protected onChange: ((change:IChange[]) => void)[] = [];
     private onSyncWaitingCalls: (() => void)[] = [];
     protected lineCount = 0;
     private _destroyed = false;
@@ -141,13 +140,11 @@ export abstract class TextEditor {
             }
             else if(result.result !== itemCount){
                 console.warn(`Mismatch in tracked changes count. Expected: ${itemCount}, Tracked: ${result.result}`);
-                const completedChanges = this._untrackedChanges.splice(0,result.result);
-                this.onChange.forEach(f=>f(completedChanges));
+                this._untrackedChanges.splice(0,result.result);
                 this._trackingChanges = false;
             }
             else{
-                const completedChanges = this._untrackedChanges.splice(0,itemCount);
-                this.onChange.forEach(f=>f(completedChanges));
+                this._untrackedChanges.splice(0,itemCount);
                 if(this._untrackedChanges.length) {
                     await perform();
                 }

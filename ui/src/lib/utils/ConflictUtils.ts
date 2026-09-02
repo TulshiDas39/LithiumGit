@@ -603,55 +603,33 @@ export class ConflictUtils{
     }
 
     private addEventHanlders(){
-        const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
-        acceptAllIncomingCheck.addEventListener("change",(e)=>{
-            const checked = !!acceptAllIncomingCheck.checked;
-            const checkboxes = this.incomingCheckBoxes;
-            checkboxes.forEach(elem => {
-                if(elem.checked !== checked){
-                    elem.checked = checked;
-                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    this.updateConflictState(conflictNo);
-                }
-            });
-        })
+        // const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
+        // acceptAllIncomingCheck.addEventListener("change",(e)=>{
+        //     const checked = !!acceptAllIncomingCheck.checked;
+        //     const checkboxes = this.incomingCheckBoxes;
+        //     checkboxes.forEach(elem => {
+        //         if(elem.checked !== checked){
+        //             elem.checked = checked;
+        //             const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+        //             this.updateConflictState(conflictNo);
+        //         }
+        //     });
+        // })
 
-        const acceptAllCurrentCheck = this.acceptAllCurrentCheckBox;
-        acceptAllCurrentCheck.addEventListener("change",(e)=>{
-            const checked = !!acceptAllCurrentCheck.checked;
-            const checkboxes = this.currentCheckBoxes;
-            checkboxes.forEach(elem => {
-                if(elem.checked !== checked){
-                    elem.checked = checked;
-                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    this.updateConflictState(conflictNo);
-                }
-            });
-        })
+        // const acceptAllCurrentCheck = this.acceptAllCurrentCheckBox;
+        // acceptAllCurrentCheck.addEventListener("change",(e)=>{
+        //     const checked = !!acceptAllCurrentCheck.checked;
+        //     const checkboxes = this.currentCheckBoxes;
+        //     checkboxes.forEach(elem => {
+        //         if(elem.checked !== checked){
+        //             elem.checked = checked;
+        //             const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
+        //             this.updateConflictState(conflictNo);
+        //         }
+        //     });
+        // })
         
         this.addEventHandlersToInnerCheckboxes();
-
-        // this.acceptIncomingElems.forEach(elem=>{
-        //     elem.addEventListener("click",()=>{
-        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-        //         this.handleAcceptIncoming(conflictNo);
-        //     })
-        // })
-
-        // this.acceptCurrentElems.forEach(elem=>{
-        //     elem.addEventListener("click",()=>{
-        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-        //         this.handleAcceptCurrent(conflictNo);
-        //     })
-        // })
-
-        // this.acceptBothElems.forEach(elem=>{
-        //     elem.addEventListener("click",()=>{
-        //         const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-        //         this.handleAcceptCurrent(conflictNo);
-        //         this.handleAcceptIncoming(conflictNo);
-        //     })
-        // })
 
     }
 

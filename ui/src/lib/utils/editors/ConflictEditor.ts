@@ -44,7 +44,6 @@ export class ConflictEditor extends TextEditor{
         };
         this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
-        this.onChange.push((changes)=> this.handleChange(changes));
         this.onSync = () => this.updateDiff();
     }
     
@@ -75,55 +74,11 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    private handleChange(changes:IChange[]){
-        for(let change of changes){
-            const conflict = this.findOverlappingConflictNo(change);
-            const insertedLineCount = change.text.split(/\n\r?/).length;
-            const selectedLineCount = change.endlineIndex - change.startlineIndex + 1;
-            const lineChangeCount = insertedLineCount - selectedLineCount;
-            let lineIndexThreshold = 0;
-            if(conflict){
-                if(change.startlineIndex < conflict.afterLineIndex + 1){
-                    conflict.afterLineIndex = change.startlineIndex - 1;
-                }
-                conflict.beforeLineIndex = Math.max(conflict.afterLineIndex+1, conflict.beforeLineIndex + lineChangeCount);
-                lineIndexThreshold = conflict.beforeLineIndex;
-            }
-
-            const remainingConflicts = this._conflictPositions.filter(x=> x.conflictNo > conflict.conflictNo);
-            for(let conflict of remainingConflicts){
-                conflict.afterLineIndex = Math.max(conflict.afterLineIndex + lineChangeCount, lineIndexThreshold);
-                conflict.beforeLineIndex += Math.max(conflict.beforeLineIndex + lineChangeCount, conflict.afterLineIndex + 1);
-                lineIndexThreshold = conflict.beforeLineIndex;
-            }
-            
-            
-        }
-    }
-
-    private findOverlappingConflictNo(change:IChange){
-        for(let conflict of this._conflictPositions){
-            if(change.startlineIndex <= conflict.afterLineIndex + 1 && conflict.afterLineIndex + 1 <= change.endlineIndex)
-                return conflict;
-
-            if(change.startlineIndex <= conflict.beforeLineIndex - 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
-                return conflict;
-
-            if(change.startlineIndex >= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 >= change.endlineIndex)
-                return conflict;
-
-            if(change.startlineIndex <= conflict.afterLineIndex + 1 && conflict.beforeLineIndex - 1 <= change.endlineIndex)
-                return conflict;
-        }
-
-        return null!;
-    }
-
     private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
         const startIndex = this._iLines.findIndex(x => x.conflictNo === conflictNo);
         if(startIndex < 0) return;
         const eLines = this._iLines.filter(x => x.conflictNo === conflictNo);
-        const sLines = (side === EnumConflictSide.Incoming ? this._incomingLines : this._currentLines).filter(x => x.conflictNo === conflictNo);
+        const sLines = (side === EnumConflictSide.Incoming ? this._incomingLines : this._currentLines).filter(x => x.conflictNo === conflictNo && x.text !== undefined);
         const state = side === EnumConflictSide.Incoming ? EnumConflictState.FromIncoming : EnumConflictState.FromCurrent;
         let newELines:IConflictEditorLine[]  = [];
         if(!eLines[0]?.marker){
@@ -137,7 +92,7 @@ export class ConflictEditor extends TextEditor{
         change.startOffset = Number.MAX_SAFE_INTEGER;
         change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;
-        change.text = newELines.join(this._lineFeedType);
+        change.text = newELines.map(x => x.text).join(this._lineFeedType);
         change.text += this._lineFeedType;
 
         this.applyChange(change);
