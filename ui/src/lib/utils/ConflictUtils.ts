@@ -204,6 +204,7 @@ export class ConflictUtils{
                 let cuCLines:IConflictLine[] = [];
                 
                 let rLines:ILine[] = [];
+                let rCLines:IConflictEditorLine[] = [];
                 const actionTaken:EnumConflictSide[] = [];
 
 
@@ -262,7 +263,7 @@ export class ConflictUtils{
 
                     let rLine = rLines.shift()!;
                     while(!rLine.text!.startsWith(currentMarker)){
-                        editorLines.push({
+                        rCLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
@@ -271,7 +272,7 @@ export class ConflictUtils{
                         rLine = rLines.shift()!;
                     }
 
-                    editorLines.push({
+                    rCLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -282,7 +283,7 @@ export class ConflictUtils{
                     rLine = rLines.shift()!;
 
                     while(rLine.text !== dividerMarker){
-                        editorLines.push({
+                        rCLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
@@ -292,7 +293,7 @@ export class ConflictUtils{
                         rLine = rLines.shift()!;
                     }
 
-                    editorLines.push({
+                    rCLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -303,7 +304,7 @@ export class ConflictUtils{
                     rLine = rLines.shift()!;
                     
                     while(!rLine.text?.startsWith(endingMarker)){
-                        editorLines.push({
+                        rCLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
@@ -313,7 +314,7 @@ export class ConflictUtils{
                         rLine = rLines.shift()!;
                     }
 
-                    editorLines.push({
+                    rCLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -323,7 +324,7 @@ export class ConflictUtils{
 
                     rLine = rLines.shift()!;
                     while(rLine){
-                        editorLines.push({
+                        rCLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
@@ -335,7 +336,7 @@ export class ConflictUtils{
                 else{                    
                     const insertRLines = (count:number, state:EnumConflictState)=>{
                         for(let j=0; j < count; j++){
-                            editorLines.push({
+                            rCLines.push({
                                 text:rLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
@@ -392,23 +393,29 @@ export class ConflictUtils{
                         line.taken = actionTaken.includes(EnumConflictSide.Incoming);
                     }                    
                 }
+
+                while(inCLines.length < cuCLines.length){
+                    inCLines.push({
+                        text: "",
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                while(cuCLines.length < inCLines.length){
+                    cuCLines.push({
+                        text: "",
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                inCLines.forEach(_=> incomingLines.push(_));
+                cuCLines.forEach(_=> currentLines.push(_));
+                rCLines.forEach(_=> editorLines.push(_));
+
+                i = i + rCLines.length - 1;
                 
-                if(inLines.length < cuLines.length){
-                    for(let j=0; j < cuLines.length-inLines.length; j++){
-                        incomingLines.push({
-                            textHightlightIndex:[],
-                            conflictNo,
-                        });
-                    }
-                }
-                else if(cuLines.length < inLines.length){
-                    for(let j=0; j < inLines.length-cuLines.length; j++){
-                        currentLines.push({
-                            textHightlightIndex:[],
-                            conflictNo,
-                        });
-                    }
-                }
                 continue;
             }
             
