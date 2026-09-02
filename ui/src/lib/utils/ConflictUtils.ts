@@ -201,6 +201,8 @@ export class ConflictUtils{
                     inLines.push(prevLines[k++]);
                 }
 
+                k = Math.min(currLines.length - 1, k);
+
                 for(let j = i; j <= k; j++){
                     rLines.push(currLines[j]);
                 }
@@ -346,7 +348,7 @@ export class ConflictUtils{
                         let remrLines = rLines.slice(inLines.length);
                         if(remrLines.length){
                             if(remrLines.length === cuLines.length && cuLines.every((_,li)=> _.text === remrLines[li].text)){
-                                insertRLines(cuLines.length, EnumConflictState.FromIncoming);
+                                insertRLines(inLines.length, EnumConflictState.FromIncoming);
                                 rLines = remrLines;
                                 insertRLines(cuLines.length, EnumConflictState.FromCurrent);
                                 actionTaken.push(EnumConflictSide.Incoming, EnumConflictSide.Current);
@@ -392,7 +394,7 @@ export class ConflictUtils{
                 cuCLines.forEach(_=> currentLines.push(_));
                 rCLines.forEach(_=> editorLines.push(_));
 
-                i = i + Math.max(rCLines.length,inCLines.length, cuCLines.length) - 1;
+                i = k - 1;
                 
                 continue;
             }
