@@ -17,8 +17,9 @@ function SingleDiff(props:ISingleDiffProps){
     }
 
     const classNames:string[] = [];
-    if(props.line.conflictNo) 
+    if(props.line.conflictNo){
         classNames.push(`${props.side}_${props.line.conflictNo}`);
+    } 
 
     if(props.line.taken){
         classNames.push("bg-change-accepted");

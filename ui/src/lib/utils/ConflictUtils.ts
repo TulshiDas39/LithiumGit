@@ -33,7 +33,7 @@ export class ConflictUtils{
     private hightDisplacement = 0;
     private onResizeDisplacement = 0;
 
-    acceptChange:(conflictNo:number) => void = (_:number)=>{};
+    acceptChange:(conflictNo:number, side:EnumConflictSide,accept:boolean) => void = (_:number)=>{};
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -187,9 +187,7 @@ export class ConflictUtils{
                 let rCLines:IConflictEditorLine[] = [];
                 const actionTaken:EnumConflictSide[] = [];
 
-
                 let k = i + 1;
-
 
                 while(k < prevLines.length && prevLines[k].text !== dividerMarker){
                     cuLines.push(prevLines[k++]);
@@ -364,7 +362,24 @@ export class ConflictUtils{
                     else{
                         insertRLines(rLines.length, EnumConflictState.Custom);
                     }
+                                        
+                }
 
+                while(inCLines.length < cuCLines.length){
+                    inCLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                while(cuCLines.length < inCLines.length){
+                    cuCLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                if(resolved){
                     const curTaken = actionTaken.includes(EnumConflictSide.Current);
 
                     for(let line of cuCLines){
@@ -375,23 +390,7 @@ export class ConflictUtils{
 
                     for(let line of inCLines){
                         line.taken = inTaken;
-                    }                    
-                }
-
-                while(inCLines.length < cuCLines.length){
-                    inCLines.push({
-                        text: "",
-                        textHightlightIndex:[],
-                        conflictNo,
-                    });
-                }
-
-                while(cuCLines.length < inCLines.length){
-                    cuCLines.push({
-                        text: "",
-                        textHightlightIndex:[],
-                        conflictNo,
-                    });
+                    }
                 }
 
                 inCLines.forEach(_=> incomingLines.push(_));
@@ -587,18 +586,18 @@ export class ConflictUtils{
         const incomingCheckBoxes = this.incomingCheckBoxes;
         incomingCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
-                this.updateTopLabelIncomingCheckboxState();
                 const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                this.updateConflictState(conflictNo);
+                const accept = !!elem.checked;
+                this.acceptChange(conflictNo, EnumConflictSide.Incoming, accept);
             })
         })
 
         const currentCheckBoxes = this.currentCheckBoxes;
         currentCheckBoxes.forEach(elem=>{
             elem.addEventListener("change",(e)=>{
-                this.updateTopLeveCurrentCheckboxState();
                 const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                this.updateConflictState(conflictNo);
+                const accept = !!elem.checked;
+                this.acceptChange(conflictNo, EnumConflictSide.Current, accept);
             })
         })
     }
@@ -744,14 +743,12 @@ export class ConflictUtils{
 
     private updateBottomPanelState2(conflictNo:number){
         let action = this.actionsTaken.find(_=> _.conflictNo === conflictNo);
-        let newAction = false;
         if(!action){
             action = {
                 conflictNo,
                 taken:[]
             };
             this.actionsTaken.push(action);
-            newAction = true;
         }        
 
         const checkboxes = this.getCheckboxesByConflict(conflictNo);

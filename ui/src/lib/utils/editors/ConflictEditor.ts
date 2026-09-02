@@ -43,7 +43,7 @@ export class ConflictEditor extends TextEditor{
             ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
         };
         this.saveHandler = success => this.onSave(success);
-        this._conflictUtils.acceptChange = (conflictNo) => this.acceptChange(conflictNo);
+        this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
         this.onChange.push((changes)=> this.handleChange(changes));
         this.onSync = () => this.updateDiff();
     }
@@ -119,60 +119,28 @@ export class ConflictEditor extends TextEditor{
         return null!;
     }
 
-    // async renderILines(file:IFile){
-    //     this._file = file;        
-    //     const filePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path,this._file.path);
-    //     await this.copyStagedContent();
-    //     this._changeUitl.currentLines = [];
-    //     this._changeUitl.previousLines = [];
-    //     this._changeUitl.showChanges();
-    //     const r = await this.render(filePath);
-    //     this._changeUitl.updatePreviousChanges(this._prevIlines);
-    //     this.handleDiscardHunk();
-    //     return r;
-    // }
-
-    private acceptChange(conflictNo:number){
-        const conflictPosition = this._conflictPositions.find(c => c.conflictNo === conflictNo);
-        if(!conflictPosition)
-            return;
-        const change = {} as IChange;
-        if(conflictPosition.afterLineIndex >= 0){
-            change.startlineIndex = conflictPosition.afterLineIndex;
-            change.startOffset = Number.MAX_SAFE_INTEGER;
-        }else{
-            change.startlineIndex = conflictPosition.afterLineIndex+1;
-            change.startOffset = 0;
+    private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
+        const startIndex = this._iLines.findIndex(x => x.conflictNo === conflictNo);
+        if(startIndex < 0) return;
+        const eLines = this._iLines.filter(x => x.conflictNo === conflictNo);
+        const sLines = (side === EnumConflictSide.Incoming ? this._incomingLines : this._currentLines).filter(x => x.conflictNo === conflictNo);
+        const state = side === EnumConflictSide.Incoming ? EnumConflictState.FromIncoming : EnumConflictState.FromCurrent;
+        let newELines:IConflictEditorLine[]  = [];
+        if(!eLines[0]?.marker){
+            newELines = eLines.filter(x => x.state !== state && x.state !== EnumConflictState.Custom);
         }
-        change.endlineIndex = change.startlineIndex + (conflictPosition.beforeLineIndex - conflictPosition.afterLineIndex - 1);
+        if(accept){
+            newELines = newELines.concat(sLines.map(x => ({...x, state})));
+        }
+        const change = {} as IChange;        
+        change.startlineIndex = startIndex;
+        change.startOffset = Number.MAX_SAFE_INTEGER;
+        change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;
-        const action = this._conflictUtils.Actions.find(a => a.conflictNo === conflictNo)!;
-        let lines:string[] = [];
-        for(const side of action.taken){
-            if(side === EnumConflictSide.Incoming){
-                const incLines = this._conflictUtils.incomingLines.filter(c => c.conflictNo === conflictNo && c.text !== undefined).map(x=>x.text!);
-                lines = lines.concat(incLines);
-            }else if(side === EnumConflictSide.Current){
-                const curLines = this._conflictUtils.currentLines.filter(c => c.conflictNo === conflictNo && c.text !== undefined).map(x=>x.text!);
-                lines = lines.concat(curLines);
-            }
-        }
-
-        change.text = lines.join(this._lineFeedType);
-
-        if(lines.length){
-            if(change.startOffset > 0){
-                change.text = this._lineFeedType + change.text;
-            }else{
-                change.text += this._lineFeedType;
-            }
-        }
+        change.text = newELines.join(this._lineFeedType);
+        change.text += this._lineFeedType;
 
         this.applyChange(change);
-    }
-
-    private acceptCurrentChange(conflictNo:number,accept:boolean){
-        
     }
 
     private getStartingLineIndexOfConflict(conflictNo:number){
