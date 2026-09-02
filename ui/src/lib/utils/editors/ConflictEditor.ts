@@ -89,25 +89,15 @@ export class ConflictEditor extends TextEditor{
         }
         const change = {} as IChange;        
         change.startlineIndex = startIndex;
-        change.startOffset = Number.MAX_SAFE_INTEGER;
+        change.startOffset = 0;
         change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;
         change.text = newELines.map(x => x.text).join(this._lineFeedType);
-        change.text += this._lineFeedType;
+        if(newELines.length){
+            change.text += this._lineFeedType;
+        }
 
         this.applyChange(change);
-    }
-
-    private getStartingLineIndexOfConflict(conflictNo:number){
-        let conflictNoi = 0;
-        for(let i=0;i<this._lines.length;i++){
-            if(this._lines[i].startsWith(ConflictEditor.currentMarker)){
-                if(conflictNo === conflictNoi + 1)
-                    return i;
-                conflictNoi++;
-            }
-        }
-        return -1;        
     }
 
     protected override async readFile(){
@@ -118,26 +108,7 @@ export class ConflictEditor extends TextEditor{
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
         this._iLines = lineConfig.editorLines;
-        // this.resolveConflictPositions();
         return true;
-    }
-
-    private resolveConflictPositions(){
-        let conflictNo = 0;
-        let conflictPosition = {} as IConflictPosition;
-        for(let i=0;i<this._lines.length;i++){
-            if(this._lines[i].startsWith(ConflictEditor.currentMarker)){
-                conflictNo++;
-                conflictPosition.conflictNo = conflictNo;
-                conflictPosition.afterLineIndex = i-1;
-                while(i < this._lines.length && !this._lines[i].startsWith(ConflictEditor.endingMarker)){
-                    i++;
-                }
-                conflictPosition.beforeLineIndex = i+1;
-                this._conflictPositions.push(conflictPosition);
-                conflictPosition = {} as IConflictPosition;
-            }
-        }
     }
 
     private async updateDiff(){ 
@@ -156,18 +127,6 @@ export class ConflictEditor extends TextEditor{
         const tr = this._editView.state.tr;
         tr.setMeta(TransMetaData.DecorationChanged,true);        
         this._editView.dispatch(tr);
-    }
-
-    private handleScrolling(){
-        const contentContainer = document.querySelector(this._containerSelector)?.closest(".content-container") as HTMLElement | null;
-        const lineNumbers = this.getLineNumberContainer();
-        if(!contentContainer || !lineNumbers) return;
-        if(this._scrollHandler)
-            contentContainer.removeEventListener("scroll", this._scrollHandler);
-        this._scrollHandler = () => {
-            lineNumbers.scrollTo({ top: contentContainer.scrollTop });
-        };
-        contentContainer.addEventListener("scroll", this._scrollHandler);
     }
 
     protected override getLineNumberContainer(){
