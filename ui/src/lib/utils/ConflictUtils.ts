@@ -192,29 +192,27 @@ export class ConflictUtils{
                 const actionTaken:EnumConflictSide[] = [];
 
 
-                preLine = prevLines[++i];
+                let k = i + 1;
 
 
-                while(i < prevLines.length && preLine.text !== dividerMarker){
-                    rLines.push(currLines[i]);
-                    cuLines.push(preLine);
-                    preLine = prevLines[++i];
+                while(i < prevLines.length && prevLines[k].text !== dividerMarker){
+                    cuLines.push(prevLines[k++]);
                 }
 
-                rLines.push(currLines[i]);
-                preLine = prevLines[++i];
-
-                while(i < prevLines.length && !preLine.text?.startsWith(endingMarker)){
-                    rLines.push(currLines[i]);
-                    inLines.push(preLine);
-                    preLine = prevLines[++i];
-                }
+                k++;
                 
-                rLines.push(currLines[i]);
+                while(i < prevLines.length && !prevLines[k].text?.startsWith(endingMarker)){
+                    inLines.push(prevLines[k++]);
+                }
 
-                while(i + 1 < prevLines.length && prevLines[i+1].text === undefined ){
-                    rLines.push(currLines[i+1]);
-                    i++;
+                for(let j = i; j <= k; j++){
+                    rLines.push(currLines[j]);
+                }
+                k++;
+
+                while(k < prevLines.length && prevLines[k].text === undefined ){
+                    rLines.push(currLines[k]);
+                    k++;
                 }
 
                 rLines = rLines.filter(_=> _.text !== undefined);
