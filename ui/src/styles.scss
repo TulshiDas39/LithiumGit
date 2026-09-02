@@ -44,6 +44,7 @@ html {
     --bg-current-change-deep: #bdd780;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
+    --bg-custom-change: #eacef3;
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:#2e0497;
@@ -92,6 +93,7 @@ html {
     --bg-current-change-deep: #4C5B2B;
     --bg-previous-change: #4C1919;
     --bg-previous-change-deep: #701414;
+    --bg-custom-change: #4d3456;
     --bg-fade:#513f3f;
     --bg-change-accepted:#48484d;
     --scroll-bar-color:rgba(119, 118, 119, 0.722);
@@ -438,6 +440,10 @@ html {
 
 .bg-previous-change-deep{
   background-color: var(--bg-previous-change-deep);
+}
+
+.bg-custom-change{
+  background-color: var(--bg-custom-change);
 }
 .overflow-ellipsis{
   text-overflow: ellipsis;

@@ -272,6 +272,7 @@ export class ConflictEditor extends TextEditor{
         switch(iLine.state){
             case EnumConflictState.FromCurrent: return 'bg-current-change';
             case EnumConflictState.FromIncoming: return 'bg-previous-change';
+            case EnumConflictState.Custom: return 'bg-custom-change';
         }
         return undefined;
     }
