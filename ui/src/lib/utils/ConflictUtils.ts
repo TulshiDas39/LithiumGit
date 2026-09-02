@@ -151,31 +151,27 @@ export class ConflictUtils{
         const isResolved = (lines:ILine[])=>{
             const startingMarkerIndex = lines.findIndex(_=> _.text?.startsWith(currentMarker));
             if(startingMarkerIndex === -1){
-                return false;
+                return true;
             }
             const separatorIndex = lines.findIndex(_=> _.text === dividerMarker);
             if(separatorIndex === -1){
-                return false;
+                return true;
             }
             const endingMarkerIndex = lines.findIndex(_=> _.text?.startsWith(endingMarker));
             if(endingMarkerIndex === -1){
-                return false;
-            }
-            if(startingMarkerIndex < separatorIndex && separatorIndex < endingMarkerIndex){
                 return true;
             }
+            if(startingMarkerIndex < separatorIndex && separatorIndex < endingMarkerIndex){
+                return false;
+            }
             
-            return false;
+            return true;
         }      
 
 
         for(let i=0; i < currLines.length; i++){
             let curLine = currLines[i];
-            let preLine = prevLines[i];
-
-            if(curLine.text === undefined){
-                continue;
-            }
+            let preLine = prevLines[i];            
 
             if(preLine.text?.startsWith(currentMarker)){
                 conflictNo++;
@@ -398,6 +394,10 @@ export class ConflictUtils{
 
                 i = i + rCLines.length - 1;
                 
+                continue;
+            }
+
+            if(curLine.text === undefined){
                 continue;
             }
             
