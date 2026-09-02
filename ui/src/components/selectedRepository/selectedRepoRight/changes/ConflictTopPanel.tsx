@@ -1,10 +1,10 @@
 import { EnumConflictSide } from "common_library";
-import { ILine } from "../../../../lib"
+import { IConflictLine, ILine } from "../../../../lib"
 import { ConflictDiffView } from "./ConflictDiffView";
 
 interface IProps{
-    previousLines:ILine[];
-    currentLines:ILine[];
+    previousLines:IConflictLine[];
+    currentLines:IConflictLine[];
 }
 export function ConflictTopPanel(props:IProps){    
     return <div className="d-flex w-100 h-100 conflict-diff">

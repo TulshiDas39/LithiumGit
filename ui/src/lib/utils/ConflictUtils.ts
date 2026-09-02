@@ -365,12 +365,16 @@ export class ConflictUtils{
                         insertRLines(rLines.length, EnumConflictState.Custom);
                     }
 
+                    const curTaken = actionTaken.includes(EnumConflictSide.Current);
+
                     for(let line of cuCLines){
-                        line.taken = actionTaken.includes(EnumConflictSide.Current);
+                        line.taken = curTaken;
                     }
 
+                    const inTaken = actionTaken.includes(EnumConflictSide.Incoming);
+
                     for(let line of inCLines){
-                        line.taken = actionTaken.includes(EnumConflictSide.Incoming);
+                        line.taken = inTaken;
                     }                    
                 }
 

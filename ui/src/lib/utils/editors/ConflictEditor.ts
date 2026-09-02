@@ -195,7 +195,7 @@ export class ConflictEditor extends TextEditor{
         this._incomingLines = lineConfig.incomingLines;
         this._currentLines = lineConfig.currentLines;
         this._iLines = lineConfig.editorLines;
-        this.resolveConflictPositions();
+        // this.resolveConflictPositions();
         return true;
     }
 
