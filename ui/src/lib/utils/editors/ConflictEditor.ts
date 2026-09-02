@@ -13,7 +13,7 @@ import { DataUtils } from "../DataUtils";
 import { GitUtils } from "../GitUtils";
 import { ConflictUtils } from "../ConflictUtils";
 import { EnumHtmlIds } from "../../enums";
-import { IConflictLine, IConflictPosition, ILine } from "../../interfaces";
+import { IConflictEditorLine, IConflictLine, IConflictPosition } from "../../interfaces";
 import { DiffUtils } from "../DiffUtils";
 
 enum TransMetaData{
@@ -34,6 +34,7 @@ export class ConflictEditor extends TextEditor{
     private _conflictPositions: IConflictPosition[] = [];
     private _incomingLines:IConflictLine[] = [];
     private _currentLines:IConflictLine[] = [];
+    private _iLines:IConflictEditorLine[] = [];
 
 
     constructor(panelSelector:string){
@@ -224,7 +225,8 @@ export class ConflictEditor extends TextEditor{
         const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);   
         const lineConfig = this._conflictUtils.GetUiLinesOfConflictFromDiff(uiLines.previousLines, uiLines.currentLines);
         this._incomingLines = lineConfig.incomingLines;
-        this._currentLines = lineConfig.currentLines;        
+        this._currentLines = lineConfig.currentLines;
+        this._iLines = lineConfig.editorLines;        
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this.totalChangeCount,silentStepUpdate:true}));
         this.renderLineNumbers();
