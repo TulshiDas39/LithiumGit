@@ -166,23 +166,7 @@ export class ConflictUtils{
             }
             
             return false;
-        }
-
-        const resolveMarkerType = (text?:string)=>{
-            if(!text){
-                return null;
-            }
-            if(text.startsWith(currentMarker)){
-                return EnumConflictMarker.Starting;
-            }
-            if(text === dividerMarker){
-                return EnumConflictMarker.Divider;
-            }
-            if(text.startsWith(endingMarker)){
-                return EnumConflictMarker.Ending;
-            }
-            return null;
-        }
+        }      
 
 
         for(let i=0; i < currLines.length; i++){
