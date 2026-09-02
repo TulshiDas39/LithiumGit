@@ -191,13 +191,13 @@ export class ConflictUtils{
                 let k = i + 1;
 
 
-                while(i < prevLines.length && prevLines[k].text !== dividerMarker){
+                while(k < prevLines.length && prevLines[k].text !== dividerMarker){
                     cuLines.push(prevLines[k++]);
                 }
 
                 k++;
                 
-                while(i < prevLines.length && !prevLines[k].text?.startsWith(endingMarker)){
+                while(k < prevLines.length && !prevLines[k].text?.startsWith(endingMarker)){
                     inLines.push(prevLines[k++]);
                 }
 
@@ -392,7 +392,7 @@ export class ConflictUtils{
                 cuCLines.forEach(_=> currentLines.push(_));
                 rCLines.forEach(_=> editorLines.push(_));
 
-                i = i + rCLines.length - 1;
+                i = i + Math.max(rCLines.length,inCLines.length, cuCLines.length) - 1;
                 
                 continue;
             }
