@@ -588,6 +588,10 @@ export class ConflictUtils{
         return side === EnumConflictSide.Incoming ? this.acceptAllIncomingCheckBox : this.acceptAllCurrentCheckBox;
     }
 
+    private linesOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.incomingLines : this.currentLines;
+    }
+
     private get acceptIncomingElems(){
         return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
     }
@@ -600,32 +604,32 @@ export class ConflictUtils{
         return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
     }
 
-    //the whole top panel is re-rendered on every diff refresh, so all of its handlers have to be
-    //re-attached with it - binding them once at ShowEditor() time leaves them on discarded nodes
+    get conflictCount(){
+        return (new Set(this.incomingLines.filter(x => !!x.conflictNo).map(x => x.conflictNo!))).size;
+    }
+
     private addTopPanelEventHandlers(){
         for(const side of [EnumConflictSide.Incoming, EnumConflictSide.Current]){
             const topCheckBox = this.topCheckBoxOfSide(side);
             topCheckBox?.addEventListener("change",()=>{
-                const accept = !!topCheckBox.checked;
-                topCheckBox.indeterminate = false;
-                //only the conflicts whose state actually flips are handed on, so accepting all over a
-                //partially accepted side does not needlessly rewrite the blocks already in place
+                const checked = !!topCheckBox.checked;
                 const changedConflictNos:number[] = [];
-                this.checkBoxesOfSide(side).forEach(elem=>{
-                    if(elem.checked === accept)
-                        return;
-                    elem.checked = accept;
-                    changedConflictNos.push(Number(UiUtils.resolveValueFromId(elem.id)));
-                });
+                const lines = this.linesOfSide(side).filter(x => !!x.conflictNo);
+                const conflictCount = this.conflictCount;
+                for(let i = 1; i <= conflictCount;i++){
+                    const accepted = lines.filter(x => x.conflictNo === i).some(x => x.taken);
+                    if(accepted !== checked){
+                        changedConflictNos.push(i);
+                    }
+                }                
                 if(changedConflictNos.length)
-                    this.acceptAllChanges(side, accept, changedConflictNos);
+                    this.acceptAllChanges(side, checked, changedConflictNos);
             });
 
             this.checkBoxesOfSide(side).forEach(elem=>{
                 elem.addEventListener("change",()=>{
                     const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
                     this.acceptChange(conflictNo, side, !!elem.checked);
-                    this.updateTopLabelCheckboxState();
                 })
             })
         }
@@ -635,44 +639,25 @@ export class ConflictUtils{
         this.addTopPanelEventHandlers();
     }
 
-
-    private getIncomingCheckboxByConflict(conflictNo:number){
-        return document.querySelector(`#${EnumConflictSide.Incoming}_${conflictNo}`) as HTMLInputElement;
-    }
-
-    private getCurrentCheckboxByConflict(conflictNo:number){
-        return document.querySelector(`#${EnumConflictSide.Current}_${conflictNo}`) as HTMLInputElement;
-    }
-
     dispatchResolvedCount = (resolvedConflict:number)=>{}
 
-    //all accepted -> checked, some -> indeterminate, none -> unchecked. Assigning these
-    //programmatically raises no change event, so this cannot loop back into the handlers.
     private updateTopLabelCheckboxState(){
-        for(const side of [EnumConflictSide.Incoming, EnumConflictSide.Current]){
-            const topCheckBox = this.topCheckBoxOfSide(side);
-            if(!topCheckBox)
-                continue;
-            const checkBoxes = this.checkBoxesOfSide(side);
-            let selectionCount = 0;
-            checkBoxes.forEach(elem=>{
-                if(elem.checked)
-                    selectionCount++;
-            });
-            topCheckBox.checked = !!checkBoxes.length && selectionCount === checkBoxes.length;
-            topCheckBox.indeterminate = selectionCount > 0 && selectionCount < checkBoxes.length;
-        }
+        const incomingCheckBox = this.acceptAllIncomingCheckBox;
+        
+        if(incomingCheckBox.checked)
+            return;
+
+        if(this.incomingLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            incomingCheckBox.indeterminate = true;
+
+        const currentCheckbox = this.acceptAllCurrentCheckBox;
+        if(currentCheckbox.checked)
+            return;
+
+        if(this.currentLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            currentCheckbox.indeterminate = true;
     }
 
-    private purgeEditorUi(){
-        const elem = document.querySelector('.check_all_incoming') as HTMLElement;
-        if(elem)
-            elem.style.width = `${this.previousLineDivWidth}ch`;
-        const elem2 = document.querySelector('.check_all_current') as HTMLElement;
-        if(elem2)
-            elem2.style.width = `${this.currentLineDivWidth}ch`;
-
-    }
 
     get totalChangeCount(){
         return this.heighlightedLineIndexes.length;
