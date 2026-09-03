@@ -546,6 +546,8 @@ export class ConflictUtils{
             left:this.bottomScrollContainer?.scrollLeft,
         });
 
+        this.updateTopLabelCheckboxState();
+
         this.SetHeighlightedLines();
     }
 
@@ -651,27 +653,23 @@ export class ConflictUtils{
 
     dispatchResolvedCount = (resolvedConflict:number)=>{}
 
-    private updateTopLabelIncomingCheckboxState(){
-        const topLevelCheckBox = this.acceptAllIncomingCheckBox;
-        const checkboxes = this.incomingCheckBoxes;
-        let selectionCount = 0;
-        checkboxes.forEach(_=>{
-            if(_.checked)
-                selectionCount++;
-        });
+    private updateTopLabelCheckboxState(){
+        const incomingCheckBox = this.acceptAllIncomingCheckBox;
 
-        if(selectionCount === checkboxes.length){
-            topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;
-        }
-        else if(selectionCount > 0){
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = true;
-        }
-        else{
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = false;
-        }
+        
+        if(incomingCheckBox.checked)
+            return;
+
+        if(this.incomingLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            incomingCheckBox.indeterminate = true;
+
+
+        const currentCheckbox = this.acceptAllCurrentCheckBox;
+        if(currentCheckbox.checked)
+            return;
+
+        if(this.currentLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            currentCheckbox.indeterminate = true;
     }
 
     private updateTopLeveCurrentCheckboxState(){
