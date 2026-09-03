@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { ChangesData, EnumHtmlIds, EnumModals, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
+import { ChangesData, EnumHtmlIds, EnumModals, IContextItem, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
@@ -14,6 +14,7 @@ import { ConflictEditor } from "../../../../lib/utils/editors";
 interface ISingleFileProps{
     item:IFile
     handleSelect:(file:IFile)=>void;
+    handleContext:(e:React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>void;
     isSelected:boolean;
 }
 
@@ -23,7 +24,7 @@ function SingleFile(props:ISingleFileProps){
     return (
         <div key={props.item.path} className={`row g-0 align-items-center flex-nowrap hover w-100 ${props.isSelected ? "selected":""}`} 
         title={props.item.fileName} onMouseEnter={()=> setState({isHovered:true})} onMouseLeave={_=> setState({isHovered:false})} 
-            onClick={_=> props.handleSelect(props.item)}>
+            onClick={_=> props.handleSelect(props.item)} onContextMenu={e=> props.handleContext(e,props.item)}>
             <div className="col-auto overflow-hidden flex-shrink-1" style={{textOverflow:'ellipsis'}}>
                 <span className={`pe-1 flex-shrink-0 text-nowrap`}>{props.item.fileName}</span>
                 <span className="small text-secondary text-nowrap">{props.item.path}</span>
@@ -118,6 +119,41 @@ function ConflictedChangesComponent(props:IProps){
         
     }
 
+    //git treats staging a conflicted file as resolving it, so this stages whatever is on disk
+    const markAsResolved = (file:IFile)=>{
+        const stage = ()=>{
+            GitUtils.cancelGetStatus();
+            IpcUtils.stageItems([file.path]).then(()=>{
+                if(store.selectedFile?.path === file.path)
+                    dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
+                GitUtils.getStatus();
+            });
+        }
+
+        //the editor works on a temp copy, so anything unsaved is not part of what would be staged
+        if(store.selectedFile?.path === file.path && ChangesData.conflictEditor?.IsDocChanged()){
+            ModalData.confirmationModal.message = "Your unsaved changes will be discarded. Mark as resolved anyway?";
+            ModalData.confirmationModal.YesHandler = stage;
+            dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+            return;
+        }
+
+        stage();
+    }
+
+    const handleContext = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, file:IFile)=>{
+        const items:IContextItem[] = [
+            {
+                text:"Mark as resolved",
+                onClick:()=> markAsResolved(file)
+            }
+        ]
+        ModalData.contextModal.items = items;
+        ModalData.contextModal.position = {x:e.clientX,y:e.clientY};
+
+        UiUtils.openContextModal();
+    }
+
     const clearEditor = ()=>{
         if(ChangesData.conflictEditor){
             ChangesData.conflictEditor.destroy();
@@ -178,7 +214,7 @@ function ConflictedChangesComponent(props:IProps){
     </div>    
     <div className="container ps-2 border overflow-auto" style={{height:`calc(100% - 40px)`}}>
         {props.changes.map(f=>(
-            <SingleFile key={f.path} item={f} handleSelect={handleSelect}
+            <SingleFile key={f.path} item={f} handleSelect={handleSelect} handleContext={handleContext}
                 isSelected ={f.path === store.selectedFile?.path} />
         ))}        
     </div>
