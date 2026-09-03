@@ -9,8 +9,10 @@ interface IProps{
 
 export function ConflictTopPanel(props:IProps){    
 
-    const topLabelInCbChecked = props.previousLines.filter(x => !!x.conflictNo).every(x=> !!x.taken);
-    const topLabelCurCbChecked = props.currentLines.filter(x => !!x.conflictNo).every(x=> !!x.taken);
+    const incomingConflictLines = props.previousLines.filter(x => !!x.conflictNo);
+    const currentConflictLines = props.currentLines.filter(x => !!x.conflictNo);
+    const topLabelInCbChecked = !!incomingConflictLines.length && incomingConflictLines.every(x=> !!x.taken);
+    const topLabelCurCbChecked = !!currentConflictLines.length && currentConflictLines.every(x=> !!x.taken);
     
     return <div className="h-100">
             <div style={{height:30}} className="d-flex align-items-center w-100 border-bottom">

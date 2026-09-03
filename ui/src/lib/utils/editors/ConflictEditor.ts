@@ -45,6 +45,7 @@ export class ConflictEditor extends TextEditor{
         };
         this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
+        this._conflictUtils.acceptAllChanges = (side, accept, conflictNos) => this.acceptAllChanges(side, accept, conflictNos);
         this.onSync = () => this.updateDiff();
     }
     
@@ -75,7 +76,7 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
+    private buildAcceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
         let startIndex = this._eLines.findIndex(x => x.conflictNo === conflictNo);
         let afterIndex:number | undefined;
 
@@ -83,7 +84,7 @@ export class ConflictEditor extends TextEditor{
         if(startIndex < 0) {
             afterIndex = this._eHiddenLines.find(x => x.conflictNo === conflictNo)?.afterLineIndex;
             if(!afterIndex) {
-                return;
+                return undefined;
             }
             startIndex = afterIndex+1;
         }else{
@@ -116,7 +117,19 @@ export class ConflictEditor extends TextEditor{
             }
         }
 
-        this.applyChange(change);
+        return change;
+    }
+
+    private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
+        const change = this.buildAcceptChange(conflictNo, side, accept);
+        if(change)
+            this.applyChange(change);
+    }
+    
+    private acceptAllChanges(side:EnumConflictSide, accept:boolean, conflictNos:number[]){
+        const changes = conflictNos.map(conflictNo => this.buildAcceptChange(conflictNo, side, accept))
+            .filter((change):change is IChange => !!change);
+        this.applyChanges(changes);
     }
 
     protected override async readFile(){

@@ -34,6 +34,7 @@ export class ConflictUtils{
     private onResizeDisplacement = 0;
 
     acceptChange:(conflictNo:number, side:EnumConflictSide,accept:boolean) => void = (_:number)=>{};
+    acceptAllChanges:(side:EnumConflictSide, accept:boolean, conflictNos:number[]) => void = ()=>{};
     
     constructor(containerId:string){
         this.containerSelector = containerId;
@@ -539,7 +540,7 @@ export class ConflictUtils{
         container!.innerHTML = innerHtml;
 
         this.HandleScrolling();
-        this.addEventHandlersToInnerCheckboxes();
+        this.addTopPanelEventHandlers();
 
         this.topLeftScrollContainer?.scrollTo({
             top:this.bottomScrollContainer?.scrollTop,
@@ -579,6 +580,14 @@ export class ConflictUtils{
         return document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
     }
 
+    private checkBoxesOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.incomingCheckBoxes : this.currentCheckBoxes;
+    }
+
+    private topCheckBoxOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.acceptAllIncomingCheckBox : this.acceptAllCurrentCheckBox;
+    }
+
     private get acceptIncomingElems(){
         return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
     }
@@ -591,55 +600,39 @@ export class ConflictUtils{
         return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
     }
 
-    private addEventHandlersToInnerCheckboxes(){
-        const incomingCheckBoxes = this.incomingCheckBoxes;
-        incomingCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                const accept = !!elem.checked;
-                this.acceptChange(conflictNo, EnumConflictSide.Incoming, accept);
-            })
-        })
+    //the whole top panel is re-rendered on every diff refresh, so all of its handlers have to be
+    //re-attached with it - binding them once at ShowEditor() time leaves them on discarded nodes
+    private addTopPanelEventHandlers(){
+        for(const side of [EnumConflictSide.Incoming, EnumConflictSide.Current]){
+            const topCheckBox = this.topCheckBoxOfSide(side);
+            topCheckBox?.addEventListener("change",()=>{
+                const accept = !!topCheckBox.checked;
+                topCheckBox.indeterminate = false;
+                //only the conflicts whose state actually flips are handed on, so accepting all over a
+                //partially accepted side does not needlessly rewrite the blocks already in place
+                const changedConflictNos:number[] = [];
+                this.checkBoxesOfSide(side).forEach(elem=>{
+                    if(elem.checked === accept)
+                        return;
+                    elem.checked = accept;
+                    changedConflictNos.push(Number(UiUtils.resolveValueFromId(elem.id)));
+                });
+                if(changedConflictNos.length)
+                    this.acceptAllChanges(side, accept, changedConflictNos);
+            });
 
-        const currentCheckBoxes = this.currentCheckBoxes;
-        currentCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                const accept = !!elem.checked;
-                this.acceptChange(conflictNo, EnumConflictSide.Current, accept);
+            this.checkBoxesOfSide(side).forEach(elem=>{
+                elem.addEventListener("change",()=>{
+                    const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                    this.acceptChange(conflictNo, side, !!elem.checked);
+                    this.updateTopLabelCheckboxState();
+                })
             })
-        })
+        }
     }
 
     private addEventHanlders(){
-        // const acceptAllIncomingCheck = this.acceptAllIncomingCheckBox;
-        // acceptAllIncomingCheck.addEventListener("change",(e)=>{
-        //     const checked = !!acceptAllIncomingCheck.checked;
-        //     const checkboxes = this.incomingCheckBoxes;
-        //     checkboxes.forEach(elem => {
-        //         if(elem.checked !== checked){
-        //             elem.checked = checked;
-        //             const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-        //             this.updateConflictState(conflictNo);
-        //         }
-        //     });
-        // })
-
-        // const acceptAllCurrentCheck = this.acceptAllCurrentCheckBox;
-        // acceptAllCurrentCheck.addEventListener("change",(e)=>{
-        //     const checked = !!acceptAllCurrentCheck.checked;
-        //     const checkboxes = this.currentCheckBoxes;
-        //     checkboxes.forEach(elem => {
-        //         if(elem.checked !== checked){
-        //             elem.checked = checked;
-        //             const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-        //             this.updateConflictState(conflictNo);
-        //         }
-        //     });
-        // })
-        
-        this.addEventHandlersToInnerCheckboxes();
-
+        this.addTopPanelEventHandlers();
     }
 
 
@@ -653,45 +646,21 @@ export class ConflictUtils{
 
     dispatchResolvedCount = (resolvedConflict:number)=>{}
 
+    //all accepted -> checked, some -> indeterminate, none -> unchecked. Assigning these
+    //programmatically raises no change event, so this cannot loop back into the handlers.
     private updateTopLabelCheckboxState(){
-        const incomingCheckBox = this.acceptAllIncomingCheckBox;
-
-        
-        if(incomingCheckBox.checked)
-            return;
-
-        if(this.incomingLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
-            incomingCheckBox.indeterminate = true;
-
-
-        const currentCheckbox = this.acceptAllCurrentCheckBox;
-        if(currentCheckbox.checked)
-            return;
-
-        if(this.currentLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
-            currentCheckbox.indeterminate = true;
-    }
-
-    private updateTopLeveCurrentCheckboxState(){
-        const topLevelCheckBox = this.acceptAllCurrentCheckBox;
-        const checkboxes = this.currentCheckBoxes;
-        let selectionCount = 0;
-        checkboxes.forEach(_=>{
-            if(_.checked)
-                selectionCount++;
-        });
-
-        if(selectionCount === checkboxes.length){
-            topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;
-        }
-        else if(selectionCount > 0){
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = true;
-        }
-        else{
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = false;
+        for(const side of [EnumConflictSide.Incoming, EnumConflictSide.Current]){
+            const topCheckBox = this.topCheckBoxOfSide(side);
+            if(!topCheckBox)
+                continue;
+            const checkBoxes = this.checkBoxesOfSide(side);
+            let selectionCount = 0;
+            checkBoxes.forEach(elem=>{
+                if(elem.checked)
+                    selectionCount++;
+            });
+            topCheckBox.checked = !!checkBoxes.length && selectionCount === checkBoxes.length;
+            topCheckBox.indeterminate = selectionCount > 0 && selectionCount < checkBoxes.length;
         }
     }
 

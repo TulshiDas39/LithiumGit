@@ -306,10 +306,25 @@ export abstract class TextEditor {
     }
 
     applyChange(change: IChange){
-        const pos = this.getSelection(change);
-        console.log("discardHunk pos",pos,change);
-        const slice = this.createSliceFromText(change.text);
-        this._editView.dispatch(this._editView.state.tr.replace(pos.from, pos.to, slice));
+        this.applyChanges([change]);
+    }
+
+    //Every position is resolved against the untouched document before anything is replaced, then the
+    //replacements run high-to-low so the earlier ones never need remapping. All of it goes out as a
+    //single transaction, so a batch of changes stays one undo step and one change-tracking round.
+    applyChanges(changes: IChange[]){
+        if(!changes.length)
+            return;
+        const edits = changes.map(change => ({
+            pos: this.getSelection(change),
+            slice: this.createSliceFromText(change.text),
+        })).sort((a,b)=> b.pos.from - a.pos.from);
+
+        const tr = this._editView.state.tr;
+        for(const edit of edits){
+            tr.replace(edit.pos.from, edit.pos.to, edit.slice);
+        }
+        this._editView.dispatch(tr);
     }
 
     protected IsDocChanged(){
