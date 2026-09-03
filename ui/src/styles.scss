@@ -45,6 +45,7 @@ html {
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
     --bg-custom-change: #eacef3;
+    --conflict-action-color: #0a58ca;
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:#2e0497;
@@ -94,6 +95,7 @@ html {
     --bg-previous-change: #4C1919;
     --bg-previous-change-deep: #701414;
     --bg-custom-change: #4d3456;
+    --conflict-action-color: #6ea8fe;
     --bg-fade:#513f3f;
     --bg-change-accepted:#48484d;
     --scroll-bar-color:rgba(119, 118, 119, 0.722);
@@ -444,6 +446,32 @@ html {
 
 .bg-custom-change{
   background-color: var(--bg-custom-change);
+}
+
+.conflict-actions{
+  display: flex;
+  gap: .6rem;
+  font-size: .85em;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+.conflict-action{
+  color: var(--conflict-action-color);
+  cursor: pointer;
+}
+
+.conflict-action:hover{
+  text-decoration: underline;
+}
+
+.conflict-action-divider{
+  opacity: .45;
+}
+
+.conflict-marker-label{
+  padding-left: .9rem;
+  opacity: .7;
 }
 .overflow-ellipsis{
   text-overflow: ellipsis;

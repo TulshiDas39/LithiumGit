@@ -65,7 +65,10 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    private buildAcceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
+    //takes a list of sides so accepting more than one is still a single change: with the markers
+    //in place the block becomes the chosen sides in the order given, and once they are gone the
+    //sides not named here keep whatever they already had
+    private buildAcceptChange(conflictNo:number, sides:EnumConflictSide[], accept:boolean){
         let startIndex = this._eLines.findIndex(x => x.conflictNo === conflictNo);
         let afterIndex:number | undefined;
 
@@ -79,22 +82,26 @@ export class ConflictEditor extends TextEditor{
         }else{
             eLines = this._eLines.filter(x => x.conflictNo === conflictNo);
         }
-        
-        const sLines = (side === EnumConflictSide.Incoming ? this._incomingLines : this._currentLines).filter(x => x.conflictNo === conflictNo && x.text !== undefined);
-        const state = side === EnumConflictSide.Incoming ? EnumConflictState.FromIncoming : EnumConflictState.FromCurrent;
+
+        const stateOf = (side:EnumConflictSide) => side === EnumConflictSide.Incoming ? EnumConflictState.FromIncoming : EnumConflictState.FromCurrent;
+        const states:EnumConflictState[] = sides.map(stateOf);
         let newELines:IConflictEditorLine[]  = [];
         if(!eLines[0]?.marker){
-            newELines = eLines.filter(x => x.state !== state && x.state !== EnumConflictState.Custom);
+            newELines = eLines.filter(x => !states.includes(x.state!) && x.state !== EnumConflictState.Custom);
         }
         if(accept){
-            newELines = newELines.concat(sLines.map(x => ({...x, state})));
+            for(const side of sides){
+                const state = stateOf(side);
+                const sLines = this._conflictUtils.linesOfSide(side).filter(x => x.conflictNo === conflictNo && x.text !== undefined);
+                newELines = newELines.concat(sLines.map(x => ({...x, state})));
+            }
         }
         const change = {} as IChange;
-        
-        
+
+
         change.startlineIndex = startIndex;
         change.startOffset = 0;
-        
+
         change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;
         change.text = newELines.map(x => x.text).join(this._lineFeedType);
@@ -110,13 +117,20 @@ export class ConflictEditor extends TextEditor{
     }
 
     private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
-        const change = this.buildAcceptChange(conflictNo, side, accept);
+        const change = this.buildAcceptChange(conflictNo, [side], accept);
         if(change)
             this.applyChange(change);
     }
-    
+
+    //what the inline conflict actions do - the markers go away with the lines that were not kept
+    private resolveConflict(conflictNo:number, sides:EnumConflictSide[]){
+        const change = this.buildAcceptChange(conflictNo, sides, true);
+        if(change)
+            this.applyChange(change);
+    }
+
     private acceptAllChanges(side:EnumConflictSide, accept:boolean, conflictNos:number[]){
-        const changes = conflictNos.map(conflictNo => this.buildAcceptChange(conflictNo, side, accept))
+        const changes = conflictNos.map(conflictNo => this.buildAcceptChange(conflictNo, [side], accept))
             .filter((change):change is IChange => !!change);
         this.applyChanges(changes);
     }
@@ -187,15 +201,71 @@ export class ConflictEditor extends TextEditor{
         return undefined;
     }
 
+    private static readonly conflictActions:{label:string; sides:EnumConflictSide[];}[] = [
+        { label: "Accept Current Change",  sides: [EnumConflictSide.Current] },
+        { label: "Accept Incoming Change", sides: [EnumConflictSide.Incoming] },
+        { label: "Accept Both Changes",    sides: [EnumConflictSide.Current, EnumConflictSide.Incoming] },
+    ];
+
+    //rendered as a widget rather than as real content, so the action row never becomes part of the
+    //document and can never end up in the saved file
+    private conflictActionsWidget(conflictNo:number){
+        const container = document.createElement("div");
+        container.className = "conflict-actions noselect";
+        container.contentEditable = "false";
+        ConflictEditor.conflictActions.forEach((action, index)=>{
+            if(index){
+                const divider = document.createElement("span");
+                divider.className = "conflict-action-divider";
+                divider.textContent = "|";
+                container.appendChild(divider);
+            }
+            const link = document.createElement("span");
+            link.className = "conflict-action";
+            link.textContent = action.label;
+            //keep the click from moving the caret into the widget before the handler runs
+            link.addEventListener("mousedown", e => e.preventDefault());
+            link.addEventListener("click", ()=> this.resolveConflict(conflictNo, action.sides));
+            container.appendChild(link);
+        });
+        return container;
+    }
+
+    private static markerLabelWidget(text:string){
+        const label = document.createElement("span");
+        label.className = "conflict-marker-label noselect";
+        label.contentEditable = "false";
+        label.textContent = text;
+        return label;
+    }
+
     private readonly buildDecorations = (doc: Node) => {
         const decorations: Decoration[] = [];
         let iLineIndex = 0;
         doc.forEach((node: Node, offset: number) => {
             const iLine = this._eLines[iLineIndex++];
             if(!iLine) return;
+
             const className = ConflictEditor.decorationClassOf(iLine);
-            if(!className) return;
-            decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: className }));
+            if(className)
+                decorations.push(Decoration.node(offset, offset + node.nodeSize, { class: className }));
+
+            const conflictNo = iLine.conflictNo;
+            if(!conflictNo)
+                return;
+
+            //the label sits at the end of the marker line, the action row on its own line above it
+            const endOfLine = offset + node.nodeSize - 1;
+            if(iLine.marker === EnumConflictMarker.Starting){
+                decorations.push(Decoration.widget(offset, () => this.conflictActionsWidget(conflictNo),
+                    { side: -1, key: `conflict-actions-${conflictNo}`, stopEvent: () => true }));
+                decorations.push(Decoration.widget(endOfLine, () => ConflictEditor.markerLabelWidget("(Current Changes)"),
+                    { side: 1, key: `conflict-current-label-${conflictNo}`, stopEvent: () => true }));
+            }
+            else if(iLine.marker === EnumConflictMarker.Ending){
+                decorations.push(Decoration.widget(endOfLine, () => ConflictEditor.markerLabelWidget("(Incoming Change)"),
+                    { side: 1, key: `conflict-incoming-label-${conflictNo}`, stopEvent: () => true }));
+            }
         });
         return DecorationSet.create(doc, decorations);
     };

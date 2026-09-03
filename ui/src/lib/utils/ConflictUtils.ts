@@ -581,7 +581,7 @@ export class ConflictUtils{
         return side === EnumConflictSide.Incoming ? this.acceptAllIncomingCheckBox : this.acceptAllCurrentCheckBox;
     }
 
-    private linesOfSide(side:EnumConflictSide){
+    linesOfSide(side:EnumConflictSide){
         return side === EnumConflictSide.Incoming ? this.incomingLines : this.currentLines;
     }
 
