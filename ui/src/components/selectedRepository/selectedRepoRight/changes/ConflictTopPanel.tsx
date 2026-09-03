@@ -18,13 +18,13 @@ export function ConflictTopPanel(props:IProps){
             <div style={{height:30}} className="d-flex align-items-center w-100 border-bottom">
                 <div className={"w-50 d-flex align-items-center"}>
                     <div className="check_all_incoming d-flex justify-content-end">
-                        <input id={EnumHtmlIds.accept_all_incoming} type="checkbox" title="Accept all incoming changes" checked={topLabelInCbChecked} />
+                        <input id={EnumHtmlIds.accept_all_incoming} type="checkbox" title="Accept all incoming changes" defaultChecked={topLabelInCbChecked} />
                     </div>
                     <div className="ps-2">Incoming changes</div>
                 </div>
                 <div className="w-50 d-flex align-items-center">
                     <div className="check_all_current d-flex justify-content-end">
-                        <input id={EnumHtmlIds.accept_all_current} type="checkbox" title="Accept all current changes" checked={topLabelCurCbChecked} />
+                        <input id={EnumHtmlIds.accept_all_current} type="checkbox" title="Accept all current changes" defaultChecked={topLabelCurCbChecked} />
                     </div>                
                     <div className="ps-2">Current changes</div>
                 </div>
