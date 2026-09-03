@@ -30,7 +30,6 @@
     "react-scripts": "5.0.1",
     "react-select": "^5.10.2",
     "react-spinners": "^0.17.0",
-    "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -60,6 +59,7 @@
     ]
   },
   "devDependencies": {
-    "sass": "^1.97.2"
+    "sass": "^1.97.2",
+    "typescript": "^5.9.3"
   }
 }
