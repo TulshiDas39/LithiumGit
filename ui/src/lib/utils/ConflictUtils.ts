@@ -177,47 +177,47 @@ export class ConflictUtils{
             if(preLine.text?.startsWith(currentMarker)){
                 conflictNo++;
 
-                let inLines:ILine[] = [];
-                let inCLines:IConflictLine[] = [];
+                let inDiffLines:ILine[] = [];
+                let inLines:IConflictLine[] = [];
 
-                let cuLines:ILine[] = [];
-                let cuCLines:IConflictLine[] = [];
+                let cuDiffLines:ILine[] = [];
+                let cuLines:IConflictLine[] = [];
                 
-                let rLines:ILine[] = [];
-                let rCLines:IConflictEditorLine[] = [];
+                let eDiffLines:ILine[] = [];
+                let eLines:IConflictEditorLine[] = [];
                 const actionTaken:EnumConflictSide[] = [];
 
                 let k = i + 1;
 
                 while(k < prevLines.length && prevLines[k].text !== dividerMarker){
-                    cuLines.push(prevLines[k++]);
+                    cuDiffLines.push(prevLines[k++]);
                 }
 
                 k++;
                 
                 while(k < prevLines.length && !prevLines[k].text?.startsWith(endingMarker)){
-                    inLines.push(prevLines[k++]);
+                    inDiffLines.push(prevLines[k++]);
                 }
 
                 k = Math.min(currLines.length - 1, k);
 
                 for(let j = i; j <= k; j++){
-                    rLines.push(currLines[j]);
+                    eDiffLines.push(currLines[j]);
                 }
                 k++;
 
                 while(k < prevLines.length && prevLines[k].text === undefined ){
-                    rLines.push(currLines[k]);
+                    eDiffLines.push(currLines[k]);
                     k++;
                 }
 
-                rLines = rLines.filter(_=> _.text !== undefined);
-                inLines = inLines.filter(_=> _.text !== undefined);
-                cuLines = cuLines.filter(_=> _.text !== undefined);
+                eDiffLines = eDiffLines.filter(_=> _.text !== undefined);
+                inDiffLines = inDiffLines.filter(_=> _.text !== undefined);
+                cuDiffLines = cuDiffLines.filter(_=> _.text !== undefined);
 
 
-                for(let line of cuLines){
-                    cuCLines.push({
+                for(let line of cuDiffLines){
+                    cuLines.push({
                         text:line.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -225,8 +225,8 @@ export class ConflictUtils{
                     });
                 }
 
-                for(let line of inLines){
-                    inCLines.push({
+                for(let line of inDiffLines){
+                    inLines.push({
                         text:line.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -235,22 +235,22 @@ export class ConflictUtils{
                 }
 
 
-                const resolved = isResolved(rLines);
+                const resolved = isResolved(eDiffLines);
 
                 if(!resolved){
 
-                    let rLine = rLines.shift()!;
+                    let rLine = eDiffLines.shift()!;
                     while(!rLine.text!.startsWith(currentMarker)){
-                        rCLines.push({
+                        eLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                         });
-                        rLine = rLines.shift()!;
+                        rLine = eDiffLines.shift()!;
                     }
 
-                    rCLines.push({
+                    eLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -258,20 +258,20 @@ export class ConflictUtils{
                         marker:EnumConflictMarker.Starting,
                     });
 
-                    rLine = rLines.shift()!;
+                    rLine = eDiffLines.shift()!;
 
                     while(rLine.text !== dividerMarker){
-                        rCLines.push({
+                        eLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                             state:EnumConflictState.FromCurrent,
                         });
-                        rLine = rLines.shift()!;
+                        rLine = eDiffLines.shift()!;
                     }
 
-                    rCLines.push({
+                    eLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -279,20 +279,20 @@ export class ConflictUtils{
                         marker:EnumConflictMarker.Divider,
                     });
                     
-                    rLine = rLines.shift()!;
+                    rLine = eDiffLines.shift()!;
                     
                     while(!rLine.text?.startsWith(endingMarker)){
-                        rCLines.push({
+                        eLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                             state:EnumConflictState.FromIncoming,
                         });
-                        rLine = rLines.shift()!;
+                        rLine = eDiffLines.shift()!;
                     }
 
-                    rCLines.push({
+                    eLines.push({
                         text:rLine.text,
                         hightLightBackground:true,
                         textHightlightIndex:[],
@@ -300,22 +300,22 @@ export class ConflictUtils{
                         marker:EnumConflictMarker.Ending,
                     });
 
-                    rLine = rLines.shift()!;
+                    rLine = eDiffLines.shift()!;
                     while(rLine){
-                        rCLines.push({
+                        eLines.push({
                             text:rLine.text,
                             hightLightBackground:true,
                             textHightlightIndex:[],
                             conflictNo,
                         });
-                        rLine = rLines.shift()!;
+                        rLine = eDiffLines.shift()!;
                     }
                 }
                 else{                    
                     const insertRLines = (count:number, state:EnumConflictState)=>{
                         for(let j=0; j < count; j++){
-                            rCLines.push({
-                                text:rLines[j].text,
+                            eLines.push({
+                                text:eDiffLines[j].text,
                                 hightLightBackground:true,
                                 textHightlightIndex:[],
                                 conflictNo,
@@ -324,56 +324,56 @@ export class ConflictUtils{
                         }
                     }
 
-                    if(cuLines.length <= rLines.length && cuLines.every((_,li)=> _.text === rLines[li].text)){
-                        let remrLines = rLines.slice(cuLines.length);
+                    if(cuDiffLines.length <= eDiffLines.length && cuDiffLines.every((_,li)=> _.text === eDiffLines[li].text)){
+                        let remrLines = eDiffLines.slice(cuDiffLines.length);
                         if(remrLines.length){
-                            if(remrLines.length === inLines.length && inLines.every((_,li)=> _.text === remrLines[li].text)){
-                                insertRLines(cuLines.length, EnumConflictState.FromCurrent);
-                                rLines = remrLines;
-                                insertRLines(inLines.length, EnumConflictState.FromIncoming);
+                            if(remrLines.length === inDiffLines.length && inDiffLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertRLines(cuDiffLines.length, EnumConflictState.FromCurrent);
+                                eDiffLines = remrLines;
+                                insertRLines(inDiffLines.length, EnumConflictState.FromIncoming);
                                 actionTaken.push(EnumConflictSide.Current,EnumConflictSide.Incoming);                                
                             }
                             else{
-                                insertRLines(rLines.length, EnumConflictState.Custom);                                
+                                insertRLines(eDiffLines.length, EnumConflictState.Custom);                                
                             }
                         }
                         else{
-                            insertRLines(rLines.length, EnumConflictState.FromCurrent);
+                            insertRLines(eDiffLines.length, EnumConflictState.FromCurrent);
                             actionTaken.push(EnumConflictSide.Current); 
                         }
                     }
-                    else if(inLines.length <= rLines.length && inLines.every((_,li)=> _.text === rLines[li].text)){
-                        let remrLines = rLines.slice(inLines.length);
+                    else if(inDiffLines.length <= eDiffLines.length && inDiffLines.every((_,li)=> _.text === eDiffLines[li].text)){
+                        let remrLines = eDiffLines.slice(inDiffLines.length);
                         if(remrLines.length){
-                            if(remrLines.length === cuLines.length && cuLines.every((_,li)=> _.text === remrLines[li].text)){
-                                insertRLines(inLines.length, EnumConflictState.FromIncoming);
-                                rLines = remrLines;
-                                insertRLines(cuLines.length, EnumConflictState.FromCurrent);
+                            if(remrLines.length === cuDiffLines.length && cuDiffLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertRLines(inDiffLines.length, EnumConflictState.FromIncoming);
+                                eDiffLines = remrLines;
+                                insertRLines(cuDiffLines.length, EnumConflictState.FromCurrent);
                                 actionTaken.push(EnumConflictSide.Incoming, EnumConflictSide.Current);
                             }
                             else{
-                                insertRLines(rLines.length, EnumConflictState.Custom);
+                                insertRLines(eDiffLines.length, EnumConflictState.Custom);
                             }
                         }else{
-                            insertRLines(rLines.length, EnumConflictState.FromIncoming);
+                            insertRLines(eDiffLines.length, EnumConflictState.FromIncoming);
                             actionTaken.push(EnumConflictSide.Incoming); 
                         }
                     }
                     else{
-                        insertRLines(rLines.length, EnumConflictState.Custom);
+                        insertRLines(eDiffLines.length, EnumConflictState.Custom);
                     }
                                         
                 }
 
-                while(inCLines.length < cuCLines.length){
-                    inCLines.push({
+                while(inLines.length < cuLines.length){
+                    inLines.push({
                         textHightlightIndex:[],
                         conflictNo,
                     });
                 }
 
-                while(cuCLines.length < inCLines.length){
-                    cuCLines.push({
+                while(cuLines.length < inLines.length){
+                    cuLines.push({
                         textHightlightIndex:[],
                         conflictNo,
                     });
@@ -382,22 +382,22 @@ export class ConflictUtils{
                 if(resolved){
                     const curTaken = actionTaken.includes(EnumConflictSide.Current);
 
-                    for(let line of cuCLines){
+                    for(let line of cuLines){
                         line.taken = curTaken;
                     }
 
                     const inTaken = actionTaken.includes(EnumConflictSide.Incoming);
 
-                    for(let line of inCLines){
+                    for(let line of inLines){
                         line.taken = inTaken;
                     }
                 }
 
-                inCLines.forEach(_=> incomingLines.push(_));
-                cuCLines.forEach(_=> currentLines.push(_));
-                rCLines.forEach(_=> editorLines.push(_));
+                inLines.forEach(_=> incomingLines.push(_));
+                cuLines.forEach(_=> currentLines.push(_));
+                eLines.forEach(_=> editorLines.push(_));
 
-                if(!rLines.length){
+                if(!eLines.length){
                     editorHiddenLines.push({                        
                         conflictNo,
                         afterLineIndex:editorLines.length-1,
