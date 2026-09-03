@@ -25,11 +25,9 @@ export class ConflictEditor extends TextEditor{
     static readonly separator = "=======";
     static readonly endingMarker = ">>>>>>>";
     
-    private readonly panelSelection:string = "";
     private _file:IFile = null!;
     private _scrollHandler?:(e:Event)=>void;
     private _conflictUtils: ConflictUtils;
-    private _conflictPositions: IConflictPosition[] = [];
     private _incomingLines:IConflictLine[] = [];
     private _currentLines:IConflictLine[] = [];
     private _eLines:IConflictEditorLine[] = [];
@@ -38,11 +36,7 @@ export class ConflictEditor extends TextEditor{
 
     constructor(panelSelector:string){
         super(`${panelSelector} #${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
-        this.panelSelection = panelSelector;
         this._conflictUtils = new ConflictUtils(panelSelector);
-        this._conflictUtils.dispatchResolvedCount = count => {
-            ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:count}));
-        };
         this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
         this._conflictUtils.acceptAllChanges = (side, accept, conflictNos) => this.acceptAllChanges(side, accept, conflictNos);
@@ -157,6 +151,7 @@ export class ConflictEditor extends TextEditor{
         this._eHiddenLines = lineConfig.editorHiddenLines;
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this.totalChangeCount,silentStepUpdate:true}));
+        ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:this._conflictUtils.resolvedCount,totalConflict:this._conflictUtils.conflictCount}));
         this.renderLineNumbers();
         const tr = this._editView.state.tr;
         tr.setMeta(TransMetaData.DecorationChanged,true);        

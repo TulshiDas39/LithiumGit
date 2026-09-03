@@ -592,20 +592,12 @@ export class ConflictUtils{
         return side === EnumConflictSide.Incoming ? this.incomingLines : this.currentLines;
     }
 
-    private get acceptIncomingElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
-    }
-
-    private get acceptCurrentElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_current`);
-    }
-
-    private get acceptBothElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
-    }
-
     get conflictCount(){
         return (new Set(this.incomingLines.filter(x => !!x.conflictNo).map(x => x.conflictNo!))).size;
+    }
+
+    get resolvedCount(){
+        return (new Set(this.incomingLines.filter(x => !!x.conflictNo && x.taken !== undefined).map(x => x.conflictNo!))).size;
     }
 
     private addTopPanelEventHandlers(){
@@ -639,7 +631,6 @@ export class ConflictUtils{
         this.addTopPanelEventHandlers();
     }
 
-    dispatchResolvedCount = (resolvedConflict:number)=>{}
 
     private updateTopLabelCheckboxState(){
         const incomingCheckBox = this.acceptAllIncomingCheckBox;
