@@ -1,10 +1,13 @@
 import { IFile } from "common_library";
 import React, { useEffect } from "react";
-import { FaArrowsAltH } from "react-icons/fa";
+import { FaArrowsAltH, FaEllipsisV } from "react-icons/fa";
+import { Dropdown } from "react-bootstrap";
 import { AppButton, StepNavigation } from "../../common";
-import { ChangesData } from "../../../lib";
+import { ChangesData, EnumModals } from "../../../lib";
 import { useSelectorTyped } from "../../../store/rootReducer";
-import { shallowEqual } from "react-redux";
+import { shallowEqual, useDispatch } from "react-redux";
+import { ActionChanges, ActionModals } from "../../../store";
+import { ModalData } from "../../modals/ModalData";
 import { IpcUtils } from "../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../lib/utils/GitUtils";
 
@@ -22,6 +25,8 @@ function ConflictChangeNavigatorComponent(props:IProps){
         totalConflict:state.conflict.totalConflict,
         resolvedCount:state.conflict.resolvedConflict,
     }),shallowEqual);
+
+    const dispatch = useDispatch();
     
     useEffect(()=>{
         if(!props.currentStep)
@@ -30,6 +35,11 @@ function ConflictChangeNavigatorComponent(props:IProps){
     },[props.currentStep,props.stepResetVersion])
 
     const handleApply=()=>{
+        ChangesData.conflictEditor?.apply();
+    }
+
+    //git treats staging a conflicted file as resolving it, so this stages whatever is on disk
+    const markAsResolved=()=>{
         ChangesData.conflictEditor?.apply();
     }
 
@@ -55,9 +65,17 @@ function ConflictChangeNavigatorComponent(props:IProps){
         }
     </div>
     
-    <div className="ps-2 pe-4 col-5 d-flex justify-content-end">
+    <div className="ps-2 pe-2 col-5 d-flex justify-content-end align-items-center">
         <StepNavigation  currentStep={props.currentStep} totalStep={props.totalStep}
             onNextClick={props.onNextClick} onPreviousClick={props.onPreviousClick} />
+        <Dropdown>
+            <Dropdown.Toggle variant="link" id="conflict_file_options" className="rounded-0 no-caret">
+                <FaEllipsisV />
+            </Dropdown.Toggle>
+            <Dropdown.Menu className="no-radius">
+                <Dropdown.Item onClick={markAsResolved}>Mark as Resolved</Dropdown.Item>
+            </Dropdown.Menu>
+        </Dropdown>
     </div>
 </div>
 }

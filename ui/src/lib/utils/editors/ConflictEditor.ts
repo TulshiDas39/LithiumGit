@@ -60,6 +60,8 @@ export class ConflictEditor extends TextEditor{
         if(!success)
             return false;
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
+
+        ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:this._conflictUtils.resolvedCount,totalConflict:this._conflictUtils.conflictCount}));
         // this.handleScrolling();
         // this.buildTopPanel();
         return true;
