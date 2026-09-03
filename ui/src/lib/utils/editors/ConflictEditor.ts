@@ -158,6 +158,10 @@ export class ConflictEditor extends TextEditor{
         this._editView.dispatch(tr);
     }
 
+    protected override async save(){
+        return true;
+    }
+
     protected override getLineNumberContainer(){
         const row = document.querySelector(this._containerSelector)?.closest(".conflict-bottom");
         return row?.querySelector(".line_numbers") as HTMLElement | null;
