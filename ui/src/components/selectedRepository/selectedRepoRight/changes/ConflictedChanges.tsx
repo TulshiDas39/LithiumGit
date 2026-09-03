@@ -56,7 +56,7 @@ function ConflictedChangesComponent(props:IProps){
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
             return ;
-        if(ChangesData.conflictEditor?.actions.length){
+        if(ChangesData.conflictEditor?.IsDocChanged()){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));                

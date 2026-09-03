@@ -37,7 +37,6 @@ export class ConflictEditor extends TextEditor{
     constructor(panelSelector:string){
         super(`${panelSelector} #${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
         this._conflictUtils = new ConflictUtils(panelSelector);
-        this.saveHandler = success => this.onSave(success);
         this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
         this._conflictUtils.acceptAllChanges = (side, accept, conflictNos) => this.acceptAllChanges(side, accept, conflictNos);
         this.onSync = () => this.updateDiff();
@@ -45,10 +44,6 @@ export class ConflictEditor extends TextEditor{
     
     focusHightlightedLine(step:number){
         this._conflictUtils.FocusHightlightedLine(step);
-    }
-
-    get actions(){
-        return this._conflictUtils.Actions;
     }
 
     get totalChangeCount(){
@@ -236,9 +231,15 @@ export class ConflictEditor extends TextEditor{
         return this._file;
     }
 
-    saveChanges(){
-        return this.save();
+    async apply(){
+        const success = await super.save()
+        if(!success){
+            return;
+        }
+        await IpcUtils.stageItems([this.file.path]);
+        GitUtils.getStatus();
     }
+
 
     private onSave(success:boolean){
         ReduxUtils.dispatch(ActionUI.setSync(undefined));

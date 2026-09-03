@@ -17,9 +17,6 @@ export class ConflictUtils{
     private heighlightedLineIndexes:number[]=[];
     private startingMarkers:{conflictNo:number;text:string}[] = [];
     private endingMarkers:{conflictNo:number;text:string}[] = [];
-    private currentLineDivWidth = 0;
-    private previousLineDivWidth = 0;
-    private actionsTaken:IActionTaken[] = [];
     private currentEditorWidth = 0;
     private incomingEditorWidth = 0;
     private topPanelContainer?:HTMLDivElement;
@@ -38,10 +35,6 @@ export class ConflictUtils{
     
     constructor(containerId:string){
         this.containerSelector = containerId;
-    }
-
-    get Actions(){
-        return this.actionsTaken;
     }
 
     get TotalConflict(){

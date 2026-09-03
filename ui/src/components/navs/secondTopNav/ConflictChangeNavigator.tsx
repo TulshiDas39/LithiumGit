@@ -30,15 +30,7 @@ function ConflictChangeNavigatorComponent(props:IProps){
     },[props.currentStep,props.stepResetVersion])
 
     const handleApply=()=>{
-        const actions = ChangesData.conflictEditor?.actions ?? [];
-        IpcUtils.resolveConflict(props.selectedFile.path,actions).then((r)=>{
-            if(!r.error){
-                IpcUtils.stageItems([props.selectedFile.path]).then(()=>{
-                    GitUtils.getStatus();
-                });
-            }
-            
-        });
+        ChangesData.conflictEditor?.apply();
     }
 
     return <div className="w-100 h-100 row g-0">

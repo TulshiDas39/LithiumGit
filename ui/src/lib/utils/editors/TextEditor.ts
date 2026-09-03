@@ -327,7 +327,7 @@ export abstract class TextEditor {
         this._editView.dispatch(tr);
     }
 
-    protected IsDocChanged(){
+    IsDocChanged(){
         return !this._editView.state.doc.eq(this._initialDoc) || this._savedLfType !== this._lineFeedType;
     }
 
