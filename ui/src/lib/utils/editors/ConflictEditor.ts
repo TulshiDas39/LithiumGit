@@ -85,6 +85,7 @@ export class ConflictEditor extends TextEditor{
             if(!afterIndex) {
                 return;
             }
+            startIndex = afterIndex+1;
         }else{
             eLines = this._eLines.filter(x => x.conflictNo === conflictNo);
         }
@@ -100,13 +101,9 @@ export class ConflictEditor extends TextEditor{
         }
         const change = {} as IChange;
         
-        if(eLines.length){
-            change.startlineIndex = startIndex;
-            change.startOffset = 0;
-        }else{
-            change.startlineIndex = afterIndex!;
-            change.startOffset = Number.MAX_SAFE_INTEGER;
-        }
+        
+        change.startlineIndex = startIndex;
+        change.startOffset = 0;
         
         change.endlineIndex = change.startlineIndex + eLines.length;
         change.endOffset = change.startOffset;

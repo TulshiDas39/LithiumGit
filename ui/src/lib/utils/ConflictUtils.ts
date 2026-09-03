@@ -400,7 +400,7 @@ export class ConflictUtils{
                 if(!rLines.length){
                     editorHiddenLines.push({                        
                         conflictNo,
-                        afterLineIndex:currentLines.length-1,
+                        afterLineIndex:editorLines.length-1,
                     });
                 }
 
