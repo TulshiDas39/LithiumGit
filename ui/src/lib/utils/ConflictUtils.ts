@@ -651,6 +651,16 @@ export class ConflictUtils{
         return this.heighlightedLineIndexes.length;
     }
 
+    GetEditorScrollRatio(){
+        const container = this.bottomScrollContainer;
+        if(!container)
+            return 0;
+        const scrollableHeight = container.scrollHeight - container.clientHeight;
+        if(scrollableHeight <= 0)
+            return 0;
+        return container.scrollTop / scrollableHeight;
+    }
+
     private HandleScrolling(){
         const topPanel = this.topPanelElement;
 

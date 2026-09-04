@@ -123,9 +123,17 @@ export class ConflictEditor extends TextEditor{
         }
     }
 
+    private getLineIndexAtScrollPosition(){
+        const scrollRatio = this._conflictUtils.GetEditorScrollRatio();
+        const lineIndex = Math.floor(scrollRatio * this._eLines.length);
+        return lineIndex;
+    }
+
     private acceptAllChanges(side:EnumConflictSide, accept:boolean, conflictNos:number[]){
         const changes = conflictNos.map(conflictNo => this.buildAcceptChange(conflictNo, [side], accept))
             .filter((change):change is IChange => !!change);
+        
+        this.setCursorAtLine(this.getLineIndexAtScrollPosition());
         this.applyChanges(changes);
     }
 
