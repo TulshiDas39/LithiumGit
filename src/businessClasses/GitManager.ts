@@ -641,7 +641,7 @@ export class GitManager{
             const commits = CommitParser.parse(res);
             const count = await this.getTotalCommitCount(repoInfo,filterOption);
             const result:IPaginated<ICommitInfo>={
-                count,
+                count:count!,
                 list:commits
             };
             return result;

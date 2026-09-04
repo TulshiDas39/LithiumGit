@@ -40,7 +40,7 @@ export class FileManager{
         });
     }
 
-    private async detectFileEncoding(path:string){
+    async detectFileEncoding(path:string){
         try{
             const encoding = await chardet.detectFile(path);
             if(!encoding)
