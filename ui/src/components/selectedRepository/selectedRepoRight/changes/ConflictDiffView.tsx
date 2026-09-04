@@ -1,5 +1,5 @@
 import { EnumConflictSide } from "common_library";
-import { DiffUtils, IConflictLine } from "../../../../lib";
+import { ConflictUtils, DiffUtils, IConflictLine } from "../../../../lib";
 
 
 interface ISingleDiffProps{
@@ -53,7 +53,7 @@ interface IProps{
 
 export function ConflictDiffView(props:IProps){
     const editorWidth = DiffUtils.getEditorWidth(props.lines.map(x=>x.text?x.text:""));
-    const lineDivWidth = String(props.lines.filter(l => l.text !== undefined).length).length + 3;
+    const lineDivWidth = ConflictUtils.getConflictLineDivWidth(props.lines);
     const getLineElems = ()=>{
         const elems:JSX.Element[]=[];
         let lineNo = 1;

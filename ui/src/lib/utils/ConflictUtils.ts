@@ -131,6 +131,10 @@ export class ConflictUtils{
         return {currentLines, incomingLines};
     }
 
+    static getConflictLineDivWidth(lines:IConflictLine[]){
+        return String(lines.filter(l => l.text !== undefined).length).length + 3;
+    }
+
     GetUiLinesOfConflictFromDiff(prevLines: ILine[], currLines: ILine[]) {
         const currentMarker = "<<<<<<<";
         const endingMarker = ">>>>>>>";
