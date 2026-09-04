@@ -62,8 +62,6 @@ export class ConflictEditor extends TextEditor{
         this._conflictUtils.updateTopDiffView(this._incomingLines.slice(), this._currentLines.slice());
 
         ReduxUtils.dispatch(ActionConflict.updateData({resolvedConflict:this._conflictUtils.resolvedCount,totalConflict:this._conflictUtils.conflictCount}));
-        // this.handleScrolling();
-        // this.buildTopPanel();
         return true;
     }
 
@@ -182,13 +180,6 @@ export class ConflictEditor extends TextEditor{
         return [this.getHighlightPlugin(), ...super.getPlugins()];
     }
 
-    private static sideOfLine(text:string){
-        if(text.startsWith(ConflictEditor.currentMarker)) return "startMarker" as const;
-        if(text.startsWith(ConflictEditor.separator)) return "separator" as const;
-        if(text.startsWith(ConflictEditor.endingMarker)) return "endMarker" as const;
-        return undefined;
-    }
-
     private static decorationClassOf(iLine:IConflictEditorLine){
         switch(iLine.marker){
             case EnumConflictMarker.Starting: return 'bg-current-change-deep';
@@ -209,8 +200,6 @@ export class ConflictEditor extends TextEditor{
         { label: "Accept Both Changes",    sides: [EnumConflictSide.Current, EnumConflictSide.Incoming] },
     ];
 
-    //rendered as a widget rather than as real content, so the action row never becomes part of the
-    //document and can never end up in the saved file
     private conflictActionsWidget(conflictNo:number){
         const container = document.createElement("div");
         container.className = "conflict-actions noselect";
@@ -255,7 +244,6 @@ export class ConflictEditor extends TextEditor{
             if(!conflictNo)
                 return;
 
-            //the label sits at the end of the marker line, the action row on its own line above it
             const endOfLine = offset + node.nodeSize - 1;
             if(iLine.marker === EnumConflictMarker.Starting){
                 decorations.push(Decoration.widget(offset, () => this.conflictActionsWidget(conflictNo),
@@ -296,19 +284,6 @@ export class ConflictEditor extends TextEditor{
         GitUtils.getStatus();
     }
 
-
-    private onSave(success:boolean){
-        ReduxUtils.dispatch(ActionUI.setSync(undefined));
-        if(success){
-            ModalData.appToast.message = "Saved successfully.";
-            ReduxUtils.dispatch(ActionModals.showToast());
-            GitUtils.getStatus();
-        }else{
-            ModalData.appToast.message = "Failed to save changes.";
-            ReduxUtils.dispatch(ActionModals.showToast());
-        }
-    }
-
     protected displayLineFeedType(): void{
         ReduxUtils.dispatch(ActionUI.setLinefeedType(this._lineFeedType));
     }
@@ -329,7 +304,6 @@ export class ConflictEditor extends TextEditor{
             contentContainer.removeEventListener("scroll", this._scrollHandler);
         this._scrollHandler = undefined;
         super.destroy();
-        //ClearView drops the host markup of both panels, the mounted view goes with it
         this._conflictUtils.ClearView();
     }
 }
