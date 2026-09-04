@@ -1,4 +1,4 @@
-import { EnumConflictSide, IActionTaken, IFile } from "common_library";
+import { EnumConflictSide, IFile } from "common_library";
 import { ICEditorHiddenLine, IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
 import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
@@ -23,8 +23,7 @@ export class ConflictUtils{
     private bottomPanelContainer?:HTMLDivElement;
     private containerSelector = "";
     private scrollHandler?: (e: Event) => void;
-    private topLeftScrollContainer?: HTMLElement;
-    private topRightScrollContainer?: HTMLElement;
+    private topLeftScrollContainer?: HTMLElement;    
     private bottomScrollContainer?: HTMLElement;
     private resizer?: HTMLElement;
     private hightDisplacement = 0;
@@ -60,75 +59,6 @@ export class ConflictUtils{
     private setEditorWidths(){
         this.currentEditorWidth = DiffUtils.getEditorWidth(this.currentLines.map(x=>x.text?x.text:""));
         this.incomingEditorWidth = DiffUtils.getEditorWidth(this.incomingLines.map(x=>x.text?x.text:""));
-    }
-
-    GetUiLinesOfConflict(contentLines: string[]) {
-        const currentMarker = "<<<<<<<";
-        const endingMarker = ">>>>>>>";
-
-        //the markers are re-collected on every read, so drop the ones of the previous read
-        this.startingMarkers = [];
-        this.endingMarkers = [];
-
-        const currentLines:IConflictLine[] = [];
-        const incomingLines:IConflictLine[] = [];
-        let conflictNo = 0;
-        let currentChangeDetected = false;
-        let incomingChangeDetected = false;
-        for(let i=0; i<contentLines.length; i++){
-            const contentLine = contentLines[i];
-            if(contentLine.startsWith(currentMarker)){
-                conflictNo++;
-                currentChangeDetected = true;
-                incomingChangeDetected = false;
-                this.startingMarkers.push({conflictNo,text:contentLine});
-                continue;
-            }
-            if(contentLine === this.Separator){
-                currentChangeDetected = false;
-                incomingChangeDetected = true;
-                continue;
-            }
-            if(contentLine.startsWith(endingMarker)){
-                currentChangeDetected = false;
-                incomingChangeDetected = false;
-                this.endingMarkers.push({conflictNo,text:contentLine});
-                while(currentLines.length > incomingLines.length){
-                    incomingLines.push({textHightlightIndex:[],conflictNo});
-                }
-                while(currentLines.length < incomingLines.length){
-                    currentLines.push({textHightlightIndex:[],conflictNo});
-                }
-                continue;
-            }
-            if(currentChangeDetected){
-                currentLines.push({
-                    text:contentLine,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo,
-                });
-                continue;
-            }
-            if(incomingChangeDetected){
-                incomingLines.push({
-                    text:contentLine,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo,
-                });
-                continue;
-            }
-            incomingLines.push({
-                text:contentLine,
-                textHightlightIndex:[],
-            })
-            currentLines.push({
-                text:contentLine,
-                textHightlightIndex:[],
-            })
-        }
-        return {currentLines, incomingLines};
     }
 
     static getConflictLineDivWidth(lines:IConflictLine[]){
@@ -430,20 +360,6 @@ export class ConflictUtils{
         return {currentLines, incomingLines, editorLines, editorHiddenLines};
     }
 
-    private initialiseData(){
-        this.setEditorWidths();
-        this.topPanelContainer = document.querySelector<HTMLDivElement>(`#${this.topPanelId}`)!;
-        this.bottomPanelContainer = document.querySelector<HTMLDivElement>(`#${this.bottomPanelId}`)!;
-        this.acceptAllCurrentCheckBox.checked = false;
-        this.acceptAllIncomingCheckBox.checked = false;
-    }
-    
-
-    private getConflictNo(id:string){
-        const value = UiUtils.resolveValueFromId(id);
-        return value;
-    }
-
     ShowEditor(file?:IFile){
         this.file = file;
         const container = document.querySelector(`${this.containerSelector}`)!;
@@ -510,20 +426,6 @@ export class ConflictUtils{
         this.topPanelContainer!.style.height = `calc(50% ${getSign(-(displacement+3))}  ${Math.abs(displacement+3)}px)`;
         this.bottomPanelContainer!.style.height = `calc(50% ${getSign(displacement)} ${Math.abs(displacement)}px)`;
     }
-
-
-    // showChanges(){
-    //     const container = document.getElementById(`${this.containerId}`)!;
-    //     if(!container)
-    //         return;
-    //     const innerHtml = ReactDOMServer.renderToStaticMarkup(Difference({
-    //         linesAfterChange:this.currentLines,
-    //         linesBeforeChange:this.previousLines
-    //     }));
-    //     container.innerHTML = innerHtml;
-    //     this.HandleScrolling();
-    //     this.SetHeighlightedLines();        
-    // }
 
     updateTopDiffView(incomingLines:IConflictLine[], currentLines:IConflictLine[]){
         this.incomingLines = incomingLines;
@@ -672,7 +574,6 @@ export class ConflictUtils{
         this.topLeftScrollContainer = topLeftPanel;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
-        this.topRightScrollContainer = topRightPanel;
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
 
