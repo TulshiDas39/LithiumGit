@@ -1,7 +1,7 @@
 import { EnumLinefeed, IChange, StringUtils } from "common_library";
 import { Data } from "../../data";
 import {Schema, Node, Slice, Fragment} from "prosemirror-model"
-import {EditorState, Transaction, Command, PluginKey, Plugin} from "prosemirror-state"
+import {EditorState, Transaction, Command, PluginKey, Plugin, TextSelection} from "prosemirror-state"
 import {EditorView} from "prosemirror-view"
 import {undo, redo, history, undoDepth} from "prosemirror-history"
 import {keymap} from "prosemirror-keymap"
@@ -589,6 +589,21 @@ export abstract class TextEditor {
 
         to = to + Math.min(change.endOffset, doc.child(change.endlineIndex).content.size) + 1;
         return { from, to };
+    }
+
+    protected setCursorAtLine(lineIndex:number, scrollToCursor = false){
+        const doc = this._editView.state.doc;
+        if(lineIndex < 0 || lineIndex >= doc.childCount)
+            return;
+        let pos = 0;
+        for(let i=0; i<lineIndex; i++){
+            pos += doc.child(i).nodeSize;
+        }
+        let tr = this._editView.state.tr.setSelection(TextSelection.create(doc, pos+1));
+        if(scrollToCursor)
+            tr = tr.scrollIntoView();
+        this._editView.dispatch(tr);
+        this._editView.focus();
     }
 
     destroy(){

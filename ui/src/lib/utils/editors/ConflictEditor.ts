@@ -37,7 +37,7 @@ export class ConflictEditor extends TextEditor{
     constructor(panelSelector:string){
         super(`${panelSelector} #${EnumHtmlIds.ConflictEditorBottomPanel} .content`);
         this._conflictUtils = new ConflictUtils(panelSelector);
-        this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, side, accept);
+        this._conflictUtils.acceptChange = (conflictNo, side, accept) => this.acceptChange(conflictNo, [side], accept);
         this._conflictUtils.acceptAllChanges = (side, accept, conflictNos) => this.acceptAllChanges(side, accept, conflictNos);
         this.onSync = () => this.updateDiff();
     }
@@ -67,9 +67,6 @@ export class ConflictEditor extends TextEditor{
         return true;
     }
 
-    //takes a list of sides so accepting more than one is still a single change: with the markers
-    //in place the block becomes the chosen sides in the order given, and once they are gone the
-    //sides not named here keep whatever they already had
     private buildAcceptChange(conflictNo:number, sides:EnumConflictSide[], accept:boolean){
         let startIndex = this._eLines.findIndex(x => x.conflictNo === conflictNo);
         let afterIndex:number | undefined;
@@ -118,17 +115,12 @@ export class ConflictEditor extends TextEditor{
         return change;
     }
 
-    private acceptChange(conflictNo:number, side:EnumConflictSide, accept:boolean){
-        const change = this.buildAcceptChange(conflictNo, [side], accept);
-        if(change)
+    private acceptChange(conflictNo:number, sides:EnumConflictSide[], accept:boolean){
+        const change = this.buildAcceptChange(conflictNo, sides, accept);
+        if(change){            
+            this.setCursorAtLine(change.startlineIndex);
             this.applyChange(change);
-    }
-
-    //what the inline conflict actions do - the markers go away with the lines that were not kept
-    private resolveConflict(conflictNo:number, sides:EnumConflictSide[]){
-        const change = this.buildAcceptChange(conflictNo, sides, true);
-        if(change)
-            this.applyChange(change);
+        }
     }
 
     private acceptAllChanges(side:EnumConflictSide, accept:boolean, conflictNos:number[]){
@@ -225,9 +217,8 @@ export class ConflictEditor extends TextEditor{
             const link = document.createElement("span");
             link.className = "conflict-action";
             link.textContent = action.label;
-            //keep the click from moving the caret into the widget before the handler runs
             link.addEventListener("mousedown", e => e.preventDefault());
-            link.addEventListener("click", ()=> this.resolveConflict(conflictNo, action.sides));
+            link.addEventListener("click", ()=> this.acceptChange(conflictNo, action.sides,true));
             container.appendChild(link);
         });
         return container;
@@ -282,21 +273,6 @@ export class ConflictEditor extends TextEditor{
                 decorations(state: EditorState) { return this.getState(state); },
             },
         });
-    }
-
-    //number of conflicts still carrying markers in the edited document
-    get unresolvedConflictCount(){
-        if(!this._editView) return 0;
-        let count = 0;
-        this._editView.state.doc.forEach(node => {
-            if(ConflictEditor.sideOfLine(node.textContent ?? '') === "startMarker")
-                count++;
-        });
-        return count;
-    }
-
-    get isFullyResolved(){
-        return this.unresolvedConflictCount === 0;
     }
 
     get file(){
