@@ -69,10 +69,15 @@ function MainComponent(){
         }
     },[store.appFocusV])
 
-    useEffect(()=>{
-        Data.systemLineFeedType = IpcUtils.getLineFeedType().result || EnumLinefeed.CRLF;        
+    useEffect( ()=>{
         Data.appData = IpcUtils.getAppData().result!;
-        registerIpcEvents();        
+        if(!Data.appData?.isGitInstalled){
+            ModalData.errorModal.message = "Git could not be found on this system. Please install Git and then restart the application.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        Data.systemLineFeedType = IpcUtils.getLineFeedType().result || EnumLinefeed.CRLF;
+        registerIpcEvents();
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
         if(!savedData){
             batch(()=>{

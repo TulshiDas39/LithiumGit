@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo, IStatusConfig} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
+import simpleGit, { CleanOptions, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -60,6 +60,18 @@ export class GitManager{
         this.addCommitDetailsHandler();
         this.addCopyStagedContentHandler();
         this.addCopyHeadContentHandler();
+    }
+
+    //resolves the git binary against the PATH, so it answers whether git is usable at all.
+    //Startup runs this before the window exists, so the flag is set by the time the renderer reads the app data
+    async checkGitInstallation(){
+        try{
+            const version = await this.getGitRunner(undefined).version();
+            AppData.isGitInstalled = version.installed;
+        }catch(e){
+            AppData.isGitInstalled = false;
+        }
+        return AppData.isGitInstalled;
     }
 
     private addCopyStagedContentHandler() {
@@ -902,7 +914,7 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo | string,progress?:(data:SimpleGitProgressEvent)=>void){
+    private getGitRunner(repoInfo:RepositoryInfo | string | undefined,progress?:(data:SimpleGitProgressEvent)=>void){
         let repoPath = "";
         if(typeof(repoInfo) === 'string'){
             repoPath = repoInfo as string;

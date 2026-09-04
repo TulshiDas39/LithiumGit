@@ -12,6 +12,7 @@ export class AppData{
     static mainWindow:BrowserWindow;
     static systemLineFeedType:EnumLinefeed = null!;
     static encodingList:string[] = [];
+    static isGitInstalled = false;
 
     static initialize() {
         AppData.appPath = app.getAppPath();

@@ -21,4 +21,5 @@ export interface IAppData{
     dataPath:string;
     tempPath:string;
     encodingList:string[];
+    isGitInstalled:boolean;
 }

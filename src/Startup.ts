@@ -18,8 +18,9 @@ export class Startup{
     async initialise(){
       //this.initAppData();
       this.addExceptionHandler();
-      AppData.initialize();
-      await this.loadSavedData();      
+      await AppData.initialize();
+      await new GitManager().checkGitInstallation();
+      await this.loadSavedData();
       this.startIpcManagers();
     }
 

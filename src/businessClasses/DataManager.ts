@@ -41,7 +41,8 @@ export class DataManager{
             const appData:IAppData = {
                 dataPath:AppData.dataPath,
                 tempPath:AppData.tempPath,
-                encodingList:AppData.encodingList
+                encodingList:AppData.encodingList,
+                isGitInstalled:AppData.isGitInstalled
             }
             _e.returnValue = appData;
         });
