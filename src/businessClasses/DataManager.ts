@@ -1,8 +1,9 @@
-import { Annotation, EnumNotificationType, IAppInfo, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, EnumNotificationType, IAppData, IAppInfo, IConfigInfo, INotification, RendererEvents, RepositoryInfo } from "common_library";
 import { app, ipcMain } from "electron";
 import { AppData, SavedData } from "../dataClasses";
 import { DB } from "../db_service";
 import { BUILD_INFO } from "../buildInfo";
+import { EOL } from "os";
 
 export class DataManager{
     start(){
@@ -25,6 +26,26 @@ export class DataManager{
         this.handleUpdateNotifications();
         this.handleAppInfoRequest();
         this.setCheckForUpdateTime();
+        this.handleGetLineFeedType();
+        this.handleGetAppData();
+    }
+
+    private handleGetLineFeedType(){
+        ipcMain.on(RendererEvents.getLineFeedType, async(_e) => {
+            _e.returnValue = AppData.systemLineFeedType;
+        });
+    }
+
+    private handleGetAppData(){
+        ipcMain.on(RendererEvents.getAppData, async(_e) => {
+            const appData:IAppData = {
+                dataPath:AppData.dataPath,
+                tempPath:AppData.tempPath,
+                encodingList:AppData.encodingList,
+                isGitInstalled:AppData.isGitInstalled
+            }
+            _e.returnValue = appData;
+        });
     }
 
     private handleConfigUpdate(){
@@ -56,8 +77,7 @@ export class DataManager{
                 website:"https://lithiumgit.com",
                 repository:"https://github.com/tulshidas39/lithiumgit",
                 issueTracker:"https://github.com/tulshidas39/lithiumgit/issues"
-            };
-            console.log("app version",info.version);
+            };            
             event.returnValue = info;
         });
     }

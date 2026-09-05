@@ -20,4 +20,20 @@ export class ArrayUtils{
             return 0;
         return array.reduce((acc,current) => Math.min(acc,current))
     }
+
+    static findLastIndex<T>(arr:T[],cond:(x:T)=>boolean){
+        for(let i = arr.length-1;i >= 0;i--){
+            if(cond(arr[i]))
+                return i;
+        }
+        return -1;
+    }
+
+    static findLast<T>(arr:T[],cond:(x:T)=>boolean){
+        for(let i = arr.length;i >= 0;i--){
+            if(cond(arr[i]))
+                return arr[i];
+        }
+        return null;
+    }
 }

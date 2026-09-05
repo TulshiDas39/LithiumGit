@@ -42,7 +42,7 @@ function CommitDiffViewComponent(props:IProps){
                 const content = res.result || "";
                 const lines = StringUtils.getLines(content);
                 if(file?.changeType === EnumChangeType.MODIFIED){
-                    const options =  [selectedCommit.hash,"--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","-m","--",file.path];            
+                    const options =  [selectedCommit.hash,"--diff-algorithm=minimal","-m","--",file.path];            
                     IpcUtils.getGitShowResult(options).then(res=>{
                         let lineConfigs = DiffUtils.GetUiLines(res,lines);
                         changeUtils.currentLines = lineConfigs.currentLines;
@@ -107,7 +107,6 @@ function CommitDiffViewComponent(props:IProps){
         }
 
         IpcUtils.isBinaryFile(props.file.path).then(r=>{
-            console.log('isBinary',r);
             if(r.result){                
                 showPreview(props.file!);
             }else{

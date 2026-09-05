@@ -3,6 +3,7 @@ import { ILine } from "../interfaces";
 import { Difference } from "../../components/selectedRepository/selectedRepoRight/changes/Difference";
 import { IFile, IFileProps } from "common_library";
 import { DifferencePreview } from "../../components/selectedRepository/selectedRepoRight/changes/DifferencePreview";
+import { DiffView } from "../../components/selectedRepository/selectedRepoRight/changes/DiffView";
 
 export class ChangeUtils{
     private containerId = "";
@@ -10,6 +11,11 @@ export class ChangeUtils{
     currentLines:ILine[]=[];
     previousLines:ILine[]=[];
     private heighlightedLineIndexes:number[]=[];
+    private scrollHandler1?: (e: Event) => void;
+    private scrollHandler2?: (e: Event) => void;
+    private currentScrollableContainer?:HTMLElement;
+    private previousScrollableContainer?:HTMLElement;
+
 
     constructor(containerId:string){
         this.containerId = containerId;
@@ -29,9 +35,20 @@ export class ChangeUtils{
         }));
         container.innerHTML = innerHtml;
         this.HandleScrolling();
-        this.SetHeighlightedLines();
+        this.SetHeighlightedLines();        
+    }
 
-        // ReduxUtils.resetChangeNavigation();
+    updatePreviousChanges(lines:ILine[]){
+        this.previousLines = lines;
+        const container = document.querySelector(`#${this.containerId} .difference .previous`);
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(DiffView({changeType:"previous",lines:this.previousLines}));
+        container!.innerHTML = innerHtml;
+        this.HandleScrolling();
+        this.previousScrollableContainer?.scrollTo({
+            top:this.currentScrollableContainer?.scrollTop,
+            left:this.currentScrollableContainer?.scrollLeft,
+        });
+        this.SetHeighlightedLines();
     }
 
     showPreview(prevFileProps?:IFileProps,currentFileProps?:IFileProps){
@@ -58,11 +75,12 @@ export class ChangeUtils{
     private SetHeighlightedLines(){
         this.heighlightedLineIndexes = [];
         let lastItemHightlighted = false;
-        if(!this.currentLines?.length || !this.previousLines?.length)
+        let ilines = this.currentLines?.length ? this.currentLines : this.previousLines;
+        if(!ilines?.length)
             return;
-        const lenght = this.currentLines?.length;
+        const lenght = ilines?.length;
         for(let i = 0;i < lenght; i++){
-            if(this.currentLines?.[i].hightLightBackground || this.currentLines?.[i].text === undefined){
+            if(ilines?.[i].hightLightBackground || ilines?.[i].text === undefined){
                 if(!lastItemHightlighted) {
                     this.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
@@ -78,15 +96,19 @@ export class ChangeUtils{
     } 
 
     private HandleScrolling(){
-        if(this.previousLines !== null && this.currentLines !== null){
+        if(this.previousLines !== null || this.currentLines !== null){
             const previousChangeScroll = document.querySelector(`#${this.containerId} .difference .previous .content-container`);
-            const currentChangeScroll = document.querySelector(`#${this.containerId} .difference .current .content-container`);
+            this.previousScrollableContainer = previousChangeScroll as HTMLElement;
+            const currentChangeScroll = document.querySelector(`#${this.containerId} .difference .current .content-container`)!;
+            this.currentScrollableContainer = currentChangeScroll as HTMLElement;
             const currentLineNumberScroll = document.querySelector(`#${this.containerId} .difference .current .line_numbers`);        
             const previousLineNumberScroll = document.querySelector(`#${this.containerId} .difference .previous .line_numbers`);
             const group1 = [currentChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
             const group2 = [previousChangeScroll,currentLineNumberScroll,previousLineNumberScroll];
-        //line_numbers
-            let handler1 = (e:Event)=>{
+            if(this.scrollHandler1){
+                previousChangeScroll?.removeEventListener("scroll",this.scrollHandler1);
+            }
+            this.scrollHandler1 = (e:Event)=>{
                 for(let g of group1){
                     g?.scrollTo({
                         left:previousChangeScroll?.scrollLeft,
@@ -96,7 +118,10 @@ export class ChangeUtils{
                 
             }
 
-            let handler2 = (e:Event)=>{
+            if(this.scrollHandler2){
+                currentChangeScroll?.removeEventListener("scroll",this.scrollHandler2);
+            }
+            this.scrollHandler2 = (e:Event)=>{
                 for(let g of group2){
                     g?.scrollTo({
                         left:currentChangeScroll?.scrollLeft,
@@ -104,10 +129,13 @@ export class ChangeUtils{
                     });
                 }
             }
+           
 
-            if(previousChangeScroll && currentChangeScroll){
-                previousChangeScroll.addEventListener("scroll",handler1)
-                currentChangeScroll.addEventListener("scroll",handler2);
+            if(previousChangeScroll){
+                previousChangeScroll.addEventListener("scroll",this.scrollHandler1)
+            }
+            if(currentChangeScroll){
+                currentChangeScroll.addEventListener("scroll",this.scrollHandler2);
             }
         }
     }

@@ -21,7 +21,7 @@ function RebaseBranchComponent(props:IProps){
         dispatch(ActionModals.hideModal(EnumModals.COMMIT_CONTEXT));
         IpcUtils.rebaseBranch(branch).then(r=>{
             GitUtils.getStatus().then(r=>{
-                if(r.rebasingCommit){
+                if(r.result?.rebasingCommit){
                     dispatch(ActionUI.setSelectedRepoTab(EnumSelectedRepoTab.CHANGES));
                 }
             });

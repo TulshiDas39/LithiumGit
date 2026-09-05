@@ -5,9 +5,12 @@ import { DiffUtils, EnumChangeGroup, EnumHtmlIds, ILine, UiUtils, useMultiState 
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
-import { ActionChanges } from "../../../../store";
+import { ActionChanges, ActionModals } from "../../../../store";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { ActionUI } from "../../../../store/slices/UiSlice";
+import { StagedEditor } from "../../../../lib/utils/editors";
+import { ModalData } from "../../../modals/ModalData";
 
 interface ISingleFileProps{
     item:IFile
@@ -54,13 +57,15 @@ interface IStagedChangesProps{
 }
 
 interface IState{
-    // isStagedChangesExpanded:boolean;    
+    // isStagedChangesExpanded:boolean;
 }
 
-function StagedChangesComponent(props:IStagedChangesProps){
-    const [state,setState] = useMultiState<IState>({});
+const editorContainer = "#"+EnumHtmlIds.diffview_container+" .current .content";
+
+function StagedChangesComponent(props:IStagedChangesProps){    
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
+        modifiedSelectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
@@ -69,21 +74,50 @@ function StagedChangesComponent(props:IStagedChangesProps){
     const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleUnstageItem = (item:IFile)=>{
+        GitUtils.cancelGetStatus();
+        dispatch(ActionUI.unstageItem(item.path));
         IpcUtils.unstageItem([item.path],props.repoInfoInfo!).then(_=>{
+            if(store.modifiedSelectedFile?.path === item.path){
+                ChangesData.changeEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });
     }
 
     const unStageAll=()=>{
         if(!props.changes.length) return;
+        GitUtils.cancelGetStatus();
+        dispatch(ActionUI.unstageAll());
         IpcUtils.unstageItem([],props.repoInfoInfo!).then(_=>{
+            if(store.modifiedSelectedFile){
+                ChangesData.changeEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });        
     }
 
-    const showChanges=()=>{                    
-        return new Promise<boolean>((resolve)=>{            
+    const clearExistingChangeView=()=>{
+        ChangesData.stagedEditor?.destroy();
+        ChangesData.stagedEditor = null!;
+    }
+
+    const showChanges=()=>{
+        return new Promise<boolean>((resolve)=>{
+            clearExistingChangeView();
+            ChangesData.changeUtils.file = store.selectedFile;
             if(store.selectedFile!.changeType !== EnumChangeType.DELETED){
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
+                    const editor = new StagedEditor(editorContainer,ChangesData.changeUtils);
+                    ChangesData.stagedEditor = editor;
+                    editor.renderILines(store.selectedFile!).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }
+                        resolve(true);
+                    });
+                    return;
+                }
                 IpcUtils.getGitShowResultOfStagedFile(store.selectedFile!.path).then(res=>{
                     const lines = StringUtils.getLines(res.result!);
                     const hasChanges = UiUtils.hasChanges(refData.current.fileContentAfterChange,lines);
@@ -92,17 +126,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                         return;
                     }
                     refData.current.fileContentAfterChange = lines;
-                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                        const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal",store.selectedFile!.path];            
-                        IpcUtils.getDiff(options).then(res=>{
-                            let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
-                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
-                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
-                            ChangesData.changeUtils.showChanges();                            
-                            resolve(true);
-                        })
-                    }
-                    else if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
+                    if(store.selectedFile?.changeType === EnumChangeType.RENAMED){
                         const options =  ["--staged","--word-diff=porcelain", "--word-diff-regex=.","--diff-algorithm=minimal","--",store.selectedFile!.oldPath!,store.selectedFile!.path!];            
                         IpcUtils.getDiff(options).then(res=>{
                             let lineConfigs = DiffUtils.GetUiLines(res,refData.current.fileContentAfterChange);
@@ -134,8 +158,7 @@ function StagedChangesComponent(props:IStagedChangesProps){
                     ChangesData.changeUtils.showChanges();
                     resolve(true);
                 })
-            }
-            ChangesData.changeUtils.file = store.selectedFile;
+            }            
         })
     }
 
@@ -170,14 +193,20 @@ function StagedChangesComponent(props:IStagedChangesProps){
     }
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
+        if(!refData.current.isMounted)
             return ;
+
+        if(!store.selectedFile){
+            ChangesData.changeUtils.ClearView();
+            return;
+        }
+        
         IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
             if(r.result){                
                 showPreview(store.selectedFile!);
             }else{
                 showChanges().then(()=>{
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount,silentStepUpdate:false}));            
                 })
             }
         })
@@ -188,6 +217,10 @@ function StagedChangesComponent(props:IStagedChangesProps){
             return;
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
             return;
+        if(store.selectedFile.changeType === EnumChangeType.MODIFIED && ChangesData.stagedEditor){
+            ChangesData.stagedEditor.checkForFileUpdate();
+            return;
+        }
         showChanges().then(()=>{
             dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
             dispatch(ActionChanges.increamentStepRefreshVersion());
@@ -200,6 +233,9 @@ function StagedChangesComponent(props:IStagedChangesProps){
 
     useEffect(()=>{
         refData.current.isMounted = true;
+        return ()=>{
+            refData.current.isMounted = false;
+        }
     },[])
 
     return <div className="h-100" id={EnumHtmlIds.stagedChangesPanel}>

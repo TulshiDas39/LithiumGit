@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import './layout.scss'
 import { Main } from '../main/Main';
 import { TopNav } from '../navs/TopNav';
@@ -9,23 +9,11 @@ interface ILayoutProps{
     height:number
 }
 
-function LayoutComponent(props:ILayoutProps) {
-    const data = useRef({topHeighPercent:7,bottomNavHeightPercent:3});
-
-    const topNavHeight = useMemo(()=>{
-        const height = props.height * (data.current.topHeighPercent/100);
-        if(height > 40) return 40;
-        return height;
-    },[props.height]);
-
-    const footerHeight = useMemo(()=>{
-        const height = props.height * (data.current.bottomNavHeightPercent/100);
-        if(height > 20) return 20;
-        return height;
-    },[props.height])
+function LayoutComponent(props:ILayoutProps) {    
 
     return (
-        <div className="h-100" style={{height:props.height+"px"}}>
+        <div className="h-100" style={{height:props.height+"px", position: "relative"}}>
+            {/* {loading && <Loader />} */}
             <div id="layout" className="d-flex flex-column overflow-auto h-100">
                 <div className="d-flex" style={{height:`7%`}}>
                     <TopNav />

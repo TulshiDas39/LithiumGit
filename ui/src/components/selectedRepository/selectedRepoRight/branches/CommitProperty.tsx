@@ -1,5 +1,5 @@
 import { ICommitInfo, StringUtils } from "common_library";
-import moment from "moment";
+import {moment} from "common_library";
 import React, { useEffect, useMemo } from "react"
 import { ReduxUtils, UiUtils, useMultiState } from "../../../../lib";
 import { InputText } from "../../../common";

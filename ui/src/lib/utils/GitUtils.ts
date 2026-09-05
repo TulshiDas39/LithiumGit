@@ -1,4 +1,4 @@
-import { EnumChangeGroup, EnumChangeType, IFile, IFileProps, IStash, StringUtils, createRepositoryInfo } from "common_library";
+import { EnumChangeGroup, EnumChangeType, IFile, IFileProps, IStash, IStatus, StringUtils, createRepositoryInfo } from "common_library";
 import { IpcUtils } from "./IpcUtils";
 import { ReduxUtils } from "./ReduxUtils";
 import { ActionModals, ActionSavedData } from "../../store";
@@ -7,10 +7,12 @@ import { ModalData } from "../../components/modals/ModalData";
 import { Messages } from "../constants";
 import { ActionUI, ILoaderInfo } from "../../store/slices/UiSlice";
 import { RepoUtils } from "./RepoUtils";
+import { IResult } from "../interfaces";
 
 export class GitUtils{
     //git diff-tree --no-commit-id 0a2f033 -r
-
+    private static readonly statusRejectHandlers:(()=>void)[] = [];
+    private static readonly getStatusEventIds:string[] = [];
     static async GetFileListByCommit(commitHash:string,opts?:string[]){
         const files:IFile[]  = [];
         const options = ["diff-tree", "--no-commit-id", commitHash, "-r", "-m"];
@@ -152,10 +154,14 @@ export class GitUtils{
 
     static async GetFileContentOfStash(stash:IStash,file:IFile){
         if(file.changeType === EnumChangeType.CREATED){
-            //git show 'stash@{0}^3:<path/to/file>'
-            const options = [`stash@{${stash.index}}^3:${file.path}`];
-            let r = await IpcUtils.getGitShowResult(options);
-            return r;
+            try{
+                //for staged files
+                return await IpcUtils.getGitShowResult([`${stash.hash}:${file.path}`]);
+            }catch(e){
+                //for untracked files
+                const options = [`stash@{${stash.index}}^3:${file.path}`];
+                return await IpcUtils.getGitShowResult(options);
+            }
         }
         else{
             const r = await IpcUtils.getFileContentAtSpecificCommit(stash.hash,file.path);
@@ -189,12 +195,29 @@ export class GitUtils{
     }
 
     static getStatus(){
-        ReduxUtils.dispatch(ActionUI.setSync({text:Messages.getStatus}));
-        return IpcUtils.getRepoStatus().then(r=>{
-            return r;
-        }).finally(()=>{
-            ReduxUtils.dispatch(ActionUI.setSync(undefined));
-        });
+        const eventId = new Date().toISOString();
+        GitUtils.getStatusEventIds.push(eventId);
+        return new Promise<IResult<IStatus>>((resolve)=>{            
+            ReduxUtils.dispatch(ActionUI.setSync({text:Messages.getStatus}));
+            IpcUtils.getRepoStatus().then(r=>{
+                if(GitUtils.getStatusEventIds.includes(eventId)){
+                    ReduxUtils.setStatus(r);
+                    resolve({result: r});
+                }else{
+                    resolve({error: "cancelled"});
+                }                
+            }).finally(()=>{
+                const index = GitUtils.getStatusEventIds.indexOf(eventId);
+                if(index > -1){
+                    GitUtils.getStatusEventIds.splice(index,1);
+                }
+                ReduxUtils.dispatch(ActionUI.setSync(undefined));
+            });
+        });        
+    }
+
+    static cancelGetStatus(){
+        GitUtils.getStatusEventIds.splice(0);
     }
 
     static abortMerge(){

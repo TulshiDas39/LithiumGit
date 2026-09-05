@@ -1,596 +1,620 @@
-import { EnumConflictSide, IActionTaken, IFile } from "common_library";
-import { ILine } from "../interfaces";
-import { EnumHtmlIds } from "../enums";
+import { EnumConflictSide, IFile } from "common_library";
+import { ICEditorHiddenLine, IConflictEditorLine, IConflictLine, ILine } from "../interfaces";
+import { EnumConflictMarker, EnumConflictState, EnumHtmlIds } from "../enums";
 import ReactDOMServer from "react-dom/server";
 import { ConflictTopPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictTopPanel";
-import { ConflictBottomPanel } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictBottomPanel";
 import { UiUtils } from "./UiUtils";
 import { DiffUtils } from "./DiffUtils";
 import { NumUtils } from "./NumUtils";
+import { ConflictView } from "../../components/selectedRepository/selectedRepoRight/changes/ConflictView";
 
 export class ConflictUtils{
-    static readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
-    static readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
-    static file?:IFile;
-    static currentLines:ILine[];
-    static incomingLines:ILine[];
-    private static heighlightedLineIndexes:number[]=[];
-    private static startingMarkers:{conflictNo:number;text:string}[] = [];
-    private static endingMarkers:{conflictNo:number;text:string}[] = [];
-    private static currentLineDivWidth = 0;
-    private static previousLineDivWidth = 0;
-    private static hoverTopPanel = false;
-    private static hoverBottomPanel = false;
-    private static actionsTaken:IActionTaken[] = [];
-    private static currentEditorWidth = 0;
-    private static incomingEditorWidth = 0;
-    private static topPanel?:HTMLDivElement;
-    private static bottomPanel?:HTMLDivElement;
+    readonly topPanelId = EnumHtmlIds.ConflictEditorTopPanel;
+    readonly bottomPanelId = EnumHtmlIds.ConflictEditorBottomPanel;
+    file?:IFile;
+    currentLines:IConflictLine[] = null!;
+    incomingLines:IConflictLine[] = null!;
+    private heighlightedLineIndexes:number[]=[];
+    private startingMarkers:{conflictNo:number;text:string}[] = [];
+    private endingMarkers:{conflictNo:number;text:string}[] = [];
+    private currentEditorWidth = 0;
+    private incomingEditorWidth = 0;
+    private topPanelContainer?:HTMLDivElement;
+    private bottomPanelContainer?:HTMLDivElement;
+    private containerSelector = "";
+    private scrollHandler?: (e: Event) => void;
+    private topLeftScrollContainer?: HTMLElement;    
+    private bottomScrollContainer?: HTMLElement;
+    private resizer?: HTMLElement;
+    private hightDisplacement = 0;
+    private onResizeDisplacement = 0;
 
-    static get Actions(){
-        return ConflictUtils.actionsTaken;
+    acceptChange:(conflictNo:number, side:EnumConflictSide,accept:boolean) => void = (_:number)=>{};
+    acceptAllChanges:(side:EnumConflictSide, accept:boolean, conflictNos:number[]) => void = ()=>{};
+    
+    constructor(containerId:string){
+        this.containerSelector = containerId;
     }
 
-    static get TotalConflict(){
-        const conflictNos = ConflictUtils.currentLines.filter(_=> !!_.conflictNo).map(_=>_.conflictNo!);
+    get TotalConflict(){
+        const conflictNos = this.currentLines.filter(_=> !!_.conflictNo).map(_=>_.conflictNo!);
         return NumUtils.max(conflictNos);
     }
-    static get Separator(){
+    get Separator(){
         return "=======";
     }
 
-    static get CurrentEditorWidth(){
-        return ConflictUtils.currentEditorWidth;
+    get CurrentEditorWidth(){
+        return this.currentEditorWidth;
     }
 
-    static get IncomingEditorWidth(){
-        return ConflictUtils.incomingEditorWidth;
+    get IncomingEditorWidth(){
+        return this.incomingEditorWidth;
     }
 
-    static GetEndingMarkerText(conflictNo:number){
-        return ConflictUtils.endingMarkers.find(_ => _.conflictNo === conflictNo);
+    GetEndingMarkerText(conflictNo:number){
+        return this.endingMarkers.find(_ => _.conflictNo === conflictNo);
     }
 
-    private static setEditorWidths(){
-        ConflictUtils.currentEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.currentLines.map(x=>x.text?x.text:""));
-        ConflictUtils.incomingEditorWidth = DiffUtils.getEditorWidth(ConflictUtils.incomingLines.map(x=>x.text?x.text:""));
+    private setEditorWidths(){
+        this.currentEditorWidth = DiffUtils.getEditorWidth(this.currentLines.map(x=>x.text?x.text:""));
+        this.incomingEditorWidth = DiffUtils.getEditorWidth(this.incomingLines.map(x=>x.text?x.text:""));
     }
-    
-    static GetUiLinesOfConflict(contentLines: string[]) {
+
+    static getConflictLineDivWidth(lines:IConflictLine[]){
+        return String(lines.filter(l => l.text !== undefined).length).length + 3;
+    }
+
+    GetUiLinesOfConflictFromDiff(prevLines: ILine[], currLines: ILine[]) {
         const currentMarker = "<<<<<<<";
         const endingMarker = ">>>>>>>";
-        
-    
-        const currentLines:ILine[] = [];
-        const previousLines:ILine[] = [];
+        const dividerMarker = this.Separator;
+
+        const currentLines:IConflictLine[] = [];
+        const incomingLines:IConflictLine[] = [];
+        const editorLines:IConflictEditorLine[] = [];
+        const editorHiddenLines:ICEditorHiddenLine[] = [];
         let conflictNo = 0;
-        let currentChangeDetected = false;
-        let incomingChangeDetected = false;
-        for(const contentLine of contentLines){
-            if(contentLine.startsWith(currentMarker)){
+
+
+        const isResolved = (lines:ILine[])=>{
+            const startingMarkerIndex = lines.findIndex(_=> _.text?.startsWith(currentMarker));
+            if(startingMarkerIndex === -1){
+                return true;
+            }
+            const separatorIndex = lines.findIndex(_=> _.text === dividerMarker);
+            if(separatorIndex === -1){
+                return true;
+            }
+            const endingMarkerIndex = lines.findIndex(_=> _.text?.startsWith(endingMarker));
+            if(endingMarkerIndex === -1){
+                return true;
+            }
+            if(startingMarkerIndex < separatorIndex && separatorIndex < endingMarkerIndex){
+                return false;
+            }
+            
+            return true;
+        }      
+
+
+        for(let i=0; i < currLines.length; i++){
+            let curLine = currLines[i];
+            let preLine = prevLines[i];            
+
+            if(preLine.text?.startsWith(currentMarker)){
                 conflictNo++;
-                currentChangeDetected = true;
-                incomingChangeDetected = false;
-                ConflictUtils.startingMarkers.push({conflictNo,text:contentLine});
-                continue;
-            }
-            if(contentLine === ConflictUtils.Separator){
-                currentChangeDetected = false;
-                incomingChangeDetected = true;
-                continue;
-            }
-            if(contentLine.startsWith(endingMarker)){
-                currentChangeDetected = false;
-                incomingChangeDetected = false;
-                ConflictUtils.endingMarkers.push({conflictNo,text:contentLine});
-                while(currentLines.length > previousLines.length){
-                    previousLines.push({textHightlightIndex:[],conflictNo});
+
+                let inDiffLines:ILine[] = [];
+                let inLines:IConflictLine[] = [];
+
+                let cuDiffLines:ILine[] = [];
+                let cuLines:IConflictLine[] = [];
+                
+                let eDiffLines:ILine[] = [];
+                let eLines:IConflictEditorLine[] = [];
+                const actionTaken:EnumConflictSide[] = [];
+
+                let k = i + 1;
+
+                while(k < prevLines.length && prevLines[k].text !== dividerMarker){
+                    cuDiffLines.push(prevLines[k++]);
                 }
-                while(currentLines.length < previousLines.length){
-                    currentLines.push({textHightlightIndex:[],conflictNo});
-                }                
+
+                k++;
+                
+                while(k < prevLines.length && !prevLines[k].text?.startsWith(endingMarker)){
+                    inDiffLines.push(prevLines[k++]);
+                }
+
+                k = Math.min(currLines.length - 1, k);
+
+                for(let j = i; j <= k; j++){
+                    eDiffLines.push(currLines[j]);
+                }
+                k++;
+
+                while(k < prevLines.length && prevLines[k].text === undefined ){
+                    eDiffLines.push(currLines[k]);
+                    k++;
+                }
+
+                eDiffLines = eDiffLines.filter(_=> _.text !== undefined);
+                inDiffLines = inDiffLines.filter(_=> _.text !== undefined);
+                cuDiffLines = cuDiffLines.filter(_=> _.text !== undefined);
+
+
+                for(let line of cuDiffLines){
+                    cuLines.push({
+                        text:line.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                for(let line of inDiffLines){
+                    inLines.push({
+                        text:line.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+
+                const resolved = isResolved(eDiffLines);
+
+                if(!resolved){
+
+                    let rLine = eDiffLines.shift()!;
+                    while(!rLine.text!.startsWith(currentMarker)){
+                        eLines.push({
+                            text:rLine.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                        rLine = eDiffLines.shift()!;
+                    }
+
+                    eLines.push({
+                        text:rLine.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Starting,
+                    });
+
+                    rLine = eDiffLines.shift()!;
+
+                    while(rLine.text !== dividerMarker){
+                        eLines.push({
+                            text:rLine.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                            state:EnumConflictState.FromCurrent,
+                        });
+                        rLine = eDiffLines.shift()!;
+                    }
+
+                    eLines.push({
+                        text:rLine.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Divider,
+                    });
+                    
+                    rLine = eDiffLines.shift()!;
+                    
+                    while(!rLine.text?.startsWith(endingMarker)){
+                        eLines.push({
+                            text:rLine.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                            state:EnumConflictState.FromIncoming,
+                        });
+                        rLine = eDiffLines.shift()!;
+                    }
+
+                    eLines.push({
+                        text:rLine.text,
+                        hightLightBackground:true,
+                        textHightlightIndex:[],
+                        conflictNo,
+                        marker:EnumConflictMarker.Ending,
+                    });
+
+                    rLine = eDiffLines.shift()!;
+                    while(rLine){
+                        eLines.push({
+                            text:rLine.text,
+                            hightLightBackground:true,
+                            textHightlightIndex:[],
+                            conflictNo,
+                        });
+                        rLine = eDiffLines.shift()!;
+                    }
+                }
+                else{                    
+                    const insertRLines = (count:number, state:EnumConflictState)=>{
+                        for(let j=0; j < count; j++){
+                            eLines.push({
+                                text:eDiffLines[j].text,
+                                hightLightBackground:true,
+                                textHightlightIndex:[],
+                                conflictNo,
+                                state,
+                            });
+                        }
+                    }
+
+                    if(cuDiffLines.length <= eDiffLines.length && cuDiffLines.every((_,li)=> _.text === eDiffLines[li].text)){
+                        let remrLines = eDiffLines.slice(cuDiffLines.length);
+                        if(remrLines.length){
+                            if(remrLines.length === inDiffLines.length && inDiffLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertRLines(cuDiffLines.length, EnumConflictState.FromCurrent);
+                                eDiffLines = remrLines;
+                                insertRLines(inDiffLines.length, EnumConflictState.FromIncoming);
+                                actionTaken.push(EnumConflictSide.Current,EnumConflictSide.Incoming);                                
+                            }
+                            else{
+                                insertRLines(eDiffLines.length, EnumConflictState.Custom);                                
+                            }
+                        }
+                        else{
+                            insertRLines(eDiffLines.length, EnumConflictState.FromCurrent);
+                            actionTaken.push(EnumConflictSide.Current); 
+                        }
+                    }
+                    else if(inDiffLines.length <= eDiffLines.length && inDiffLines.every((_,li)=> _.text === eDiffLines[li].text)){
+                        let remrLines = eDiffLines.slice(inDiffLines.length);
+                        if(remrLines.length){
+                            if(remrLines.length === cuDiffLines.length && cuDiffLines.every((_,li)=> _.text === remrLines[li].text)){
+                                insertRLines(inDiffLines.length, EnumConflictState.FromIncoming);
+                                eDiffLines = remrLines;
+                                insertRLines(cuDiffLines.length, EnumConflictState.FromCurrent);
+                                actionTaken.push(EnumConflictSide.Incoming, EnumConflictSide.Current);
+                            }
+                            else{
+                                insertRLines(eDiffLines.length, EnumConflictState.Custom);
+                            }
+                        }else{
+                            insertRLines(eDiffLines.length, EnumConflictState.FromIncoming);
+                            actionTaken.push(EnumConflictSide.Incoming); 
+                        }
+                    }
+                    else{
+                        insertRLines(eDiffLines.length, EnumConflictState.Custom);
+                    }
+                                        
+                }
+
+                while(inLines.length < cuLines.length){
+                    inLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                while(cuLines.length < inLines.length){
+                    cuLines.push({
+                        textHightlightIndex:[],
+                        conflictNo,
+                    });
+                }
+
+                if(resolved){
+                    const curTaken = actionTaken.includes(EnumConflictSide.Current);
+
+                    for(let line of cuLines){
+                        line.taken = curTaken;
+                    }
+
+                    const inTaken = actionTaken.includes(EnumConflictSide.Incoming);
+
+                    for(let line of inLines){
+                        line.taken = inTaken;
+                    }
+                }
+
+                inLines.forEach(_=> incomingLines.push(_));
+                cuLines.forEach(_=> currentLines.push(_));
+                eLines.forEach(_=> editorLines.push(_));
+
+                if(!eLines.length){
+                    editorHiddenLines.push({                        
+                        conflictNo,
+                        afterLineIndex:editorLines.length-1,
+                    });
+                }
+
+                i = k - 1;
+                
                 continue;
             }
-            if(currentChangeDetected){
-                currentLines.push({
-                    text:contentLine,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo
-                });
+
+            if(curLine.text === undefined){
                 continue;
             }
-            if(incomingChangeDetected){
-                previousLines.push({
-                    text:contentLine,
-                    hightLightBackground:true,
-                    textHightlightIndex:[],
-                    conflictNo
-                });
-                continue;
-            }
-            previousLines.push({
-                text:contentLine,
-                textHightlightIndex:[],
-            })
+            
             currentLines.push({
-                text:contentLine,
+                text:curLine.text,
                 textHightlightIndex:[],
-            })            
+            });
+            incomingLines.push({
+                text:curLine.text,
+                textHightlightIndex:[],
+            });
+
+            editorLines.push({
+                text:curLine.text,
+                textHightlightIndex:[],
+            });
+
         }
-        return {currentLines,previousLines};
+
+        return {currentLines, incomingLines, editorLines, editorHiddenLines};
     }
 
-    static resetData(){
-        ConflictUtils.hoverBottomPanel = false;
-        ConflictUtils.hoverTopPanel = false;
-        ConflictUtils.actionsTaken = [];        
-    }
-
-    private static initialiseData(){
-        ConflictUtils.resetData();
-        ConflictUtils.setEditorWidths();
-        ConflictUtils.topPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.topPanelId}`)!;
-        ConflictUtils.bottomPanel = document.querySelector<HTMLDivElement>(`#${ConflictUtils.bottomPanelId}`)!;
-        ConflictUtils.acceptAllCurrentCheckBox.checked = false;
-        ConflictUtils.acceptAllIncomingCheckBox.checked = false;
-    }
-
-    private static getConflictNo(id:string){
-        const value = UiUtils.resolveValueFromId(id);
-        return value;
-    }
-
-    static ShowEditor(){
-        if(!ConflictUtils.currentLines || !ConflictUtils.incomingLines)
+    ShowEditor(file?:IFile){
+        this.file = file;
+        const container = document.querySelector(`${this.containerSelector}`)!;
+        if(!container)
             return;
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictView({
+            incomingLines:this.incomingLines,
+            currentLines:this.currentLines
+        }));
+        container.innerHTML = innerHtml;
+        this.resolveElements();
+        this.addEventHanlders();
+        this.HandleScrolling();
+        this.handleDragging();
+    }
 
-        const topPanel = document.getElementById(`${ConflictUtils.topPanelId}`)!;
-        const bottomPanel = document.getElementById(`${ConflictUtils.bottomPanelId}`)!;              
+    private resolveElements(){
+        this.resizer = document.querySelector(`${this.containerSelector} .resizer`) as HTMLElement;
+        this.bottomPanelContainer = document.querySelector<HTMLDivElement>(`${this.containerSelector} #${EnumHtmlIds.ConflictEditorBottomPanel}`)!;        
+        this.topPanelContainer = document.querySelector<HTMLDivElement>(`${this.containerSelector} .top-diff`)!;
+    }
 
-        if(!topPanel || !bottomPanel)
+    private handleDragging(){
+        if(!this.resizer)
             return;
-        ConflictUtils.initialiseData();
-        ConflictUtils.currentLineDivWidth = ((ConflictUtils.currentLines.filter(_=> _.text !== undefined).length)+"").length + 3;
-        ConflictUtils.previousLineDivWidth = ((ConflictUtils.incomingLines.filter(_=> _.text !== undefined).length)+"").length + 3;
+        let initialMousePositionY:number = null!;
 
-        const editorTopHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({
-            currentLines:ConflictUtils.currentLines,
-            currentLineDivWidth: ConflictUtils.currentLineDivWidth,
-            previousLines:ConflictUtils.incomingLines,
-            previousLineDivWidth:ConflictUtils.previousLineDivWidth,
+        const moveListener =(e:MouseEvent)=>{            
+            this.onResizeDisplacement = e.clientY-initialMousePositionY;
+            this.updateResizerPosition();
+        }
+
+        const selectListener = (e:Event) => {
+            e.preventDefault();
+            return false
+        };
+
+        const downListener = (e:MouseEvent)=>{
+            this.onResizeDisplacement = 0;
+            initialMousePositionY = e.clientY;
+            document.addEventListener("mousemove",moveListener);
+            document.addEventListener("mouseup",upListener);
+            document.addEventListener("selectstart",selectListener);
+         }
+
+        const upListener = ()=>{
+            document.removeEventListener("mousemove",moveListener);
+            document.removeEventListener("mouseup",upListener);
+            document.removeEventListener("selectstart",selectListener);
+            this.hightDisplacement -= this.onResizeDisplacement;
+            this.onResizeDisplacement = 0;
+        }
+        
+        this.resizer.addEventListener("mousedown",downListener);
+    }
+    
+    private updateResizerPosition(){
+        const getSign=(value:number)=>{
+            if(value < 0)
+                return "-";
+            return "+";
+        }
+        const displacement = this.hightDisplacement - this.onResizeDisplacement;
+        this.topPanelContainer!.style.height = `calc(50% ${getSign(-(displacement+3))}  ${Math.abs(displacement+3)}px)`;
+        this.bottomPanelContainer!.style.height = `calc(50% ${getSign(displacement)} ${Math.abs(displacement)}px)`;
+    }
+
+    updateTopDiffView(incomingLines:IConflictLine[], currentLines:IConflictLine[]){
+        this.incomingLines = incomingLines;
+        this.currentLines = currentLines;
+        const container = document.querySelector(`${this.containerSelector} .top-diff`);
+        const innerHtml = ReactDOMServer.renderToStaticMarkup(ConflictTopPanel({            
+            currentLines:this.currentLines,
+            previousLines:this.incomingLines
         }));
 
-        const editorBottomHtml = ReactDOMServer.renderToStaticMarkup(ConflictBottomPanel({
-            currentLines:ConflictUtils.currentLines,
-            previousLines:ConflictUtils.incomingLines,
-        }));
+        container!.innerHTML = innerHtml;
 
-        topPanel.innerHTML = editorTopHtml;
-        bottomPanel.innerHTML = editorBottomHtml;
+        this.HandleScrolling();
+        this.addTopPanelEventHandlers();
 
-        ConflictUtils.addEventHanlders();
-        ConflictUtils.HandleScrolling();
-        ConflictUtils.purgeEditorUi();
+        this.topLeftScrollContainer?.scrollTo({
+            top:this.bottomScrollContainer?.scrollTop,
+            left:this.bottomScrollContainer?.scrollLeft,
+        });
 
-        ConflictUtils.SetHeighlightedLines();
+        this.updateTopLabelCheckboxState();
+
+        this.SetHeighlightedLines();
     }
 
-    private static get topPanelElement(){
+    private get topPanelElement(){
         const conflictTop = document.querySelector(".conflict-diff") as HTMLDivElement;
         return conflictTop;
     }
 
-    private static get bottomPanelElement(){
+    private get bottomPanelElement(){
         const conflictBottom = document.querySelector(".conflict-bottom") as HTMLDivElement;
         return conflictBottom;
     }
 
-    private static get incomingCheckBoxes(){
+    private get incomingCheckBoxes(){
         const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .previous input");
         return checkboxes;
     }
 
-    private static get currentCheckBoxes(){
+    private get currentCheckBoxes(){
         const checkboxes = document.querySelectorAll<HTMLInputElement>(".conflict-diff .current input");
         return checkboxes;
     }
 
-    private static get acceptAllIncomingCheckBox(){
+    private get acceptAllIncomingCheckBox(){
         return document.querySelector(`#${EnumHtmlIds.accept_all_incoming}`) as HTMLInputElement;
     }
 
-    private static get acceptAllCurrentCheckBox(){
+    private get acceptAllCurrentCheckBox(){
         return document.querySelector(`#${EnumHtmlIds.accept_all_current}`) as HTMLInputElement;
     }
 
-    private static get acceptIncomingElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_incoming`);
+    private checkBoxesOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.incomingCheckBoxes : this.currentCheckBoxes;
     }
 
-    private static get acceptCurrentElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_current`);
+    private topCheckBoxOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.acceptAllIncomingCheckBox : this.acceptAllCurrentCheckBox;
     }
 
-    private static get acceptBothElems(){
-        return document.querySelectorAll<HTMLSpanElement>(`.accept_both`);
+    linesOfSide(side:EnumConflictSide){
+        return side === EnumConflictSide.Incoming ? this.incomingLines : this.currentLines;
     }
 
-    private static addEventHanlders(){
-        const conflictTop = ConflictUtils.topPanelElement;
-        const conflictBottom = ConflictUtils.bottomPanelElement;
-        conflictTop.addEventListener("mouseenter",()=>{
-            ConflictUtils.hoverTopPanel = true;
-            ConflictUtils.hoverBottomPanel = false;
-        })
-        conflictBottom.addEventListener("mouseenter",()=>{
-            ConflictUtils.hoverTopPanel = false;
-            ConflictUtils.hoverBottomPanel = true;
-        })
-        const acceptAllIncomingCheck = ConflictUtils.acceptAllIncomingCheckBox;
-        acceptAllIncomingCheck.addEventListener("change",(e)=>{
-            const checked = !!acceptAllIncomingCheck.checked;
-            const checkboxes = ConflictUtils.incomingCheckBoxes;
-            checkboxes.forEach(elem => {
-                if(elem.checked !== checked){
-                    elem.checked = checked;
-                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    ConflictUtils.updateConflictState(conflictNo);
-                }
+    get conflictCount(){
+        return (new Set(this.incomingLines.filter(x => !!x.conflictNo).map(x => x.conflictNo!))).size;
+    }
+
+    get resolvedCount(){
+        return (new Set(this.incomingLines.filter(x => !!x.conflictNo && x.taken !== undefined).map(x => x.conflictNo!))).size;
+    }
+
+    private addTopPanelEventHandlers(){
+        for(const side of [EnumConflictSide.Incoming, EnumConflictSide.Current]){
+            const topCheckBox = this.topCheckBoxOfSide(side);
+            topCheckBox?.addEventListener("change",()=>{
+                const checked = !!topCheckBox.checked;
+                const changedConflictNos:number[] = [];
+                const lines = this.linesOfSide(side).filter(x => !!x.conflictNo);
+                const conflictCount = this.conflictCount;
+                for(let i = 1; i <= conflictCount;i++){
+                    const accepted = lines.filter(x => x.conflictNo === i).some(x => x.taken);
+                    if(accepted !== checked){
+                        changedConflictNos.push(i);
+                    }
+                }                
+                if(changedConflictNos.length)
+                    this.acceptAllChanges(side, checked, changedConflictNos);
             });
-        })
 
-        const acceptAllCurrentCheck = ConflictUtils.acceptAllCurrentCheckBox;
-        acceptAllCurrentCheck.addEventListener("change",(e)=>{
-            const checked = !!acceptAllCurrentCheck.checked;
-            const checkboxes = ConflictUtils.currentCheckBoxes;
-            checkboxes.forEach(elem => {
-                if(elem.checked !== checked){
-                    elem.checked = checked;
-                    const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                    ConflictUtils.updateConflictState(conflictNo);
-                }
-            });
-        })
-
-        const incomingCheckBoxes = ConflictUtils.incomingCheckBoxes;
-        incomingCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                ConflictUtils.updateTopLabelIncomingCheckboxState();
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.updateConflictState(conflictNo);
-            })
-        })
-
-        const currentCheckBoxes = ConflictUtils.currentCheckBoxes;
-        currentCheckBoxes.forEach(elem=>{
-            elem.addEventListener("change",(e)=>{
-                ConflictUtils.updateTopLeveCurrentCheckboxState();
-                const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.updateConflictState(conflictNo);
-            })
-        })
-
-        ConflictUtils.acceptIncomingElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptIncoming(conflictNo);
-            })
-        })
-
-        ConflictUtils.acceptCurrentElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptCurrent(conflictNo);
-            })
-        })
-
-        ConflictUtils.acceptBothElems.forEach(elem=>{
-            elem.addEventListener("click",()=>{
-                const conflictNo  = Number(UiUtils.resolveValueFromId(elem.id));
-                ConflictUtils.handleAcceptCurrent(conflictNo);
-                ConflictUtils.handleAcceptIncoming(conflictNo);
-            })
-        })
-
-    }
-
-    private static handleAcceptIncoming(conflictNo:number){
-        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        checkBoxes.incomingCheckBox.checked = true;        
-        ConflictUtils.updateTopLabelIncomingCheckboxState();        
-        ConflictUtils.updateConflictState(conflictNo);
-    }
-
-    private static handleAcceptCurrent(conflictNo:number){
-        const checkBoxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        checkBoxes.currentCheckBoxe.checked = true;        
-        ConflictUtils.updateTopLeveCurrentCheckboxState();        
-        ConflictUtils.updateConflictState(conflictNo);
-    }
-
-    private static getIncomingCheckboxByConflict(conflictNo:number){
-        return document.querySelector(`#${EnumConflictSide.Incoming}_${conflictNo}`) as HTMLInputElement;
-    }
-
-    private static getCurrentCheckboxByConflict(conflictNo:number){
-        return document.querySelector(`#${EnumConflictSide.Current}_${conflictNo}`) as HTMLInputElement;
-    }
-
-    private static getCurrentLineElementsByConflict(conflictNo:number){
-        return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Current}_${conflictNo}`);
-    }
-
-    private static getIncomingLineElementsByConflict(conflictNo:number){
-        return document.querySelectorAll<HTMLParagraphElement>(`.${EnumConflictSide.Incoming}_${conflictNo}`);
-    }
-
-    private static getCheckboxesByConflict(conflictNo:number){
-        const incomingCheckBox = ConflictUtils.getIncomingCheckboxByConflict(conflictNo);
-        const currentCheckBoxe = ConflictUtils.getCurrentCheckboxByConflict(conflictNo);
-        return {incomingCheckBox,currentCheckBoxe};
-    }
-
-    private static getContentLinesByConflict(conflictNo:number){
-        const incomingLines = document.querySelectorAll(`.incoming.content.conflictNo_${conflictNo}`);
-        const currentLines = document.querySelectorAll(`.current.content.conflictNo_${conflictNo}`);
-        return {
-            incomingLines,
-            currentLines
-        }
-    }
-
-    private static updateTopPanelState(conflictNo:number){
-        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        const currentLineElements = ConflictUtils.getCurrentLineElementsByConflict(conflictNo);
-        const incomingLineElements = ConflictUtils.getIncomingLineElementsByConflict(conflictNo);
-        if(checkboxes.currentCheckBoxe.checked){
-            currentLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-current-change","text-decoration-line-through"));
-            currentLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));
-        }
-        else if(!checkboxes.currentCheckBoxe.checked){
-            currentLineElements.forEach(elem=> elem.classList.add("bg-fade","text-decoration-line-through"));
-            currentLineElements.forEach(elem=> elem.classList.remove("bg-current-change","bg-change-accepted"));
-        }
-
-        if(checkboxes.incomingCheckBox.checked){
-            incomingLineElements.forEach(elem=> elem.classList.remove("bg-fade","bg-previous-change","text-decoration-line-through"));
-            incomingLineElements.forEach(elem=> elem.classList.add("bg-change-accepted"));            
-        }
-        else if(!checkboxes.incomingCheckBox.checked){
-            incomingLineElements.forEach(elem=> elem.classList.add("bg-fade","text-decoration-line-through"));
-            incomingLineElements.forEach(elem=> elem.classList.remove("bg-previous-change","bg-change-accepted"));
-        }
-    }
-
-    private static moveDownIncomingChange(conflictNo:number){
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
-        if(!contentLines.incomingLines.length)
-            return;
-        const firstItem = contentLines.incomingLines.item(0);
-        contentLines.currentLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
-        firstItem.classList.add("border-top");
-    }
-
-    private static moveDownCurrentChange(conflictNo:number){
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
-        if(!contentLines.currentLines.length)
-            return;
-        const firstItem = contentLines.currentLines.item(0);
-        contentLines.incomingLines.forEach(elem=> firstItem.parentNode!.insertBefore(elem,firstItem));
-        firstItem.classList.add("border-top");
-    }
-
-    private static updateBottomPanelState(conflictNo:number){
-        let action = ConflictUtils.actionsTaken.find(_=> _.conflictNo === conflictNo);
-        let newAction = false;
-        if(!action){
-            action = {
-                conflictNo,
-                taken:[]
-            };
-            ConflictUtils.actionsTaken.push(action);
-            newAction = true;
-        }
-        
-        const bottomPanel = ConflictUtils.bottomPanelElement;        
-            
-        const checkboxes = ConflictUtils.getCheckboxesByConflict(conflictNo);
-        const markers = document.querySelectorAll(`.marker.conflictNo_${conflictNo}`);
-        markers.forEach(elm=> elm.parentNode!.removeChild(elm));
-        
-        const lineContainer = bottomPanel.querySelector('.line-container')!;
-        if(newAction){
-            const nonLineNumberElems = lineContainer.querySelectorAll(`.noLine.conflictNo_${conflictNo}`);
-            nonLineNumberElems.forEach(elm => elm.parentNode!.removeChild(elm));
-            const lastLineElem = lineContainer.querySelector(`.lineNo:last-child`);
-            lastLineElem?.parentNode?.removeChild(lastLineElem);
-        }        
-        
-        if(newAction){            
-            lineContainer.removeChild(lineContainer.lastChild!);
-            lineContainer.removeChild(lineContainer.lastChild!);
-        }
-
-        const contentLines = ConflictUtils.getContentLinesByConflict(conflictNo);
-        const incomingContentLines = contentLines.incomingLines;
-        //const lineNumberParent = bottomPanel.querySelector('.lineNo')?.parentElement!;
-        if(checkboxes.incomingCheckBox.checked){
-            if(!action.taken.includes(EnumConflictSide.Incoming)){
-                action.taken.push(EnumConflictSide.Incoming);
-                if(!newAction){
-                    incomingContentLines.forEach(_=>{
-                        lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
-                    })
-                }
-            }
-            incomingContentLines.forEach(elem => {
-                elem.classList.remove("d-none","bg-previous-change");
-                elem.classList.add("bg-change-accepted");                
-            });
-        }
-        else{
-            if(action.taken.includes(EnumConflictSide.Incoming) || newAction){
-                const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
-                const lineElemLen = lineElems.length;
-                let i = 1;
-                incomingContentLines.forEach((_)=>{
-                    lineElems.item(lineElemLen-i).classList.add('d-none');
-                    i++;
-                })                
-            }            
-            action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Incoming);
-            incomingContentLines.forEach(elem=> elem.classList.add("d-none"));
-        }
-
-        const currentContentLines = contentLines.currentLines;
-        if(checkboxes.currentCheckBoxe.checked){
-            if(!action.taken.includes(EnumConflictSide.Current)){
-                action.taken.push(EnumConflictSide.Current);
-                if(!newAction){
-                    currentContentLines.forEach(_=>{
-                        lineContainer.querySelector('.d-none.lineNo')?.classList.remove('d-none');
-                    })
-                }
-            }
-            currentContentLines.forEach(elem=> {
-                elem.classList.remove("d-none","bg-current-change");
-                elem.classList.add("bg-change-accepted");
-            });
-        }
-        else{
-            if(action.taken.includes(EnumConflictSide.Current) || newAction){
-                const lineElems = lineContainer.querySelectorAll('.lineNo:not(.d-none)');
-                const lineElemLen = lineElems.length;
-                let i = 1;
-                currentContentLines.forEach((_)=>{
-                    lineElems.item(lineElemLen-i).classList.add('d-none');
-                    i++;
+            this.checkBoxesOfSide(side).forEach(elem=>{
+                elem.addEventListener("change",()=>{
+                    const conflictNo = Number(UiUtils.resolveValueFromId(elem.id));
+                    this.acceptChange(conflictNo, side, !!elem.checked);
                 })
-            }  
-            action.taken = action.taken.filter(_ => _ !== EnumConflictSide.Current);
-            currentContentLines.forEach(elem=> elem.classList.add("d-none"));
-        }
-
-        if(action.taken.length === 2){
-            if(action.taken[1] === EnumConflictSide.Current)
-                ConflictUtils.moveDownCurrentChange(conflictNo);
-            else
-                ConflictUtils.moveDownIncomingChange(conflictNo);
+            })
         }
     }
 
-    static dispatchResolvedCount = (resolvedConflict:number)=>{}
-
-    private static updateConflictState(conflictNo:number){
-        ConflictUtils.updateTopPanelState(conflictNo);
-        ConflictUtils.updateBottomPanelState(conflictNo);
-        ConflictUtils.dispatchResolvedCount(ConflictUtils.Actions.length);
-        //ReduxUtils.dispatch(ActionConflict.updateData({}))
+    private addEventHanlders(){
+        this.addTopPanelEventHandlers();
     }
 
-    private static updateTopLabelIncomingCheckboxState(){
-        const topLevelCheckBox = ConflictUtils.acceptAllIncomingCheckBox;
-        const checkboxes = ConflictUtils.incomingCheckBoxes;
-        let selectionCount = 0;
-        checkboxes.forEach(_=>{
-            if(_.checked)
-                selectionCount++;
-        });
 
-        if(selectionCount === checkboxes.length){
-            topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;            
-        }
-        else if(selectionCount > 0){
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = true;
-        }
-        else{
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = false;
-        }
+    private updateTopLabelCheckboxState(){
+        const incomingCheckBox = this.acceptAllIncomingCheckBox;
+        
+        if(incomingCheckBox.checked)
+            return;
+
+        if(this.incomingLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            incomingCheckBox.indeterminate = true;
+
+        const currentCheckbox = this.acceptAllCurrentCheckBox;
+        if(currentCheckbox.checked)
+            return;
+
+        if(this.currentLines.filter(x => !!x.conflictNo).some(x => !!x.taken))
+            currentCheckbox.indeterminate = true;
     }
 
-    private static updateTopLeveCurrentCheckboxState(){
-        const topLevelCheckBox = ConflictUtils.acceptAllCurrentCheckBox;
-        const checkboxes = ConflictUtils.currentCheckBoxes;
-        let selectionCount = 0;
-        checkboxes.forEach(_=>{
-            if(_.checked)
-                selectionCount++;
-        });
 
-        if(selectionCount === checkboxes.length){
-            topLevelCheckBox.checked = true;
-            topLevelCheckBox.indeterminate = false;            
-        }
-        else if(selectionCount > 0){
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = true;
-        }
-        else{
-            topLevelCheckBox.checked = false;
-            topLevelCheckBox.indeterminate = false;
-        }
+    get totalChangeCount(){
+        return this.heighlightedLineIndexes.length;
     }
 
-    private static purgeEditorUi(){
-        const elem = document.querySelector('.check_all_incoming') as HTMLElement;
-        if(elem)
-            elem.style.width = `${ConflictUtils.previousLineDivWidth}ch`;
-        const elem2 = document.querySelector('.check_all_current') as HTMLElement;
-        if(elem2)
-            elem2.style.width = `${ConflictUtils.currentLineDivWidth}ch`;
-
+    GetEditorScrollRatio(){
+        const container = this.bottomScrollContainer;
+        if(!container)
+            return 0;
+        const scrollableHeight = container.scrollHeight - container.clientHeight;
+        if(scrollableHeight <= 0)
+            return 0;
+        return container.scrollTop / scrollableHeight;
     }
 
-    static get totalChangeCount(){
-        return ConflictUtils.heighlightedLineIndexes.length;
-    }
+    private HandleScrolling(){
+        const topPanel = this.topPanelElement;
 
-    private static HandleScrolling(){
-        const topPanel = ConflictUtils.topPanelElement;
+        const bottomPanel = this.bottomPanelElement?.querySelector(".content-container") as HTMLElement;
+        this.bottomScrollContainer = bottomPanel;
+        const bottomPanelLine = this.bottomPanelElement?.parentElement?.querySelector(".line_numbers") as HTMLElement;
 
-        const bottomPanel = ConflictUtils.bottomPanelElement.querySelector(".content") as HTMLElement;
-        const bottomPanelLine = ConflictUtils.bottomPanelElement.querySelector(".line-container") as HTMLElement;
-                
         const topLeftPanel = topPanel.querySelector(".previous .content") as HTMLElement;
+        this.topLeftScrollContainer = topLeftPanel;
         const topLeftNumberPanel = topPanel.querySelector(".previous .line_numbers") as HTMLElement;
         const topRightPanel = topPanel.querySelector(".current .content") as HTMLElement;
         const topRightNumberPanel = topPanel.querySelector(".current .line_numbers") as HTMLElement;
 
-        
-        if(!bottomPanel || !bottomPanelLine || !topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
+
+        if(!topLeftPanel || !topRightPanel || !topLeftNumberPanel || !topRightNumberPanel)
             return;
         
-        const group = [topLeftPanel, topRightPanel,bottomPanel,topRightNumberPanel,topRightNumberPanel,topLeftNumberPanel,bottomPanelLine];        
+        const group = [topLeftPanel, topRightPanel,topRightNumberPanel,topLeftNumberPanel];
+        if(bottomPanel) group.push(bottomPanel);
+        if(bottomPanelLine) group.push(bottomPanelLine);
 
-        let handler = (e:Event)=>{
-            console.log("handling scroll.");            
+        if(this.scrollHandler){
+            topLeftPanel.removeEventListener("scroll", this.scrollHandler);
+            topRightPanel.removeEventListener("scroll",this.scrollHandler);
+            bottomPanel?.removeEventListener("scroll",this.scrollHandler);
+        }
+        
+
+        this.scrollHandler = (e:Event)=>{
             const target = e.target as HTMLElement;
-            const scrollElems = group.filter(elem => elem != target);            
+            const scrollElems = group.filter(elem => elem != target);
             for(let elem of scrollElems){
                 elem.scrollTo({
                     top:target.scrollTop,
                     left:target.scrollLeft,
                 })
-            }            
+            }
         }
-    
-        topLeftPanel.addEventListener("scroll",handler);
-        topRightPanel.addEventListener("scroll",handler);
-        bottomPanel.addEventListener("scroll",handler);
+
+        topLeftPanel.addEventListener("scroll",this.scrollHandler);
+        topRightPanel.addEventListener("scroll",this.scrollHandler);
+        bottomPanel?.addEventListener("scroll",this.scrollHandler);
     }
 
-    private static SetHeighlightedLines(){
-        ConflictUtils.heighlightedLineIndexes = [];
-        let lastItemHightlighted = false;        
-        const lenght = ConflictUtils.currentLines?.length || ConflictUtils.incomingLines?.length || 0;
+    private SetHeighlightedLines(){
+        this.heighlightedLineIndexes = [];
+        let lastItemHightlighted = false;
+        const lenght = this.currentLines?.length || this.incomingLines?.length || 0;
         for(let i = 0;i < lenght; i++){
-            if(ConflictUtils.currentLines?.[i].hightLightBackground || ConflictUtils.incomingLines?.[i].hightLightBackground){
+            if(this.currentLines?.[i].hightLightBackground || this.incomingLines?.[i].hightLightBackground){
                 if(!lastItemHightlighted) {
-                    ConflictUtils.heighlightedLineIndexes.push(i);
+                    this.heighlightedLineIndexes.push(i);
                     lastItemHightlighted = true;
                 }
             }
@@ -599,14 +623,22 @@ export class ConflictUtils{
         }
     }
 
-    static FocusHightlightedLine(step:number){
+    FocusHightlightedLine(step:number){
         if(!step)
             return;
-        const container = document.querySelector("#"+ConflictUtils.topPanelId);
-        if(!ConflictUtils.heighlightedLineIndexes.length)
+        const container = document.querySelector("#"+this.topPanelId);
+        if(!this.heighlightedLineIndexes.length)
             return;
-        const focusElem = container?.querySelector('.content')?.children[ConflictUtils.heighlightedLineIndexes[step-1]];
+        const focusElem = container?.querySelector('.content')?.children[this.heighlightedLineIndexes[step-1]];
         focusElem?.scrollIntoView({block:"center"});
 
+    }
+
+    ClearView(){
+        const topPanel = document.getElementById(`${this.topPanelId}`);
+        if(topPanel)
+            topPanel.innerHTML = "";
+        this.file = undefined;
+        this.heighlightedLineIndexes = [];
     }
 }

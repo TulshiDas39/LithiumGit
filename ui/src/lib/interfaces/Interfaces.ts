@@ -9,3 +9,14 @@ export interface IContextItem{
     onClick:()=>void;
     icon?:JSX.Element;
 }
+
+export interface IResult<T>{
+    result?: T;
+    error?: string;
+}
+
+export interface IConflictPosition{
+    conflictNo:number;
+    afterLineIndex:number;
+    beforeLineIndex:number;
+}

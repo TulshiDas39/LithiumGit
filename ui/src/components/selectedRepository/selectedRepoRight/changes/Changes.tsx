@@ -6,7 +6,7 @@ import { EnumChangeGroup, EnumHtmlIds, EnumSelectedRepoTab, useMultiState } from
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { CommitBox } from "./CommitBox";
 import { ChangesTabPane } from "./ChangesTabPane";
-import { ConflictEditor } from "./ConflictEditor";
+import { ConflictView } from "./ConflictView";
 import { ActionChanges } from "../../../../store";
 import { ChangesData } from "../../../../lib/data/ChangesData";
 import { RebaseActionBox } from "./RebaseActionBox";
@@ -33,23 +33,16 @@ function ChangesComponent() {
     }),shallowEqual);
 
     const dispatch = useDispatch();
-    const changeUtils = ChangesData.changeUtils;
 
     const dragData = useRef({ initialX: 0, currentX: 0 });
 
     useEffect(()=>{
-         dispatch(ActionChanges.updateData({selectedFile:undefined,currentStep:0,totalStep:0}));
+         dispatch(ActionChanges.clearFileSelection());
     },[store.repoInfo?.path]);
 
     useEffect(()=>{
         setState({differenceRefreshKey:Date.now()})
     },[store.focusVersion])
-
-    const checkForDiifClear=()=>{
-        const file = changeUtils.file!;
-        if(!!file && !store.selectedFile)
-            changeUtils.ClearView();        
-    }
 
     useEffect(()=>{
         if(!store.selectedFile || !store.status) return;
@@ -57,13 +50,15 @@ function ChangesComponent() {
         const existInStatus = changedFiles.some(x=> x.path === store.selectedFile?.path 
             && x.changeType === store.selectedFile.changeType 
             && x.changeGroup === store.selectedFile.changeGroup);
-        if(!existInStatus)
-            dispatch(ActionChanges.updateData({selectedFile:undefined}));        
+        if(!existInStatus){
+            ChangesData.changeEditor?.destroy();
+            ChangesData.stagedEditor?.destroy();
+            ChangesData.changeUtils?.ClearView();
+            ChangesData.changeEditor = undefined!;
+            ChangesData.stagedEditor = undefined!;
+            dispatch(ActionChanges.clearFileSelection());
+        }
     },[store.status,store.selectedFile])
-
-    useEffect(()=>{
-        checkForDiifClear();
-    },[store.selectedFile])
 
     const getAdjustedSize = (adjustedX: number) => {
         if (adjustedX > 0) return `+ ${adjustedX}px`;
@@ -91,6 +86,8 @@ function ChangesComponent() {
     useEffect(()=>{        
         return ()=>{
             dispatch(ActionChanges.updateData({currentStep:0}));
+            ChangesData.changeEditor?.destroy();
+            ChangesData.stagedEditor?.destroy();
         }
     },[])
 
@@ -109,7 +106,7 @@ function ChangesComponent() {
             {getActionBox()}
             <ChangesTabPane  />
         </div>
-        <div className="bg-info cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
+        <div className="bg-second-color cur-resize" onMouseDown={handleMoseDown} style={{ width: '3px' }} />
 
         <div className="ps-2" style={{ width: `calc(80% - 3px ${getAdjustedSize(-state.adjustedX)})` }}>            
 
@@ -117,7 +114,7 @@ function ChangesComponent() {
 
             </div>}
             {store.selectedFile?.changeType === EnumChangeType.CONFLICTED &&
-                <ConflictEditor />
+                <div id={EnumHtmlIds.conflictview_container} className="h-100"></div>
             }
         </div>
     </div>

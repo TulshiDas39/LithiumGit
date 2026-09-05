@@ -1,6 +1,6 @@
 {
   "name": "lithiumgit",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A git gui application",
   "scripts": {
     "genereate_build_info": "node scripts/generateBuildInfo.js",
@@ -44,6 +44,7 @@
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-updater": "^6.7.3",
     "fs-extra": "^11.3.3",
+    "iconv-lite": "^0.7.2",
     "istextorbinary": "^9.5.0",
     "nedb": "^1.8.0",
     "simple-git": "^3.30.0"

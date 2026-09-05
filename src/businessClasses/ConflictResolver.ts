@@ -1,4 +1,4 @@
-import { IActionTaken, EnumConflictSide } from 'common_library';
+import { IActionTaken, EnumConflictSide, EnumLinefeed } from 'common_library';
 import * as fs from 'fs';
 import { FileManager } from './FileManager';
 
@@ -9,7 +9,7 @@ export class ConflictResolver{
     private readonly separator = "=======";
 
     async resolveConflict(path: string, actions: IActionTaken[]) {
-        const lines = await this.getLines(path);
+        const { lines, lineFeedType,encoding } = await this.getLines(path);
         if(actions.length === 1 && actions[0].conflictNo === -1){
             if(actions[0].taken[0] === EnumConflictSide.Incoming){
                 this.acceptAllIncomingChanges(lines);
@@ -21,8 +21,8 @@ export class ConflictResolver{
         else{
             this.updateLines(actions,lines);
         }
-        const content = lines.join("\n");
-        await new FileManager().writeToFile(path,content);
+        const content = lines.join(lineFeedType);
+        await new FileManager().replaceFileContent(path,content,encoding);
     }
 
     private acceptAllIncomingChanges(lines: string[]) {
@@ -126,17 +126,30 @@ export class ConflictResolver{
         return line === this.separator;
     }
 
-    private getLines(path: string){
-        return new Promise<string[]>((res)=>{
-            fs.readFile(path,{encoding:"utf8"},(err,data) => {
-                if(!err){
-                    const lines = data.split(/\n/g);
-                    res(lines);
-                }
-                else{
-                    res([]);
-                }
-            })
-        })
+    private async getLines(path: string){
+        const fm = new FileManager();
+        const encoding = await fm.detectFileEncoding(path);
+        const content = await fm.getFileContentRaw(path,encoding);        
+
+        const parts = content.split(/(\r\n|\r|\n)/) || [];
+        let lfCount = 0;
+        let crlfCount = 0;
+        const lines:string[] = [];
+        for(let i=0;i<parts.length;i=i+2){
+            lines.push(parts[i]);
+            if(parts[i+1] === "\r\n"){
+                crlfCount++;
+            }else if(parts[i+1] === "\n"){
+                lfCount++;
+            }
+        }
+
+        let lineFeedType = EnumLinefeed.CRLF;
+
+        if(!!lfCount || !!crlfCount){
+            lineFeedType = crlfCount > lfCount ? EnumLinefeed.CRLF : EnumLinefeed.LF;
+        }
+
+        return {lines, lineFeedType,encoding};
     }
 }

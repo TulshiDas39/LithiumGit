@@ -2,7 +2,7 @@ import React, { Fragment, useCallback, useEffect } from "react";
 import { SingleCommit } from "./SingleCommit";
 import { ICommitInfo, ILogFilterOptions } from "common_library";
 import { Paginator } from "../../../common";
-import { RepoUtils, useMultiState } from "../../../../lib";
+import { EnumSelectedRepoTab, RepoUtils, useMultiState } from "../../../../lib";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual } from "react-redux";
@@ -29,6 +29,7 @@ function CommitListComponent(props:IProps){
 
     const store = useSelectorTyped(state=>({
         repo:state.savedData.recentRepositories.find(_=>_.isSelected)?.path,
+        show:state.ui.selectedRepoTab === EnumSelectedRepoTab.COMMITS,
     }),shallowEqual);
 
     const [state,setState] = useMultiState<IState>({
@@ -41,6 +42,10 @@ function CommitListComponent(props:IProps){
     });
 
     useEffect(()=>{
+        if(!store.show){
+            return;
+        }
+        console.log('fetching commits');
         const filterOptions:ILogFilterOptions = {
             pageIndex:state.pageIndex,
             pageSize:state.pageSize,            
@@ -59,7 +64,7 @@ function CommitListComponent(props:IProps){
             setState({commits:result.list,total:result.count,loading:false});            
         });
         
-    },[state.pageIndex,state.pageSize,props.searchText,props.selectedBranch,state.refreshKey]);
+    },[state.pageIndex,state.pageSize,props.searchText,props.selectedBranch,state.refreshKey,store.show]);
 
     useEffect(()=>{
         RepoUtils.enSureUpdate(store.repo!).then((r)=>{

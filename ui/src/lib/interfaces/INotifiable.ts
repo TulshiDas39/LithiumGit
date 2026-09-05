@@ -1,4 +1,4 @@
 export interface INotifiable<T>{
-    subscribe:(callback:(val:T)=>void)=>void;
-    unSubscribe:(callback:(val:T)=>void)=>void;
+    subscribe:(callback:(silent:boolean)=>void)=>void;
+    unSubscribe:(callback:(silent:boolean)=>void)=>void;
 }

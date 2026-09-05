@@ -7,3 +7,19 @@ export interface IFileProps{
     sizeKB:number;
     path:string;
 }
+
+export interface IChange{
+    startlineIndex:number;
+    endlineIndex:number;
+    startOffset:number;
+    endOffset:number;
+    text:string;
+    replaceAll?:boolean;
+}
+
+export interface IAppData{
+    dataPath:string;
+    tempPath:string;
+    encodingList:string[];
+    isGitInstalled:boolean;
+}

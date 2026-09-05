@@ -3,9 +3,11 @@ import { INotifiable } from "../interfaces";
 export class Notifier<T> implements INotifiable<T>{
     protected _prevVal?:T;
     protected _val:T;
-    protected events:((val: T) => void)[]=[];
+    protected events:((silent:boolean) => void)[]=[];
+    private _defaultVal:T;
     constructor(value:T){
         this._val = value;
+        this._defaultVal = value;
     }    
     get value(){
         return this._val;
@@ -20,16 +22,21 @@ export class Notifier<T> implements INotifiable<T>{
         return this._prevVal;
     }
 
-    public notifyAll(){
-        this.events.forEach(f => f(this._val));
+    public notifyAll(silent:boolean=false){
+        this.events.forEach(f => f(silent));
     }
 
-    subscribe(callback: (val: T) => void){
+    subscribe(callback: (silent:boolean) => void){
         if(!this.events.includes(callback))
             this.events.push(callback);
         return this;
     }
-    unSubscribe(callback: (val: T) => void) {
+    unSubscribe(callback: (silent:boolean) => void) {
         this.events = this.events.filter( v =>  v != callback);
+    }
+
+    reset(){
+        this._val = this._defaultVal;
+        this.notifyAll(true);
     }
 }

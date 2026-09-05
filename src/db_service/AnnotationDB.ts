@@ -4,7 +4,7 @@ import { DBPath } from "./db_service";
 
 export class AnnotationDB extends BaseDB<Annotation>{
     constructor(){
-        super(DBPath.annotation);
+        super(DBPath.annotation());
     }
 
     GetByRepository(repoId:string){

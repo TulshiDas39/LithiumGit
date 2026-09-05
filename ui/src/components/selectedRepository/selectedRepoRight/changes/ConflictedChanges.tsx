@@ -1,6 +1,6 @@
 import { EnumConflictSide, IActionTaken, IFile, RepositoryInfo } from "common_library";
 import React, { useEffect, useRef } from "react"
-import { ConflictUtils, EnumHtmlIds, EnumModals, UiUtils, useMultiState } from "../../../../lib";
+import { ChangesData, EnumHtmlIds, EnumModals, RepoUtils, UiUtils, useMultiState } from "../../../../lib";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { shallowEqual, useDispatch } from "react-redux";
 import { ActionChanges, ActionModals } from "../../../../store";
@@ -9,6 +9,7 @@ import { FaEllipsisH } from "react-icons/fa";
 import { Dropdown } from "react-bootstrap";
 import { IpcUtils } from "../../../../lib/utils/IpcUtils";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
+import { ConflictEditor } from "../../../../lib/utils/editors";
 
 interface ISingleFileProps{
     item:IFile
@@ -37,28 +38,25 @@ interface IProps{
 }
 
 interface IState{
-
 }
+
+const editorContainer = "#"+EnumHtmlIds.conflictview_container;
 
 function ConflictedChangesComponent(props:IProps){
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile,
+        appFocusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
     
-    const [state,setState] = useMultiState<IState>({});
     const dispatch = useDispatch();
 
     const headerRef = useRef<HTMLDivElement>(null);
-    const refData = useRef({fileContentAfterChange:[] as string[]});
-
-    useEffect(()=>{
-        ConflictUtils.resetData();
-    },[])
+    const refData = useRef({fileContentAfterChange:[] as string[],isMounted:false});
 
     const handleSelect = (file?:IFile)=>{
         if(store.selectedFile?.path === file?.path)
             return ;
-        if(ConflictUtils.Actions.length){
+        if(ChangesData.conflictEditor?.IsDocChanged()){
             ModalData.confirmationModal.message = "Your changes will be discarded. Do you want to leave?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionChanges.updateData({selectedFile:file,currentStep:0,totalStep:0}));                
@@ -119,6 +117,48 @@ function ConflictedChangesComponent(props:IProps){
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         
     }
+
+    const clearEditor = ()=>{
+        if(ChangesData.conflictEditor){
+            ChangesData.conflictEditor.destroy();
+            ChangesData.conflictEditor = undefined!;
+        }
+    }
+
+    useEffect(()=>{
+        if(!refData.current.isMounted)
+            return ;
+
+        clearEditor();
+        
+        if(!store.selectedFile){
+            return ;
+        }                    
+        const editor = new ConflictEditor(editorContainer);
+        ChangesData.conflictEditor = editor;
+        editor.renderFile(store.selectedFile).then(success=>{            
+            if(!success){
+                ModalData.appToast.message = "There was an error reading the content.";
+                dispatch(ActionModals.showToast());
+            }else{
+                dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.conflictEditor!.totalChangeCount,silentStepUpdate:false}));
+            }
+        });        
+    },[store.selectedFile])
+
+    useEffect(()=>{
+        if(!store.selectedFile || !refData.current.isMounted)
+            return;
+        ChangesData.conflictEditor?.checkForFileUpdate();
+    },[store.appFocusVersion])
+    
+
+    useEffect(()=>{
+        refData.current.isMounted = true;
+        return ()=>{
+            refData.current.isMounted = false;
+        }
+    },[])
     
     return <div className="h-100" id={EnumHtmlIds.conflictedChangesPanel}>
     <div ref={headerRef as any} className="d-flex justify-content-end py-1" style={{height:40}}

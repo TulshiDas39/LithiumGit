@@ -4,7 +4,7 @@ import { DBPath } from "./db_service";
 
 export class NotificationDB extends BaseDB<INotification>{
     constructor(){
-        super(DBPath.notification);
+        super(DBPath.notification());
     }
 
     async addNotificationForNewUpdate(data:INewVersionInfo){

@@ -1,4 +1,6 @@
+import { FaCheck, FaUndo } from "react-icons/fa";
 import { DiffUtils, ILine } from "../../../../lib";
+import { AppButton } from "../../../common";
 
 interface ISingleDiffProps{
     line:ILine;    
@@ -65,17 +67,23 @@ export function DiffView(props:IProps){
         return elems;
     }
     const lineDivWidth = ((props.lines.filter(_=> _.text !== undefined).length)+"").length + 2;
-    return <div className="d-flex w-100 h-100">
-        <div className="noselect line_numbers overflow-hidden h-100" style={{width:lineDivWidth+"ch"}}>
+    return <div className="d-flex w-100 h-100 position-relative diff-view">
+        {props.changeType === "current" && <div className="discard-hunk position-absolute d-none bg-previous-change-deep px-1" title="Discard this change"><FaUndo className="" /></div>}
+        <div className="noselect line_numbers overflow-y-hidden h-100" style={{width:lineDivWidth+"ch"}}>
             {getLineElems()}
         </div>
-        <div className="w-100 h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>
-            <div className="ps-1 content">
+        <div className="h-100 content-container overflow-auto" style={{width:`calc(100% - ${lineDivWidth}ch)`}}>
+            <div className="ps-1 content fit-content min-w-100">
                 {props.lines.map((l, i)=>(
                     <SingleDiff key={i} line={l} backGroupColorCss={`bg-${props.changeType}-change`} forGroupColorCss={`bg-${props.changeType}-change-deep`} maxLineWidth={editorWidth}  />
                 ))}
-            </div>
+            </div>            
         </div>
-        
+        {props.changeType === "current" && <div className="position-absolute save-btn-container d-none">
+                <AppButton type="success" className="h-100 w-100 py-2 btn-save">
+                    <span className="">Save</span>                    
+                </AppButton>
+            </div>}
     </div>
 }
+

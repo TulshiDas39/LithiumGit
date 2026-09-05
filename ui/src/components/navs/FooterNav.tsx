@@ -1,15 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../store/rootReducer";
-import { FaAdjust, FaCopy, FaRegBell, FaSpinner } from "react-icons/fa";
+import { FaAdjust, FaCopy, FaSpinner } from "react-icons/fa";
 import { Overlay, ProgressBar } from "react-bootstrap";
 import { ActionModals, ActionSavedData } from "../../store";
-import { EnumTheme, IRemoteInfo } from "common_library";
-import { EnumModals, IContextItem, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { EnumChangeGroup, EnumLinefeed, EnumTheme, IRemoteInfo } from "common_library";
+import { Data, DataUtils, EnumModals, EnumSelectedRepoTab, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { IpcUtils } from "../../lib/utils/IpcUtils";
 import { ModalData } from "../modals/ModalData";
 import { Notifications } from "./notification";
 import icon from "../../assets/img/icon_green.png";
+import { ActionUI } from "../../store/slices/UiSlice";
 
 interface IState{
     remote?:IRemoteInfo;
@@ -121,7 +122,7 @@ function FooterNavComponent(){
                 )}
             </div>            
         </div>      
-        <div className="col-6 text-center">
+        <div className="col-5 text-center">
             <div className="d-flex align-items-center">
                 <div className="text-center">                
                         {!!store.loader?.length && <ProgressBar className="" style={{width:300}} animated now={100} variant="success" key={1} label="" />}                
@@ -132,7 +133,9 @@ function FooterNavComponent(){
             </div>            
         </div>
         
-        <div className="col-1 d-flex align-items-center justify-content-end">            
+        <div className="col-2 d-flex align-items-center justify-content-end">
+            <EncodingSelection />
+            <CrlfSelection />
             <span className="pe-2 d-flex align-items-center">
                 <FaAdjust title={`Switch to ${store.theme === EnumTheme.Dark?"light":"dark"} theme`} className="hover" onClick={()=> handleThemeClick()}/>
             </span>
@@ -144,3 +147,196 @@ function FooterNavComponent(){
 }
 
 export const FooterNav = React.memo(FooterNavComponent);
+
+//TODO: investigate why this comonent is rendering on every click on document.
+function CrlfSelectionComponent(){
+    const store = useSelectorTyped(state=>({
+        lfType: state.ui.lfType,
+        lfTypeChangeDisabled: state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED,
+        selectedTab:state.ui.selectedRepoTab,
+    }),shallowEqual);
+
+    const dispatch = useDispatch();
+    const optionTarget = useRef(null);
+    const [state,setState] = useMultiState<{showOptions?:boolean}>({});
+
+    const handleOptionClick = (type:EnumLinefeed)=>{
+        if(store.lfTypeChangeDisabled)
+            return;
+        if(type === store.lfType)
+            return;
+        ModalData.confirmationModal.message  = `Are you sure you want to switch line feed type to '${type === EnumLinefeed.CRLF? "CRLF":"LF"}'?`;
+        ModalData.confirmationModal.YesHandler = ()=>{
+            dispatch(ActionUI.setLinefeedType(type));
+            if(store.selectedTab === EnumSelectedRepoTab.CHANGES){
+                DataUtils.handleLFTypeChangeOfModifiedFile();
+            }
+        };
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        setState({showOptions:false});
+    }
+
+    const refData = useRef({hoverTarget:false});    
+
+    useEffect(()=>{
+        const hideOptions = ()=>{
+            if(refData.current.hoverTarget)
+                return;
+            setState({showOptions:false});
+        }
+        document.addEventListener("click",hideOptions);
+        return ()=>{
+            document.removeEventListener("click",hideOptions);
+        }
+    },[])
+
+    if(!store.lfType|| store.selectedTab !== EnumSelectedRepoTab.CHANGES)
+        return null;
+
+    if(store.lfTypeChangeDisabled)
+        return <div className="px-1">
+                    <div className="cur-default px-1 h-100 d-flex align-items-center" title={`${store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"} (line feed type can not be changed for staged content)`}>
+                        {store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"}
+                    </div>
+                </div>;
+
+    return <div className="px-1">
+                <div ref={optionTarget} className="cur-default px-1 h-100 d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
+                    onMouseEnter={()=>refData.current.hoverTarget=true} onMouseLeave={()=> refData.current.hoverTarget = false}>
+                        {store.lfType === EnumLinefeed.CRLF? "CRLF":"LF"}   
+                </div>
+                <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                        {({
+                        placement: _placement,
+                        arrowProps: _arrowProps,
+                        show: _show,
+                        popper: _popper,
+                        hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                        ...props
+                        }) => (
+                        <div
+                            {...props}
+                            className="rounded-0 border"
+                            style={{
+                            position: 'absolute',
+                            backgroundColor: 'inherit',
+                            padding: '2px 0px',
+                            borderRadius: 3,
+                            zIndex:99,                        
+                            ...props.style,
+                            }}
+                        >
+                            <div onClick={(e)=>handleOptionClick(EnumLinefeed.LF)} className="hover-color cur-point py-1 px-4 hover-bg">LF</div>
+                            <div onClick={(e)=>handleOptionClick(EnumLinefeed.CRLF)} className="hover-color cur-point py-1 px-4 hover-bg">CRLF</div>
+                        </div>
+                        )}
+                    </Overlay>
+                </div>
+}
+
+const CrlfSelection = React.memo(CrlfSelectionComponent);
+
+interface IEncodingSelectionState{
+    showOptions?:boolean;
+}
+
+function EncodingSelection(){
+    const store = useSelectorTyped(state=>({
+        encoding: state.ui.encoding,
+        encodingChangeDisabled: state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED,
+        selectedTab:state.ui.selectedRepoTab,
+    }),shallowEqual);
+
+    const encodingList = useMemo(()=>{
+        return Data.appData?.encodingList || [];
+    },[Data.appData?.encodingList])
+
+    const [state,setState] = useMultiState<IEncodingSelectionState>({});
+
+    const dispatch = useDispatch();
+
+    const optionTarget = useRef(null);
+    const refData = useRef({hoverTarget:false});
+    
+    const handleOptionClick = (encoding:string)=>{
+        if(store.encodingChangeDisabled)
+            return;
+        if(encoding === store.encoding)
+            return;
+        ModalData.confirmationModal.message  = `Are you sure you want to switch encoding type to '${encoding}'?`;
+        ModalData.confirmationModal.YesHandler = ()=>{
+            dispatch(ActionUI.setEncoding(encoding));
+            if(store.selectedTab === EnumSelectedRepoTab.CHANGES){
+                DataUtils.handleEncodingChangeOfModifiedFile(encoding);
+            }
+        };
+        dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
+        setState({showOptions:false});
+    }    
+
+    useEffect(()=>{
+        const hideOptions = ()=>{
+            if(refData.current.hoverTarget)
+                return;
+            setState({showOptions:false});
+        }
+        document.addEventListener("click",hideOptions);
+        return ()=>{
+            document.removeEventListener("click",hideOptions);
+        }
+    },[])
+
+    useEffect(()=>{
+        if(!state.showOptions)
+            return;
+        document.querySelector('.footer-encoding-selection .selected')?.scrollIntoView({block:'center'});
+    }, [state.showOptions])
+    
+    
+    if(!store.encoding || store.selectedTab !== EnumSelectedRepoTab.CHANGES)
+        return null;
+
+    if(store.encodingChangeDisabled)
+        return <div className="px-1">
+                    <div className="cur-default px-1 d-flex align-items-center" title={`${store.encoding} (encoding can not be changed for staged content)`}>
+                        <div className="overflow-ellipsis text-nowrap" style={{maxWidth:'50px'}}>{store.encoding.toUpperCase()}</div>
+                    </div>
+                </div>;
+
+    return <div className="px-1">
+                <div ref={optionTarget} className="cur-default px-1  d-flex align-items-center hover-bg" onClick={()=> setState({showOptions:!state.showOptions})} 
+                    onMouseEnter={()=>refData.current.hoverTarget=true} onMouseLeave={()=> refData.current.hoverTarget = false}>
+                        <div title={store.encoding} className="overflow-ellipsis text-nowrap" style={{maxWidth:'50px'}}>{store.encoding.toUpperCase()}</div>
+                </div>
+                <Overlay target={optionTarget.current} show={state.showOptions}  placement="top-end" onHide={()=> setState({showOptions:false})}>
+                        {({
+                        placement: _placement,
+                        arrowProps: _arrowProps,
+                        show: _show,
+                        popper: _popper,
+                        hasDoneInitialMeasure: _hasDoneInitialMeasure,                    
+                        ...props
+                        }) => (
+                        <div
+                            {...props}
+                            className="rounded-0 border footer-encoding-selection"
+                            style={{
+                            position: 'absolute',
+                            backgroundColor: 'inherit',
+                            padding: '2px 0px',
+                            borderRadius: 3,
+                            maxHeight:500,
+                            overflowY:'auto',                        
+                            ...props.style,
+                            }}
+                        >
+                            {encodingList.map((encoding)=>(
+                                    <div key={encoding} onClick={(e)=>handleOptionClick(encoding)} className={`hover-color cur-point py-1 px-4 hover-bg ${store.encoding?.toLowerCase() === encoding.toLowerCase()?"selected":""}`}>{encoding.toUpperCase()}</div>
+                                )
+                            )}                            
+                        </div>
+                        )}
+                    </Overlay>
+                </div>
+
+}

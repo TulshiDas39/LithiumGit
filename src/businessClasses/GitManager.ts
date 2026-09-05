@@ -1,7 +1,7 @@
 import { RendererEvents, RepositoryInfo ,CreateRepositoryDetails, IRemoteInfo,IStatus, ICommitInfo, IRepositoryDetails, IFile, EnumChangeType, EnumChangeGroup, ILogFilterOptions, IPaginated, IActionTaken, IStash, IUserConfig, ITypedConfig, ICommitFilter, IHeadCommitInfo, IStatusConfig} from "common_library";
 import { ipcMain } from "electron";
 import { existsSync, readdirSync } from "fs-extra";
-import simpleGit, { CleanOptions, PullResult, PushResult, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
+import simpleGit, { CleanOptions, SimpleGit, SimpleGitOptions, SimpleGitProgressEvent } from "simple-git";
 import { AppData, LogFields } from "../dataClasses";
 import { CommitParser } from "./CommitParser";
 import * as path from 'path';
@@ -58,6 +58,48 @@ export class GitManager{
         this.addIgnore();
         this.addRemoveFromGitHandler();
         this.addCommitDetailsHandler();
+        this.addCopyStagedContentHandler();
+        this.addCopyHeadContentHandler();
+    }
+
+    //resolves the git binary against the PATH, so it answers whether git is usable at all.
+    //Startup runs this before the window exists, so the flag is set by the time the renderer reads the app data
+    async checkGitInstallation(){
+        try{
+            const version = await this.getGitRunner(undefined).version();
+            AppData.isGitInstalled = version.installed;
+        }catch(e){
+            AppData.isGitInstalled = false;
+        }
+        return AppData.isGitInstalled;
+    }
+
+    private addCopyStagedContentHandler() {
+        ipcMain.handle(RendererEvents.copyStagedContent, async (e,repoPath: string, path: string, destinationPath: string) => {
+            const result = await this.copyStagedContent(path, destinationPath, repoPath);
+            return result;
+        });
+    }
+
+    private async copyStagedContent(path: string, destinationPath: string, repoPath: string) {
+        const git = this.getGitRunner(repoPath);
+        //git cat-file blob :path/to/my_file.txt
+        const stagedContent: Buffer = await git.binaryCatFile(['blob',`:${path}`]);
+        return await new FileManager().writeBufferToFile(destinationPath, stagedContent);
+    }
+
+    private addCopyHeadContentHandler() {
+        ipcMain.handle(RendererEvents.copyHeadContent, async (e,repoPath: string, path: string, destinationPath: string) => {
+            const result = await this.copyHeadContent(path, destinationPath, repoPath);
+            return result;
+        });
+    }
+
+    private async copyHeadContent(path: string, destinationPath: string, repoPath: string) {
+        const git = this.getGitRunner(repoPath);
+        //git cat-file blob HEAD:path/to/my_file.txt
+        const headContent: Buffer = await git.binaryCatFile(['blob',`HEAD:${path}`]);
+        return await new FileManager().writeBufferToFile(destinationPath, headContent);
     }
 
 
@@ -133,15 +175,15 @@ export class GitManager{
         
         const localUser = {} as IUserConfig;
         let result = await git.getConfig("user.name","local");
-        localUser.name = result.value;
+        localUser.name = result.value!;
         result = await git.getConfig("user.email","local");
-        localUser.email = result.value;
+        localUser.email = result.value!;
 
         const globalUser = {} as IUserConfig;
         result = await git.getConfig("user.name","global");
-        globalUser.name = result.value;
+        globalUser.name = result.value!;
         result = await git.getConfig("user.email","global");
-        globalUser.email = result.value;
+        globalUser.email = result.value!;
         const userConfig:ITypedConfig<IUserConfig> = {
             local:localUser,
             global:globalUser
@@ -202,8 +244,8 @@ export class GitManager{
     }
 
     private addDiscardUnStagedItemHandler() {
-        ipcMain.handle(RendererEvents.discardItem().channel, async(e,paths:string[],repoInfo:RepositoryInfo)=>{
-            await this.discardUnStageItem(paths,repoInfo);            
+        ipcMain.handle(RendererEvents.discardItem().channel, async(e,repoPath:string,paths:string[])=>{
+            await this.discardUnStageItem(paths,repoPath);            
         })
     }
     private addUnStageItemHandler() {
@@ -234,8 +276,8 @@ export class GitManager{
         await git.rebase(options);        
     }
 
-    private async discardUnStageItem(paths:string[],repoInfo:RepositoryInfo){
-        const git = this.getGitRunner(repoInfo);
+    private async discardUnStageItem(paths:string[],repoPath:string){
+        const git = this.getGitRunner(repoPath);
         await git.checkout(['--',...paths]);
     }
 
@@ -272,9 +314,9 @@ export class GitManager{
                 e.returnValue = false;
                 return;
             }
-            const subDirNames = readdirSync(path, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
+            const subDirNames = readdirSync(path, { withFileTypes: true }).filter((dirent:any) => dirent.isDirectory()).map(dirent => dirent.name);
             
-            if(subDirNames.every(name=> name !== ".git")) e.returnValue = false;
+            if(subDirNames.every((name:any)=> name !== ".git")) e.returnValue = false;
             else e.returnValue = true;
         })        
     }
@@ -310,7 +352,7 @@ export class GitManager{
 
     private addStatusHandler(){
         ipcMain.handle(RendererEvents.getStatus().channel, async (e,repoInfo:RepositoryInfo)=>{
-            const result = await this.notifyStatus(repoInfo);
+            const result = await this.getStatus(repoInfo); //await this.notifyStatus(repoInfo);
             return result;
         });
     }
@@ -576,6 +618,7 @@ export class GitManager{
             return commits;            
         }catch(e){
             console.error("error on get logs:", e);
+            return [];
         }
     
     }
@@ -610,7 +653,7 @@ export class GitManager{
             const commits = CommitParser.parse(res);
             const count = await this.getTotalCommitCount(repoInfo,filterOption);
             const result:IPaginated<ICommitInfo>={
-                count,
+                count:count!,
                 list:commits
             };
             return result;
@@ -871,13 +914,13 @@ export class GitManager{
     }
 
 
-    private getGitRunner(repoInfo:RepositoryInfo | string,progress?:(data:SimpleGitProgressEvent)=>void){
+    private getGitRunner(repoInfo:RepositoryInfo | string | undefined,progress?:(data:SimpleGitProgressEvent)=>void){
         let repoPath = "";
         if(typeof(repoInfo) === 'string'){
             repoPath = repoInfo as string;
         }
         else{
-            repoPath = (repoInfo as RepositoryInfo).path;
+            repoPath = (repoInfo as RepositoryInfo)?.path;
         }
         const options: Partial<SimpleGitOptions> = {
             baseDir: repoPath,

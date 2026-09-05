@@ -1,5 +1,5 @@
 import { RepositoryInfo } from "common_library";
-import React from "react";
+import React, { useEffect } from "react";
 import { shallowEqual, useDispatch } from "react-redux";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../../../store/slices";
@@ -35,6 +35,7 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
             ModalData.confirmationModal.message = "Project does not exist. Remove this from list?";
             ModalData.confirmationModal.YesHandler = ()=>{
                 dispatch(ActionSavedData.removeRepositoryFromRecentList(item));
+                CacheUtils.clearRepoDetails(item.path);                
             }
             dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
         }
@@ -54,6 +55,12 @@ function RecentRepositoryListComponent(props:IRecentRepositoryListProps){
         }
         dispatch(ActionModals.showModal(EnumModals.CONFIRMATION));
     }
+
+    useEffect(() => { 
+        if(!!props.selectedItem && !store.recentRepos?.some(x=>x._id === props.selectedItem?._id)){
+            props.onSelectItem(undefined!);
+        }
+    }, [store.recentRepos]);
 
     return <div id="recentRepoList" className="w-75 h-100 d-flex flex-column">
         <h4 className="px-1 py-2 m-0">Recent Repositories</h4>

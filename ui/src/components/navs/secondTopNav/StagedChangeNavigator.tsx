@@ -1,8 +1,7 @@
 import { EnumChangeType, IFile } from "common_library";
-import React, { Fragment, useEffect } from "react"
+import React, { useEffect } from "react"
 import { FaArrowsAltH } from "react-icons/fa";
 import { StepNavigation } from "../../common";
-import { ChangeUtils } from "../../../lib/utils/ChangeUtils";
 import { ChangesData } from "../../../lib";
 
 interface IProps{

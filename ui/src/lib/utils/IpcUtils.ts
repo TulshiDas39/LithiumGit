@@ -1,9 +1,25 @@
-import { Annotation, IActionTaken, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
+import { Annotation, EnumLinefeed, IActionTaken, IAppData, IChange, ICommitFilter, ICommitInfo, IConfigInfo, IFileProps, ILogFilterOptions, INotification, IPaginated, IRemoteInfo, IRepositoryDetails, IStash, IStatus, ITypedConfig, IUserConfig, RendererEvents, RepositoryInfo } from "common_library";
 import { RepoUtils } from "./RepoUtils";
 import { IpcResult } from "../interfaces/IpcResult";
 import { IUiNotification } from "../interfaces";
 
-export class IpcUtils{
+export class IpcUtils{    
+    static reWriteFile(filePath: string, _lineFeedType: EnumLinefeed,encoding:string) {
+        return IpcUtils.execute(RendererEvents.reWriteFile,[filePath, _lineFeedType,encoding]);        
+    }
+    static copyStagedContent(path: string, destinationPath: string) {
+        return IpcUtils.runGitCommand(RendererEvents.copyStagedContent,[path, destinationPath]);
+    }
+    static copyHeadContent(path: string, destinationPath: string) {
+        return IpcUtils.runGitCommand(RendererEvents.copyHeadContent,[path, destinationPath]);
+    }
+    static trackFileChanges(filePath: string, changes: IChange[],encoding:string) {
+        return IpcUtils.execute<number>(RendererEvents.trackFileChanges,[filePath, changes, encoding]);
+    }
+    static copyFile(fromFilePath: string, toFilePath: string,displayError=true) {
+        return IpcUtils.execute(RendererEvents.copyFile,[fromFilePath, toFilePath],displayError);
+    }
+        
     static writeToFile(path:string, result: string) {
         return IpcUtils.execute(RendererEvents.writeToFile,[path, result]);
     }
@@ -86,8 +102,7 @@ export class IpcUtils{
         return err;
     }
     static async getLastUpdatedDate(path: string) {
-        const fullPath = await this.joinPathAsync(RepoUtils.selectedRepo.path,path);
-        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[fullPath]);
+        const r = await this.execute<string>(RendererEvents.lastUpdatedDate,[path]);
         return r.result || "";
     }
     static resolveConflict(path: string, actions:IActionTaken[]) {
@@ -174,7 +189,7 @@ export class IpcUtils{
     }
 
     static discardItems(paths:string[],repoInfo:RepositoryInfo){
-        return window.ipcRenderer.invoke(RendererEvents.discardItem().channel,paths,repoInfo);
+        return IpcUtils.runGitCommand(RendererEvents.discardItem().channel,[paths]);        
     }
 
     static cleanItems(paths:string[],repoInfo:RepositoryInfo){
@@ -195,6 +210,10 @@ export class IpcUtils{
 
     static async getFileContent(path:string){
         return await window.ipcRenderer.invoke(RendererEvents.getFileContent().channel,path) as string[];
+    }
+
+    static async getFileContentRaw(path:string,encoding:string="utf8"){
+        return await IpcUtils.execute<string>(RendererEvents.getFileContentRaw,[path,encoding]);
     }
 
     static async getDiff(options:string[]){
@@ -366,6 +385,22 @@ export class IpcUtils{
 
     static getFileProps(path:string){
         return IpcUtils.execute<IFileProps>(RendererEvents.getFileProps,[path]);
+    }
+
+    static displayApp(){
+        return IpcUtils.execute<boolean>(RendererEvents.displayApp,[]);
+    }
+
+    static getLineFeedType(){
+        return IpcUtils.executeSync<EnumLinefeed>(RendererEvents.getLineFeedType,[]);
+    }
+
+    static getAppData(){
+        return IpcUtils.executeSync<IAppData>(RendererEvents.getAppData,[]);
+    }
+    
+    static detectEncoding(path:string){
+        return IpcUtils.execute<string>(RendererEvents.detectFileEncoding,[path]);
     }
         
 }

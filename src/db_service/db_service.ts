@@ -8,16 +8,38 @@ import { NotificationDB } from './NotificationDB';
 
 export class DBPath{
     static rootFolderName = "db";
-    static root = path.join(AppData.dataPath,DBPath.rootFolderName);
-    static repository = path.join(AppData.dataPath,DBPath.rootFolderName,"repository.db");
-    static config = path.join(AppData.dataPath,DBPath.rootFolderName,"config.db");
-    static annotation = path.join(AppData.dataPath,DBPath.rootFolderName,"annotation.db");
-    static notification = path.join(AppData.dataPath,DBPath.rootFolderName,"notification.db");
+    static root(){
+        return path.join(AppData.dataPath,DBPath.rootFolderName);
+    }
+    static repository(){
+        return path.join(AppData.dataPath,DBPath.rootFolderName,"repository.db");
+    }    
+    static config(){
+        return path.join(AppData.dataPath,DBPath.rootFolderName,"config.db");
+    }
+    static annotation(){
+        return path.join(AppData.dataPath,DBPath.rootFolderName,"annotation.db");
+    }
+    static notification(){
+        return path.join(AppData.dataPath,DBPath.rootFolderName,"notification.db");
+    }
 }
 
 export class DB{
-    static repository = new RepositoryDB();
-    static config = new ConfigDB();
-    static annotation = new AnnotationDB();
-    static notification = new NotificationDB();
+    static repository:RepositoryDB = null!;
+    static config:ConfigDB = null!;
+    static annotation:AnnotationDB = null!;
+    static notification:NotificationDB = null!;
+
+    static async load(){
+        DB.repository = new RepositoryDB();        
+        DB.config = new ConfigDB();
+        DB.annotation = new AnnotationDB();
+        DB.notification = new NotificationDB();
+
+        await DB.repository.load();
+        await DB.config.load();
+        await DB.annotation.load();
+        await DB.notification.load();
+    }
 }

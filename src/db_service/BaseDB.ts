@@ -4,7 +4,7 @@ import * as DataStore from 'nedb';
 
 export class BaseDB<T extends BaseSchema>{
     dataStore:DataStore<T>;
-    filePath:string;
+    filePath:string= '';
     constructor(dataFilePath:string){
         this.dataStore = new DataStore<T>({filename:dataFilePath,autoload:false});
     }

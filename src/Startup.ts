@@ -1,4 +1,4 @@
-import { EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
+import { Constants, EnumTheme, IConfigInfo, MainEvents, RendererEvents } from "common_library";
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import { DataManager } from "./businessClasses";
@@ -15,10 +15,12 @@ import { ShellManager } from "./businessClasses/ShellManager";
 export class Startup{
     private readonly uiPort = Config.UI_PORT;
 
-    async initilise(){
+    async initialise(){
       //this.initAppData();
       this.addExceptionHandler();
-      await this.loadSavedData();      
+      await AppData.initialize();
+      await new GitManager().checkGitInstallation();
+      await this.loadSavedData();
       this.startIpcManagers();
     }
 
@@ -53,16 +55,28 @@ export class Startup{
     }
 
     private async loadDatabases(){
-      await DB.config.load();
-      await DB.repository.load();
-      await DB.annotation.load();
-      await DB.notification.load();
+      await DB.load();
     }
 
     private async loadSavedData(){
         await this.loadDatabases();
         await this.loadRecentRepositories();
         await this.loadConfigInfo();
+        await this.createFilesAndFolders();
+    }
+
+    private async createFilesAndFolders(){
+      try{
+        const tempPath = path.join(AppData.dataPath,Constants.tempFolder);
+        const fileMgr = new FileManager();
+        if(fileMgr.exists(tempPath)){
+          await fileMgr.deleteFolder(tempPath);
+        }
+        await fileMgr.createPathAsync(tempPath);
+      }catch(err){
+        console.error("Error while creating temp folder:",err);
+      }
+      
     }
 
     private async loadRecentRepositories(){                        
@@ -102,9 +116,9 @@ export class Startup{
             contextIsolation:false,
           },
           width: 800,
-          icon: path.join(__dirname, 'icons/256x256.png')
+          icon: path.join(__dirname, 'icons/256x256.png'),
+          show: false,          
         });
-        mainWindow.maximize();
         AppData.mainWindow = mainWindow;
         if(Config.env === Env.DEVELOPMENT)          
           mainWindow.loadURL(`http://localhost:${this.uiPort}`);
@@ -112,6 +126,8 @@ export class Startup{
           const htmlFile =   path.resolve(__dirname,"ui", 'index.html');
           mainWindow.loadFile(htmlFile);
         }
+        mainWindow.maximize();                
+        mainWindow.show();
         
         if(Config.env === Env.DEVELOPMENT)
           mainWindow.webContents.openDevTools();
@@ -130,7 +146,7 @@ export class Startup{
         // });
 
         app.whenReady().then(async ()=>{
-          await this.initilise();
+          await this.initialise();
           await this.createWindow();
         
           app.on("activate", function () {

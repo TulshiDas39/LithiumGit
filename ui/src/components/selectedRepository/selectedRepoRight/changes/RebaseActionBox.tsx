@@ -34,7 +34,7 @@ function RebaseActionBoxComponent(){
             return;
         }
         IpcUtils.continueRebase().then(()=>{
-            IpcUtils.getRepoStatus();
+            GitUtils.getStatus();
         });
     }
 

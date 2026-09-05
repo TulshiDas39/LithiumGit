@@ -9,6 +9,8 @@ import { ActionChanges, ActionModals } from "../../../../store";
 import { useSelectorTyped } from "../../../../store/rootReducer";
 import { GitUtils } from "../../../../lib/utils/GitUtils";
 import { ChangesData } from "../../../../lib/data/ChangesData";
+import { ActionUI } from "../../../../store/slices/UiSlice";
+import { ChangeEditor, TextEditor, PlainTextEditor } from "../../../../lib/utils/editors";
 
 interface IModifiedChangesProps{
     changes:IFile[];
@@ -17,18 +19,20 @@ interface IModifiedChangesProps{
 
 interface IState{
     hoveredFile?:IFile;
-    lastUpdated:string;
 }
 
+const editorContainer = "#"+EnumHtmlIds.diffview_container+" .current .content";
+
 function ModifiedChangesComponent(props:IModifiedChangesProps){
-    const [state,setState] = useMultiState<IState>({lastUpdated:""});
+    const [state,setState] = useMultiState<IState>({});
     const store = useSelectorTyped(state => ({
         selectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.UN_STAGED?state.changes.selectedFile:undefined,
+        stagedSelectedFile:state.changes.selectedFile?.changeGroup === EnumChangeGroup.STAGED?state.changes.selectedFile:undefined,
         focusVersion:state.ui.versions.appFocused,
     }),shallowEqual);
 
     const dispatch = useDispatch();    
-    const refData = useRef({selectedFileContent:[] as string[],lastUpdated:"",isMounted:false});
+    const refData = useRef({isMounted:false});
     const getStatusText = (changeType:EnumChangeType)=>{
         if(changeType === EnumChangeType.MODIFIED)
             return "M";
@@ -38,14 +42,24 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     }
 
     const handleStage=(file:IFile)=>{
+        GitUtils.cancelGetStatus();
+        dispatch(ActionUI.stageItem(file.path));        
         IpcUtils.stageItems([file.path]).then(_=>{
+            if(store.stagedSelectedFile?.path === file.path){
+                ChangesData.stagedEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });
     }
 
     const stageAll=()=>{
         if(!props.changes?.length) return;
+        GitUtils.cancelGetStatus();
+        dispatch(ActionUI.stageAll());
         IpcUtils.stageItems(props.changes.map(x=>x.path)).then(_=>{
+            if(store.stagedSelectedFile){
+                ChangesData.stagedEditor?.checkForFileUpdate();
+            }
             GitUtils.getStatus();
         });        
     }
@@ -56,6 +70,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(item.changeType === EnumChangeType.CREATED){
             text = `Delete ${item.fileName}?`;
             yesHandler= ()=>{
+                GitUtils.cancelGetStatus();
+                dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.cleanItems([item.path], props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
                 });
@@ -64,6 +80,8 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         else if(item.changeType === EnumChangeType.MODIFIED){
             text = `Discard the changes of ${item.fileName}?`;
             yesHandler = () =>{
+                GitUtils.cancelGetStatus();
+                dispatch(ActionUI.discardModifiedItem(item.path));
                 IpcUtils.discardItems([item.path],props.repoInfoInfo!).then(_=>{
                     GitUtils.getStatus();
                 });
@@ -79,10 +97,16 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
         if(!props.changes?.length) return;        
         let text = "Discard all?";
         const yesHandler = ()=>{
-            IpcUtils.discardItems(["."],props.repoInfoInfo!).then(_=>{
-                IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+            GitUtils.cancelGetStatus();
+            dispatch(ActionUI.discardAllModifiedChanges());
+            IpcUtils.discardItems(["."],props.repoInfoInfo!).then(r=>{
+                if(!r.error){
+                    IpcUtils.cleanItems([],props.repoInfoInfo!).then(_=>{
+                        GitUtils.getStatus();
+                    });
+                }else{
                     GitUtils.getStatus();
-                });
+                }
             });
         }
         ModalData.confirmationModal.message = text;
@@ -121,36 +145,47 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     }
 
-    const displayChanges = async(path:string)=>{
+    const clearExistingChangeView=()=>{
+        ChangesData.changeEditor?.destroy();
+        ChangesData.changeEditor = null!;        
+    }
+
+    const displayChanges = async()=>{
         return new Promise<boolean>((res)=>{
-            const joinedPath = window.ipcRenderer.sendSync(RendererEvents.joinPath().channel, RepoUtils.repositoryDetails.repoInfo.path,path);
-            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){
-                IpcUtils.getFileContent(joinedPath).then(lines=>{
-                    refData.current.selectedFileContent = lines;
-                    if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){
-                        DiffUtils.getDiff(store.selectedFile.path).then(str=>{
-                            let lineConfigs = DiffUtils.GetUiLines(str,refData.current.selectedFileContent);
-                            ChangesData.changeUtils.currentLines = lineConfigs.currentLines;
-                            ChangesData.changeUtils.previousLines = lineConfigs.previousLines;
-                            ChangesData.changeUtils.showChanges();
-                            res(true);                            
-                        });
-                    }
-                    if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
-                        const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
-                        ChangesData.changeUtils.currentLines = lineConfigs;
-                        ChangesData.changeUtils.previousLines = null!;
-                        ChangesData.changeUtils.showChanges();
-                        res(true);
-                    }
-                })
+            clearExistingChangeView();
+            ChangesData.changeUtils.file = store.selectedFile;
+            if(store.selectedFile?.changeType !== EnumChangeType.DELETED){            
+                if(store.selectedFile?.changeType === EnumChangeType.MODIFIED){      
+                    const editor = new ChangeEditor(editorContainer,ChangesData.changeUtils);
+                    ChangesData.changeEditor = editor;
+                    editor.renderILines(store.selectedFile!).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }                            
+                        res(true);                            
+                    });
+                    
+                }
+                else if(store.selectedFile?.changeType === EnumChangeType.CREATED){            
+                    ChangesData.changeUtils.currentLines = [];
+                    ChangesData.changeUtils.previousLines = null!;
+                    ChangesData.changeUtils.showChanges();
+                    const editor = new PlainTextEditor(editorContainer);                    
+                    const sourceFilePath = IpcUtils.joinPath(RepoUtils.repositoryDetails.repoInfo.path, store.selectedFile!.path);
+                    ChangesData.changeEditor = editor;
+                    editor.renderLines(sourceFilePath).then(success=>{
+                        if(!success) {
+                            ModalData.appToast.message = "There was an error reading the content.";
+                            dispatch(ActionModals.showToast());
+                        }                            
+                        res(true);                            
+                    });                        
+                }                
             }
             else{            
                 IpcUtils.getGitShowResult([`HEAD:${store.selectedFile.path}`]).then(content=>{                
                     const lines = StringUtils.getLines(content);
-                    const hasChanges = UiUtils.hasChanges(refData.current.selectedFileContent,lines);
-                    if(!hasChanges) return;
-                    refData.current.selectedFileContent = lines;
                     const lineConfigs = lines.map(l=> ({text:l,textHightlightIndex:[]} as ILine))
                     ChangesData.changeUtils.currentLines = null!;
                     ChangesData.changeUtils.previousLines = lineConfigs!;
@@ -163,63 +198,45 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
     
 
     useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
+        if(!refData.current.isMounted)
             return ;
+
+        if(!store.selectedFile){
+            clearExistingChangeView();
+            return;
+        }
 
         IpcUtils.isBinaryFile(store.selectedFile.path).then(r=>{
             if(r.result){                
                 showPreview(store.selectedFile!);
             }else{
-                displayChanges(store.selectedFile!.path).then(()=>{
-                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount}));            
+                displayChanges().then(()=>{                    
+                    dispatch(ActionChanges.updateData({currentStep:1, totalStep:ChangesData.changeUtils.totalChangeCount,silentStepUpdate:false}));            
                 })
             }
         })
-                
-        ChangesData.changeUtils.file = store.selectedFile;
-
-        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{
-            refData.current.lastUpdated = date;
-        })
-                
     },[store.selectedFile]);
-
-    useEffect(()=>{
-        if(!store.selectedFile || !refData.current.isMounted)
-            return;
-        displayChanges(store.selectedFile.path).then(()=>{
-            dispatch(ActionChanges.updateData({totalStep:ChangesData.changeUtils.totalChangeCount}));
-            dispatch(ActionChanges.increamentStepRefreshVersion());
-        });                
-    },[state.lastUpdated]);
 
     useEffect(()=>{
         if(!store.selectedFile || !refData.current.isMounted)
             return;     
         if(store.selectedFile.changeType === EnumChangeType.DELETED)
-            return;
-        IpcUtils.getLastUpdatedDate(store.selectedFile.path).then(date=>{            
-            if(date !== refData.current.lastUpdated){
-                refData.current.lastUpdated = date;
-                setState({lastUpdated:date});
-            }
-            else{
-                refData.current.lastUpdated = date;
-            }
-        });        
+            return;        
+        ChangesData.changeEditor?.checkForFileUpdate();
     },[store.focusVersion])
 
     const handleFileSelect = (file:IFile)=>{
-        if(store.selectedFile?.path !== file.path){
-            IpcUtils.getLastUpdatedDate(file.path).then(date=>{
-                
-                dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));
-            })
+        if(store.selectedFile?.path !== file.path){            
+            dispatch(ActionChanges.updateData({selectedFile: file,currentStep:0,totalStep:0}));            
         }
     }
 
     useEffect(()=>{
         refData.current.isMounted = true;
+        return ()=>{
+            refData.current.isMounted = false;
+            dispatch(ActionChanges.updateData({silentStepUpdate:false}));            
+        }
     },[])
 
     const copyFile=(file:IFile)=>{
@@ -288,7 +305,7 @@ function ModifiedChangesComponent(props:IModifiedChangesProps){
 
     return <div className="h-100" id={EnumHtmlIds.modifiedChangesPanel}>
             {!!props.changes?.length && <div id={EnumHtmlIds.stage_unstage_allPanel} className="d-flex py-2 ps-2" style={{height:40}}>
-                <span className="d-flex align-items-center hover-shadow hover-brighter bg-danger px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
+                <span className="d-flex align-items-center hover-shadow hover-brighter bg-previous-change-deep px-2 cur-default" title="Discard all" onClick={_=>discardAll()}>
                     <FaUndo />
                 </span>
                 <span className="px-2" />

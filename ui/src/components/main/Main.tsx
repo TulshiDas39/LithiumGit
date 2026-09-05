@@ -1,8 +1,8 @@
-import { EnumNotificationType, EnumTheme, IAppInfo, ISavedData, RendererEvents } from "common_library";
+import { EnumLinefeed, EnumNotificationType, EnumTheme, IAppInfo, ISavedData, RendererEvents } from "common_library";
 import React from "react";
 import { useEffect } from "react";
 import {useDispatch,shallowEqual, batch} from "react-redux";
-import { DataUtils, EnumModals, FetchState, GraphUtils, IUiNotification, RepoUtils, UiUtils, useMultiState } from "../../lib";
+import { Data, DataUtils, EnumModals, FetchState, GraphUtils, IUiNotification, RepoUtils, UiUtils, useMultiState } from "../../lib";
 import { useSelectorTyped } from "../../store/rootReducer";
 import { ActionModals, ActionSavedData } from "../../store/slices";
 import { ActionUI, EnumHomePageTab } from "../../store/slices/UiSlice";
@@ -69,8 +69,15 @@ function MainComponent(){
         }
     },[store.appFocusV])
 
-    useEffect(()=>{
-        registerIpcEvents();        
+    useEffect( ()=>{
+        Data.appData = IpcUtils.getAppData().result!;
+        if(!Data.appData?.isGitInstalled){
+            ModalData.errorModal.message = "Git could not be found on this system. Please install Git and then restart the application.";
+            dispatch(ActionModals.showModal(EnumModals.ERROR));
+            return;
+        }
+        Data.systemLineFeedType = IpcUtils.getLineFeedType().result || EnumLinefeed.CRLF;
+        registerIpcEvents();
         const savedData:ISavedData = window.ipcRenderer.sendSync(RendererEvents.getSaveData().channel);
         if(!savedData){
             batch(()=>{

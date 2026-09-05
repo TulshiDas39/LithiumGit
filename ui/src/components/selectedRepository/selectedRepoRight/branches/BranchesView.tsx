@@ -58,7 +58,10 @@ function BranchesViewComponent() {
 
 
     useEffect(()=>{        
-        const selectListener = (commit?:ICommitInfo)=>{
+        const selectListener = (silent:boolean=false)=>{
+            if(silent)
+                return;
+            const commit = GraphUtils.state.selectedCommit.value;
             setState({selectedCommit:commit});
         }
         GraphUtils.state.selectedCommit.subscribe(selectListener);

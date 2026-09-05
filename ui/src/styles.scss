@@ -44,6 +44,8 @@ html {
     --bg-current-change-deep: #bdd780;
     --bg-previous-change: #FFCCCC;
     --bg-previous-change-deep: #fda0a0;
+    --bg-custom-change: #eacef3;
+    --conflict-action-color: #0a58ca;
     --bg-fade:#afadad;
     --bg-change-accepted:#b9d5f6;
     --scroll-bar-color:#2e0497;
@@ -92,6 +94,8 @@ html {
     --bg-current-change-deep: #4C5B2B;
     --bg-previous-change: #4C1919;
     --bg-previous-change-deep: #701414;
+    --bg-custom-change: #4d3456;
+    --conflict-action-color: #6ea8fe;
     --bg-fade:#513f3f;
     --bg-change-accepted:#48484d;
     --scroll-bar-color:rgba(119, 118, 119, 0.722);
@@ -228,10 +232,6 @@ html {
     color: var(--hover);
   }
 
-  .hover-brighter:hover{
-    //filter: brightness(105%);
-  }
-
   .hover-shadow:hover{
     box-shadow: 0 0 2px rgb(104, 104, 237);
   }
@@ -336,6 +336,14 @@ html {
   user-select: none;
 }
 
+.pm-spacer-widget {
+  display: block;
+  white-space: pre;
+  width: 100%;
+}
+
+
+
 .hover-bg-secondary:hover{
   background: gray;
   *{
@@ -434,6 +442,36 @@ html {
 
 .bg-previous-change-deep{
   background-color: var(--bg-previous-change-deep);
+}
+
+.bg-custom-change{
+  background-color: var(--bg-custom-change);
+}
+
+.conflict-actions{
+  display: flex;
+  gap: .6rem;
+  font-size: .85em;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+.conflict-action{
+  color: var(--conflict-action-color);
+  cursor: pointer;
+}
+
+.conflict-action:hover{
+  text-decoration: underline;
+}
+
+.conflict-action-divider{
+  opacity: .45;
+}
+
+.conflict-marker-label{
+  padding-left: .9rem;
+  opacity: .7;
 }
 .overflow-ellipsis{
   text-overflow: ellipsis;
@@ -661,4 +699,46 @@ input[type=checkbox]{
 
 .word-break-all{
   word-break: break-all;
+}
+
+.pm-line-number{
+  display: inline-block;
+  padding-right: 1ch;
+  min-width: 6ch;
+  text-align: right;
+  opacity: 0.5;
+}
+
+.ProseMirror{
+  outline: none;
+  overflow-x: hidden;
+  white-space: pre;
+}
+
+.pm-odd-line{
+  background-color: var(--bg-second-color);
+}
+
+.fit-content{
+  width: fit-content;
+}
+
+.min-w-100{
+  min-width: 100%;
+}
+
+.diff-view{
+  .save-btn-container{
+    width: 100px;
+    bottom: 25px;
+    right: 25px;
+    z-index: 1;
+  }
+  .line_numbers{
+    padding-bottom: 65px;
+  }
+  .content{
+    padding-bottom: 50px;
+  }
+
 }
