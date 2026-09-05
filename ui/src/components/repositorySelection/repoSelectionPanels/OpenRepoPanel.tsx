@@ -27,7 +27,7 @@ function OpenRepoPanelComponent(){
             <AppButton type="success" className="text-white" onClick={handleOpen} disabled={!state.path}>Open</AppButton>
         </div>
         {!!state.error && <span className="text-danger">{state.error}</span>}
-        <span>or</span>
+        <span className="py-1"></span>
         <div>
             <AppButton onClick={handleBrowse}>Browse</AppButton>
         </div>
