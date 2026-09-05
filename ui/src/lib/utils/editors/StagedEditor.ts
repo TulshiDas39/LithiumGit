@@ -152,11 +152,7 @@ export class StagedEditor extends TextEditor{
     }
 
     private async updateDiff(){
-        const options = ["-c", "core.autocrlf=false", "-c", "core.safecrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempHeadFilePath, this._tempFilePath];
-        const r = await IpcUtils.getRaw(options);
-        const diffResult = r.result!;
-        const contentLines = this.getContentLines();
-        const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
+        const uiLines = await DiffUtils.getDiffOfFiles(this._tempHeadFilePath, this._tempFilePath, this.getContentLines());
         this._ilines = uiLines.currentLines;
         this._prevIlines = uiLines.previousLines;
         this._changeUitl.updatePreviousChanges(this._prevIlines.slice());
@@ -172,9 +168,7 @@ export class StagedEditor extends TextEditor{
     protected override async readFile(){
         const succeeded = await super.readFile();
         if(!succeeded) return false;
-        const options =  ["--staged","--diff-algorithm=minimal",this._file.path];
-        const diff = await IpcUtils.getDiff(options);
-        let lineConfigs = DiffUtils.GetUiLines(diff,this._lines);
+        let lineConfigs = await DiffUtils.getDiffOfFiles(this._tempHeadFilePath, this._tempFilePath, this._lines);
         this._ilines = lineConfigs.currentLines;
         this._prevIlines = lineConfigs.previousLines;
         return true;
