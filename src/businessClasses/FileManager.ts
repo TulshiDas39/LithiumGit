@@ -163,8 +163,12 @@ export class FileManager{
     }
 
     private async isBinary(pathStr:string,checkContent=false){
+        const knownBinaryExtensions = [".xlsx"];
         const fileName = path.basename(pathStr);
         if(fileName.includes('.')){
+            if(knownBinaryExtensions.some(ext=>fileName.toLowerCase().endsWith(ext))){
+                return true;
+            }
             return isBinary(fileName);
         }
         else if(checkContent){
