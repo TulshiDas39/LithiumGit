@@ -154,10 +154,14 @@ export class GitUtils{
 
     static async GetFileContentOfStash(stash:IStash,file:IFile){
         if(file.changeType === EnumChangeType.CREATED){
-            //git show 'stash@{0}^3:<path/to/file>'
-            const options = [`stash@{${stash.index}}^3:${file.path}`];
-            let r = await IpcUtils.getGitShowResult(options);
-            return r;
+            try{
+                //for staged files
+                return await IpcUtils.getGitShowResult([`${stash.hash}:${file.path}`]);
+            }catch(e){
+                //for untracked files
+                const options = [`stash@{${stash.index}}^3:${file.path}`];
+                return await IpcUtils.getGitShowResult(options);
+            }
         }
         else{
             const r = await IpcUtils.getFileContentAtSpecificCommit(stash.hash,file.path);
