@@ -226,9 +226,7 @@ export class ChangeEditor extends TextEditor{
     
     private async updateDiff(){
         const uiLines = await DiffUtils.getDiffOfFiles(this._tempStagedFilePath, this._tempFilePath, this.getContentLines());
-        this._ilines = uiLines.currentLines;
-        console.log("current lines",this._ilines);
-        console.log("previous lines",this._prevIlines);
+        this._ilines = uiLines.currentLines;        
         this._prevIlines = uiLines.previousLines;
         this._changeUitl.updatePreviousChanges(this._prevIlines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
