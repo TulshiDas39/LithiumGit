@@ -384,4 +384,12 @@ export class DiffUtils{
         }
         return await IpcUtils.getDiff(options);
     }
+
+    static async getDiffOfFiles(sourceFilePath:string, currentFilePath:string, destContent:string[]){
+        const options = ["-c", "core.autocrlf=false", "-c", "core.safecrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", sourceFilePath, currentFilePath];
+        const r = await IpcUtils.getRaw(options);        
+        const diffResult = r.result!;        
+        const uiLines = DiffUtils.GetUiLines(diffResult,destContent);
+        return uiLines;
+    }
 }
