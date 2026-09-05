@@ -3,14 +3,12 @@ import { Annotation, EnumLinefeed, IAppData } from "common_library";
 export class Data{
     static annotations:Annotation[] = [];
     static get newChangesInLatestVersion(){
-        return ["Enhance user interface for better usability.",
-                "Improve user experience.",
-                "Show file properties of binary files in diff view.",
-                "Force push from the UI.",
-                "Revert commits from the UI of graph.",
-                "User interface to display app information.",
-                "Show new changes of latest release.",
-                "Deleting repositories from recent list."
+        return ["Built-in editor to view changes of files.",
+                "Chunk by chunk stage/unstage of changes.",
+                "Enhanced conflict resolution with built-in editor.",
+                "Performance improvements",
+                "Enhanced user interface for better user experience.",
+                "Bug fixes and stability improvements."                
             ];
     }
 
