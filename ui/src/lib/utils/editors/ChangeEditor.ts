@@ -221,16 +221,22 @@ export class ChangeEditor extends TextEditor{
         }
 
         this.applyChange(change);
-    }    
-
+    }
     
-    private async updateDiff(){                
+    private async getDiffLines(contentLines:string[]){
         const options = ["-c", "core.autocrlf=false", "-c", "core.safecrlf=false", "diff","--diff-algorithm=minimal","--ignore-cr-at-eol","--no-index", this._tempStagedFilePath, this._tempFilePath];
         const r = await IpcUtils.getRaw(options);        
-        const diffResult = r.result!;
-        const contentLines = this.getContentLines();
+        const diffResult = r.result!;        
         const uiLines = DiffUtils.GetUiLines(diffResult,contentLines);
+        return uiLines;
+    }
+
+    
+    private async updateDiff(){
+        const uiLines = await this.getDiffLines(this.getContentLines());
         this._ilines = uiLines.currentLines;
+        console.log("current lines",this._ilines);
+        console.log("previous lines",this._prevIlines);
         this._prevIlines = uiLines.previousLines;
         this._changeUitl.updatePreviousChanges(this._prevIlines.slice());
         ReduxUtils.dispatch(ActionChanges.updateData({totalStep:this._changeUitl.totalChangeCount,silentStepUpdate:true}));
@@ -279,9 +285,7 @@ export class ChangeEditor extends TextEditor{
     protected override async readFile(){
         const succeeded = await super.readFile();
         if(!succeeded) return false;
-        const options =  ["--diff-algorithm=minimal",this._file.path];
-        const diff = await IpcUtils.getDiff(options);
-        let lineConfigs = DiffUtils.GetUiLines(diff,this._lines);
+        const lineConfigs = await this.getDiffLines(this._lines);
         this._ilines = lineConfigs.currentLines;
         this._prevIlines = lineConfigs.previousLines;
         return true;

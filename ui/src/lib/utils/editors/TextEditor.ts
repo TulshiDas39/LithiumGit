@@ -426,7 +426,6 @@ export abstract class TextEditor {
 
     private async detectEncoding(){
         const encodingRes = await IpcUtils.detectEncoding(this._tempFilePath);
-        console.log("Detected encoding:", encodingRes.result);
         if(!encodingRes.error){
             return encodingRes.result!;
         }
